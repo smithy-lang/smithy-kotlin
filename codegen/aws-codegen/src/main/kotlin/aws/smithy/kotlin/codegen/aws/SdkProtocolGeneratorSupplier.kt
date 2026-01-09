@@ -10,7 +10,6 @@ import aws.smithy.kotlin.codegen.aws.protocols.AwsQuery
 import aws.smithy.kotlin.codegen.aws.protocols.Ec2Query
 import aws.smithy.kotlin.codegen.aws.protocols.RestJson1
 import aws.smithy.kotlin.codegen.aws.protocols.RestXml
-import aws.smithy.kotlin.codegen.aws.protocols.RpcV2Cbor
 import aws.smithy.kotlin.codegen.integration.KotlinIntegration
 import aws.smithy.kotlin.codegen.rendering.protocol.ProtocolGenerator
 
@@ -34,6 +33,5 @@ class SdkProtocolGeneratorSupplier : KotlinIntegration {
             RestXml(),
             AwsQuery(),
             Ec2Query(),
-            RpcV2Cbor(),
         )
 }

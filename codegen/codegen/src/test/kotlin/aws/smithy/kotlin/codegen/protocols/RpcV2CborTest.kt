@@ -1,9 +1,4 @@
-/*
- * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
- * SPDX-License-Identifier: Apache-2.0
- */
-
-package aws.smithy.kotlin.codegen.aws.protocols
+package aws.smithy.kotlin.codegen.protocols
 
 import aws.smithy.kotlin.codegen.test.lines
 import aws.smithy.kotlin.codegen.test.newTestContext
