@@ -14,7 +14,7 @@ skipPublishing()
 
 val codegen by configurations.getting
 dependencies {
-    codegen(project(":codegen:smithy-kotlin-codegen"))
+    codegen(project(":codegen:codegen"))
     codegen(project(":tests:codegen:serde-codegen-support"))
     codegen(libs.smithy.cli)
     codegen(libs.smithy.model)
@@ -44,7 +44,7 @@ tasks.test {
 }
 
 dependencies {
-    compileOnly(project(":codegen:smithy-kotlin-codegen"))
+    compileOnly(project(":codegen:codegen"))
 
     implementation(libs.kotlinx.coroutines.core)
     implementation(project(":runtime:runtime-core"))

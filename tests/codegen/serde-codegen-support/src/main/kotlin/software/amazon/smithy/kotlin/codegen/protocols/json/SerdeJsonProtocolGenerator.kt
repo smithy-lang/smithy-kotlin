@@ -4,9 +4,13 @@
  */
 package software.amazon.smithy.kotlin.codegen.protocols.json
 
+import aws.smithy.kotlin.codegen.rendering.protocol.ProtocolContentTypes
+import aws.smithy.kotlin.codegen.rendering.protocol.ProtocolGenerator
+import aws.smithy.kotlin.codegen.rendering.serde.JsonParserGenerator
+import aws.smithy.kotlin.codegen.rendering.serde.JsonSerializerGenerator
+import aws.smithy.kotlin.codegen.rendering.serde.StructuredDataParserGenerator
+import aws.smithy.kotlin.codegen.rendering.serde.StructuredDataSerializerGenerator
 import software.amazon.smithy.kotlin.codegen.protocols.SerdeProtocolGenerator
-import software.amazon.smithy.kotlin.codegen.rendering.protocol.*
-import software.amazon.smithy.kotlin.codegen.rendering.serde.*
 import software.amazon.smithy.model.shapes.ShapeId
 
 /**

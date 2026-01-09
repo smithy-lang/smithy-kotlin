@@ -4,11 +4,18 @@
  */
 package software.amazon.smithy.kotlin.codegen.protocols
 
+import aws.smithy.kotlin.codegen.core.RuntimeTypes
+import aws.smithy.kotlin.codegen.core.withBlock
+import aws.smithy.kotlin.codegen.lang.KotlinTypes
+import aws.smithy.kotlin.codegen.rendering.protocol.HttpBindingProtocolGenerator
+import aws.smithy.kotlin.codegen.rendering.protocol.HttpBindingResolver
+import aws.smithy.kotlin.codegen.rendering.protocol.HttpProtocolClientGenerator
+import aws.smithy.kotlin.codegen.rendering.protocol.HttpTraitResolver
+import aws.smithy.kotlin.codegen.rendering.protocol.ProtocolContentTypes
+import aws.smithy.kotlin.codegen.rendering.protocol.ProtocolGenerator
+import aws.smithy.kotlin.codegen.rendering.protocol.errorHandler
+import aws.smithy.kotlin.codegen.rendering.protocol.errorHandlerName
 import software.amazon.smithy.codegen.core.Symbol
-import software.amazon.smithy.kotlin.codegen.core.RuntimeTypes
-import software.amazon.smithy.kotlin.codegen.core.withBlock
-import software.amazon.smithy.kotlin.codegen.lang.KotlinTypes
-import software.amazon.smithy.kotlin.codegen.rendering.protocol.*
 import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.shapes.OperationShape
 import software.amazon.smithy.model.shapes.ServiceShape
