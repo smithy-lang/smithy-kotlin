@@ -17,7 +17,7 @@ import kotlin.time.Duration.Companion.milliseconds
 class AsyncStressTest : AbstractEngineTest() {
 
     @Test
-    @Ignore // FIXME re-enable this test after debugging why it's so flaky, particularly on Mac OS
+    @Ignore // FIXME re-enable this test after debugging why it's so flaky, particularly on Mac OS (JVM)
     fun testConcurrentRequests() = testEngines {
         // https://github.com/awslabs/aws-sdk-kotlin/issues/170
         concurrency = 1_000
