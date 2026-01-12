@@ -946,4 +946,37 @@ class SymbolProviderTest {
                 assertFalse(memberSymbol.isNullable, "member $it with non-null default should not be nullable")
             }
     }
+
+    @Test
+    fun `it resolves nested fullNameHint types`() {
+        val model = """
+            structure Value {
+                value: String,
+            }
+
+            map Record {
+                key: String,
+                value: Value,
+            }
+
+            list RecordSet {
+                member: Record,
+            }
+
+            map RecordSets {
+                key: String,
+                value: RecordSet,
+            }
+
+            list RecordSetsHistory {
+                member: RecordSets
+            }
+        """.prependNamespaceAndService(namespace = "foo.bar").toSmithyModel()
+
+        val provider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(model, rootNamespace = "foo.bar")
+        val listSymbol = provider.toSymbol(model.expectShape<ListShape>("foo.bar#RecordSetsHistory"))
+
+        // check the fully qualified name hint is set
+        assertEquals("kotlin.collections.List<kotlin.collections.Map<kotlin.String, kotlin.collections.List<kotlin.collections.Map<kotlin.String, foo.bar.model.Value>>>>", listSymbol.fullNameHint)
+    }
 }
