@@ -1,5 +1,0 @@
-{
-    "id": "7e6a2777-d969-42d8-a3d2-069232365b0e",
-    "type": "bugfix",
-    "description": "Correctly qualify type names in union declarations"
-}
