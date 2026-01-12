@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.5.27] - 01/12/2026
+
+### Fixes
+* Correctly qualify type names in union declarations
+
 ## [1.5.26] - 01/02/2026
 
 ## [1.5.25] - 12/30/2025
