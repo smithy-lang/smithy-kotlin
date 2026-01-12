@@ -229,3 +229,9 @@ val Symbol.objectRef: Symbol?
  */
 val Symbol.fullNameHint: String?
     get() = getProperty(SymbolProperty.FULLY_QUALIFIED_NAME_HINT, String::class.java).getOrNull()
+
+/**
+ * Get the fully qualified name hint if one is set; otherwise, get the full name as a fallback
+ */
+val Symbol.fullNameHintOrDefault: String
+    get() = fullNameHint ?: fullName
