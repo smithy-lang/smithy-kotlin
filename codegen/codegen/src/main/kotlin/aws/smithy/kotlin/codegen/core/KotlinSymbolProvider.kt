@@ -21,6 +21,7 @@ import aws.smithy.kotlin.codegen.model.isOperationInput
 import aws.smithy.kotlin.codegen.model.isOperationOutput
 import aws.smithy.kotlin.codegen.model.isSparse
 import aws.smithy.kotlin.codegen.model.isStreaming
+import aws.smithy.kotlin.codegen.model.fullNameHintOrDefault
 import aws.smithy.kotlin.codegen.model.nullable
 import aws.smithy.kotlin.codegen.utils.dq
 import software.amazon.smithy.codegen.core.*
