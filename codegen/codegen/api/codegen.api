@@ -1383,6 +1383,7 @@ public final class aws/smithy/kotlin/codegen/model/SymbolExtKt {
 	public static final fun defaultValue (Lsoftware/amazon/smithy/codegen/core/Symbol$Builder;Ljava/lang/String;)Lsoftware/amazon/smithy/codegen/core/Symbol$Builder;
 	public static final fun defaultValue (Lsoftware/amazon/smithy/codegen/core/Symbol;)Ljava/lang/String;
 	public static final fun getFullNameHint (Lsoftware/amazon/smithy/codegen/core/Symbol;)Ljava/lang/String;
+	public static final fun getFullNameHintOrDefault (Lsoftware/amazon/smithy/codegen/core/Symbol;)Ljava/lang/String;
 	public static final fun getObjectRef (Lsoftware/amazon/smithy/codegen/core/Symbol;)Lsoftware/amazon/smithy/codegen/core/Symbol;
 	public static final fun getPropertyTypeMutability (Lsoftware/amazon/smithy/codegen/core/Symbol;)Laws/smithy/kotlin/codegen/model/PropertyTypeMutability;
 	public static final fun getShape (Lsoftware/amazon/smithy/codegen/core/Symbol;)Lsoftware/amazon/smithy/model/shapes/Shape;
