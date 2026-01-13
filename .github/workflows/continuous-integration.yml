@@ -419,7 +419,6 @@ jobs:
         # version that doesn't exist locally or in maven central. Otherwise the generated
         # protocol test projects will use whatever the SDK thinks the version of
         # smithy-kotlin should be
-        
         sed -i "s/smithy-kotlin-version = .*$/smithy-kotlin-version = \"$SMITHY_KOTLIN_VERSION\"/" gradle/libs.versions.toml
         ./gradlew -Paws.kotlin.native=false publishToMavenLocal
         ./gradlew -Paws.kotlin.native=false test jvmTest
