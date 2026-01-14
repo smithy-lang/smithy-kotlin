@@ -12,10 +12,10 @@ plugins {
     `maven-publish`
 }
 
-val codegenVersion: String by project
+val sdkVersion: String by project
 description = "Smithy codegen support for AWS protocols"
 group = "aws.smithy.kotlin"
-version = codegenVersion
+version = sdkVersion
 
 dependencies {
     api(project(":codegen:codegen"))

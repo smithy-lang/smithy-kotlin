@@ -16,11 +16,10 @@ description = "Generates Kotlin code from Smithy models"
 extra["displayName"] = "Smithy :: Kotlin :: Codegen"
 extra["moduleName"] = "aws.smithy.kotlin.codegen"
 
-val codegenVersion: String by project
-group = "aws.smithy.kotlin"
-version = codegenVersion
-
 val sdkVersion: String by project
+group = "aws.smithy.kotlin"
+version = sdkVersion
+
 val runtimeVersion = sdkVersion
 
 dependencies {

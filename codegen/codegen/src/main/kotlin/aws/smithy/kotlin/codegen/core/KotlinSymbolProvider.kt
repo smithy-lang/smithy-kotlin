@@ -13,6 +13,7 @@ import aws.smithy.kotlin.codegen.model.asNullable
 import aws.smithy.kotlin.codegen.model.buildSymbol
 import aws.smithy.kotlin.codegen.model.defaultValue
 import aws.smithy.kotlin.codegen.model.expectShape
+import aws.smithy.kotlin.codegen.model.fullNameHintOrDefault
 import aws.smithy.kotlin.codegen.model.getTrait
 import aws.smithy.kotlin.codegen.model.hasTrait
 import aws.smithy.kotlin.codegen.model.isEnum
