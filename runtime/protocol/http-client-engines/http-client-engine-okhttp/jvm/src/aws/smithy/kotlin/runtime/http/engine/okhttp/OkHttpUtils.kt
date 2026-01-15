@@ -64,7 +64,6 @@ public fun HttpRequest.toOkHttpRequest(
                         when (body) {
                             is HttpBody.SourceContent -> body.readFrom().toHttpBody(it.toLong())
                             is HttpBody.ChannelContent -> body.readFrom().toHttpBody(it.toLong())
-                            else -> null
                         }
                     } else {
                         null
@@ -111,8 +110,8 @@ public fun OkHttpResponse.toSdkResponse(): HttpResponse {
             override val isOneShot: Boolean = true
 
             // -1 is used by okhttp as transfer-encoding chunked
-            override val contentLength: Long? = if (body!!.contentLength() >= 0L) body!!.contentLength() else null
-            override fun readFrom(): SdkSource = body!!.source().toSdk()
+            override val contentLength: Long? = if (body.contentLength() >= 0L) body.contentLength() else null
+            override fun readFrom(): SdkSource = body.source().toSdk()
         }
     }
 

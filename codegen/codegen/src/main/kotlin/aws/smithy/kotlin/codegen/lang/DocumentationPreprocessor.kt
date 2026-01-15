@@ -207,8 +207,10 @@ private fun Node.filterDescendants(vararg matchers: (Node) -> Boolean) {
     childNodes().forEach { it.filterDescendants(*matchers) }
 }
 
-private fun Node.hasAncestor(predicate: (Node) -> Boolean): Boolean =
-    parent()?.let { predicate(it) || it.hasAncestor(predicate) } == true
+private fun Node.hasAncestor(predicate: (Node) -> Boolean): Boolean {
+    val parent = parent()
+    return parent != null && (predicate(parent) || parent.hasAncestor(predicate))
+}
 
 private fun Node.isList() =
     nodeName().let { it == "ul" || it == "ol" }

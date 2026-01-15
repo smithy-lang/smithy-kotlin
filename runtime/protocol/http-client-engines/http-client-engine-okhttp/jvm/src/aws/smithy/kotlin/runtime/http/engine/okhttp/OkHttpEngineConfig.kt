@@ -87,6 +87,14 @@ public class OkHttpEngineConfig private constructor(builder: Builder) : HttpClie
      */
     public val hostnameVerifier: HostnameVerifier? = builder.hostnameVerifier
 
+    /**
+     * Whether to retry when a connectivity problem is encountered. When enabled, this client silently recovers from the following problems:
+     * * Unreachable IP addresses. If the URL's host has multiple IP addresses, failure to reach any individual IP address doesn't fail the overall request. This can increase availability of multi-homed services.
+     * * Stale pooled connections. The connection pool reuses sockets to decrease request latency, but these connections will occasionally time out.
+     * * Unreachable proxy servers. A ProxySelector can be used to attempt multiple proxy servers in sequence, eventually falling back to a direct connection.
+     */
+    public val retryOnConnectionFailure: Boolean = builder.retryOnConnectionFailure
+
     override fun toBuilderApplicator(): HttpClientEngineConfig.Builder.() -> Unit = {
         super.toBuilderApplicator()()
 
@@ -160,5 +168,13 @@ public class OkHttpEngineConfig private constructor(builder: Builder) : HttpClie
         public var hostnameVerifier: HostnameVerifier? = null
 
         override var telemetryProvider: TelemetryProvider = TelemetryProvider.Global
+
+        /**
+         * Whether to retry when a connectivity problem is encountered. When enabled, this client silently recovers from the following problems:
+         * * Unreachable IP addresses. If the URL's host has multiple IP addresses, failure to reach any individual IP address doesn't fail the overall request. This can increase availability of multi-homed services.
+         * * Stale pooled connections. The connection pool reuses sockets to decrease request latency, but these connections will occasionally time out.
+         * * Unreachable proxy servers. A ProxySelector can be used to attempt multiple proxy servers in sequence, eventually falling back to a direct connection.
+         */
+        public val retryOnConnectionFailure: Boolean = true
     }
 }

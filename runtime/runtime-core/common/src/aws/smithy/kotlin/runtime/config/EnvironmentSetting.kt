@@ -116,3 +116,35 @@ public fun <T> CaseInsensitiveEnvironmentSetting<T>.resolve(
 
 private fun resolveStringValue(sourceValues: Map<String, String>, keyRegex: Regex): String? =
     sourceValues.entries.firstNotNullOfOrNull { (key, value) -> value.takeIf { keyRegex.matches(key) } }
+
+@InternalApi
+public data class MultipleKeyEnvironmentSetting<T>(
+    public val parse: (String) -> T,
+    public val sysProps: List<String>,
+    public val envVars: List<String>,
+    public val defaultValue: T? = null,
+)
+
+@InternalApi
+public fun <T> EnvironmentSetting<T>.withAdditionalKeys(
+    sysProps: List<String>? = null,
+    envVars: List<String>? = null,
+): MultipleKeyEnvironmentSetting<T> {
+    if (sysProps == null && envVars == null) {
+        throw IllegalArgumentException("Expected either sysProps or envVars (or both) to be non-null")
+    }
+    return MultipleKeyEnvironmentSetting(parse, listOf(sysProp) + sysProps.orEmpty(), listOf(envVar) + envVars.orEmpty(), defaultValue)
+}
+
+/**
+ * Resolves an environment setting from the environment. This method attempts to resolve the setting via the
+ * system properties first, traversing the list of keys until a value is found. If no matching system properties
+ * are found, then the list of environment variables is traversed. If none are set, it returns the setting's default value.
+ */
+@InternalApi
+public fun <T> MultipleKeyEnvironmentSetting<T>.resolve(
+    platform: PlatformEnvironProvider = PlatformProvider.System,
+): T? {
+    val stringValue = sysProps.firstNotNullOfOrNull { platform.getProperty(it) } ?: envVars.firstNotNullOfOrNull { platform.getenv(it) }
+    return stringValue?.let(parse) ?: defaultValue
+}
