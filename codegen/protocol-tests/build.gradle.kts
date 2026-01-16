@@ -75,7 +75,7 @@ smithyBuild {
 
 val codegen by configurations.getting
 dependencies {
-    codegen(project(":codegen:smithy-aws-kotlin-codegen"))
+    codegen(project(":codegen:aws-codegen"))
     codegen(libs.smithy.cli)
     codegen(libs.smithy.model)
 

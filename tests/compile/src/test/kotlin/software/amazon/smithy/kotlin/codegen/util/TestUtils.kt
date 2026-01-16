@@ -6,13 +6,13 @@
 
 package software.amazon.smithy.kotlin.codegen.util
 
+import aws.smithy.kotlin.codegen.CodegenVisitor
 import com.tschuchort.compiletesting.JvmCompilationResult
 import com.tschuchort.compiletesting.KotlinCompilation
 import com.tschuchort.compiletesting.SourceFile
 import org.jetbrains.kotlin.compiler.plugin.ExperimentalCompilerApi
 import software.amazon.smithy.build.MockManifest
 import software.amazon.smithy.build.PluginContext
-import software.amazon.smithy.kotlin.codegen.CodegenVisitor
 import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.node.Node
 import software.amazon.smithy.model.node.ObjectNode
