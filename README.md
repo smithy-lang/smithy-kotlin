@@ -12,10 +12,10 @@
 ### Module Structure
 
 * `codegen` - module(s) for generating Kotlin code from Smithy models
-    * `protocol-tests` - module for generating Smithy protocol tests 
     * `aws-codegen` - module containing AWS-specific codegen
     * `codegen` - primary codegen module
     * `codegen-testutils` - utilities for testing generated code (shared with `aws-sdk-kotlin`)
+    * `protocol-tests` - module for generating Smithy protocol tests 
 
 * `runtime` - library code used by generated clients and servers to perform SDK functions
   * `auth` - authentication and signing related modules

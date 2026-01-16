@@ -1,5 +1,6 @@
 {
     "id": "9a003420-1216-4077-a58e-e6c0959c5ae7",
     "type": "misc",
-    "description": "Remove 'smithy' and 'kotlin' from codegen module names"
+    "description": "⚠️**IMPORTANT**: Remove 'smithy' and 'kotlin' from codegen module names",
+    "requiresMinorVersionBump": true
 }
