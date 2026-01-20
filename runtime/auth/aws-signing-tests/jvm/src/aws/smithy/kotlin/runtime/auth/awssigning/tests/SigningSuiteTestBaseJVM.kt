@@ -147,22 +147,21 @@ public actual abstract class SigningSuiteTestBase : HasSigner {
         testSigv4Middleware(test)
     }
 
-    private fun getTests(signatureType: AwsSignatureType): List<Sigv4TestSuiteTest> =
-        testDirPaths.map { dir ->
-            try {
-                val req = getRequest(dir)
-                val config = getSigningConfig(dir) ?: defaultTestSigningConfig
-                val canonicalRequest = getCanonicalRequest(dir, signatureType)
-                val stringToSign = getStringToSign(dir, signatureType)
-                val signature = getSignature(dir, signatureType)
-                val signedReq = getSignedRequest(dir, signatureType)
-                config.signatureType = signatureType
-                Sigv4TestSuiteTest(dir, req, canonicalRequest, stringToSign, signature, signedReq, config.build())
-            } catch (ex: Exception) {
-                println("failed to get request from $dir: ${ex.message}")
-                throw ex
-            }
+    private fun getTests(signatureType: AwsSignatureType): List<Sigv4TestSuiteTest> = testDirPaths.map { dir ->
+        try {
+            val req = getRequest(dir)
+            val config = getSigningConfig(dir) ?: defaultTestSigningConfig
+            val canonicalRequest = getCanonicalRequest(dir, signatureType)
+            val stringToSign = getStringToSign(dir, signatureType)
+            val signature = getSignature(dir, signatureType)
+            val signedReq = getSignedRequest(dir, signatureType)
+            config.signatureType = signatureType
+            Sigv4TestSuiteTest(dir, req, canonicalRequest, stringToSign, signature, signedReq, config.build())
+        } catch (ex: Exception) {
+            println("failed to get request from $dir: ${ex.message}")
+            throw ex
         }
+    }
 
     /**
      * Run a test from the suite against the AwsSigv4Middleware implementation
@@ -273,8 +272,7 @@ public actual abstract class SigningSuiteTestBase : HasSigner {
         assertEquals(0, extraHeaders.size, "Found extra headers in request: $extraHeaders")
 
         if (expected.url.parameters != actual.url.parameters) {
-            fun dumpParams(request: HttpRequest) =
-                request.url.parameters.entryValues.joinToString("\n", "\n") { (key, value) -> "  $key = $value" }
+            fun dumpParams(request: HttpRequest) = request.url.parameters.entryValues.joinToString("\n", "\n") { (key, value) -> "  $key = $value" }
             fail("\nTest case parameters: ${dumpParams(expected)}\n\nActual parameters: ${dumpParams(actual)}\n")
         }
 
@@ -345,14 +343,11 @@ public actual abstract class SigningSuiteTestBase : HasSigner {
         return parseRequest(path)
     }
 
-    private fun getCanonicalRequest(dir: Path, type: AwsSignatureType): String =
-        dir.resolve("${type.fileNamePart}-canonical-request.txt").readText().normalizeLineEndings()
+    private fun getCanonicalRequest(dir: Path, type: AwsSignatureType): String = dir.resolve("${type.fileNamePart}-canonical-request.txt").readText().normalizeLineEndings()
 
-    private fun getSignature(dir: Path, type: AwsSignatureType): String =
-        dir.resolve("${type.fileNamePart}-signature.txt").readText().normalizeLineEndings()
+    private fun getSignature(dir: Path, type: AwsSignatureType): String = dir.resolve("${type.fileNamePart}-signature.txt").readText().normalizeLineEndings()
 
-    private fun getStringToSign(dir: Path, type: AwsSignatureType): String =
-        dir.resolve("${type.fileNamePart}-string-to-sign.txt").readText().normalizeLineEndings()
+    private fun getStringToSign(dir: Path, type: AwsSignatureType): String = dir.resolve("${type.fileNamePart}-string-to-sign.txt").readText().normalizeLineEndings()
 
     /**
      * Parse a path containing an HTTP request into an in memory representation of an SDK request

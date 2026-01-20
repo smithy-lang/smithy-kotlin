@@ -80,8 +80,7 @@ private fun resolveProxyByProperty(provider: PropertyProvider, scheme: Scheme): 
     }
 }
 
-private fun resolveProxyByEnvironment(provider: EnvironmentProvider, scheme: Scheme): ProxyConfig? =
-    // lowercase takes precedence: https://about.gitlab.com/blog/2021/01/27/we-need-to-talk-no-proxy/
+private fun resolveProxyByEnvironment(provider: EnvironmentProvider, scheme: Scheme): ProxyConfig? = // lowercase takes precedence: https://about.gitlab.com/blog/2021/01/27/we-need-to-talk-no-proxy/
     listOf("${scheme.protocolName.lowercase()}_proxy", "${scheme.protocolName.uppercase()}_PROXY")
         .firstNotNullOfOrNull { envVar ->
             provider.getenv(envVar).takeUnless { it.isNullOrBlank() }?.let { proxyUrlString ->

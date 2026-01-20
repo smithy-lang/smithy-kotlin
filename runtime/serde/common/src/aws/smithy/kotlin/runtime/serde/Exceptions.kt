@@ -41,6 +41,5 @@ public class DeserializationException : ClientException {
  * and throw it.
  */
 @InternalApi
-public inline fun <T> Result<T>.getOrDeserializeErr(errorMessage: () -> String): T =
-    mapErr { DeserializationException(errorMessage(), it) }
-        .getOrThrow()
+public inline fun <T> Result<T>.getOrDeserializeErr(errorMessage: () -> String): T = mapErr { DeserializationException(errorMessage(), it) }
+    .getOrThrow()

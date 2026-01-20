@@ -32,8 +32,7 @@ public interface CompressionClientConfig {
  */
 public class RequestCompressionConfig @InternalApi constructor(builder: Builder) {
     public companion object {
-        public inline operator fun invoke(block: Builder.() -> Unit): RequestCompressionConfig =
-            RequestCompressionConfig(Builder().apply(block))
+        public inline operator fun invoke(block: Builder.() -> Unit): RequestCompressionConfig = RequestCompressionConfig(Builder().apply(block))
     }
 
     /**

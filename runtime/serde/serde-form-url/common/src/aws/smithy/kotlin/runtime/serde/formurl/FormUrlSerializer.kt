@@ -27,14 +27,11 @@ private class FormUrlSerializer(
     val prefix: String = "",
 ) : Serializer {
 
-    override fun beginStruct(descriptor: SdkFieldDescriptor): StructSerializer =
-        FormUrlStructSerializer(this, descriptor, prefix)
+    override fun beginStruct(descriptor: SdkFieldDescriptor): StructSerializer = FormUrlStructSerializer(this, descriptor, prefix)
 
-    override fun beginList(descriptor: SdkFieldDescriptor): ListSerializer =
-        FormUrlListSerializer(this, descriptor)
+    override fun beginList(descriptor: SdkFieldDescriptor): ListSerializer = FormUrlListSerializer(this, descriptor)
 
-    override fun beginMap(descriptor: SdkFieldDescriptor): MapSerializer =
-        FormUrlMapSerializer(this, descriptor)
+    override fun beginMap(descriptor: SdkFieldDescriptor): MapSerializer = FormUrlMapSerializer(this, descriptor)
 
     override fun toByteArray(): ByteArray = buffer.readByteArray()
 
@@ -340,8 +337,7 @@ private class FormUrlMapSerializer(
         value.serialize(FormUrlSerializer(buffer, nestedPrefix))
     }
 
-    override fun entry(key: String, value: Document?) =
-        throw SerializationException("document values not supported by form-url serializer")
+    override fun entry(key: String, value: Document?) = throw SerializationException("document values not supported by form-url serializer")
 
     override fun entry(key: String, value: ByteArray?) {
         checkNotSparse(value)

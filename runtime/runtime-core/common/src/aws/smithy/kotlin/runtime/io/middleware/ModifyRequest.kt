@@ -22,6 +22,5 @@ public interface ModifyRequest<Request> {
 internal class ModifyRequestMiddleware<Request, Response>(
     private val transform: ModifyRequest<Request>,
 ) : Middleware<Request, Response> {
-    override suspend fun <H : Handler<Request, Response>> handle(request: Request, next: H): Response =
-        next.call(transform.modifyRequest(request))
+    override suspend fun <H : Handler<Request, Response>> handle(request: Request, next: H): Response = next.call(transform.modifyRequest(request))
 }

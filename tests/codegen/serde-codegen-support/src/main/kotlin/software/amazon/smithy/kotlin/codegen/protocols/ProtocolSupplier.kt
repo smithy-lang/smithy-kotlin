@@ -4,10 +4,10 @@
  */
 package software.amazon.smithy.kotlin.codegen.protocols
 
-import software.amazon.smithy.kotlin.codegen.integration.KotlinIntegration
+import aws.smithy.kotlin.codegen.integration.KotlinIntegration
+import aws.smithy.kotlin.codegen.rendering.protocol.ProtocolGenerator
 import software.amazon.smithy.kotlin.codegen.protocols.json.SerdeJsonProtocolGenerator
 import software.amazon.smithy.kotlin.codegen.protocols.xml.SerdeXmlProtocolGenerator
-import software.amazon.smithy.kotlin.codegen.rendering.protocol.ProtocolGenerator
 
 class ProtocolSupplier : KotlinIntegration {
     override val protocolGenerators: List<ProtocolGenerator>

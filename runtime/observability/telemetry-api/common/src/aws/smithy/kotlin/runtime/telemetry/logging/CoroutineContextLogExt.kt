@@ -119,8 +119,7 @@ public inline fun <reified T> CoroutineContext.log(
  * from the exception (if any), which may be concatenated later based on probe behavior.
  */
 @InternalApi
-public fun CoroutineContext.error(sourceComponent: String, ex: Throwable? = null, content: () -> String): Unit =
-    log(LogLevel.Error, sourceComponent, ex, content)
+public fun CoroutineContext.error(sourceComponent: String, ex: Throwable? = null, content: () -> String): Unit = log(LogLevel.Error, sourceComponent, ex, content)
 
 /**
  * Logs an error message using the current [LoggerProvider] configured in this [CoroutineContext].
@@ -130,8 +129,7 @@ public fun CoroutineContext.error(sourceComponent: String, ex: Throwable? = null
  * from the exception (if any), which may be concatenated later based on probe behavior.
  */
 @InternalApi
-public inline fun <reified T> CoroutineContext.error(ex: Throwable? = null, noinline content: () -> String): Unit =
-    log<T>(LogLevel.Error, ex, content)
+public inline fun <reified T> CoroutineContext.error(ex: Throwable? = null, noinline content: () -> String): Unit = log<T>(LogLevel.Error, ex, content)
 
 /**
  * Logs a warning message using the current [LoggerProvider] configured in this [CoroutineContext].
@@ -141,8 +139,7 @@ public inline fun <reified T> CoroutineContext.error(ex: Throwable? = null, noin
  * from the exception (if any), which may be concatenated later based on probe behavior.
  */
 @InternalApi
-public fun CoroutineContext.warn(sourceComponent: String, ex: Throwable? = null, content: () -> String): Unit =
-    log(LogLevel.Warning, sourceComponent, ex, content)
+public fun CoroutineContext.warn(sourceComponent: String, ex: Throwable? = null, content: () -> String): Unit = log(LogLevel.Warning, sourceComponent, ex, content)
 
 /**
  * Logs a warning message using the current [LoggerProvider] configured in this [CoroutineContext].
@@ -152,8 +149,7 @@ public fun CoroutineContext.warn(sourceComponent: String, ex: Throwable? = null,
  * from the exception (if any), which may be concatenated later based on probe behavior.
  */
 @InternalApi
-public inline fun <reified T> CoroutineContext.warn(ex: Throwable? = null, noinline content: () -> String): Unit =
-    log<T>(LogLevel.Warning, ex, content)
+public inline fun <reified T> CoroutineContext.warn(ex: Throwable? = null, noinline content: () -> String): Unit = log<T>(LogLevel.Warning, ex, content)
 
 /**
  * Logs an info message using the current [LoggerProvider] configured in this [CoroutineContext].
@@ -163,8 +159,7 @@ public inline fun <reified T> CoroutineContext.warn(ex: Throwable? = null, noinl
  * from the exception (if any), which may be concatenated later based on probe behavior.
  */
 @InternalApi
-public fun CoroutineContext.info(sourceComponent: String, ex: Throwable? = null, content: () -> String): Unit =
-    log(LogLevel.Info, sourceComponent, ex, content)
+public fun CoroutineContext.info(sourceComponent: String, ex: Throwable? = null, content: () -> String): Unit = log(LogLevel.Info, sourceComponent, ex, content)
 
 /**
  * Logs an info message using the current [LoggerProvider] configured in this [CoroutineContext].
@@ -174,8 +169,7 @@ public fun CoroutineContext.info(sourceComponent: String, ex: Throwable? = null,
  * from the exception (if any), which may be concatenated later based on probe behavior.
  */
 @InternalApi
-public inline fun <reified T> CoroutineContext.info(ex: Throwable? = null, noinline content: () -> String): Unit =
-    log<T>(LogLevel.Info, ex, content)
+public inline fun <reified T> CoroutineContext.info(ex: Throwable? = null, noinline content: () -> String): Unit = log<T>(LogLevel.Info, ex, content)
 
 /**
  * Logs a debug message using the current [LoggerProvider] configured in this [CoroutineContext].
@@ -185,8 +179,7 @@ public inline fun <reified T> CoroutineContext.info(ex: Throwable? = null, noinl
  * from the exception (if any), which may be concatenated later based on probe behavior.
  */
 @InternalApi
-public fun CoroutineContext.debug(sourceComponent: String, ex: Throwable? = null, content: () -> String): Unit =
-    log(LogLevel.Debug, sourceComponent, ex, content)
+public fun CoroutineContext.debug(sourceComponent: String, ex: Throwable? = null, content: () -> String): Unit = log(LogLevel.Debug, sourceComponent, ex, content)
 
 /**
  * Logs a debug message using the current [LoggerProvider] configured in this [CoroutineContext].
@@ -196,8 +189,7 @@ public fun CoroutineContext.debug(sourceComponent: String, ex: Throwable? = null
  * from the exception (if any), which may be concatenated later based on probe behavior.
  */
 @InternalApi
-public inline fun <reified T> CoroutineContext.debug(ex: Throwable? = null, noinline content: () -> String): Unit =
-    log<T>(LogLevel.Debug, ex, content)
+public inline fun <reified T> CoroutineContext.debug(ex: Throwable? = null, noinline content: () -> String): Unit = log<T>(LogLevel.Debug, ex, content)
 
 /**
  * Logs a trace message using the current [LoggerProvider] configured in this [CoroutineContext].
@@ -207,8 +199,7 @@ public inline fun <reified T> CoroutineContext.debug(ex: Throwable? = null, noin
  * from the exception (if any), which may be concatenated later based on probe behavior.
  */
 @InternalApi
-public fun CoroutineContext.trace(sourceComponent: String, ex: Throwable? = null, content: () -> String): Unit =
-    log(LogLevel.Trace, sourceComponent, ex, content)
+public fun CoroutineContext.trace(sourceComponent: String, ex: Throwable? = null, content: () -> String): Unit = log(LogLevel.Trace, sourceComponent, ex, content)
 
 /**
  * Logs a trace message using the current [LoggerProvider] configured in this [CoroutineContext].
@@ -218,8 +209,7 @@ public fun CoroutineContext.trace(sourceComponent: String, ex: Throwable? = null
  * from the exception (if any), which may be concatenated later based on probe behavior.
  */
 @InternalApi
-public inline fun <reified T> CoroutineContext.trace(ex: Throwable? = null, noinline content: () -> String): Unit =
-    log<T>(LogLevel.Trace, ex, content)
+public inline fun <reified T> CoroutineContext.trace(ex: Throwable? = null, noinline content: () -> String): Unit = log<T>(LogLevel.Trace, ex, content)
 
 /**
  * Get a [Logger] instance using the current [LoggerProvider] configured in this [CoroutineContext]

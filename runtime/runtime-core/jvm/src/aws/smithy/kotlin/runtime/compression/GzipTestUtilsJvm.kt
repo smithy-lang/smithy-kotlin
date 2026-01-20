@@ -12,5 +12,4 @@ import java.util.zip.GZIPInputStream
  * Decompresses a [ByteArray] compressed using the gzip format
  */
 @InternalApi
-public actual fun decompressGzipBytes(bytes: ByteArray): ByteArray =
-    GZIPInputStream(bytes.inputStream()).use { it.readBytes() }
+public actual fun decompressGzipBytes(bytes: ByteArray): ByteArray = GZIPInputStream(bytes.inputStream()).use { it.readBytes() }

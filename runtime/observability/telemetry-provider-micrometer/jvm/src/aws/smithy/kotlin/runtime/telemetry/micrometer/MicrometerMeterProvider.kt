@@ -35,43 +35,38 @@ private class MicrometerMeter(
     private val meterRegistry: MeterRegistry,
     private val extraTags: Tags,
 ) : Meter {
-    override fun createUpDownCounter(name: String, units: String?, description: String?): UpDownCounter =
-        MicrometerUpDownCounter(
-            meterMetadata = MeterMetadata(name, units, description, extraTags),
-            meterRegistry = meterRegistry,
-        )
+    override fun createUpDownCounter(name: String, units: String?, description: String?): UpDownCounter = MicrometerUpDownCounter(
+        meterMetadata = MeterMetadata(name, units, description, extraTags),
+        meterRegistry = meterRegistry,
+    )
 
     override fun createAsyncUpDownCounter(
         name: String,
         callback: LongUpDownCounterCallback,
         units: String?,
         description: String?,
-    ): AsyncMeasurementHandle =
-        MicrometerLongGauge(
-            callback = callback,
-            meterMetadata = MeterMetadata(name, units, description, extraTags),
-            meterRegistry = meterRegistry,
-        )
+    ): AsyncMeasurementHandle = MicrometerLongGauge(
+        callback = callback,
+        meterMetadata = MeterMetadata(name, units, description, extraTags),
+        meterRegistry = meterRegistry,
+    )
 
-    override fun createMonotonicCounter(name: String, units: String?, description: String?): MonotonicCounter =
-        MicrometerMonotonicCounter(
-            meterMetadata = MeterMetadata(name, units, description, extraTags),
-            meterRegistry = meterRegistry,
-        )
+    override fun createMonotonicCounter(name: String, units: String?, description: String?): MonotonicCounter = MicrometerMonotonicCounter(
+        meterMetadata = MeterMetadata(name, units, description, extraTags),
+        meterRegistry = meterRegistry,
+    )
 
-    override fun createLongHistogram(name: String, units: String?, description: String?): LongHistogram =
-        MicrometerLongHistogram(
-            MicrometerDoubleHistogram(
-                meterMetadata = MeterMetadata(name, units, description, extraTags),
-                meterRegistry = meterRegistry,
-            ),
-        )
-
-    override fun createDoubleHistogram(name: String, units: String?, description: String?): DoubleHistogram =
+    override fun createLongHistogram(name: String, units: String?, description: String?): LongHistogram = MicrometerLongHistogram(
         MicrometerDoubleHistogram(
             meterMetadata = MeterMetadata(name, units, description, extraTags),
             meterRegistry = meterRegistry,
-        )
+        ),
+    )
+
+    override fun createDoubleHistogram(name: String, units: String?, description: String?): DoubleHistogram = MicrometerDoubleHistogram(
+        meterMetadata = MeterMetadata(name, units, description, extraTags),
+        meterRegistry = meterRegistry,
+    )
 
     override fun createLongGauge(
         name: String,

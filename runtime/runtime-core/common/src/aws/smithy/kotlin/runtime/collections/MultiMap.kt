@@ -26,8 +26,7 @@ public interface MultiMap<K, V> : Map<K, List<V>> {
     /**
      * Returns a mutable copy of this multimap. Changes to the returned mutable multimap do not affect this instance.
      */
-    public fun toMutableMultiMap(): MutableMultiMap<K, V> =
-        SimpleMutableMultiMap(mapValuesTo(mutableMapOf()) { (_, v) -> v.toMutableList() })
+    public fun toMutableMultiMap(): MutableMultiMap<K, V> = SimpleMutableMultiMap(mapValuesTo(mutableMapOf()) { (_, v) -> v.toMutableList() })
 }
 
 /**
@@ -36,8 +35,7 @@ public interface MultiMap<K, V> : Map<K, List<V>> {
  * @param V The type of elements used as values
  * @param pairs The elements to be contained by the new multimap
  */
-public fun <K, V> multiMapOf(vararg pairs: Pair<K, V>): MultiMap<K, V> =
-    SimpleMultiMap(pairs.groupBy(Pair<K, V>::first, Pair<K, V>::second))
+public fun <K, V> multiMapOf(vararg pairs: Pair<K, V>): MultiMap<K, V> = SimpleMultiMap(pairs.groupBy(Pair<K, V>::first, Pair<K, V>::second))
 
 internal class SimpleMultiMap<K, V>(
     private val delegate: Map<K, List<V>>,

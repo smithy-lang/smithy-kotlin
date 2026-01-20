@@ -92,16 +92,15 @@ public class FlexibleChecksumsRequestInterceptor(
         requestChecksumCalculation: RequestHttpChecksumConfig?,
         requestChecksumAlgorithm: String?,
         context: ProtocolRequestInterceptorContext<Any, HttpRequest>,
-    ): HashFunction? =
-        requestChecksumAlgorithm
+    ): HashFunction? = requestChecksumAlgorithm
+        ?.toHashFunctionOrThrow()
+        ?.takeIf { it.isSupportedForFlexibleChecksums }
+        ?: context.defaultChecksumAlgorithmName
             ?.toHashFunctionOrThrow()
-            ?.takeIf { it.isSupportedForFlexibleChecksums }
-            ?: context.defaultChecksumAlgorithmName
-                ?.toHashFunctionOrThrow()
-                ?.takeIf {
-                    (requestChecksumRequired || requestChecksumCalculation == RequestHttpChecksumConfig.WHEN_SUPPORTED) &&
-                        it.isSupportedForFlexibleChecksums
-                }
+            ?.takeIf {
+                (requestChecksumRequired || requestChecksumCalculation == RequestHttpChecksumConfig.WHEN_SUPPORTED) &&
+                    it.isSupportedForFlexibleChecksums
+            }
 
     /**
      * Calculates a checksum based on the requirements and limitations of [FlexibleChecksumsRequestInterceptor]
@@ -130,8 +129,7 @@ public class FlexibleChecksumsRequestInterceptor(
         }
     }
 
-    override suspend fun calculateChecksum(context: ProtocolRequestInterceptorContext<Any, HttpRequest>): String? =
-        calculateFlexibleChecksumsChecksum(context)
+    override suspend fun calculateChecksum(context: ProtocolRequestInterceptorContext<Any, HttpRequest>): String? = calculateFlexibleChecksumsChecksum(context)
 
     /**
      * Applies a checksum based on the requirements and limitations of [FlexibleChecksumsRequestInterceptor]
@@ -181,8 +179,7 @@ public class FlexibleChecksumsRequestInterceptor(
      * Removes all checksum headers except [headerName]
      * @param headerName the checksum header name to keep
      */
-    private fun HeadersBuilder.removeAllChecksumHeadersExcept(headerName: String) =
-        names()
-            .filter { it.startsWith("x-amz-checksum-", ignoreCase = true) && !it.equals(headerName, ignoreCase = true) }
-            .forEach { remove(it) }
+    private fun HeadersBuilder.removeAllChecksumHeadersExcept(headerName: String) = names()
+        .filter { it.startsWith("x-amz-checksum-", ignoreCase = true) && !it.equals(headerName, ignoreCase = true) }
+        .forEach { remove(it) }
 }

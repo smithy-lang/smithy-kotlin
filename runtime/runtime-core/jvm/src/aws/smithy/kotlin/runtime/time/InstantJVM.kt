@@ -25,7 +25,7 @@ import kotlin.time.Duration
 import kotlin.time.toKotlinDuration
 import java.time.Duration as jtDuration
 import java.time.Instant as jtInstant
-import kotlinx.datetime.Instant as KtInstant
+import kotlin.time.Instant as KtInstant
 
 // FIXME Consider making this multiplatform (`common`) using kotlinx.datetime
 public actual class Instant(internal val value: jtInstant) : Comparable<Instant> {
@@ -38,8 +38,7 @@ public actual class Instant(internal val value: jtInstant) : Comparable<Instant>
 
     override fun hashCode(): Int = value.hashCode()
 
-    override fun equals(other: Any?): Boolean =
-        (this === other) || (other is Instant && this.value == other.value)
+    override fun equals(other: Any?): Boolean = (this === other) || (other is Instant && this.value == other.value)
 
     override fun toString(): String = format(TimestampFormat.ISO_8601)
 
@@ -61,8 +60,7 @@ public actual class Instant(internal val value: jtInstant) : Comparable<Instant>
      */
     public actual operator fun minus(duration: Duration): Instant = plus(-duration)
 
-    public actual operator fun minus(other: Instant): Duration =
-        jtDuration.between(other.value, value).toKotlinDuration()
+    public actual operator fun minus(other: Instant): Duration = jtDuration.between(other.value, value).toKotlinDuration()
 
     /**
      * Encode the [Instant] as a string into the format specified by [TimestampFormat]
@@ -121,8 +119,7 @@ public actual class Instant(internal val value: jtInstant) : Comparable<Instant>
         /**
          * Create an [Instant] from it's parts
          */
-        public actual fun fromEpochSeconds(seconds: Long, ns: Int): Instant =
-            Instant(jtInstant.ofEpochSecond(seconds, ns.toLong()))
+        public actual fun fromEpochSeconds(seconds: Long, ns: Int): Instant = Instant(jtInstant.ofEpochSecond(seconds, ns.toLong()))
 
         /**
          * Parse a string formatted as epoch-seconds into an [Instant]

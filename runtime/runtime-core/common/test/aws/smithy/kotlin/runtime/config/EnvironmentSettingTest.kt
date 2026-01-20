@@ -114,13 +114,12 @@ class EnvironmentSettingTest {
     }
 }
 
-private fun mockPlatform(sysProps: Map<String, String> = mapOf(), envVars: Map<String, String> = mapOf()) =
-    object : PlatformEnvironProvider {
-        override fun getAllEnvVars(): Map<String, String> = envVars
-        override fun getenv(key: String): String? = envVars[key]
-        override fun getAllProperties(): Map<String, String> = sysProps
-        override fun getProperty(key: String): String? = sysProps[key]
-    }
+private fun mockPlatform(sysProps: Map<String, String> = mapOf(), envVars: Map<String, String> = mapOf()) = object : PlatformEnvironProvider {
+    override fun getAllEnvVars(): Map<String, String> = envVars
+    override fun getenv(key: String): String? = envVars[key]
+    override fun getAllProperties(): Map<String, String> = sysProps
+    override fun getProperty(key: String): String? = sysProps[key]
+}
 
 enum class Suit {
     Hearts,

@@ -20,6 +20,5 @@ internal open class ListView<Src, Dest>(
 
     override fun listIterator(index: Int): ListIterator<Dest> = src.listIterator(index).asView(src2Dest)
 
-    override fun subList(fromIndex: Int, toIndex: Int): List<Dest> =
-        src.subList(fromIndex, toIndex).asView(src2Dest, dest2Src)
+    override fun subList(fromIndex: Int, toIndex: Int): List<Dest> = src.subList(fromIndex, toIndex).asView(src2Dest, dest2Src)
 }

@@ -20,7 +20,6 @@ public object DefaultHttpEngine : EngineFactory<HttpClientEngineConfig.Builder, 
  * Factory function to create a new HTTP client engine using the default for the current KMP target
  */
 @Suppress("ktlint:standard:function-naming")
-public fun DefaultHttpEngine(block: (HttpClientEngineConfig.Builder.() -> Unit)? = null): CloseableHttpClientEngine =
-    newDefaultHttpEngine(block)
+public fun DefaultHttpEngine(block: (HttpClientEngineConfig.Builder.() -> Unit)? = null): CloseableHttpClientEngine = newDefaultHttpEngine(block)
 
 internal expect fun newDefaultHttpEngine(block: (HttpClientEngineConfig.Builder.() -> Unit)?): CloseableHttpClientEngine

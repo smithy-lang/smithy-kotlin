@@ -152,8 +152,7 @@ class HttpEngineConfigImplTest {
     }
 }
 
-private fun config(block: HttpEngineConfig.Builder.() -> Unit): HttpEngineConfig =
-    HttpEngineConfigImpl.BuilderImpl().apply(block).buildHttpEngineConfig()
+private fun config(block: HttpEngineConfig.Builder.() -> Unit): HttpEngineConfig = HttpEngineConfigImpl.BuilderImpl().apply(block).buildHttpEngineConfig()
 
 private fun HttpEngineConfig.use(block: (HttpEngineConfig) -> Unit) {
     try {

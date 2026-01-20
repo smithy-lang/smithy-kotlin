@@ -52,7 +52,6 @@ class ExponentialBackoffWithJitterTest {
     }
 }
 
-private suspend fun TestScope.backoffSeries(times: Int, delayer: ExponentialBackoffWithJitter): List<Int> =
-    (1..times)
-        .map { idx -> measure { delayer.backoff(idx) } }
-        .map { it.first } // Just need the timing, not the results
+private suspend fun TestScope.backoffSeries(times: Int, delayer: ExponentialBackoffWithJitter): List<Int> = (1..times)
+    .map { idx -> measure { delayer.backoff(idx) } }
+    .map { it.first } // Just need the timing, not the results

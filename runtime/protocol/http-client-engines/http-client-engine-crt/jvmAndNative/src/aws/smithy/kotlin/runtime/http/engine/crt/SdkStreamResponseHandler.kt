@@ -192,8 +192,7 @@ internal class SdkStreamResponseHandler(
         }
     }
 
-    internal suspend fun waitForResponse(): HttpResponse =
-        responseReady.receive()
+    internal suspend fun waitForResponse(): HttpResponse = responseReady.receive()
 
     /**
      * Invoked only after the consumer is finished with the response and it is safe to cleanup resources

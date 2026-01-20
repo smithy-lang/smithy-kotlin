@@ -44,8 +44,7 @@ public open class StandardRetryPolicy : RetryPolicy<Any?> {
         else -> evaluate(result.exceptionOrNull()!!)
     }
 
-    private fun evaluate(ex: Throwable): RetryDirective =
-        evaluationStrategies.firstNotNullOfOrNull { it.evaluate(ex) } ?: RetryDirective.TerminateAndFail
+    private fun evaluate(ex: Throwable): RetryDirective = evaluationStrategies.firstNotNullOfOrNull { it.evaluate(ex) } ?: RetryDirective.TerminateAndFail
 
     private fun evaluateBaseException(ex: SdkBaseException): RetryDirective? = with(ex.sdkErrorMetadata) {
         when {
@@ -74,8 +73,7 @@ public open class StandardRetryPolicy : RetryPolicy<Any?> {
 
 private class EvaluationStrategy<T : Throwable>(val clazz: KClass<T>, private val evaluator: (T) -> RetryDirective?) {
     companion object {
-        inline operator fun <reified T : Throwable> invoke(noinline evaluator: (T) -> RetryDirective?) =
-            EvaluationStrategy(T::class, evaluator)
+        inline operator fun <reified T : Throwable> invoke(noinline evaluator: (T) -> RetryDirective?) = EvaluationStrategy(T::class, evaluator)
     }
 
     fun evaluate(ex: Throwable) = clazz.safeCast(ex)?.run(evaluator)

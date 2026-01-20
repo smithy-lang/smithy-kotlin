@@ -71,6 +71,7 @@ private data class HttpFinalInterceptorContext<I, O>(
 ) : ResponseInterceptorContext<I, O, HttpRequest?, HttpResponse?>
 
 // TODO - investigate propagating Any as upper bounds for SdkHttpOperation <I,O> generics
+
 /**
  * Fan-out facade over raw interceptors that adapts the internal view of an operation execution to the public facing
  * view interceptor hooks see.
@@ -100,8 +101,7 @@ internal class InterceptorExecutor<I, O>(
         @Suppress("UNCHECKED_CAST")
         return actual as T
     }
-    private fun <T> checkResultType(phase: String, result: Result<Any>, expected: KClass<*>): Result<T> =
-        result.map { checkType(phase, expected, it) }
+    private fun <T> checkResultType(phase: String, result: Result<Any>, expected: KClass<*>): Result<T> = result.map { checkType(phase, expected, it) }
 
     /**
      * Execute all interceptors and return a [Result]. If the result is success then
@@ -109,17 +109,16 @@ internal class InterceptorExecutor<I, O>(
      * the result will contain the most recent failure (with all previous failures added
      * as suppressed exceptions).
      */
-    private inline fun executeAll(block: (HttpInterceptor) -> Unit): Result<Unit> =
-        interceptors.fold(Result.success(Unit)) { prev, interceptor ->
-            val curr = runCatching {
-                block(interceptor)
-            }
-
-            curr.fold({ prev }, { currEx ->
-                prev.exceptionOrNull()?.let { currEx.addSuppressed(it) }
-                Result.failure(currEx)
-            })
+    private inline fun executeAll(block: (HttpInterceptor) -> Unit): Result<Unit> = interceptors.fold(Result.success(Unit)) { prev, interceptor ->
+        val curr = runCatching {
+            block(interceptor)
         }
+
+        curr.fold({ prev }, { currEx ->
+            prev.exceptionOrNull()?.let { currEx.addSuppressed(it) }
+            Result.failure(currEx)
+        })
+    }
 
     fun readBeforeExecution(input: I): Result<Unit> {
         _lastInput = input
@@ -187,12 +186,11 @@ internal class InterceptorExecutor<I, O>(
         interceptor.readAfterSerialization(context)
     }
 
-    suspend fun modifyBeforeRetryLoop(request: HttpRequest): HttpRequest =
-        modifyHttpRequestHook(request) { interceptor, context ->
-            interceptor.modifyBeforeRetryLoop(context).also { modifiedRequest ->
-                updateBusinessMetrics(request, modifiedRequest, context)
-            }
+    suspend fun modifyBeforeRetryLoop(request: HttpRequest): HttpRequest = modifyHttpRequestHook(request) { interceptor, context ->
+        interceptor.modifyBeforeRetryLoop(context).also { modifiedRequest ->
+            updateBusinessMetrics(request, modifiedRequest, context)
         }
+    }
 
     fun readBeforeAttempt(request: HttpRequest): Result<Unit> {
         // reset http response on attempt to prevent an invalid final context
@@ -204,12 +202,11 @@ internal class InterceptorExecutor<I, O>(
         }
     }
 
-    suspend fun modifyBeforeSigning(request: HttpRequest): HttpRequest =
-        modifyHttpRequestHook(request) { interceptor, context ->
-            interceptor.modifyBeforeSigning(context).also { modifiedRequest ->
-                updateBusinessMetrics(request, modifiedRequest, context)
-            }
+    suspend fun modifyBeforeSigning(request: HttpRequest): HttpRequest = modifyHttpRequestHook(request) { interceptor, context ->
+        interceptor.modifyBeforeSigning(context).also { modifiedRequest ->
+            updateBusinessMetrics(request, modifiedRequest, context)
         }
+    }
 
     fun readBeforeSigning(request: HttpRequest) = readHttpHook(request) { interceptor, context ->
         interceptor.readBeforeSigning(context)
@@ -219,21 +216,19 @@ internal class InterceptorExecutor<I, O>(
         interceptor.readAfterSigning(context)
     }
 
-    suspend fun modifyBeforeTransmit(request: HttpRequest): HttpRequest =
-        modifyHttpRequestHook(request) { interceptor, context ->
-            interceptor.modifyBeforeTransmit(context).also { modifiedRequest ->
-                updateBusinessMetrics(request, modifiedRequest, context)
-            }
+    suspend fun modifyBeforeTransmit(request: HttpRequest): HttpRequest = modifyHttpRequestHook(request) { interceptor, context ->
+        interceptor.modifyBeforeTransmit(context).also { modifiedRequest ->
+            updateBusinessMetrics(request, modifiedRequest, context)
         }
+    }
 
     fun readBeforeTransmit(request: HttpRequest) = readHttpHook(request) { interceptor, context ->
         interceptor.readBeforeTransmit(context)
     }
 
-    fun readAfterTransmit(call: HttpCall) =
-        readHttpHook(call.request, call.response) { interceptor, context ->
-            interceptor.readAfterTransmit(context)
-        }
+    fun readAfterTransmit(call: HttpCall) = readHttpHook(call.request, call.response) { interceptor, context ->
+        interceptor.readAfterTransmit(context)
+    }
 
     suspend fun modifyBeforeDeserialization(call: HttpCall): HttpResponse {
         val input = checkNotNull(_lastInput)
@@ -247,10 +242,9 @@ internal class InterceptorExecutor<I, O>(
         return modified.getOrThrow().protocolResponse
     }
 
-    fun readBeforeDeserialization(call: HttpCall) =
-        readHttpHook(call.request, call.response) { interceptor, context ->
-            interceptor.readBeforeDeserialization(context)
-        }
+    fun readBeforeDeserialization(call: HttpCall) = readHttpHook(call.request, call.response) { interceptor, context ->
+        interceptor.readBeforeDeserialization(context)
+    }
 
     fun readAfterDeserialization(output: O, call: HttpCall) {
         val input = checkNotNull(_lastInput)

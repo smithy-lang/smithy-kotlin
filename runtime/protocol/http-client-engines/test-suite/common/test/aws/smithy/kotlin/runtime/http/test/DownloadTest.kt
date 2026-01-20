@@ -27,40 +27,37 @@ class DownloadTest : AbstractEngineTest() {
     // see https://github.com/awslabs/aws-sdk-kotlin/issues/526
 
     @Test
-    fun testReadFullyIntegrity() =
-        runReadSuspendIntegrityTest { channel, totalSize ->
-            val dest = SdkBuffer()
-            channel.readFully(dest, totalSize.toLong())
-            dest.readByteArray().sha256().encodeToHex()
-        }
+    fun testReadFullyIntegrity() = runReadSuspendIntegrityTest { channel, totalSize ->
+        val dest = SdkBuffer()
+        channel.readFully(dest, totalSize.toLong())
+        dest.readByteArray().sha256().encodeToHex()
+    }
 
     @Test
-    fun testReadAvailableIntegrity() =
-        runReadSuspendIntegrityTest { channel, totalSize ->
-            val checksum = Sha256()
-            var totalRead = 0
-            while (!channel.isClosedForRead) {
-                val sink = SdkBuffer()
-                val rc = channel.read(sink, 8192).toInt()
-                if (rc < 0) break
+    fun testReadAvailableIntegrity() = runReadSuspendIntegrityTest { channel, totalSize ->
+        val checksum = Sha256()
+        var totalRead = 0
+        while (!channel.isClosedForRead) {
+            val sink = SdkBuffer()
+            val rc = channel.read(sink, 8192).toInt()
+            if (rc < 0) break
 
-                totalRead += rc
-                val chunk = sink.readByteArray()
-                checksum.update(chunk)
-            }
-
-            assertEquals(totalSize, totalRead)
-            checksum.digest().encodeToHex()
+            totalRead += rc
+            val chunk = sink.readByteArray()
+            checksum.update(chunk)
         }
+
+        assertEquals(totalSize, totalRead)
+        checksum.digest().encodeToHex()
+    }
 
     @Test
-    fun testReadRemainingIntegrity() =
-        runReadSuspendIntegrityTest { channel, totalSize ->
-            val data = SdkBuffer()
-            channel.readRemaining(data)
-            assertEquals(totalSize.toLong(), data.size)
-            data.readByteArray().sha256().encodeToHex()
-        }
+    fun testReadRemainingIntegrity() = runReadSuspendIntegrityTest { channel, totalSize ->
+        val data = SdkBuffer()
+        channel.readRemaining(data)
+        assertEquals(totalSize.toLong(), data.size)
+        data.readByteArray().sha256().encodeToHex()
+    }
 
     private fun runReadSuspendIntegrityTest(reader: suspend (SdkByteReadChannel, Int) -> String) = testEngines {
         test { _, client ->

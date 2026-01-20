@@ -12,5 +12,4 @@ internal class CaseInsensitiveString(val original: String) {
     override fun toString() = original
 }
 
-internal fun String.toInsensitive(): CaseInsensitiveString =
-    CaseInsensitiveString(this)
+internal fun String.toInsensitive(): CaseInsensitiveString = CaseInsensitiveString(this)

@@ -14,8 +14,7 @@ import kotlin.test.assertEquals
 
 class BearerTokenProviderChainTest {
     private class TestTokenProvider(val token: String? = null) : BearerTokenProvider {
-        override suspend fun resolve(attributes: Attributes): BearerToken =
-            if (token != null) Token(token) else error("no credentials available")
+        override suspend fun resolve(attributes: Attributes): BearerToken = if (token != null) Token(token) else error("no credentials available")
     }
 
     @Test

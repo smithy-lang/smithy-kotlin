@@ -25,27 +25,26 @@ data class ResponseLengthValidationTestOutput(val body: HttpBody)
 private const val CONTENT_LENGTH_HEADER_NAME = "Content-Length"
 private val RESPONSE = "a".repeat(500).encodeToByteArray()
 
-fun op() =
-    SdkHttpOperation.build<ResponseLengthValidationTestInput, ResponseLengthValidationTestOutput> {
-        serializeWith = object : HttpSerializer.NonStreaming<ResponseLengthValidationTestInput> {
-            override fun serialize(
-                context: ExecutionContext,
-                input: ResponseLengthValidationTestInput,
-            ): HttpRequestBuilder = HttpRequestBuilder()
-        }
-
-        deserializeWith = object : HttpDeserializer.Streaming<ResponseLengthValidationTestOutput> {
-            override suspend fun deserialize(
-                context: ExecutionContext,
-                call: HttpCall,
-            ): ResponseLengthValidationTestOutput = ResponseLengthValidationTestOutput(call.response.body)
-        }
-
-        operationName = "TestOperation"
-        serviceName = "TestService"
-    }.also {
-        it.interceptors.add(ResponseLengthValidationInterceptor())
+fun op() = SdkHttpOperation.build<ResponseLengthValidationTestInput, ResponseLengthValidationTestOutput> {
+    serializeWith = object : HttpSerializer.NonStreaming<ResponseLengthValidationTestInput> {
+        override fun serialize(
+            context: ExecutionContext,
+            input: ResponseLengthValidationTestInput,
+        ): HttpRequestBuilder = HttpRequestBuilder()
     }
+
+    deserializeWith = object : HttpDeserializer.Streaming<ResponseLengthValidationTestOutput> {
+        override suspend fun deserialize(
+            context: ExecutionContext,
+            call: HttpCall,
+        ): ResponseLengthValidationTestOutput = ResponseLengthValidationTestOutput(call.response.body)
+    }
+
+    operationName = "TestOperation"
+    serviceName = "TestService"
+}.also {
+    it.interceptors.add(ResponseLengthValidationInterceptor())
+}
 
 private fun client(body: HttpBody, expectedContentSize: Int?): SdkHttpClient {
     val headers = Headers {

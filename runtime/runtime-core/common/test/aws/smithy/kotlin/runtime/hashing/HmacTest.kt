@@ -105,14 +105,10 @@ class HmacTest {
     }
 }
 
-private fun bytes(length: Int, values: (Int) -> Int): ByteArray =
-    ByteArray(length) { values(it).toByte() }
+private fun bytes(length: Int, values: (Int) -> Int): ByteArray = ByteArray(length) { values(it).toByte() }
 
-private fun hmacTest(key: String, message: String, hmacSupplier: HashSupplier): String =
-    hmacTest(key.encodeToByteArray(), message, hmacSupplier)
+private fun hmacTest(key: String, message: String, hmacSupplier: HashSupplier): String = hmacTest(key.encodeToByteArray(), message, hmacSupplier)
 
-private fun hmacTest(key: ByteArray, message: String, hmacSupplier: HashSupplier): String =
-    hmacTest(key, message.encodeToByteArray(), hmacSupplier)
+private fun hmacTest(key: ByteArray, message: String, hmacSupplier: HashSupplier): String = hmacTest(key, message.encodeToByteArray(), hmacSupplier)
 
-private fun hmacTest(key: ByteArray, message: ByteArray, hmacSupplier: HashSupplier): String =
-    hmac(key, message, hmacSupplier).encodeToHex()
+private fun hmacTest(key: ByteArray, message: ByteArray, hmacSupplier: HashSupplier): String = hmac(key, message, hmacSupplier).encodeToHex()

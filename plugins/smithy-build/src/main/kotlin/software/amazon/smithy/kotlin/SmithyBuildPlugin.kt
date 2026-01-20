@@ -42,7 +42,7 @@ const val SMITHY_BUILD_EXTENSION_NAME = "smithyBuild"
  * // Get the codegen config and add the dependencies required for generating the projection(s)
  * val codegen by configurations.getting
  * dependencies {
- *     codegen(project(":codegen:smithy-kotlin-codegen"))
+ *     codegen(project(":codegen:codegen"))
  *     codegen("software.amazon.smithy:smithy-cli:<VERSION>)
  *     codegen("software.amazon.smithy:smithy-model:<VERSION>")
  * }

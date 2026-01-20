@@ -38,22 +38,19 @@ public class QueryParameters private constructor(
          */
         public inline operator fun invoke(block: Builder.() -> Unit): QueryParameters = Builder().apply(block).build()
 
-        private fun asDecoded(values: Sequence<Map.Entry<Encodable, Encodable>>, forceQuerySeparator: Boolean) =
-            asString(values, forceQuerySeparator, Encodable::decoded)
+        private fun asDecoded(values: Sequence<Map.Entry<Encodable, Encodable>>, forceQuerySeparator: Boolean) = asString(values, forceQuerySeparator, Encodable::decoded)
 
-        private fun asEncoded(values: Sequence<Map.Entry<Encodable, Encodable>>, forceQuerySeparator: Boolean) =
-            asString(values, forceQuerySeparator, Encodable::encoded)
+        private fun asEncoded(values: Sequence<Map.Entry<Encodable, Encodable>>, forceQuerySeparator: Boolean) = asString(values, forceQuerySeparator, Encodable::encoded)
 
         private fun asString(
             values: Sequence<Map.Entry<Encodable, Encodable>>,
             forceQuerySeparator: Boolean,
             encodableForm: (Encodable) -> String,
-        ) =
-            values
-                .joinToString(
-                    separator = "&",
-                    prefix = if (forceQuerySeparator || values.any()) "?" else "",
-                ) { (key, value) -> "${encodableForm(key)}=${encodableForm(value)}" }
+        ) = values
+            .joinToString(
+                separator = "&",
+                prefix = if (forceQuerySeparator || values.any()) "?" else "",
+            ) { (key, value) -> "${encodableForm(key)}=${encodableForm(value)}" }
 
         /**
          * Parse a **decoded** query string into a [QueryParameters] instance
@@ -153,8 +150,7 @@ public class QueryParameters private constructor(
                 parseEncoded(value)
             }
 
-        internal fun parse(value: String, encoding: UrlEncoding): Unit =
-            if (UrlEncoding.QueryParameters in encoding) parseEncoded(value) else parseDecoded(value)
+        internal fun parse(value: String, encoding: UrlEncoding): Unit = if (UrlEncoding.QueryParameters in encoding) parseEncoded(value) else parseDecoded(value)
 
         internal fun parseDecoded(decoded: String) = parseInto(decodedParameters, decoded)
         internal fun parseEncoded(encoded: String) = parseInto(encodedParameters, encoded)

@@ -36,15 +36,14 @@ private fun hostParseImpl(host: String): Host {
     }
 }
 
-public fun Host.toUrlString(): String =
-    when (this) {
-        is Host.IpAddress -> when (address) {
-            is IpV6Addr -> buildString {
-                append('[')
-                append(PercentEncoding.Host.encode(address.toString()))
-                append(']')
-            }
-            else -> address.toString()
+public fun Host.toUrlString(): String = when (this) {
+    is Host.IpAddress -> when (address) {
+        is IpV6Addr -> buildString {
+            append('[')
+            append(PercentEncoding.Host.encode(address.toString()))
+            append(']')
         }
-        is Host.Domain -> name
+        else -> address.toString()
     }
+    is Host.Domain -> name
+}

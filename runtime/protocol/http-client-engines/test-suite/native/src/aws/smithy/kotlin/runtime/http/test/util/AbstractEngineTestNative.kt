@@ -8,8 +8,7 @@ package aws.smithy.kotlin.runtime.http.test.util
 import aws.smithy.kotlin.runtime.net.url.Url
 
 // FIXME Move CRT and Default engine tests to `jvmAndNative`
-internal actual fun engineFactories(): List<TestEngineFactory> =
-    listOf()
+internal actual fun engineFactories(): List<TestEngineFactory> = listOf()
 
 // FIXME add servers to test
 internal actual val testServers = mapOf<ServerType, Url>()

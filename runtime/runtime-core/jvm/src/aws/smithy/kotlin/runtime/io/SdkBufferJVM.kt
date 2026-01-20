@@ -56,11 +56,9 @@ public actual class SdkBuffer :
 
     actual override fun readAll(sink: SdkSink): Long = commonReadAll(sink)
 
-    actual override fun read(sink: ByteArray, offset: Int, limit: Int): Int =
-        commonRead(sink, offset, limit)
+    actual override fun read(sink: ByteArray, offset: Int, limit: Int): Int = commonRead(sink, offset, limit)
 
-    actual override fun read(sink: SdkBuffer, limit: Long): Long =
-        commonRead(sink, limit)
+    actual override fun read(sink: SdkBuffer, limit: Long): Long = commonRead(sink, limit)
 
     override fun read(dst: ByteBuffer): Int = inner.read(dst)
 
@@ -79,21 +77,17 @@ public actual class SdkBuffer :
 
     actual override fun require(byteCount: Long): Unit = commonRequire(byteCount)
 
-    actual override fun write(source: ByteArray, offset: Int, limit: Int): Unit =
-        commonWrite(source, offset, limit)
+    actual override fun write(source: ByteArray, offset: Int, limit: Int): Unit = commonWrite(source, offset, limit)
 
-    actual override fun write(source: SdkSource, byteCount: Long): Unit =
-        commonWrite(source, byteCount)
+    actual override fun write(source: SdkSource, byteCount: Long): Unit = commonWrite(source, byteCount)
 
-    actual override fun write(source: SdkBuffer, byteCount: Long): Unit =
-        commonWrite(source, byteCount)
+    actual override fun write(source: SdkBuffer, byteCount: Long): Unit = commonWrite(source, byteCount)
 
     override fun write(src: ByteBuffer): Int = inner.write(src)
 
     actual override fun writeAll(source: SdkSource): Long = commonWriteAll(source)
 
-    actual override fun writeUtf8(string: String, start: Int, endExclusive: Int): Unit =
-        commonWriteUtf8(string, start, endExclusive)
+    actual override fun writeUtf8(string: String, start: Int, endExclusive: Int): Unit = commonWriteUtf8(string, start, endExclusive)
 
     actual override fun writeByte(x: Byte): Unit = commonWriteByte(x)
 

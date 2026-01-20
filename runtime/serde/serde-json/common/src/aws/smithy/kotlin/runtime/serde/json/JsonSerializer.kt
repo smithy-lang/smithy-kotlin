@@ -27,8 +27,7 @@ public class JsonSerializer :
 
     private val jsonWriter = jsonStreamWriter()
 
-    override fun toByteArray(): ByteArray =
-        jsonWriter.bytes ?: throw SerializationException("Serializer payload is empty")
+    override fun toByteArray(): ByteArray = jsonWriter.bytes ?: throw SerializationException("Serializer payload is empty")
 
     override fun beginStruct(descriptor: SdkFieldDescriptor): StructSerializer {
         jsonWriter.beginObject()

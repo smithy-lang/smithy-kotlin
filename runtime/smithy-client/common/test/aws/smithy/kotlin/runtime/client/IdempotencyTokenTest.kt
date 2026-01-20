@@ -20,8 +20,7 @@ class IdempotencyTokenTest {
     }
 
     @Test
-    fun defaultIdempotencyTokenProviderImplementationReturnsNonEmptyToken() =
-        assertTrue(IdempotencyTokenProvider.Default.generateToken().isNotEmpty())
+    fun defaultIdempotencyTokenProviderImplementationReturnsNonEmptyToken() = assertTrue(IdempotencyTokenProvider.Default.generateToken().isNotEmpty())
 
     @Test
     fun defaultIdempotencyTokenProviderReturnsUuid() {

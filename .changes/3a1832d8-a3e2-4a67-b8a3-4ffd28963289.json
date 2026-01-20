@@ -1,0 +1,6 @@
+{
+    "id": "3a1832d8-a3e2-4a67-b8a3-4ffd28963289",
+    "type": "misc",
+    "description": "⚠️**IMPORTANT**: Refactor software.amazon.smithy.kotlin code into aws.smithy.kotlin namespace",
+    "requiresMinorVersionBump": true
+}

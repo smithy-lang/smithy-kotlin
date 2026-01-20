@@ -36,11 +36,9 @@ public actual class BigInteger internal constructor(internal val delegate: IonSp
     public actual override fun toLong(): Long = delegate.longValue(exactRequired = false)
     public actual override fun toShort(): Short = delegate.shortValue(exactRequired = false)
 
-    public actual operator fun plus(other: BigInteger): BigInteger =
-        coalesceOrCreate(delegate + other.delegate, this, other)
+    public actual operator fun plus(other: BigInteger): BigInteger = coalesceOrCreate(delegate + other.delegate, this, other)
 
-    public actual operator fun minus(other: BigInteger): BigInteger =
-        coalesceOrCreate(delegate - other.delegate, this, other)
+    public actual operator fun minus(other: BigInteger): BigInteger = coalesceOrCreate(delegate - other.delegate, this, other)
 
     public actual fun toByteArray(): ByteArray = delegate.toTwosComplementByteArray()
     public actual override fun compareTo(other: BigInteger): Int = delegate.compare(other.delegate)

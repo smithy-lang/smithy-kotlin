@@ -126,8 +126,7 @@ class DslBuilderPropertyTest {
     }
 }
 
-private fun vehicleProp(managedTransform: (Vehicle) -> Vehicle = { it }) =
-    DslBuilderProperty<Vehicle.Config.Builder, Vehicle>(Car, Vehicle::toBuilderApplicator, managedTransform)
+private fun vehicleProp(managedTransform: (Vehicle) -> Vehicle = { it }) = DslBuilderProperty<Vehicle.Config.Builder, Vehicle>(Car, Vehicle::toBuilderApplicator, managedTransform)
 
 // Super interfaces for a DSL
 private interface Vehicle {

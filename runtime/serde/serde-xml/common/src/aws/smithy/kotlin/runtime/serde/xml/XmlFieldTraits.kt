@@ -165,9 +165,8 @@ internal fun SdkFieldDescriptor.toQualifiedName(
  */
 internal fun SdkFieldDescriptor.toQualifiedNames(
     xmlNamespace: XmlNamespace? = findTrait<XmlNamespace>(),
-): Set<XmlToken.QualifiedName> =
-    setOf(toQualifiedName()) +
-        findTraits<XmlAliasName>().map { toQualifiedName(xmlNamespace, it.name) }
+): Set<XmlToken.QualifiedName> = setOf(toQualifiedName()) +
+    findTraits<XmlAliasName>().map { toQualifiedName(xmlNamespace, it.name) }
 
 /**
  * Determines if the qualified name of this field descriptor matches the given name.
@@ -197,13 +196,12 @@ internal fun String.nodeHasPrefix(): Boolean = this.contains(':')
  * Return none name and namespace as a pair or just the name and null namespace
  * if no namespace is defined.
  */
-internal fun String.parseNodeWithPrefix(): Pair<String, String?> =
-    if (this.nodeHasPrefix()) {
-        val (namespacePrefix, name) = this.split(':')
-        name to namespacePrefix
-    } else {
-        this to null
-    }
+internal fun String.parseNodeWithPrefix(): Pair<String, String?> = if (this.nodeHasPrefix()) {
+    val (namespacePrefix, name) = this.split(':')
+    name to namespacePrefix
+} else {
+    this to null
+}
 
 /**
  * Specifies that a field is encoded into an XML attribute and describes the XML.

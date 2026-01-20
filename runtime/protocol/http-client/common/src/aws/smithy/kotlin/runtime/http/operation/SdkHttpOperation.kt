@@ -71,11 +71,10 @@ public class SdkHttpOperation<I, O> internal constructor(
 
     @InternalApi
     public companion object {
-        public inline fun <reified I, reified O> build(block: SdkHttpOperationBuilder<I, O>.() -> Unit): SdkHttpOperation<I, O> =
-            SdkHttpOperationBuilder<I, O>(
-                I::class,
-                O::class,
-            ).apply(block).build()
+        public inline fun <reified I, reified O> build(block: SdkHttpOperationBuilder<I, O>.() -> Unit): SdkHttpOperation<I, O> = SdkHttpOperationBuilder<I, O>(
+            I::class,
+            O::class,
+        ).apply(block).build()
     }
 }
 

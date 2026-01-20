@@ -81,73 +81,67 @@ internal class JsonLexer(
         }
     }
 
-    private fun doPeek(): JsonToken =
-        try {
-            when (state.current) {
-                LexerState.Initial -> readToken()
-                LexerState.ArrayFirstValueOrEnd -> stateArrayFirstValueOrEnd()
-                LexerState.ArrayNextValueOrEnd -> stateArrayNextValueOrEnd()
-                LexerState.ObjectFirstKeyOrEnd -> stateObjectFirstKeyOrEnd()
-                LexerState.ObjectNextKeyOrEnd -> stateObjectNextKeyOrEnd()
-                LexerState.ObjectFieldValue -> stateObjectFieldValue()
-            }
-        } catch (ex: DeserializationException) {
-            throw ex
-        } catch (ex: Exception) {
-            throw DeserializationException(cause = ex)
+    private fun doPeek(): JsonToken = try {
+        when (state.current) {
+            LexerState.Initial -> readToken()
+            LexerState.ArrayFirstValueOrEnd -> stateArrayFirstValueOrEnd()
+            LexerState.ArrayNextValueOrEnd -> stateArrayNextValueOrEnd()
+            LexerState.ObjectFirstKeyOrEnd -> stateObjectFirstKeyOrEnd()
+            LexerState.ObjectNextKeyOrEnd -> stateObjectNextKeyOrEnd()
+            LexerState.ObjectFieldValue -> stateObjectFieldValue()
         }
+    } catch (ex: DeserializationException) {
+        throw ex
+    } catch (ex: Exception) {
+        throw DeserializationException(cause = ex)
+    }
 
     // handles the [State.ObjectFirstKeyOrEnd] state
-    private fun stateObjectFirstKeyOrEnd(): JsonToken =
-        when (val chr = nextNonWhitespace(peek = true)) {
-            '}' -> endObject()
-            '"' -> readName()
-            else -> unexpectedToken(chr, "\"", "}")
-        }
+    private fun stateObjectFirstKeyOrEnd(): JsonToken = when (val chr = nextNonWhitespace(peek = true)) {
+        '}' -> endObject()
+        '"' -> readName()
+        else -> unexpectedToken(chr, "\"", "}")
+    }
 
     // handles the [State.ObjectNextKeyOrEnd] state
-    private fun stateObjectNextKeyOrEnd(): JsonToken =
-        when (val chr = nextNonWhitespace(peek = true)) {
-            '}' -> endObject()
-            ',' -> {
-                consume(',')
-                nextNonWhitespace(peek = true)
-                readName()
-            }
-            else -> unexpectedToken(chr, ",", "}")
+    private fun stateObjectNextKeyOrEnd(): JsonToken = when (val chr = nextNonWhitespace(peek = true)) {
+        '}' -> endObject()
+        ',' -> {
+            consume(',')
+            nextNonWhitespace(peek = true)
+            readName()
         }
+        else -> unexpectedToken(chr, ",", "}")
+    }
 
     // handles the [State.ObjectFieldValue] state
-    private fun stateObjectFieldValue(): JsonToken =
-        when (val chr = nextNonWhitespace(peek = true)) {
-            ':' -> {
-                consume(':')
-                state.mutate { it.replaceTop(LexerState.ObjectNextKeyOrEnd) }
-                readToken()
-            }
-            else -> unexpectedToken(chr, ":")
+    private fun stateObjectFieldValue(): JsonToken = when (val chr = nextNonWhitespace(peek = true)) {
+        ':' -> {
+            consume(':')
+            state.mutate { it.replaceTop(LexerState.ObjectNextKeyOrEnd) }
+            readToken()
         }
+        else -> unexpectedToken(chr, ":")
+    }
 
     // handles the [State.ArrayFirstValueOrEnd] state
-    private fun stateArrayFirstValueOrEnd(): JsonToken =
-        when (nextNonWhitespace(peek = true)) {
-            ']' -> endArray()
-            else -> {
-                state.mutate { it.replaceTop(LexerState.ArrayNextValueOrEnd) }
-                readToken()
-            }
+    private fun stateArrayFirstValueOrEnd(): JsonToken = when (nextNonWhitespace(peek = true)) {
+        ']' -> endArray()
+        else -> {
+            state.mutate { it.replaceTop(LexerState.ArrayNextValueOrEnd) }
+            readToken()
         }
+    }
 
     // handles the [State.ArrayNextValueOrEnd] state
-    private fun stateArrayNextValueOrEnd(): JsonToken =
-        when (val chr = nextNonWhitespace(peek = true)) {
-            ']' -> endArray()
-            ',' -> {
-                consume(',')
-                readToken()
-            }
-            else -> unexpectedToken(chr, ",", "]")
+    private fun stateArrayNextValueOrEnd(): JsonToken = when (val chr = nextNonWhitespace(peek = true)) {
+        ']' -> endArray()
+        ',' -> {
+            consume(',')
+            readToken()
         }
+        else -> unexpectedToken(chr, ",", "]")
+    }
 
     // discards the '{' character and pushes 'ObjectFirstKeyOrEnd' state
     private fun startObject(): JsonToken {
@@ -193,16 +187,15 @@ internal class JsonLexer(
 
     // read the next token from the stream. This is only invoked from state functions which guarantees
     // the current state should be such that the next character is the start of a token
-    private fun readToken(): JsonToken =
-        when (val chr = nextNonWhitespace(peek = true)) {
-            '{' -> startObject()
-            '[' -> startArray()
-            '"' -> JsonToken.String(readQuoted())
-            't', 'f', 'n' -> readKeyword()
-            '-', in '0'..'9' -> readNumber()
-            null -> JsonToken.EndDocument
-            else -> unexpectedToken(chr, "{", "[", "\"", "null", "true", "false", "<number>")
-        }
+    private fun readToken(): JsonToken = when (val chr = nextNonWhitespace(peek = true)) {
+        '{' -> startObject()
+        '[' -> startArray()
+        '"' -> JsonToken.String(readQuoted())
+        't', 'f', 'n' -> readKeyword()
+        '-', in '0'..'9' -> readNumber()
+        null -> JsonToken.EndDocument
+        else -> unexpectedToken(chr, "{", "[", "\"", "null", "true", "false", "<number>")
+    }
 
     /**
      * Read based on the number spec : https://www.json.org/json-en.html

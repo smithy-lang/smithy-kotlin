@@ -40,8 +40,7 @@ public class AdaptiveRateLimiter internal constructor(
          * Initializes a new [AdaptiveRateLimiter]
          * @param block A DSL block which sets the configuration parameters for this limiter
          */
-        public override operator fun invoke(block: Config.Builder.() -> Unit): AdaptiveRateLimiter =
-            AdaptiveRateLimiter(Config(Config.Builder().apply(block)))
+        public override operator fun invoke(block: Config.Builder.() -> Unit): AdaptiveRateLimiter = AdaptiveRateLimiter(Config(Config.Builder().apply(block)))
     }
 
     private var capacity = 0.0

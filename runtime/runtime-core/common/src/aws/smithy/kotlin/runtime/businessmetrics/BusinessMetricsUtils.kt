@@ -66,8 +66,7 @@ public fun ExecutionContext.removeBusinessMetric(metric: BusinessMetric) {
  * Checks if a business metric exists in the execution context attributes
  */
 @InternalApi
-public fun ExecutionContext.containsBusinessMetric(metric: BusinessMetric): Boolean =
-    (this.attributes.contains(BusinessMetrics)) && this.attributes[BusinessMetrics].contains(metric)
+public fun ExecutionContext.containsBusinessMetric(metric: BusinessMetric): Boolean = (this.attributes.contains(BusinessMetrics)) && this.attributes[BusinessMetrics].contains(metric)
 
 /**
  * Valid business metrics

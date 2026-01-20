@@ -28,8 +28,7 @@ public fun HttpResponse.withPayload(payload: ByteArray?): HttpResponse {
 
 // Provides the policy of what constitutes a status code match in service response
 @InternalApi
-public fun HttpStatusCode.matches(expected: HttpStatusCode?): Boolean =
-    expected == this || (expected == null && this.isSuccess()) || expected?.category() == this.category()
+public fun HttpStatusCode.matches(expected: HttpStatusCode?): Boolean = expected == this || (expected == null && this.isSuccess()) || expected?.category() == this.category()
 
 /**
  * Sanitize the value to retrieve the disambiguated error type using the following steps:

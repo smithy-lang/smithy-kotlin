@@ -9,9 +9,8 @@ import aws.smithy.kotlin.runtime.http.engine.okhttp.OkHttpEngine
 
 internal actual fun newDefaultHttpEngine(
     block: (HttpClientEngineConfig.Builder.() -> Unit)?,
-): CloseableHttpClientEngine =
-    if (block != null) {
-        OkHttpEngine(block)
-    } else {
-        OkHttpEngine()
-    }
+): CloseableHttpClientEngine = if (block != null) {
+    OkHttpEngine(block)
+} else {
+    OkHttpEngine()
+}

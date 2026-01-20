@@ -677,58 +677,52 @@ class JsonDeserializerTest {
     }
 
     @Test
-    fun canDeserializeDocumentDouble() =
-        testDeserializeDocument(
-            "10.0",
-            Document(10.0),
-        )
+    fun canDeserializeDocumentDouble() = testDeserializeDocument(
+        "10.0",
+        Document(10.0),
+    )
 
     @Test
-    fun canDeserializeDocumentLong() =
-        testDeserializeDocument(
-            "10",
-            Document(10L),
-        )
+    fun canDeserializeDocumentLong() = testDeserializeDocument(
+        "10",
+        Document(10L),
+    )
 
     @Test
-    fun canDeserializeDocumentStringField() =
-        testDeserializeDocument(
-            "\"foo\"",
-            Document("foo"),
-        )
+    fun canDeserializeDocumentStringField() = testDeserializeDocument(
+        "\"foo\"",
+        Document("foo"),
+    )
 
     @Test
-    fun canDeserializeDocumentBooleanField() =
-        testDeserializeDocument(
-            "false",
-            Document(false),
-        )
+    fun canDeserializeDocumentBooleanField() = testDeserializeDocument(
+        "false",
+        Document(false),
+    )
 
     @Test
-    fun canDeserializeDocumentListField() =
-        testDeserializeDocument(
-            """[1,"foo",true,null]""",
-            Document.List(
-                listOf(
-                    Document(1L),
-                    Document("foo"),
-                    Document(true),
-                    null,
-                ),
+    fun canDeserializeDocumentListField() = testDeserializeDocument(
+        """[1,"foo",true,null]""",
+        Document.List(
+            listOf(
+                Document(1L),
+                Document("foo"),
+                Document(true),
+                null,
             ),
-        )
+        ),
+    )
 
     @Test
-    fun canDeserializeDocumentMapField() =
-        testDeserializeDocument(
-            """{"number":12,"string":"foo","bool":true,"null":null}""",
-            buildDocument {
-                "number" to 12L
-                "string" to "foo"
-                "bool" to true
-                "null" to null
-            },
-        )
+    fun canDeserializeDocumentMapField() = testDeserializeDocument(
+        """{"number":12,"string":"foo","bool":true,"null":null}""",
+        buildDocument {
+            "number" to 12L
+            "string" to "foo"
+            "bool" to true
+            "null" to null
+        },
+    )
 
     @Test
     fun canDeserializeComplexDocument() {

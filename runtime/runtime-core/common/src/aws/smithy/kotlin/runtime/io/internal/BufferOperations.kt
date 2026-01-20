@@ -38,11 +38,9 @@ internal inline fun SdkBuffer.commonReadIntLe(): Int = wrapOkio { inner.readIntL
 
 internal inline fun SdkBuffer.commonReadAll(sink: SdkSink): Long = wrapOkio { inner.readAll(sink.toOkio()) }
 
-internal inline fun SdkBuffer.commonRead(sink: ByteArray, offset: Int, limit: Int): Int =
-    wrapOkio { inner.read(sink, offset, limit) }
+internal inline fun SdkBuffer.commonRead(sink: ByteArray, offset: Int, limit: Int): Int = wrapOkio { inner.read(sink, offset, limit) }
 
-internal inline fun SdkBuffer.commonRead(sink: SdkBuffer, limit: Long): Long =
-    wrapOkio { inner.read(sink.inner, limit) }
+internal inline fun SdkBuffer.commonRead(sink: SdkBuffer, limit: Long): Long = wrapOkio { inner.read(sink.inner, limit) }
 
 internal inline fun SdkBuffer.commonReadByteArray(): ByteArray = wrapOkio { inner.readByteArray() }
 
@@ -72,8 +70,7 @@ internal inline fun SdkBuffer.commonWrite(source: SdkBuffer, byteCount: Long) {
     wrapOkio { inner.write(source.toOkio(), byteCount) }
 }
 
-internal inline fun SdkBuffer.commonWriteAll(source: SdkSource): Long =
-    wrapOkio { inner.writeAll(source.toOkio()) }
+internal inline fun SdkBuffer.commonWriteAll(source: SdkSource): Long = wrapOkio { inner.writeAll(source.toOkio()) }
 
 internal inline fun SdkBuffer.commonWriteUtf8(string: String, start: Int, endExclusive: Int) {
     wrapOkio { inner.writeUtf8(string, start, endExclusive) }

@@ -21,8 +21,7 @@ internal class CaseInsensitiveMutableStringSet(
     override val size: Int get() = delegate.size
     override fun toString() = delegate.toString()
 
-    override fun addAll(elements: Collection<String>) =
-        elements.fold(false) { modified, item -> add(item) || modified }
+    override fun addAll(elements: Collection<String>) = elements.fold(false) { modified, item -> add(item) || modified }
 
     override fun iterator() = object : MutableIterator<String> {
         val delegate = this@CaseInsensitiveMutableStringSet.delegate.iterator()
@@ -31,8 +30,7 @@ internal class CaseInsensitiveMutableStringSet(
         override fun remove() = delegate.remove()
     }
 
-    override fun removeAll(elements: Collection<String>) =
-        elements.fold(false) { modified, item -> remove(item) || modified }
+    override fun removeAll(elements: Collection<String>) = elements.fold(false) { modified, item -> remove(item) || modified }
 
     override fun retainAll(elements: Collection<String>): Boolean {
         val insensitiveElements = elements.map { it.toInsensitive() }.toSet()
@@ -41,5 +39,4 @@ internal class CaseInsensitiveMutableStringSet(
     }
 }
 
-internal fun CaseInsensitiveMutableStringSet(initialValues: Iterable<String>) =
-    CaseInsensitiveMutableStringSet(initialValues.map { it.toInsensitive() })
+internal fun CaseInsensitiveMutableStringSet(initialValues: Iterable<String>) = CaseInsensitiveMutableStringSet(initialValues.map { it.toInsensitive() })

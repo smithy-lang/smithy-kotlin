@@ -11,6 +11,7 @@ import java.io.IOException
 import java.net.InetAddress
 import java.net.InetSocketAddress
 import java.net.Proxy
+import kotlin.reflect.KClass
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
@@ -272,6 +273,10 @@ class EventListenerChainTest {
         override fun isExecuted(): Boolean = false
         override fun request(): Request = Request.Builder().url("https://example.com").build()
         override fun timeout(): okio.Timeout = okio.Timeout()
+        override fun <T : Any> tag(type: KClass<T>): T = error("Not used by mock call")
+        override fun <T> tag(type: Class<out T>): T = error("Not used by mock call")
+        override fun <T : Any> tag(type: KClass<T>, computeIfAbsent: () -> T): T = error("Not used by mock call")
+        override fun <T : Any> tag(type: Class<T>, computeIfAbsent: () -> T): T = error("Not used by mock call")
     }
 
     private fun createHttpUrl(): HttpUrl = HttpUrl.Builder()

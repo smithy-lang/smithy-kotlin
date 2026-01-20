@@ -133,8 +133,7 @@ public interface MutableMultiMap<K, V> : MutableMap<K, MutableList<V>> {
  * @param V The type of elements used as values
  * @param pairs The elements to be contained by the new multimap
  */
-public fun <K, V> mutableMultiMapOf(vararg pairs: Pair<K, V>): MutableMultiMap<K, V> =
-    SimpleMutableMultiMap(pairs.groupByTo(mutableMapOf(), Pair<K, V>::first, Pair<K, V>::second))
+public fun <K, V> mutableMultiMapOf(vararg pairs: Pair<K, V>): MutableMultiMap<K, V> = SimpleMutableMultiMap(pairs.groupByTo(mutableMapOf(), Pair<K, V>::first, Pair<K, V>::second))
 
 internal class SimpleMutableMultiMap<K, V>(
     private val delegate: MutableMap<K, MutableList<V>>,

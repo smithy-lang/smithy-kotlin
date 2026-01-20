@@ -161,20 +161,19 @@ internal fun parseIso8601(input: String): ParsedDatetime {
 
 private val exponentialNotationNumber = """(-)?(\d+(.(\d+))?)E(-?\d+)""".toRegex(RegexOption.IGNORE_CASE)
 
-private fun expandExponent(input: String): String =
-    exponentialNotationNumber.matchEntire(input)?.let { match ->
-        val (baseSign, base, _, _, exp) = match.destructured
-        buildString {
-            append(baseSign)
-            val (mantissa, oldDecimalPos) = base.removeChar('.')
-            val shift = exp.toIntOrNull() ?: throw ParseException(input, "Failed to read exponent", 0)
-            val newDecimalPos = oldDecimalPos + shift
-            val (int, frac) = mantissa.splitAt(newDecimalPos)
-            append(int)
-            append('.')
-            append(frac)
-        }
-    } ?: input
+private fun expandExponent(input: String): String = exponentialNotationNumber.matchEntire(input)?.let { match ->
+    val (baseSign, base, _, _, exp) = match.destructured
+    buildString {
+        append(baseSign)
+        val (mantissa, oldDecimalPos) = base.removeChar('.')
+        val shift = exp.toIntOrNull() ?: throw ParseException(input, "Failed to read exponent", 0)
+        val newDecimalPos = oldDecimalPos + shift
+        val (int, frac) = mantissa.splitAt(newDecimalPos)
+        append(int)
+        append('.')
+        append(frac)
+    }
+} ?: input
 
 private fun String.splitAt(position: Int, padChar: Char = '0'): Pair<String, String> = when {
     position <= 0 -> padChar.toString() to padStart(length - position, padChar)

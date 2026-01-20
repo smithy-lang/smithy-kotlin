@@ -69,8 +69,7 @@ private class OkioSource(
 
     override fun timeout(): okio.Timeout = okio.Timeout.NONE
 
-    override fun read(sink: okio.Buffer, byteCount: Long): Long =
-        delegate.read(SdkBuffer(sink), byteCount)
+    override fun read(sink: okio.Buffer, byteCount: Long): Long = delegate.read(SdkBuffer(sink), byteCount)
 }
 
 /**
@@ -82,8 +81,7 @@ private class OkioSdkSource(
 
     override fun close() = delegate.close()
 
-    override fun read(sink: SdkBuffer, limit: Long): Long =
-        delegate.read(sink.toOkio(), limit)
+    override fun read(sink: SdkBuffer, limit: Long): Long = delegate.read(sink.toOkio(), limit)
 }
 
 /**

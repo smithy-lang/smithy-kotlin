@@ -12,8 +12,7 @@ import io.opentelemetry.context.Context as OpenTelemetryContext
 import io.opentelemetry.context.Scope as OtelScope
 
 internal object OtelContextManager : ContextManager {
-    override fun current(): Context =
-        OtelContext(OpenTelemetryContext.current())
+    override fun current(): Context = OtelContext(OpenTelemetryContext.current())
 }
 
 internal class OtelContext(

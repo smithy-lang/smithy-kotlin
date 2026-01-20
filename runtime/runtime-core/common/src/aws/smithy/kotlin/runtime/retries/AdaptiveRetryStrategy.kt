@@ -22,8 +22,7 @@ import aws.smithy.kotlin.runtime.util.DslFactory
  */
 public class AdaptiveRetryStrategy(override val config: Config = Config.Default) : StandardRetryStrategy(config) {
     public companion object : DslFactory<Config.Builder, AdaptiveRetryStrategy> {
-        override fun invoke(block: Config.Builder.() -> Unit): AdaptiveRetryStrategy =
-            AdaptiveRetryStrategy(Config(Config.Builder().apply(block)))
+        override fun invoke(block: Config.Builder.() -> Unit): AdaptiveRetryStrategy = AdaptiveRetryStrategy(Config(Config.Builder().apply(block)))
     }
 
     override suspend fun beforeInitialTry() {
