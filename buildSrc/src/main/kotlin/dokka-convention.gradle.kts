@@ -11,6 +11,11 @@ dokka {
     val sdkVersion: String by project
     moduleVersion.set(sdkVersion)
 
+    // Increase heap memory allocated to Dokka's Gradle workers
+    dokkaGeneratorIsolation = ProcessIsolation {
+        maxHeapSize = "4g"
+    }
+
     pluginsConfiguration.html {
         customStyleSheets.from(
             rootProject.file("docs/dokka-presets/css/aws-styles.css"),
