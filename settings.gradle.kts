@@ -112,9 +112,9 @@ include(":runtime:smithy-client")
 include(":runtime:smithy-test")
 include(":runtime:testing")
 
-include(":codegen:smithy-kotlin-codegen")
-include(":codegen:smithy-kotlin-codegen-testutils")
-include(":codegen:smithy-aws-kotlin-codegen")
+include(":codegen:codegen")
+include(":codegen:codegen-testutils")
+include(":codegen:aws-codegen")
 include(":codegen:protocol-tests")
 
 include(":tests")

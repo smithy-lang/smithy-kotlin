@@ -12,7 +12,7 @@ import java.util.*
 
 /**
  * Container for `smithy-kotlin` plugin settings
- * See https://github.com/smithy-lang/smithy-kotlin/blob/main/codegen/smithy-kotlin-codegen/src/main/kotlin/software/amazon/smithy/kotlin/codegen/KotlinSettings.kt
+ * See https://github.com/smithy-lang/smithy-kotlin/blob/main/codegen/codegen/src/main/kotlin/software/amazon/smithy/kotlin/codegen/KotlinSettings.kt
  */
 open class SmithyKotlinApiSettings : ToNode {
     var visibility: String? = null
