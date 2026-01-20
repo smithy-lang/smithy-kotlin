@@ -70,14 +70,13 @@ internal data class SslConfig(
         toPath.toFile().writeText(toString())
     }
 
-    override fun toString(): String =
-        listOf(
-            keyStoreFile.absolutePath,
-            keyStorePassword,
-            certificateAlias,
-            certificatePassword,
-            hosts.joinToString(","),
-        ).joinToString("|")
+    override fun toString(): String = listOf(
+        keyStoreFile.absolutePath,
+        keyStorePassword,
+        certificateAlias,
+        certificatePassword,
+        hosts.joinToString(","),
+    ).joinToString("|")
 
     inline fun useAsSystemProperties(crossinline block: () -> Unit) {
         withProperties(

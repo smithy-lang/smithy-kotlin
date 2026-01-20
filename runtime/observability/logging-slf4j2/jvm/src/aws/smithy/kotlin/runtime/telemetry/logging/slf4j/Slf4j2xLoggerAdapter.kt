@@ -13,8 +13,7 @@ import org.slf4j.spi.LoggingEventBuilder
  * SLF4J 2.x based logger
  */
 internal class Slf4j2xLoggerAdapter(logger: org.slf4j.Logger) : AbstractSlf4jLoggerAdapter(logger) {
-    override fun atLevel(level: LogLevel): LogRecordBuilder =
-        Slf4j2xLogRecordBuilderAdapter(delegate.atLevel(level.slf4jLevel))
+    override fun atLevel(level: LogLevel): LogRecordBuilder = Slf4j2xLogRecordBuilderAdapter(delegate.atLevel(level.slf4jLevel))
 }
 
 private class Slf4j2xLogRecordBuilderAdapter(

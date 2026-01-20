@@ -27,8 +27,7 @@ public open class RegionProviderChain(
         require(providers.isNotEmpty()) { "at least one provider must be in the chain" }
     }
 
-    override fun toString(): String =
-        (listOf(this) + providers).map { it::class.simpleName }.joinToString(" -> ")
+    override fun toString(): String = (listOf(this) + providers).map { it::class.simpleName }.joinToString(" -> ")
 
     override suspend fun getRegion(): String? = resolvedRegion.get()
 

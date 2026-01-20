@@ -20,8 +20,7 @@ public actual class TelemetryContextElement public actual constructor(
 
     public actual companion object Key : CoroutineContext.Key<TelemetryContextElement>
 
-    override fun updateThreadContext(context: CoroutineContext): Scope =
-        this.context.makeCurrent()
+    override fun updateThreadContext(context: CoroutineContext): Scope = this.context.makeCurrent()
 
     override fun restoreThreadContext(context: CoroutineContext, oldState: Scope) {
         oldState.close()

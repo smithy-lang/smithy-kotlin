@@ -12,8 +12,7 @@ import kotlin.test.assertEquals
 
 class CredentialsProviderChainTest {
     private class TestCredentialsProvider(val accessKeyId: String? = null, val secretAccessKey: String? = null) : CredentialsProvider {
-        override suspend fun resolve(attributes: Attributes): Credentials =
-            if (accessKeyId != null && secretAccessKey != null) Credentials(accessKeyId, secretAccessKey) else error("no credentials available")
+        override suspend fun resolve(attributes: Attributes): Credentials = if (accessKeyId != null && secretAccessKey != null) Credentials(accessKeyId, secretAccessKey) else error("no credentials available")
     }
 
     @Test

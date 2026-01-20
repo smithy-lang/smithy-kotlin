@@ -19,12 +19,6 @@ public class EnvironmentBearerTokenProvider(
     private val envKey: String,
     private val platform: PlatformProvider = PlatformProvider.System,
 ) : BearerTokenProvider {
-    @Deprecated("This constructor does not support a parameter for a system property key and will be removed in version 1.6.x")
-    public constructor(
-        envKey: String,
-        platform: PlatformProvider = PlatformProvider.System,
-    ) : this("", envKey, platform)
-
     override suspend fun resolve(attributes: Attributes): BearerToken {
         val bearerToken = sysPropKey.takeUnless(String::isBlank)?.let(platform::getProperty)
             ?: platform.getenv(envKey)

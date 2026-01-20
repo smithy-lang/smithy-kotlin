@@ -38,9 +38,8 @@ public suspend fun assertFormUrlBodiesEqual(expected: HttpBody?, actual: HttpBod
     assertFormUrlStringsEqual(expectedStr, actualStr)
 }
 
-private fun String.parseAsFormUrlMap(): Map<String, String> =
-    split("&").associate {
-        val values = it.split("=")
-        check(values.size == 2) { "x-www-form-url entry split should be of form `key=value`: found $it" }
-        values[0].trim() to values[1].trim()
-    }
+private fun String.parseAsFormUrlMap(): Map<String, String> = split("&").associate {
+    val values = it.split("=")
+    check(values.size == 2) { "x-www-form-url entry split should be of form `key=value`: found $it" }
+    values[0].trim() to values[1].trim()
+}

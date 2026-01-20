@@ -61,14 +61,13 @@ class DiscoveredEndpointErrorInterceptorTest {
     }
 }
 
-private fun context(response: Result<Any>) =
-    object : ResponseInterceptorContext<Any, Any, HttpRequest, HttpResponse?> {
-        override val executionContext = ExecutionContext.build { attributes[SdkClientOption.OperationName] = "test" }
-        override val request = Unit
-        override val response = response
-        override val protocolRequest = HttpRequest { }
-        override val protocolResponse = null
-    }
+private fun context(response: Result<Any>) = object : ResponseInterceptorContext<Any, Any, HttpRequest, HttpResponse?> {
+    override val executionContext = ExecutionContext.build { attributes[SdkClientOption.OperationName] = "test" }
+    override val request = Unit
+    override val response = response
+    override val protocolRequest = HttpRequest { }
+    override val protocolResponse = null
+}
 
 private class BadEndpointException : ServiceException()
 private class GenericServiceException : ServiceException()

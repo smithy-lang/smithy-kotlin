@@ -63,11 +63,10 @@ class AwsJsonProtocolTest {
         @Suppress("DEPRECATION")
         val op = SdkHttpOperation.build<Unit, HttpResponse> {
             serializeWith = object : HttpSerializer.NonStreaming<Unit> {
-                override fun serialize(context: ExecutionContext, input: Unit): HttpRequestBuilder =
-                    HttpRequestBuilder().apply {
-                        headers["Content-Type"] = "application/xml"
-                        body = HttpBody.fromBytes("foo".encodeToByteArray())
-                    }
+                override fun serialize(context: ExecutionContext, input: Unit): HttpRequestBuilder = HttpRequestBuilder().apply {
+                    headers["Content-Type"] = "application/xml"
+                    body = HttpBody.fromBytes("foo".encodeToByteArray())
+                }
             }
             deserializeWith = HttpDeserializer.Identity
             operationName = "Bar"

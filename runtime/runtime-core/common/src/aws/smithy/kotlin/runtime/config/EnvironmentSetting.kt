@@ -30,8 +30,7 @@ public data class EnvironmentSetting<T>(
 ) {
     @InternalApi
     public companion object {
-        public operator fun <T> invoke(asTyped: (String) -> T): EnvSettingFactory<T> =
-            { sysProp: String, envVar: String -> EnvironmentSetting(asTyped, sysProp, envVar) }
+        public operator fun <T> invoke(asTyped: (String) -> T): EnvSettingFactory<T> = { sysProp: String, envVar: String -> EnvironmentSetting(asTyped, sysProp, envVar) }
     }
 
     public fun orElse(defaultValue: T): EnvironmentSetting<T> = copy(defaultValue = defaultValue)
@@ -73,8 +72,7 @@ public inline fun <reified T : Enum<T>> enumEnvSetting(sysProp: String, envVar: 
 public fun <T> EnvironmentSetting<T>.withCaseInsensitiveSuffixes(
     sysPropSuffix: String,
     envVarSuffix: String,
-): CaseInsensitiveEnvironmentSetting<T> =
-    CaseInsensitiveEnvironmentSetting(parse, sysProp, sysPropSuffix, envVar, envVarSuffix, defaultValue)
+): CaseInsensitiveEnvironmentSetting<T> = CaseInsensitiveEnvironmentSetting(parse, sysProp, sysPropSuffix, envVar, envVarSuffix, defaultValue)
 
 @InternalApi
 public data class CaseInsensitiveEnvironmentSetting<T>(
@@ -89,14 +87,13 @@ public data class CaseInsensitiveEnvironmentSetting<T>(
     internal val envVarRegex = caseInsensitiveRegex(envVarBase, envVarSuffix)
 }
 
-private fun caseInsensitiveRegex(base: String, caseInsensitiveSuffix: String) =
-    buildString {
-        append('^') // beginning of string
-        append(Regex.escape(base)) // base component, escaped
-        append("(?i)") // turn on case-insensitivity
-        append(Regex.escape(caseInsensitiveSuffix)) // case-insensitive suffix, escaped
-        append('$') // end of string
-    }.toRegex()
+private fun caseInsensitiveRegex(base: String, caseInsensitiveSuffix: String) = buildString {
+    append('^') // beginning of string
+    append(Regex.escape(base)) // base component, escaped
+    append("(?i)") // turn on case-insensitivity
+    append(Regex.escape(caseInsensitiveSuffix)) // case-insensitive suffix, escaped
+    append('$') // end of string
+}.toRegex()
 
 /**
  * Resolves an environment setting from the environment. This method attempts to resolve the setting via the system
@@ -114,5 +111,36 @@ public fun <T> CaseInsensitiveEnvironmentSetting<T>.resolve(
     return stringValue?.let(parse) ?: defaultValue
 }
 
-private fun resolveStringValue(sourceValues: Map<String, String>, keyRegex: Regex): String? =
-    sourceValues.entries.firstNotNullOfOrNull { (key, value) -> value.takeIf { keyRegex.matches(key) } }
+private fun resolveStringValue(sourceValues: Map<String, String>, keyRegex: Regex): String? = sourceValues.entries.firstNotNullOfOrNull { (key, value) -> value.takeIf { keyRegex.matches(key) } }
+
+@InternalApi
+public data class MultipleKeyEnvironmentSetting<T>(
+    public val parse: (String) -> T,
+    public val sysProps: List<String>,
+    public val envVars: List<String>,
+    public val defaultValue: T? = null,
+)
+
+@InternalApi
+public fun <T> EnvironmentSetting<T>.withAdditionalKeys(
+    sysProps: List<String>? = null,
+    envVars: List<String>? = null,
+): MultipleKeyEnvironmentSetting<T> {
+    if (sysProps == null && envVars == null) {
+        throw IllegalArgumentException("Expected either sysProps or envVars (or both) to be non-null")
+    }
+    return MultipleKeyEnvironmentSetting(parse, listOf(sysProp) + sysProps.orEmpty(), listOf(envVar) + envVars.orEmpty(), defaultValue)
+}
+
+/**
+ * Resolves an environment setting from the environment. This method attempts to resolve the setting via the
+ * system properties first, traversing the list of keys until a value is found. If no matching system properties
+ * are found, then the list of environment variables is traversed. If none are set, it returns the setting's default value.
+ */
+@InternalApi
+public fun <T> MultipleKeyEnvironmentSetting<T>.resolve(
+    platform: PlatformEnvironProvider = PlatformProvider.System,
+): T? {
+    val stringValue = sysProps.firstNotNullOfOrNull { platform.getProperty(it) } ?: envVars.firstNotNullOfOrNull { platform.getenv(it) }
+    return stringValue?.let(parse) ?: defaultValue
+}

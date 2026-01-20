@@ -41,8 +41,7 @@ public interface Filesystem {
         /**
          * Construct a fake filesystem from a mapping of paths to contents
          */
-        public fun fromMap(data: Map<String, ByteArray>, filePathSeparator: String = "/"): Filesystem =
-            MapFilesystem(data.toMutableMap(), filePathSeparator)
+        public fun fromMap(data: Map<String, ByteArray>, filePathSeparator: String = "/"): Filesystem = MapFilesystem(data.toMutableMap(), filePathSeparator)
     }
 }
 

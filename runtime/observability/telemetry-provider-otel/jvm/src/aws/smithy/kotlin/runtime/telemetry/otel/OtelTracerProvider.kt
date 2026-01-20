@@ -19,8 +19,7 @@ import io.opentelemetry.api.trace.StatusCode as OtelStatus
 import io.opentelemetry.api.trace.Tracer as OtelTracer
 
 internal class OtelTracerProvider(private val otel: OpenTelemetry) : TracerProvider {
-    override fun getOrCreateTracer(scope: String): Tracer =
-        OtelTracerImpl(otel.getTracer(scope))
+    override fun getOrCreateTracer(scope: String): Tracer = OtelTracerImpl(otel.getTracer(scope))
 }
 
 private class OtelTracerImpl(

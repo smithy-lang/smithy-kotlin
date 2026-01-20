@@ -30,8 +30,8 @@
       "defaultVersionLayout": "{MAJOR}.x"
     },
     "rename": {
-        "software.amazon.smithy.kotlin:smithy-aws-kotlin-codegen": "AwsSmithyAwsKotlinCodegen",
-        "software.amazon.smithy.kotlin:smithy-kotlin-codegen": "AwsSmithyKotlinCodegen"
+        "aws.smithy.kotlin:aws-codegen": "AwsSmithyAwsKotlinCodegen",
+        "aws.smithy.kotlin:codegen": "AwsSmithyKotlinCodegen"
     },
     "ignore": [
       "aws.smithy.kotlin:http-test",
@@ -40,7 +40,7 @@
       "aws.smithy.kotlin:testing",
       "aws.smithy.kotlin:bom",
       "aws.smithy.kotlin:version-catalog",
-      "software.amazon.smithy.kotlin:smithy-kotlin-codegen-testutils"
+      "aws.smithy.kotlin:codegen-testutils"
     ],
     "resolvesConflictDependencies": {
       "org.jetbrains.kotlinx:kotlinx-coroutines-core-jvm:1.*": [

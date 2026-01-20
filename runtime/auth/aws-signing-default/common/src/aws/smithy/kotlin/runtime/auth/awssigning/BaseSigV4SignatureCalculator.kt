@@ -51,14 +51,13 @@ internal abstract class BaseSigV4SignatureCalculator(
         append(chunkBody.hash(sha256Provider).encodeToHex())
     }
 
-    override fun chunkTrailerStringToSign(trailingHeaders: ByteArray, prevSignature: ByteArray, config: AwsSigningConfig): String =
-        buildString {
-            appendLine("${algorithm.signingName}-TRAILER")
-            appendLine(config.signingDate.format(TimestampFormat.ISO_8601_CONDENSED))
-            appendLine(config.credentialScope)
-            appendLine(prevSignature.decodeToString())
-            append(trailingHeaders.hash(sha256Provider).encodeToHex())
-        }
+    override fun chunkTrailerStringToSign(trailingHeaders: ByteArray, prevSignature: ByteArray, config: AwsSigningConfig): String = buildString {
+        appendLine("${algorithm.signingName}-TRAILER")
+        appendLine(config.signingDate.format(TimestampFormat.ISO_8601_CONDENSED))
+        appendLine(config.credentialScope)
+        appendLine(prevSignature.decodeToString())
+        append(trailingHeaders.hash(sha256Provider).encodeToHex())
+    }
 }
 
 private const val HEADER_TIMESTAMP_TYPE: Byte = 8

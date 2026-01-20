@@ -76,8 +76,7 @@ private class TestEndpointResolver(private val resolvedEndpoint: Endpoint) : End
 }
 
 private class TestSigner(private val signedOutput: HttpRequest) : AwsSigner {
-    override suspend fun sign(request: HttpRequest, config: AwsSigningConfig): AwsSigningResult<HttpRequest> =
-        AwsSigningResult(signedOutput, byteArrayOf())
+    override suspend fun sign(request: HttpRequest, config: AwsSigningConfig): AwsSigningResult<HttpRequest> = AwsSigningResult(signedOutput, byteArrayOf())
 
     override suspend fun signChunk(
         chunkBody: ByteArray,

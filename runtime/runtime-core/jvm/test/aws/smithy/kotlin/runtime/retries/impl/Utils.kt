@@ -7,5 +7,4 @@ package aws.smithy.kotlin.runtime.retries.impl
 import com.charleskorn.kaml.Yaml
 import kotlinx.serialization.DeserializationStrategy
 
-fun <T> Map<String, String>.deserializeYaml(serializer: DeserializationStrategy<T>): Map<String, T> =
-    mapValues { Yaml.default.decodeFromString(serializer, it.value) }
+fun <T> Map<String, String>.deserializeYaml(serializer: DeserializationStrategy<T>): Map<String, T> = mapValues { Yaml.default.decodeFromString(serializer, it.value) }

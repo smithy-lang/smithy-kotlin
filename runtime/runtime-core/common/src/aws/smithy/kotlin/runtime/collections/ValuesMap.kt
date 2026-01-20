@@ -173,6 +173,5 @@ public open class ValuesMapBuilder<T>(public val caseInsensitiveName: Boolean = 
 
     public open fun build(): ValuesMap<T> = ValuesMapImpl(caseInsensitiveName, values)
 
-    private fun ensureListForKey(name: String, size: Int): MutableList<T> =
-        values[name] ?: ArrayList<T>(size).also { values[name] = it }
+    private fun ensureListForKey(name: String, size: Int): MutableList<T> = values[name] ?: ArrayList<T>(size).also { values[name] = it }
 }

@@ -47,11 +47,9 @@ public actual class BigDecimal private constructor(private val delegate: JvmBigD
 
     public val value: String = delegate.toString()
 
-    public actual operator fun plus(other: BigDecimal): BigDecimal =
-        coalesceOrCreate(delegate + other.delegate, this, other)
+    public actual operator fun plus(other: BigDecimal): BigDecimal = coalesceOrCreate(delegate + other.delegate, this, other)
 
-    public actual operator fun minus(other: BigDecimal): BigDecimal =
-        coalesceOrCreate(delegate - other.delegate, this, other)
+    public actual operator fun minus(other: BigDecimal): BigDecimal = coalesceOrCreate(delegate - other.delegate, this, other)
 
     actual override fun compareTo(other: BigDecimal): Int = delegate.compareTo(other.delegate)
 }

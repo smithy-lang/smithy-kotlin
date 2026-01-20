@@ -38,8 +38,7 @@ public fun hmac(key: ByteArray, message: ByteArray, hashFunction: HashFunction):
  * @param hashSupplier A supplier that yields a hashing algorithm to use.
  */
 @InternalApi
-public fun hmac(key: ByteArray, message: ByteArray, hashSupplier: HashSupplier): ByteArray =
-    hmac(key, message, hashSupplier())
+public fun hmac(key: ByteArray, message: ByteArray, hashSupplier: HashSupplier): ByteArray = hmac(key, message, hashSupplier())
 
 private fun ByteArray.resizeToBlock(hashFunction: HashFunction): ByteArray {
     val blockSize = hashFunction.blockSizeBytes

@@ -23,8 +23,7 @@ public abstract class Acceptor<in I, in O>(public val state: RetryDirective) {
      * @param result The output of the operation (either a regular response or an exception).
      * @return If this acceptor's condition is matched, then the acceptor's [state] is returned. Otherwise, null.
      */
-    public fun evaluate(request: I, result: Result<O>): RetryDirective? =
-        if (matches(request, result)) state else null
+    public fun evaluate(request: I, result: Result<O>): RetryDirective? = if (matches(request, result)) state else null
 
     /**
      * Determines if this acceptor's condition is matched.
@@ -43,8 +42,7 @@ public abstract class Acceptor<in I, in O>(public val state: RetryDirective) {
  */
 @InternalApi
 public class SuccessAcceptor(state: RetryDirective, public val success: Boolean) : Acceptor<Any, Any>(state) {
-    override fun matches(request: Any, result: Result<Any>): Boolean =
-        result.isSuccess == success
+    override fun matches(request: Any, result: Result<Any>): Boolean = result.isSuccess == success
 }
 
 /**
@@ -54,8 +52,7 @@ public class SuccessAcceptor(state: RetryDirective, public val success: Boolean)
  */
 @InternalApi
 public class ErrorTypeAcceptor(state: RetryDirective, public val errorType: String) : Acceptor<Any, Any>(state) {
-    override fun matches(request: Any, result: Result<Any>): Boolean =
-        (result.exceptionOrNull() as? ServiceException)?.sdkErrorMetadata?.errorCode == errorType
+    override fun matches(request: Any, result: Result<Any>): Boolean = (result.exceptionOrNull() as? ServiceException)?.sdkErrorMetadata?.errorCode == errorType
 }
 
 /**
@@ -65,8 +62,7 @@ public class ErrorTypeAcceptor(state: RetryDirective, public val errorType: Stri
  */
 @InternalApi
 public class OutputAcceptor<O>(state: RetryDirective, public val matcher: (O) -> Boolean) : Acceptor<Any, O>(state) {
-    override fun matches(request: Any, result: Result<O>): Boolean =
-        result.getOrNull()?.run(matcher) ?: false
+    override fun matches(request: Any, result: Result<O>): Boolean = result.getOrNull()?.run(matcher) ?: false
 }
 
 /**
@@ -86,6 +82,5 @@ public class InputOutputAcceptor<I, O>(
     @InternalApi
     public data class InputOutput<I, O>(public val input: I, public val output: O)
 
-    override fun matches(request: I, result: Result<O>): Boolean =
-        result.getOrNull()?.let { matcher(InputOutput(request, it)) } ?: false
+    override fun matches(request: I, result: Result<O>): Boolean = result.getOrNull()?.let { matcher(InputOutput(request, it)) } ?: false
 }

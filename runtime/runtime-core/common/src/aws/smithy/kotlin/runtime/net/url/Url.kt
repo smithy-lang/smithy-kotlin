@@ -377,30 +377,29 @@ public class Url private constructor(
     }
 }
 
-private fun String.parseHostPort(): Pair<Host, Int?> =
-    if (startsWith('[')) {
-        val bracketEnd = indexOf(']')
-        require(bracketEnd > 0) { "unmatched [ or ]" }
+private fun String.parseHostPort(): Pair<Host, Int?> = if (startsWith('[')) {
+    val bracketEnd = indexOf(']')
+    require(bracketEnd > 0) { "unmatched [ or ]" }
 
-        val encodedHostName = substring(1, bracketEnd)
-        val decodedHostName = PercentEncoding.Host.decode(encodedHostName)
-        val host = Host.parse(decodedHostName)
-        require(host is Host.IpAddress && host.address is IpV6Addr) { "non-ipv6 host was enclosed in []-brackets" }
+    val encodedHostName = substring(1, bracketEnd)
+    val decodedHostName = PercentEncoding.Host.decode(encodedHostName)
+    val host = Host.parse(decodedHostName)
+    require(host is Host.IpAddress && host.address is IpV6Addr) { "non-ipv6 host was enclosed in []-brackets" }
 
-        val port = when (getOrNull(bracketEnd + 1)) {
-            ':' -> substring(bracketEnd + 2).toInt()
-            null -> null
-            else -> throw IllegalArgumentException("unexpected characters after ]")
-        }
-
-        host to port
-    } else {
-        val parts = split(':')
-
-        val decodedHostName = PercentEncoding.Host.decode(parts[0])
-        val host = Host.parse(decodedHostName)
-        require(host !is Host.IpAddress || host.address !is IpV6Addr) { "ipv6 host given without []-brackets" }
-
-        val port = parts.getOrNull(1)?.toInt()
-        host to port
+    val port = when (getOrNull(bracketEnd + 1)) {
+        ':' -> substring(bracketEnd + 2).toInt()
+        null -> null
+        else -> throw IllegalArgumentException("unexpected characters after ]")
     }
+
+    host to port
+} else {
+    val parts = split(':')
+
+    val decodedHostName = PercentEncoding.Host.decode(parts[0])
+    val host = Host.parse(decodedHostName)
+    require(host !is Host.IpAddress || host.address !is IpV6Addr) { "ipv6 host given without []-brackets" }
+
+    val port = parts.getOrNull(1)?.toInt()
+    host to port
+}

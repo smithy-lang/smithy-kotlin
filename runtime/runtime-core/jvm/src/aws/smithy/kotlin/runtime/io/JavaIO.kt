@@ -32,8 +32,7 @@ public fun Path.source(start: Long = 0L, endInclusive: Long = -1): SdkSource {
 /**
  * Create an [SdkSource] from the given file and range
  */
-public fun File.source(start: Long = 0L, endInclusive: Long = length() - 1): SdkSource =
-    RandomAccessFileSource(this, start, endInclusive).toSdk()
+public fun File.source(start: Long = 0L, endInclusive: Long = length() - 1): SdkSource = RandomAccessFileSource(this, start, endInclusive).toSdk()
 
 /**
  * Create an [SdkSource] from the given file and range

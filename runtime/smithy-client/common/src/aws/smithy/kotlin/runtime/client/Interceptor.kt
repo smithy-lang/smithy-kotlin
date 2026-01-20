@@ -93,8 +93,7 @@ public interface Interceptor<
      */
     public suspend fun modifyBeforeRetryLoop(
         context: ProtocolRequestInterceptorContext<Input, ProtocolRequest>,
-    ): ProtocolRequest =
-        context.protocolRequest
+    ): ProtocolRequest = context.protocolRequest
 
     /**
      * A hook called before each attempt at sending the protocol request message to the service.
@@ -129,8 +128,7 @@ public interface Interceptor<
      */
     public suspend fun modifyBeforeSigning(
         context: ProtocolRequestInterceptorContext<Input, ProtocolRequest>,
-    ): ProtocolRequest =
-        context.protocolRequest
+    ): ProtocolRequest = context.protocolRequest
 
     /**
      * A hook called before the transport request message is signed.
@@ -176,8 +174,7 @@ public interface Interceptor<
      */
     public suspend fun modifyBeforeTransmit(
         context: ProtocolRequestInterceptorContext<Input, ProtocolRequest>,
-    ): ProtocolRequest =
-        context.protocolRequest
+    ): ProtocolRequest = context.protocolRequest
 
     /**
      * A hook called before the transport request message is sent to the service.
@@ -223,8 +220,7 @@ public interface Interceptor<
      */
     public suspend fun modifyBeforeDeserialization(
         context: ProtocolResponseInterceptorContext<Input, ProtocolRequest, ProtocolResponse>,
-    ): ProtocolResponse =
-        context.protocolResponse
+    ): ProtocolResponse = context.protocolResponse
 
     /**
      * A hook called before the transport request message is deserialized into the output response type.
@@ -271,8 +267,7 @@ public interface Interceptor<
      * **Error Behavior**: If errors are raised by this hook, execution will jump to [readAfterAttempt]
      * with the raised error as the [ResponseInterceptorContext.response] result.
      */
-    public suspend fun modifyBeforeAttemptCompletion(context: ResponseInterceptorContext<Input, Output, ProtocolRequest, ProtocolResponse?>): Result<Output> =
-        context.response
+    public suspend fun modifyBeforeAttemptCompletion(context: ResponseInterceptorContext<Input, Output, ProtocolRequest, ProtocolResponse?>): Result<Output> = context.response
 
     /**
      * A hook called when an attempt is completed.
@@ -309,8 +304,7 @@ public interface Interceptor<
      * **Error Behavior**: If errors are raised by this hook, execution will jump to [readAfterExecution]
      * with the raised error as the [ResponseInterceptorContext.response] result.
      */
-    public suspend fun modifyBeforeCompletion(context: ResponseInterceptorContext<Input, Output, ProtocolRequest?, ProtocolResponse?>): Result<Output> =
-        context.response
+    public suspend fun modifyBeforeCompletion(context: ResponseInterceptorContext<Input, Output, ProtocolRequest?, ProtocolResponse?>): Result<Output> = context.response
 
     /**
      * A hook called when an attempt is completed.

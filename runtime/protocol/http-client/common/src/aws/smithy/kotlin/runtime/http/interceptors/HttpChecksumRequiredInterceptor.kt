@@ -72,8 +72,7 @@ public class HttpChecksumRequiredInterceptor : CachingChecksumInterceptor() {
 
     public override suspend fun calculateChecksum(
         context: ProtocolRequestInterceptorContext<Any, HttpRequest>,
-    ): String? =
-        calculateHttpChecksumRequiredChecksum(context)
+    ): String? = calculateHttpChecksumRequiredChecksum(context)
 
     /**
      * Applies a checksum based on the requirements and limitations of [HttpChecksumRequiredInterceptor]
@@ -93,6 +92,5 @@ public class HttpChecksumRequiredInterceptor : CachingChecksumInterceptor() {
     public override fun applyChecksum(
         context: ProtocolRequestInterceptorContext<Any, HttpRequest>,
         checksum: String,
-    ): HttpRequest =
-        applyHttpChecksumRequiredChecksum(context, checksum)
+    ): HttpRequest = applyHttpChecksumRequiredChecksum(context, checksum)
 }

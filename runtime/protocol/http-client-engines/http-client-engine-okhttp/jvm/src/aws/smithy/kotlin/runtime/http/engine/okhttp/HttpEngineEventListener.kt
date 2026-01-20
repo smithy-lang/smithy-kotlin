@@ -86,23 +86,19 @@ public class HttpEngineEventListener(
         trace { "dns query: domain=$domainName" }
     }
 
-    override fun dnsEnd(call: Call, domainName: String, inetAddressList: List<InetAddress>): Unit =
-        trace { "dns resolved: domain=$domainName; records=$inetAddressList" }
+    override fun dnsEnd(call: Call, domainName: String, inetAddressList: List<InetAddress>): Unit = trace { "dns resolved: domain=$domainName; records=$inetAddressList" }
 
     override fun proxySelectStart(call: Call, url: HttpUrl): Unit = trace { "proxy select start: url=$url" }
 
-    override fun proxySelectEnd(call: Call, url: HttpUrl, proxies: List<Proxy>): Unit =
-        trace { "proxy select end: url=$url; proxies=$proxies" }
+    override fun proxySelectEnd(call: Call, url: HttpUrl, proxies: List<Proxy>): Unit = trace { "proxy select end: url=$url; proxies=$proxies" }
 
-    override fun connectStart(call: Call, inetSocketAddress: InetSocketAddress, proxy: Proxy): Unit =
-        trace { "starting connection: addr=$inetSocketAddress; proxy=$proxy" }
+    override fun connectStart(call: Call, inetSocketAddress: InetSocketAddress, proxy: Proxy): Unit = trace { "starting connection: addr=$inetSocketAddress; proxy=$proxy" }
 
     override fun secureConnectStart(call: Call): Unit = trace { "initiating TLS connection" }
 
     override fun secureConnectEnd(call: Call, handshake: Handshake?): Unit = trace { "TLS connect end: handshake=$handshake" }
 
-    override fun connectEnd(call: Call, inetSocketAddress: InetSocketAddress, proxy: Proxy, protocol: Protocol?): Unit =
-        trace { "connection established: addr=$inetSocketAddress; proxy=$proxy; protocol=$protocol" }
+    override fun connectEnd(call: Call, inetSocketAddress: InetSocketAddress, proxy: Proxy, protocol: Protocol?): Unit = trace { "connection established: addr=$inetSocketAddress; proxy=$proxy; protocol=$protocol" }
 
     override fun connectFailed(
         call: Call,
@@ -169,14 +165,13 @@ public class HttpEngineEventListener(
     }
 
     override fun responseHeadersEnd(call: Call, response: Response) {
-        val contentLength = response.body?.contentLength()
+        val contentLength = response.body.contentLength()
         trace { "response headers end: contentLengthHeader=$contentLength" }
     }
 
     override fun responseBodyStart(call: Call): Unit = trace { "response body available" }
 
-    override fun responseBodyEnd(call: Call, byteCount: Long): Unit =
-        trace { "response body finished: bytesConsumed=$byteCount" }
+    override fun responseBodyEnd(call: Call, byteCount: Long): Unit = trace { "response body finished: bytesConsumed=$byteCount" }
 
     override fun responseFailed(call: Call, ioe: IOException): Unit = trace(ioe) { "response failed" }
 

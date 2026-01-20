@@ -48,9 +48,7 @@ public actual class BigDecimal private constructor(private val delegate: IonSpin
     public actual fun toPlainString(): String = delegate.toPlainString()
     actual override fun toString(): String = delegate.toString()
 
-    public actual operator fun plus(other: BigDecimal): BigDecimal =
-        coalesceOrCreate(delegate + other.delegate, this, other)
+    public actual operator fun plus(other: BigDecimal): BigDecimal = coalesceOrCreate(delegate + other.delegate, this, other)
 
-    public actual operator fun minus(other: BigDecimal): BigDecimal =
-        coalesceOrCreate(delegate - other.delegate, this, other)
+    public actual operator fun minus(other: BigDecimal): BigDecimal = coalesceOrCreate(delegate - other.delegate, this, other)
 }

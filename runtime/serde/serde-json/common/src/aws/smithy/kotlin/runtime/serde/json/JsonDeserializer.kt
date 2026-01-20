@@ -51,8 +51,7 @@ public class JsonDeserializer(payload: ByteArray) :
     override fun deserializeBigDecimal(): BigDecimal = nextNumberValue(::BigDecimal)
 
     // deserializes the next token as a number with the maximum discernible precision
-    private fun deserializeNumber(): Number =
-        nextNumberValue { if (it.contains('.')) it.toDouble() else it.toLong() }
+    private fun deserializeNumber(): Number = nextNumberValue { if (it.contains('.')) it.toDouble() else it.toLong() }
 
     // assert the next token is a Number and execute [block] with the raw value as a string. Returns result
     // of executing the block. This is mostly so that numeric conversions can keep as much precision as possible
@@ -65,8 +64,7 @@ public class JsonDeserializer(payload: ByteArray) :
         }
     }
 
-    override fun deserializeString(): String =
-        // allow for tokens to be consumed as string even when the next token isn't a quoted string
+    override fun deserializeString(): String = // allow for tokens to be consumed as string even when the next token isn't a quoted string
         when (val token = reader.nextToken()) {
             is JsonToken.String -> token.value
             is JsonToken.Number -> token.value
@@ -79,58 +77,55 @@ public class JsonDeserializer(payload: ByteArray) :
         return token.value
     }
 
-    override fun deserializeDocument(): Document =
-        checkNotNull(deserializeDocumentImpl()) { "expected non-null document field" }
+    override fun deserializeDocument(): Document = checkNotNull(deserializeDocumentImpl()) { "expected non-null document field" }
 
-    private fun deserializeDocumentImpl(): Document? =
-        when (val token = reader.peek()) {
-            is JsonToken.Number -> Document(deserializeNumber())
-            is JsonToken.String -> Document(deserializeString())
-            is JsonToken.Bool -> Document(deserializeBoolean())
-            JsonToken.Null -> {
-                reader.nextToken()
-                null
-            }
-            JsonToken.BeginArray ->
-                deserializeList(SdkFieldDescriptor(SerialKind.Document)) {
-                    val values = mutableListOf<Document?>()
-                    while (hasNextElement()) {
-                        values.add(deserializeDocumentImpl())
-                    }
-                    Document.List(values)
-                }
-            JsonToken.BeginObject ->
-                deserializeMap(SdkFieldDescriptor(SerialKind.Document)) {
-                    val values = mutableMapOf<String, Document?>()
-                    while (hasNextEntry()) {
-                        values[key()] = deserializeDocumentImpl()
-                    }
-                    Document.Map(values)
-                }
-            JsonToken.EndArray, JsonToken.EndObject, JsonToken.EndDocument ->
-                throw DeserializationException(
-                    "encountered unexpected json token \"$token\" while deserializing document",
-                )
-            is JsonToken.Name ->
-                throw DeserializationException(
-                    "encountered unexpected json field declaration \"${token.value}\" while deserializing document",
-                )
+    private fun deserializeDocumentImpl(): Document? = when (val token = reader.peek()) {
+        is JsonToken.Number -> Document(deserializeNumber())
+        is JsonToken.String -> Document(deserializeString())
+        is JsonToken.Bool -> Document(deserializeBoolean())
+        JsonToken.Null -> {
+            reader.nextToken()
+            null
         }
+        JsonToken.BeginArray ->
+            deserializeList(SdkFieldDescriptor(SerialKind.Document)) {
+                val values = mutableListOf<Document?>()
+                while (hasNextElement()) {
+                    values.add(deserializeDocumentImpl())
+                }
+                Document.List(values)
+            }
+        JsonToken.BeginObject ->
+            deserializeMap(SdkFieldDescriptor(SerialKind.Document)) {
+                val values = mutableMapOf<String, Document?>()
+                while (hasNextEntry()) {
+                    values[key()] = deserializeDocumentImpl()
+                }
+                Document.Map(values)
+            }
+        JsonToken.EndArray, JsonToken.EndObject, JsonToken.EndDocument ->
+            throw DeserializationException(
+                "encountered unexpected json token \"$token\" while deserializing document",
+            )
+        is JsonToken.Name ->
+            throw DeserializationException(
+                "encountered unexpected json field declaration \"${token.value}\" while deserializing document",
+            )
+    }
 
     override fun deserializeNull(): Nothing? {
         reader.nextTokenOf<JsonToken.Null>()
         return null
     }
 
-    override fun deserializeStruct(descriptor: SdkObjectDescriptor): Deserializer.FieldIterator =
-        when (reader.peek()) {
-            JsonToken.BeginObject -> {
-                reader.nextTokenOf<JsonToken.BeginObject>()
-                JsonFieldIterator(reader, descriptor, this)
-            }
-            JsonToken.Null -> JsonNullFieldIterator(this)
-            else -> throw DeserializationException("Unexpected token type ${reader.peek()}")
+    override fun deserializeStruct(descriptor: SdkObjectDescriptor): Deserializer.FieldIterator = when (reader.peek()) {
+        JsonToken.BeginObject -> {
+            reader.nextTokenOf<JsonToken.BeginObject>()
+            JsonFieldIterator(reader, descriptor, this)
         }
+        JsonToken.Null -> JsonNullFieldIterator(this)
+        else -> throw DeserializationException("Unexpected token type ${reader.peek()}")
+    }
 
     override fun deserializeList(descriptor: SdkFieldDescriptor): Deserializer.ElementIterator {
         reader.nextTokenOf<JsonToken.BeginArray>()
@@ -158,29 +153,27 @@ public class JsonDeserializer(payload: ByteArray) :
 
     override fun nextHasValue(): Boolean = reader.peek() != JsonToken.Null
 
-    override fun hasNextEntry(): Boolean =
-        when (reader.peek()) {
-            JsonToken.EndObject -> {
-                // consume the token
-                reader.nextTokenOf<JsonToken.EndObject>()
-                false
-            }
-            JsonToken.Null,
-            JsonToken.EndDocument,
-            -> false
-            else -> true
+    override fun hasNextEntry(): Boolean = when (reader.peek()) {
+        JsonToken.EndObject -> {
+            // consume the token
+            reader.nextTokenOf<JsonToken.EndObject>()
+            false
         }
+        JsonToken.Null,
+        JsonToken.EndDocument,
+        -> false
+        else -> true
+    }
 
-    override fun hasNextElement(): Boolean =
-        when (reader.peek()) {
-            JsonToken.EndArray -> {
-                // consume the token
-                reader.nextTokenOf<JsonToken.EndArray>()
-                false
-            }
-            JsonToken.EndDocument -> false
-            else -> true
+    override fun hasNextElement(): Boolean = when (reader.peek()) {
+        JsonToken.EndArray -> {
+            // consume the token
+            reader.nextTokenOf<JsonToken.EndArray>()
+            false
         }
+        JsonToken.EndDocument -> false
+        else -> true
+    }
 }
 
 // Represents the deserialization of a null object.

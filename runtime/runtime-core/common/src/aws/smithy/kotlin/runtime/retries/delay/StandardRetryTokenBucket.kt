@@ -33,8 +33,7 @@ public class StandardRetryTokenBucket internal constructor(
     public constructor(options: Config = Config.Default) : this(options, timeSource = TimeSource.Monotonic)
 
     public companion object : DslFactory<Config.Builder, StandardRetryTokenBucket> {
-        override fun invoke(block: Config.Builder.() -> Unit): StandardRetryTokenBucket =
-            StandardRetryTokenBucket(Config(Config.Builder().apply(block)))
+        override fun invoke(block: Config.Builder.() -> Unit): StandardRetryTokenBucket = StandardRetryTokenBucket(Config(Config.Builder().apply(block)))
     }
 
     internal var capacity = config.maxCapacity

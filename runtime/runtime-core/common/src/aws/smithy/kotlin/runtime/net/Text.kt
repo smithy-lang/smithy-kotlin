@@ -10,8 +10,7 @@ import aws.smithy.kotlin.runtime.InternalApi
  * Validates a hostname per [RFC 1123](https://www.ietf.org/rfc/rfc1123.txt).
  */
 @InternalApi
-public fun String.isValidHostname(): Boolean =
-    length in 1..63 && this[0].isLetterOrDigit() && drop(1).all { it.isLetterOrDigit() || it == '-' }
+public fun String.isValidHostname(): Boolean = length in 1..63 && this[0].isLetterOrDigit() && drop(1).all { it.isLetterOrDigit() || it == '-' }
 
 @InternalApi
 public fun String.isIpv4(): Boolean = parseIpv4OrNull() != null

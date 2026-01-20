@@ -166,11 +166,9 @@ class SdkOperationExecutionTest {
     }
 }
 
-private fun CoroutineScope.DelayingHttpEngine(duration: Duration) =
-    DelayingHttpEngine(coroutineContext, listOf(duration))
+private fun CoroutineScope.DelayingHttpEngine(duration: Duration) = DelayingHttpEngine(coroutineContext, listOf(duration))
 
-private fun CoroutineScope.DelayingHttpEngine(durations: List<Duration>) =
-    DelayingHttpEngine(coroutineContext, durations)
+private fun CoroutineScope.DelayingHttpEngine(durations: List<Duration>) = DelayingHttpEngine(coroutineContext, durations)
 
 private class DelayingHttpEngine(
     testContext: CoroutineContext,

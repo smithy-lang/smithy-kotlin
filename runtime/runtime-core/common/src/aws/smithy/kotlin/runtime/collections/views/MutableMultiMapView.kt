@@ -37,11 +37,9 @@ internal class MutableMultiMapView<KSrc, KDest, VSrc, VDest>(
         }
     }
 
-    private fun fwdEntryView(src: MutableMap.MutableEntry<KSrc, MutableList<VSrc>>) =
-        MutableEntryView(src, kSrc2Dest, vListSrc2Dest, vListDest2Src)
+    private fun fwdEntryView(src: MutableMap.MutableEntry<KSrc, MutableList<VSrc>>) = MutableEntryView(src, kSrc2Dest, vListSrc2Dest, vListDest2Src)
 
-    private fun revEntryView(dest: MutableMap.MutableEntry<KDest, MutableList<VDest>>) =
-        MutableEntryView(dest, kDest2Src, vListDest2Src, vListSrc2Dest)
+    private fun revEntryView(dest: MutableMap.MutableEntry<KDest, MutableList<VDest>>) = MutableEntryView(dest, kDest2Src, vListDest2Src, vListSrc2Dest)
 
     override fun add(key: KDest, value: VDest): Boolean = ensureKey(key).add(value)
 
@@ -51,8 +49,7 @@ internal class MutableMultiMapView<KSrc, KDest, VSrc, VDest>(
 
     override fun addAll(key: KDest, values: Collection<VDest>): Boolean = ensureKey(key).addAll(values)
 
-    override fun addAll(key: KDest, index: Int, values: Collection<VDest>): Boolean =
-        ensureKey(key).addAll(index, values)
+    override fun addAll(key: KDest, index: Int, values: Collection<VDest>): Boolean = ensureKey(key).addAll(index, values)
 
     override fun clear() {
         src.clear()
@@ -75,8 +72,7 @@ internal class MutableMultiMapView<KSrc, KDest, VSrc, VDest>(
     override val keys: MutableSet<KDest>
         get() = src.keys.asView(kSrc2Dest, kDest2Src)
 
-    override fun put(key: KDest, value: MutableList<VDest>): MutableList<VDest>? =
-        src.put(kDest2Src(key), vListDest2Src(value))?.let(vListSrc2Dest)
+    override fun put(key: KDest, value: MutableList<VDest>): MutableList<VDest>? = src.put(kDest2Src(key), vListDest2Src(value))?.let(vListSrc2Dest)
 
     override fun putAll(from: Map<out KDest, MutableList<VDest>>) {
         from.entries.forEach { (kDest, vDest) ->
@@ -95,11 +91,9 @@ internal class MutableMultiMapView<KSrc, KDest, VSrc, VDest>(
 
     override fun removeAt(key: KDest, index: Int): VDest? = src.removeAt(kDest2Src(key), index)?.let(vSrc2Dest)
 
-    override fun removeAll(key: KDest, values: Collection<VDest>): Boolean? =
-        src.removeAll(kDest2Src(key), values.asView(vDest2Src, vSrc2Dest))
+    override fun removeAll(key: KDest, values: Collection<VDest>): Boolean? = src.removeAll(kDest2Src(key), values.asView(vDest2Src, vSrc2Dest))
 
-    override fun retainAll(key: KDest, values: Collection<VDest>): Boolean? =
-        src[kDest2Src(key)]?.retainAll(values.asView(vDest2Src, vSrc2Dest))
+    override fun retainAll(key: KDest, values: Collection<VDest>): Boolean? = src[kDest2Src(key)]?.retainAll(values.asView(vDest2Src, vSrc2Dest))
 
     override val size: Int
         get() = src.size

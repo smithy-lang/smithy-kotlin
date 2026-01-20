@@ -79,10 +79,9 @@ public suspend fun ByteStream.writeToFile(file: File): Long = withContext(Dispat
     }
 }
 
-private suspend fun File.writeAll(chan: SdkByteReadChannel): Long =
-    sink().use {
-        chan.readAll(it)
-    }
+private suspend fun File.writeAll(chan: SdkByteReadChannel): Long = sink().use {
+    chan.readAll(it)
+}
 
 /**
  * Write the contents of this ByteStream to file at the given path
@@ -181,7 +180,6 @@ public suspend fun ByteStream.appendToOutputStream(outputStream: OutputStream): 
     out.writeAll(src)
 }
 
-private suspend fun OutputStream.writeAll(chan: SdkByteReadChannel): Long =
-    sink().use {
-        chan.readAll(it)
-    }
+private suspend fun OutputStream.writeAll(chan: SdkByteReadChannel): Long = sink().use {
+    chan.readAll(it)
+}

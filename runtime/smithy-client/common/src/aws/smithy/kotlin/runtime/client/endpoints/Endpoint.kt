@@ -47,11 +47,10 @@ public data class Endpoint @InternalApi constructor(
         headers: ValuesMap<String>? = null,
     ) : this(uri, headers, emptyAttributes())
 
-    override fun equals(other: Any?): Boolean =
-        other is Endpoint &&
-            uri == other.uri &&
-            headers == other.headers &&
-            attributes == other.attributes
+    override fun equals(other: Any?): Boolean = other is Endpoint &&
+        uri == other.uri &&
+        headers == other.headers &&
+        attributes == other.attributes
 
     override fun hashCode(): Int {
         var result = uri.hashCode()

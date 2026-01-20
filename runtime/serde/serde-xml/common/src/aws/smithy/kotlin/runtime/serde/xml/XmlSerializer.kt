@@ -101,16 +101,13 @@ public class XmlSerializer(private val xmlWriter: XmlStreamWriter = xmlStreamWri
         }
     }
 
-    private fun numberField(descriptor: SdkFieldDescriptor, value: Number) =
-        tagOrAttribute(descriptor, value, ::serializeNumber)
+    private fun numberField(descriptor: SdkFieldDescriptor, value: Number) = tagOrAttribute(descriptor, value, ::serializeNumber)
 
-    override fun field(descriptor: SdkFieldDescriptor, value: Boolean): Unit =
-        tagOrAttribute(descriptor, value, ::serializeBoolean)
+    override fun field(descriptor: SdkFieldDescriptor, value: Boolean): Unit = tagOrAttribute(descriptor, value, ::serializeBoolean)
 
     override fun field(descriptor: SdkFieldDescriptor, value: Byte): Unit = numberField(descriptor, value)
 
-    override fun field(descriptor: SdkFieldDescriptor, value: Char): Unit =
-        tagOrAttribute(descriptor, value, ::serializeChar)
+    override fun field(descriptor: SdkFieldDescriptor, value: Char): Unit = tagOrAttribute(descriptor, value, ::serializeChar)
 
     override fun field(descriptor: SdkFieldDescriptor, value: Short): Unit = numberField(descriptor, value)
 
@@ -124,17 +121,13 @@ public class XmlSerializer(private val xmlWriter: XmlStreamWriter = xmlStreamWri
 
     override fun field(descriptor: SdkFieldDescriptor, value: BigInteger): Unit = numberField(descriptor, value)
 
-    override fun field(descriptor: SdkFieldDescriptor, value: BigDecimal): Unit =
-        field(descriptor, value.toPlainString())
+    override fun field(descriptor: SdkFieldDescriptor, value: BigDecimal): Unit = field(descriptor, value.toPlainString())
 
-    override fun field(descriptor: SdkFieldDescriptor, value: String): Unit =
-        tagOrAttribute(descriptor, value, ::serializeString)
+    override fun field(descriptor: SdkFieldDescriptor, value: String): Unit = tagOrAttribute(descriptor, value, ::serializeString)
 
-    override fun field(descriptor: SdkFieldDescriptor, value: Instant, format: TimestampFormat): Unit =
-        field(descriptor, value.format(format))
+    override fun field(descriptor: SdkFieldDescriptor, value: Instant, format: TimestampFormat): Unit = field(descriptor, value.format(format))
 
-    override fun field(descriptor: SdkFieldDescriptor, value: ByteArray): Unit =
-        field(descriptor, value.encodeBase64String())
+    override fun field(descriptor: SdkFieldDescriptor, value: ByteArray): Unit = field(descriptor, value.encodeBase64String())
 
     override fun field(descriptor: SdkFieldDescriptor, value: Document?): Unit = throw SerializationException(
         "cannot serialize field ${descriptor.serialName}; Document type is not supported by xml encoding",
@@ -269,8 +262,7 @@ private class XmlMapSerializer(
 
     override fun entry(key: String, value: Instant?, format: TimestampFormat): Unit = entry(key, value?.format(format))
 
-    override fun entry(key: String, value: Document?) =
-        throw SerializationException("document values not supported by xml serializer")
+    override fun entry(key: String, value: Document?) = throw SerializationException("document values not supported by xml serializer")
 
     override fun entry(key: String, value: ByteArray?): Unit = entry(key, value)
 

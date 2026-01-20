@@ -40,11 +40,9 @@ public actual class BigInteger internal constructor(internal val delegate: JvmBi
     public actual override fun hashCode(): Int = 17 + delegate.hashCode()
     public actual override fun equals(other: Any?): Boolean = other is BigInteger && delegate == other.delegate
 
-    public actual operator fun plus(other: BigInteger): BigInteger =
-        coalesceOrCreate(delegate + other.delegate, this, other)
+    public actual operator fun plus(other: BigInteger): BigInteger = coalesceOrCreate(delegate + other.delegate, this, other)
 
-    public actual operator fun minus(other: BigInteger): BigInteger =
-        coalesceOrCreate(delegate - other.delegate, this, other)
+    public actual operator fun minus(other: BigInteger): BigInteger = coalesceOrCreate(delegate - other.delegate, this, other)
 
     public actual override operator fun compareTo(other: BigInteger): Int = delegate.compareTo(other.delegate)
     public actual fun toByteArray(): ByteArray = delegate.toByteArray()

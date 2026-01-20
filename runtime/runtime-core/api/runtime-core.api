@@ -404,9 +404,31 @@ public final class aws/smithy/kotlin/runtime/config/EnvironmentSettingKt {
 	public static final fun getStrEnvSetting ()Lkotlin/jvm/functions/Function2;
 	public static final fun resolve (Laws/smithy/kotlin/runtime/config/CaseInsensitiveEnvironmentSetting;Laws/smithy/kotlin/runtime/util/PlatformEnvironProvider;)Ljava/lang/Object;
 	public static final fun resolve (Laws/smithy/kotlin/runtime/config/EnvironmentSetting;Laws/smithy/kotlin/runtime/util/PlatformEnvironProvider;)Ljava/lang/Object;
+	public static final fun resolve (Laws/smithy/kotlin/runtime/config/MultipleKeyEnvironmentSetting;Laws/smithy/kotlin/runtime/util/PlatformEnvironProvider;)Ljava/lang/Object;
 	public static synthetic fun resolve$default (Laws/smithy/kotlin/runtime/config/CaseInsensitiveEnvironmentSetting;Laws/smithy/kotlin/runtime/util/PlatformEnvironProvider;ILjava/lang/Object;)Ljava/lang/Object;
 	public static synthetic fun resolve$default (Laws/smithy/kotlin/runtime/config/EnvironmentSetting;Laws/smithy/kotlin/runtime/util/PlatformEnvironProvider;ILjava/lang/Object;)Ljava/lang/Object;
+	public static synthetic fun resolve$default (Laws/smithy/kotlin/runtime/config/MultipleKeyEnvironmentSetting;Laws/smithy/kotlin/runtime/util/PlatformEnvironProvider;ILjava/lang/Object;)Ljava/lang/Object;
+	public static final fun withAdditionalKeys (Laws/smithy/kotlin/runtime/config/EnvironmentSetting;Ljava/util/List;Ljava/util/List;)Laws/smithy/kotlin/runtime/config/MultipleKeyEnvironmentSetting;
+	public static synthetic fun withAdditionalKeys$default (Laws/smithy/kotlin/runtime/config/EnvironmentSetting;Ljava/util/List;Ljava/util/List;ILjava/lang/Object;)Laws/smithy/kotlin/runtime/config/MultipleKeyEnvironmentSetting;
 	public static final fun withCaseInsensitiveSuffixes (Laws/smithy/kotlin/runtime/config/EnvironmentSetting;Ljava/lang/String;Ljava/lang/String;)Laws/smithy/kotlin/runtime/config/CaseInsensitiveEnvironmentSetting;
+}
+
+public final class aws/smithy/kotlin/runtime/config/MultipleKeyEnvironmentSetting {
+	public fun <init> (Lkotlin/jvm/functions/Function1;Ljava/util/List;Ljava/util/List;Ljava/lang/Object;)V
+	public synthetic fun <init> (Lkotlin/jvm/functions/Function1;Ljava/util/List;Ljava/util/List;Ljava/lang/Object;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun component1 ()Lkotlin/jvm/functions/Function1;
+	public final fun component2 ()Ljava/util/List;
+	public final fun component3 ()Ljava/util/List;
+	public final fun component4 ()Ljava/lang/Object;
+	public final fun copy (Lkotlin/jvm/functions/Function1;Ljava/util/List;Ljava/util/List;Ljava/lang/Object;)Laws/smithy/kotlin/runtime/config/MultipleKeyEnvironmentSetting;
+	public static synthetic fun copy$default (Laws/smithy/kotlin/runtime/config/MultipleKeyEnvironmentSetting;Lkotlin/jvm/functions/Function1;Ljava/util/List;Ljava/util/List;Ljava/lang/Object;ILjava/lang/Object;)Laws/smithy/kotlin/runtime/config/MultipleKeyEnvironmentSetting;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getDefaultValue ()Ljava/lang/Object;
+	public final fun getEnvVars ()Ljava/util/List;
+	public final fun getParse ()Lkotlin/jvm/functions/Function1;
+	public final fun getSysProps ()Ljava/util/List;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
 }
 
 public final class aws/smithy/kotlin/runtime/content/BigDecimal : java/lang/Number, java/lang/Comparable {

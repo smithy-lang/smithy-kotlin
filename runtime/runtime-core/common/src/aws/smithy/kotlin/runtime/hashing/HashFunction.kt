@@ -61,10 +61,10 @@ public typealias HashSupplier = () -> HashFunction
 @InternalApi
 public fun ByteArray.hash(hashSupplier: HashSupplier): ByteArray = hash(hashSupplier(), this)
 
-@InternalApi
 /**
  * Return the [HashFunction] which is represented by this string, or null if none match.
  */
+@InternalApi
 public fun String.toHashFunction(): HashFunction? = when (this.lowercase()) {
     "crc32" -> Crc32()
     "crc32c" -> Crc32c()
@@ -78,8 +78,7 @@ public fun String.toHashFunction(): HashFunction? = when (this.lowercase()) {
  * @return The [HashFunction] which is represented by this string, or an exception if none match.
  */
 @InternalApi
-public fun String.toHashFunctionOrThrow(): HashFunction =
-    toHashFunction() ?: throw ClientException("Checksum algorithm is not supported: $this")
+public fun String.toHashFunctionOrThrow(): HashFunction = toHashFunction() ?: throw ClientException("Checksum algorithm is not supported: $this")
 
 /**
  * @return If the [HashFunction] is supported by flexible checksums
@@ -95,8 +94,7 @@ public val HashFunction.isSupportedForFlexibleChecksums: Boolean
  * @return The checksum algorithm header used depending on the checksum algorithm name
  */
 @InternalApi
-public fun String.resolveChecksumAlgorithmHeaderName(): String =
-    this.toHashFunctionOrThrow().resolveChecksumAlgorithmHeaderName()
+public fun String.resolveChecksumAlgorithmHeaderName(): String = this.toHashFunctionOrThrow().resolveChecksumAlgorithmHeaderName()
 
 /**
  * @return The checksum algorithm header used depending on the checksum algorithm

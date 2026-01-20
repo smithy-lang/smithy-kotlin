@@ -20,26 +20,25 @@ internal class TextString(val value: String) : Value {
     }
 
     internal companion object {
-        fun decode(buffer: SdkBufferedSource): TextString =
-            if (peekMinorByte(buffer) == Minor.INDEFINITE.value) {
-                val list = IndefiniteList.decode(buffer).value
+        fun decode(buffer: SdkBufferedSource): TextString = if (peekMinorByte(buffer) == Minor.INDEFINITE.value) {
+            val list = IndefiniteList.decode(buffer).value
 
-                val sb = StringBuilder()
-                list.forEach {
-                    sb.append((it as TextString).value)
-                }
-
-                TextString(sb.toString())
-            } else {
-                val length = decodeArgument(buffer).toInt()
-
-                val bytes = SdkBuffer().use {
-                    buffer.readFully(it, length.toLong())
-                    it.readByteArray()
-                }
-
-                TextString(bytes.decodeToString())
+            val sb = StringBuilder()
+            list.forEach {
+                sb.append((it as TextString).value)
             }
+
+            TextString(sb.toString())
+        } else {
+            val length = decodeArgument(buffer).toInt()
+
+            val bytes = SdkBuffer().use {
+                buffer.readFully(it, length.toLong())
+                it.readByteArray()
+            }
+
+            TextString(bytes.decodeToString())
+        }
     }
 }
 
@@ -54,26 +53,25 @@ internal class ByteString(val value: ByteArray) : Value {
     }
 
     internal companion object {
-        fun decode(buffer: SdkBufferedSource): ByteString =
-            if (peekMinorByte(buffer) == Minor.INDEFINITE.value) {
-                val list = IndefiniteList.decode(buffer).value
+        fun decode(buffer: SdkBufferedSource): ByteString = if (peekMinorByte(buffer) == Minor.INDEFINITE.value) {
+            val list = IndefiniteList.decode(buffer).value
 
-                val tempBuffer = SdkBuffer()
-                list.forEach {
-                    tempBuffer.write((it as ByteString).value)
-                }
-
-                ByteString(tempBuffer.readByteArray())
-            } else {
-                val length = decodeArgument(buffer).toInt()
-
-                val bytes = SdkBuffer().use {
-                    buffer.readFully(it, length.toLong())
-                    it.readByteArray()
-                }
-
-                ByteString(bytes)
+            val tempBuffer = SdkBuffer()
+            list.forEach {
+                tempBuffer.write((it as ByteString).value)
             }
+
+            ByteString(tempBuffer.readByteArray())
+        } else {
+            val length = decodeArgument(buffer).toInt()
+
+            val bytes = SdkBuffer().use {
+                buffer.readFully(it, length.toLong())
+                it.readByteArray()
+            }
+
+            ByteString(bytes)
+        }
     }
 }
 

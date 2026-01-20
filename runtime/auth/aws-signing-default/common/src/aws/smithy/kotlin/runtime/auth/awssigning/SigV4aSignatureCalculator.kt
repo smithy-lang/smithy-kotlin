@@ -75,13 +75,12 @@ internal class SigV4aSignatureCalculator(override val sha256Provider: HashSuppli
      * The final output looks like:
      * 0x00000001 || "AWS4-ECDSA-P256-SHA256" || 0x00 || AccessKeyId || counter || 0x00000100
      */
-    private fun fixedInputString(accessKeyId: String, counter: Byte): ByteArray =
-        byteArrayOf(0x00, 0x00, 0x00, 0x01) +
-            AwsSigningAlgorithm.SIGV4_ASYMMETRIC.signingName.encodeToByteArray() +
-            byteArrayOf(0x00) +
-            accessKeyId.encodeToByteArray() +
-            counter +
-            byteArrayOf(0x00, 0x00, 0x01, 0x00)
+    private fun fixedInputString(accessKeyId: String, counter: Byte): ByteArray = byteArrayOf(0x00, 0x00, 0x00, 0x01) +
+        AwsSigningAlgorithm.SIGV4_ASYMMETRIC.signingName.encodeToByteArray() +
+        byteArrayOf(0x00) +
+        accessKeyId.encodeToByteArray() +
+        counter +
+        byteArrayOf(0x00, 0x00, 0x01, 0x00)
 }
 
 // Convert [this] [ByteArray] to a positive [BigInteger] by prepending 0x00.

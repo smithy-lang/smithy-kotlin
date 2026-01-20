@@ -16,8 +16,7 @@ public actual val DefaultAwsSigner: AwsSigner = DefaultAwsSignerImpl()
 
 /** Creates a customized instance of [AwsSigner] */
 @Suppress("ktlint:standard:function-naming")
-public fun DefaultAwsSigner(block: DefaultAwsSignerBuilder.() -> Unit): AwsSigner =
-    DefaultAwsSignerBuilder().apply(block).build()
+public fun DefaultAwsSigner(block: DefaultAwsSignerBuilder.() -> Unit): AwsSigner = DefaultAwsSignerBuilder().apply(block).build()
 
 /** A builder class for creating instances of [AwsSigner] using the default implementation */
 public class DefaultAwsSignerBuilder {

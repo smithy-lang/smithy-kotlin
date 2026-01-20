@@ -24,22 +24,21 @@ import kotlin.test.*
 data class TestInput(val value: String)
 data class TestOutput(val body: HttpBody)
 
-inline fun <reified I> newTestOperation(serialized: HttpRequestBuilder): SdkHttpOperation<I, TestOutput> =
-    SdkHttpOperation.build<I, TestOutput> {
-        serializeWith = object : HttpSerializer.NonStreaming<I> {
-            override fun serialize(context: ExecutionContext, input: I): HttpRequestBuilder = serialized
-        }
-
-        deserializeWith = object : HttpDeserializer.Streaming<TestOutput> {
-            override suspend fun deserialize(context: ExecutionContext, call: HttpCall): TestOutput = TestOutput(call.response.body)
-        }
-
-        context {
-            // required operation context
-            operationName = "TestOperation"
-            serviceName = "TestService"
-        }
+inline fun <reified I> newTestOperation(serialized: HttpRequestBuilder): SdkHttpOperation<I, TestOutput> = SdkHttpOperation.build<I, TestOutput> {
+    serializeWith = object : HttpSerializer.NonStreaming<I> {
+        override fun serialize(context: ExecutionContext, input: I): HttpRequestBuilder = serialized
     }
+
+    deserializeWith = object : HttpDeserializer.Streaming<TestOutput> {
+        override suspend fun deserialize(context: ExecutionContext, call: HttpCall): TestOutput = TestOutput(call.response.body)
+    }
+
+    context {
+        // required operation context
+        operationName = "TestOperation"
+        serviceName = "TestService"
+    }
+}
 
 class FlexibleChecksumsResponseInterceptorTest {
 

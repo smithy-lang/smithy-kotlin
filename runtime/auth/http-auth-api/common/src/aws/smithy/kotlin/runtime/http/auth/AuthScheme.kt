@@ -24,8 +24,7 @@ public interface AuthScheme {
      *
      * @return an [IdentityProvider] compatible with [schemeId] (and by extension the configured [signer]).
      */
-    public fun identityProvider(identityProviderConfig: IdentityProviderConfig): IdentityProvider =
-        identityProviderConfig.identityProviderForScheme(schemeId)
+    public fun identityProvider(identityProviderConfig: IdentityProviderConfig): IdentityProvider = identityProviderConfig.identityProviderForScheme(schemeId)
 
     /**
      * The signer used to sign HTTP requests for this auth scheme

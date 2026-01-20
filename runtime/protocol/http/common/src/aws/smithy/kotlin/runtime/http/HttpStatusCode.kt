@@ -21,8 +21,7 @@ public data class HttpStatusCode(public val value: Int, public val description: 
         ;
 
         public companion object {
-            public fun fromCode(value: Int): Category =
-                values().find { value in it.range } ?: error("Invalid HTTP code $value")
+            public fun fromCode(value: Int): Category = values().find { value in it.range } ?: error("Invalid HTTP code $value")
         }
     }
 
@@ -105,8 +104,7 @@ public data class HttpStatusCode(public val value: Int, public val description: 
         /**
          * Convert a raw status code integer to an [HttpStatusCode] instance
          */
-        public fun fromValue(status: Int): HttpStatusCode =
-            byValue[status] ?: HttpStatusCode(status, "Unknown HttpStatusCode")
+        public fun fromValue(status: Int): HttpStatusCode = byValue[status] ?: HttpStatusCode(status, "Unknown HttpStatusCode")
     }
 }
 

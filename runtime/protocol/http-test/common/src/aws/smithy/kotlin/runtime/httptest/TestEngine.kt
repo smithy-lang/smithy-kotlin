@@ -32,10 +32,8 @@ public fun TestEngine(
         val now = Instant.now()
         HttpCall(request, resp, now, now)
     },
-): HttpClientEngine =
-    object : HttpClientEngineBase(name) {
-        override val config: HttpClientEngineConfig = HttpClientEngineConfig.Default
+): HttpClientEngine = object : HttpClientEngineBase(name) {
+    override val config: HttpClientEngineConfig = HttpClientEngineConfig.Default
 
-        override suspend fun roundTrip(context: ExecutionContext, request: HttpRequest): HttpCall =
-            roundTripImpl(context, request)
-    }
+    override suspend fun roundTrip(context: ExecutionContext, request: HttpRequest): HttpCall = roundTripImpl(context, request)
+}
