@@ -51,17 +51,16 @@ class TestLambdaClient : LambdaClient {
         functions = generateFunctions(inputMarker)
     }
 
-    override suspend fun identicalTokenListFunctions(input: IdenticalTokenListFunctionsRequest) =
-        IdenticalTokenListFunctionsResponse {
-            val inputMarker = input.marker.toIntOrZero()
+    override suspend fun identicalTokenListFunctions(input: IdenticalTokenListFunctionsRequest) = IdenticalTokenListFunctionsResponse {
+        val inputMarker = input.marker.toIntOrZero()
 
-            nextMarker = when (inputMarker) {
-                pageCount - 1 -> input.marker // Exhausted pages, return identical input marker
-                else -> (inputMarker + 1).toString() // Next page
-            }
-
-            functions = generateFunctions(inputMarker)
+        nextMarker = when (inputMarker) {
+            pageCount - 1 -> input.marker // Exhausted pages, return identical input marker
+            else -> (inputMarker + 1).toString() // Next page
         }
+
+        functions = generateFunctions(inputMarker)
+    }
 
     private fun generateFunctions(page: Int): List<FunctionConfiguration> {
         require(page < pageCount) { "Paginator tried to seek beyond max page $pageCount" }

@@ -16,8 +16,7 @@ internal open class MutableListView<Src, Dest>(
         src.add(index, dest2Src(element))
     }
 
-    override fun addAll(index: Int, elements: Collection<Dest>): Boolean =
-        src.addAll(index, elements.asView(dest2Src, src2Dest))
+    override fun addAll(index: Int, elements: Collection<Dest>): Boolean = src.addAll(index, elements.asView(dest2Src, src2Dest))
 
     override fun addAll(elements: Collection<Dest>): Boolean = src.addAll(elements.asView(dest2Src, src2Dest))
 
@@ -29,13 +28,11 @@ internal open class MutableListView<Src, Dest>(
 
     override fun listIterator(): MutableListIterator<Dest> = src.listIterator().asView(src2Dest, dest2Src)
 
-    override fun listIterator(index: Int): MutableListIterator<Dest> =
-        src.listIterator(index).asView(src2Dest, dest2Src)
+    override fun listIterator(index: Int): MutableListIterator<Dest> = src.listIterator(index).asView(src2Dest, dest2Src)
 
     override fun removeAt(index: Int): Dest = src2Dest(src.removeAt(index))
 
-    override fun subList(fromIndex: Int, toIndex: Int): MutableList<Dest> =
-        src.subList(fromIndex, toIndex).asView(src2Dest, dest2Src)
+    override fun subList(fromIndex: Int, toIndex: Int): MutableList<Dest> = src.subList(fromIndex, toIndex).asView(src2Dest, dest2Src)
 
     override fun set(index: Int, element: Dest): Dest = src2Dest(src.set(index, dest2Src(element)))
 

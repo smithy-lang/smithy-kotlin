@@ -47,16 +47,13 @@ class AuthIndexTest {
     // mock out the http auth integrations
     val mockIntegrations = listOf<KotlinIntegration>(
         object : KotlinIntegration {
-            override fun authSchemes(ctx: ProtocolGenerator.GenerationContext) =
-                listOf(TestAuthSchemeHandler(HttpApiKeyAuthTrait.ID))
+            override fun authSchemes(ctx: ProtocolGenerator.GenerationContext) = listOf(TestAuthSchemeHandler(HttpApiKeyAuthTrait.ID))
         },
         object : KotlinIntegration {
-            override fun authSchemes(ctx: ProtocolGenerator.GenerationContext) =
-                listOf(TestAuthSchemeHandler(HttpBasicAuthTrait.ID))
+            override fun authSchemes(ctx: ProtocolGenerator.GenerationContext) = listOf(TestAuthSchemeHandler(HttpBasicAuthTrait.ID))
         },
         object : KotlinIntegration {
-            override fun authSchemes(ctx: ProtocolGenerator.GenerationContext) =
-                listOf(TestAuthSchemeHandler(HttpBearerAuthTrait.ID))
+            override fun authSchemes(ctx: ProtocolGenerator.GenerationContext) = listOf(TestAuthSchemeHandler(HttpBearerAuthTrait.ID))
         },
         AnonymousAuthSchemeIntegration(),
     )
@@ -66,14 +63,12 @@ class AuthIndexTest {
         val model = loadModelFromResource("service-auth-test.smithy")
         val i1 = object : KotlinIntegration {
             override val order: Byte = -10
-            override fun authSchemes(ctx: ProtocolGenerator.GenerationContext) =
-                listOf(TestAuthSchemeHandler(HttpApiKeyAuthTrait.ID, "integration 1"))
+            override fun authSchemes(ctx: ProtocolGenerator.GenerationContext) = listOf(TestAuthSchemeHandler(HttpApiKeyAuthTrait.ID, "integration 1"))
         }
 
         val i2 = object : KotlinIntegration {
             override val order: Byte = 20
-            override fun authSchemes(ctx: ProtocolGenerator.GenerationContext) =
-                listOf(TestAuthSchemeHandler(HttpApiKeyAuthTrait.ID, "integration 2"))
+            override fun authSchemes(ctx: ProtocolGenerator.GenerationContext) = listOf(TestAuthSchemeHandler(HttpApiKeyAuthTrait.ID, "integration 2"))
         }
 
         val testCtx = model.newTestContext(integrations = listOf(i1, i2))

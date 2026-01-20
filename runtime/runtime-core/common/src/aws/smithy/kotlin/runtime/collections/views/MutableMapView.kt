@@ -12,11 +12,9 @@ internal open class MutableMapView<KSrc, KDest, VSrc, VDest>(
     private val vDest2Src: (VDest) -> VSrc,
 ) : MapView<KSrc, KDest, VSrc, VDest>(src, kSrc2Dest, kDest2Src, vSrc2Dest, vDest2Src),
     MutableMap<KDest, VDest> {
-    private fun fwdEntryView(src: MutableMap.MutableEntry<KSrc, VSrc>) =
-        MutableEntryView(src, kSrc2Dest, vSrc2Dest, vDest2Src)
+    private fun fwdEntryView(src: MutableMap.MutableEntry<KSrc, VSrc>) = MutableEntryView(src, kSrc2Dest, vSrc2Dest, vDest2Src)
 
-    private fun revEntryView(dest: MutableMap.MutableEntry<KDest, VDest>) =
-        MutableEntryView(dest, kDest2Src, vDest2Src, vSrc2Dest)
+    private fun revEntryView(dest: MutableMap.MutableEntry<KDest, VDest>) = MutableEntryView(dest, kDest2Src, vDest2Src, vSrc2Dest)
 
     override fun clear() {
         src.clear()

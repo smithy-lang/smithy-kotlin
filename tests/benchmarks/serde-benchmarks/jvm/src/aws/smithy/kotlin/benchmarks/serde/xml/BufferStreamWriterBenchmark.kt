@@ -62,14 +62,13 @@ data class Book(
     val subjects: List<String>,
     val locNumber: String,
 ) {
-    fun withIndex(index: Int): Book =
-        copy(
-            isbn = "$isbn-$index",
-            title = "$title-$index",
-            authors = authors.map { "$it-$index" },
-            subjects = subjects.map { "$it-$index" },
-            locNumber = "$locNumber-$index",
-        )
+    fun withIndex(index: Int): Book = copy(
+        isbn = "$isbn-$index",
+        title = "$title-$index",
+        authors = authors.map { "$it-$index" },
+        subjects = subjects.map { "$it-$index" },
+        locNumber = "$locNumber-$index",
+    )
 }
 
 private val baseBooks = listOf(

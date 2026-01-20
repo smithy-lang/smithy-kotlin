@@ -330,9 +330,8 @@ class SmithySdkTest {
 /**
  * Load and initialize a model from a Java resource URL
  */
-fun URL.asSmithy(): Model =
-    Model.assembler()
-        .addImport(this)
-        .discoverModels()
-        .assemble()
-        .unwrap()
+fun URL.asSmithy(): Model = Model.assembler()
+    .addImport(this)
+    .discoverModels()
+    .assemble()
+    .unwrap()

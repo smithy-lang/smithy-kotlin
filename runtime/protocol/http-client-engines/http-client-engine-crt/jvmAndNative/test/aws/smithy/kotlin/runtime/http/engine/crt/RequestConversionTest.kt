@@ -19,12 +19,10 @@ import kotlin.coroutines.EmptyCoroutineContext
 import kotlin.test.*
 
 class RequestConversionTest {
-    private fun byteStreamFromContents(contents: String): ByteStream =
-        object : ByteStream.ChannelStream() {
-            override val contentLength: Long = contents.length.toLong()
-            override fun readFrom(): SdkByteReadChannel =
-                SdkByteReadChannel(contents.encodeToByteArray())
-        }
+    private fun byteStreamFromContents(contents: String): ByteStream = object : ByteStream.ChannelStream() {
+        override val contentLength: Long = contents.length.toLong()
+        override fun readFrom(): SdkByteReadChannel = SdkByteReadChannel(contents.encodeToByteArray())
+    }
 
     @Test
     fun testUri() {

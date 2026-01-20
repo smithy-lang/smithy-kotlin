@@ -33,8 +33,7 @@ public typealias MiddlewareFn<Request, Response> = suspend (Request, Handler<Req
 public data class MiddlewareLambda<Request, Response>(
     private val fn: MiddlewareFn<Request, Response>,
 ) : Middleware<Request, Response> {
-    override suspend fun <H : Handler<Request, Response>> handle(request: Request, next: H): Response =
-        fn(request, next)
+    override suspend fun <H : Handler<Request, Response>> handle(request: Request, next: H): Response = fn(request, next)
 }
 
 /**

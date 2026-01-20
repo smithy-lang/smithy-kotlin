@@ -62,8 +62,7 @@ public class ReadChannelBodyStream(
     // and handle these concerns.
     override fun resetPosition(): Boolean = true
 
-    override fun sendRequestBody(buffer: MutableBuffer): Boolean =
-        doSendRequestBody(buffer).also { if (it) producerJob.complete() }
+    override fun sendRequestBody(buffer: MutableBuffer): Boolean = doSendRequestBody(buffer).also { if (it) producerJob.complete() }
 
     @OptIn(DelicateCoroutinesApi::class)
     private fun doSendRequestBody(buffer: MutableBuffer): Boolean {

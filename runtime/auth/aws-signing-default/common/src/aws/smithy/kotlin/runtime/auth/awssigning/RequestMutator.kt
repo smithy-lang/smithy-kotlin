@@ -72,5 +72,4 @@ internal val AwsSigningConfig.credentialScope: String
 /**
  * Formats the value for a credential header/parameter
  */
-internal fun credentialValue(config: AwsSigningConfig): String =
-    "${config.credentials.accessKeyId}/${config.credentialScope}"
+internal fun credentialValue(config: AwsSigningConfig): String = "${config.credentials.accessKeyId}/${config.credentialScope}"

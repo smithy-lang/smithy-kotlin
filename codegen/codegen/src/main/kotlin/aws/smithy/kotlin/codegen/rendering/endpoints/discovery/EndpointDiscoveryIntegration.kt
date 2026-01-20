@@ -117,9 +117,8 @@ class EndpointDiscoveryIntegration : KotlinIntegration {
 private object DiscoveredEndpointErrorMiddleware : ProtocolMiddleware {
     override val name: String = "DiscoveredEndpointErrorMiddleware"
 
-    override fun isEnabledFor(ctx: ProtocolGenerator.GenerationContext, op: OperationShape): Boolean =
-        ctx.service.getTrait<ClientEndpointDiscoveryTrait>()?.optionalError?.getOrNull() != null &&
-            op.hasTrait<ClientDiscoveredEndpointTrait>()
+    override fun isEnabledFor(ctx: ProtocolGenerator.GenerationContext, op: OperationShape): Boolean = ctx.service.getTrait<ClientEndpointDiscoveryTrait>()?.optionalError?.getOrNull() != null &&
+        op.hasTrait<ClientDiscoveredEndpointTrait>()
 
     override fun render(ctx: ProtocolGenerator.GenerationContext, op: OperationShape, writer: KotlinWriter) {
         val errorShapeId = ctx.service.expectTrait<ClientEndpointDiscoveryTrait>().optionalError.get()

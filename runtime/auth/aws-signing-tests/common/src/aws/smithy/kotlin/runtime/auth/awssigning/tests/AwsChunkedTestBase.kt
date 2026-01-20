@@ -88,18 +88,17 @@ abstract class AwsChunkedTestBase(
      * Chunk sizes are defined by the following grammar:
      * String(Hex(ChunkSize));chunk-signature=<chunk_signature>
      */
-    fun getChunkSizes(bytes: String, isUnsignedChunk: Boolean = false): List<Int> =
-        if (isUnsignedChunk) {
-            UNSIGNED_CHUNK_SIZE_REGEX
-                .findAll(bytes)
-                .map { result -> result.value.split("\r\n")[0].toInt(16) }
-                .toList()
-        } else {
-            CHUNK_SIZE_REGEX
-                .findAll(bytes)
-                .map { result -> result.value.split(";")[0].toInt(16) }
-                .toList()
-        }
+    fun getChunkSizes(bytes: String, isUnsignedChunk: Boolean = false): List<Int> = if (isUnsignedChunk) {
+        UNSIGNED_CHUNK_SIZE_REGEX
+            .findAll(bytes)
+            .map { result -> result.value.split("\r\n")[0].toInt(16) }
+            .toList()
+    } else {
+        CHUNK_SIZE_REGEX
+            .findAll(bytes)
+            .map { result -> result.value.split(";")[0].toInt(16) }
+            .toList()
+    }
 
     /**
      * Given a string representation of aws-chunked encoded bytes, return the value of the x-amz-trailer-signature trailing header.

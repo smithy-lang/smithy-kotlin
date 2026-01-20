@@ -50,8 +50,7 @@ open class StaticHttpBindingResolver(
     /**
      * All operations are binding for the model.
      */
-    override fun bindingOperations(): List<OperationShape> =
-        topDownIndex.getContainedOperations(service).toList()
+    override fun bindingOperations(): List<OperationShape> = topDownIndex.getContainedOperations(service).toList()
 
     /**
      * By default returns all inputs as [HttpBinding.Location.DOCUMENT]
@@ -79,16 +78,15 @@ open class StaticHttpBindingResolver(
 
 // Create a [HttpBindingDescriptor] based on traits on [MemberShape]
 // See https://awslabs.github.io/smithy/1.0/spec/core/http-traits.html
-private fun MemberShape.toHttpBindingDescriptor(): HttpBindingDescriptor =
-    when {
-        hasTrait<HttpHeaderTrait>() -> HttpBindingDescriptor(this, HttpBinding.Location.HEADER, expectTrait<HttpHeaderTrait>().value)
-        hasTrait<HttpLabelTrait>() -> HttpBindingDescriptor(this, HttpBinding.Location.LABEL)
-        hasTrait<HttpPayloadTrait>() -> HttpBindingDescriptor(this, HttpBinding.Location.PAYLOAD)
-        hasTrait<HttpQueryTrait>() -> HttpBindingDescriptor(this, HttpBinding.Location.QUERY, expectTrait<HttpQueryTrait>().value)
-        hasTrait<HttpResponseCodeTrait>() -> HttpBindingDescriptor(this, HttpBinding.Location.RESPONSE_CODE)
-        hasTrait<HttpPrefixHeadersTrait>() -> HttpBindingDescriptor(this, HttpBinding.Location.PREFIX_HEADERS, expectTrait<HttpPrefixHeadersTrait>().value)
-        // By default, all structure members that are not bound as part of the HTTP message are
-        // serialized in a protocol-specific document sent in the body of the message
-        else -> HttpBindingDescriptor(this, HttpBinding.Location.DOCUMENT)
-        // NOTE: Unsure of where (if anywhere) HttpBinding.Location.UNBOUND should be modeled
-    }
+private fun MemberShape.toHttpBindingDescriptor(): HttpBindingDescriptor = when {
+    hasTrait<HttpHeaderTrait>() -> HttpBindingDescriptor(this, HttpBinding.Location.HEADER, expectTrait<HttpHeaderTrait>().value)
+    hasTrait<HttpLabelTrait>() -> HttpBindingDescriptor(this, HttpBinding.Location.LABEL)
+    hasTrait<HttpPayloadTrait>() -> HttpBindingDescriptor(this, HttpBinding.Location.PAYLOAD)
+    hasTrait<HttpQueryTrait>() -> HttpBindingDescriptor(this, HttpBinding.Location.QUERY, expectTrait<HttpQueryTrait>().value)
+    hasTrait<HttpResponseCodeTrait>() -> HttpBindingDescriptor(this, HttpBinding.Location.RESPONSE_CODE)
+    hasTrait<HttpPrefixHeadersTrait>() -> HttpBindingDescriptor(this, HttpBinding.Location.PREFIX_HEADERS, expectTrait<HttpPrefixHeadersTrait>().value)
+    // By default, all structure members that are not bound as part of the HTTP message are
+    // serialized in a protocol-specific document sent in the body of the message
+    else -> HttpBindingDescriptor(this, HttpBinding.Location.DOCUMENT)
+    // NOTE: Unsure of where (if anywhere) HttpBinding.Location.UNBOUND should be modeled
+}

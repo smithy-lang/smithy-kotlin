@@ -37,8 +37,7 @@ import kotlin.test.Test
 class ServiceClientConfigGeneratorTest {
     private fun getModel(): Model = loadModelFromResource("idempotent-token-test-model.smithy")
 
-    private fun createWriter() =
-        KotlinWriter(TestModelDefault.NAMESPACE).apply { putContext("service.name", TestModelDefault.SERVICE_NAME) }
+    private fun createWriter() = KotlinWriter(TestModelDefault.NAMESPACE).apply { putContext("service.name", TestModelDefault.SERVICE_NAME) }
 
     @Test
     fun `it detects default properties`() {
@@ -230,8 +229,7 @@ public class Config private constructor(builder: Builder) {
         val writer = createWriter()
         val customIntegration = object : KotlinIntegration {
 
-            override fun additionalServiceConfigProps(ctx: CodegenContext): List<ConfigProperty> =
-                listOf(ConfigProperty.Int("customProp"))
+            override fun additionalServiceConfigProps(ctx: CodegenContext): List<ConfigProperty> = listOf(ConfigProperty.Int("customProp"))
         }
 
         val renderingCtx = testCtx.toRenderingContext(writer, serviceShape)

@@ -99,5 +99,4 @@ public inline fun <reified TExpected : FieldTrait> SdkFieldDescriptor.findTraits
     .toSet()
 
 @InternalApi
-public inline fun <reified TExpected : FieldTrait> SdkFieldDescriptor.hasTrait(): Boolean =
-    traits.any { it is TExpected }
+public inline fun <reified TExpected : FieldTrait> SdkFieldDescriptor.hasTrait(): Boolean = traits.any { it is TExpected }

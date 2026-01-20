@@ -22,8 +22,7 @@ import software.amazon.smithy.model.traits.HttpChecksumRequiredTrait
  * See: https://smithy.io/2.0/spec/http-bindings.html#httpchecksumrequired-trait
  */
 class HttpChecksumRequiredIntegration : KotlinIntegration {
-    override fun enabledForService(model: Model, settings: KotlinSettings): Boolean =
-        model.isTraitApplied(HttpChecksumRequiredTrait::class.java)
+    override fun enabledForService(model: Model, settings: KotlinSettings): Boolean = model.isTraitApplied(HttpChecksumRequiredTrait::class.java)
 
     override fun customizeMiddleware(
         ctx: ProtocolGenerator.GenerationContext,
@@ -38,8 +37,7 @@ private val httpChecksumRequiredDefaultAlgorithmMiddleware = object : ProtocolMi
     override val name: String = "httpChecksumRequiredDefaultAlgorithmMiddleware"
     override val order: Byte = -2 // Before S3 Express (possibly) changes the default (-1) and before calculating checksum (0)
 
-    override fun isEnabledFor(ctx: ProtocolGenerator.GenerationContext, op: OperationShape): Boolean =
-        op.hasTrait<HttpChecksumRequiredTrait>() && !op.hasTrait<HttpChecksumTrait>()
+    override fun isEnabledFor(ctx: ProtocolGenerator.GenerationContext, op: OperationShape): Boolean = op.hasTrait<HttpChecksumRequiredTrait>() && !op.hasTrait<HttpChecksumTrait>()
 
     override fun render(ctx: ProtocolGenerator.GenerationContext, op: OperationShape, writer: KotlinWriter) {
         writer.write(
@@ -59,8 +57,7 @@ private val httpChecksumRequiredDefaultAlgorithmMiddleware = object : ProtocolMi
 private val httpChecksumRequiredMiddleware = object : ProtocolMiddleware {
     override val name: String = "httpChecksumRequiredMiddleware"
 
-    override fun isEnabledFor(ctx: ProtocolGenerator.GenerationContext, op: OperationShape): Boolean =
-        op.hasTrait<HttpChecksumRequiredTrait>() && !op.hasTrait<HttpChecksumTrait>()
+    override fun isEnabledFor(ctx: ProtocolGenerator.GenerationContext, op: OperationShape): Boolean = op.hasTrait<HttpChecksumRequiredTrait>() && !op.hasTrait<HttpChecksumTrait>()
 
     override fun render(ctx: ProtocolGenerator.GenerationContext, op: OperationShape, writer: KotlinWriter) {
         writer.write(

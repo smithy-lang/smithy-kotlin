@@ -37,16 +37,11 @@ public class DocumentBuilder internal constructor() {
     public class ListBuilder internal constructor() {
         public val content: MutableList<Document?> = mutableListOf()
 
-        public fun add(value: Number?): Boolean =
-            content.add(if (value != null) Document(value) else null)
-        public fun add(value: String?): Boolean =
-            content.add(if (value != null) Document(value) else null)
-        public fun add(value: Boolean?): Boolean =
-            content.add(if (value != null) Document(value) else null)
-        public fun add(value: Document?): Boolean =
-            content.add(value)
-        public fun add(@Suppress("UNUSED_PARAMETER") value: Nothing?): Boolean =
-            content.add(null)
+        public fun add(value: Number?): Boolean = content.add(if (value != null) Document(value) else null)
+        public fun add(value: String?): Boolean = content.add(if (value != null) Document(value) else null)
+        public fun add(value: Boolean?): Boolean = content.add(if (value != null) Document(value) else null)
+        public fun add(value: Document?): Boolean = content.add(value)
+        public fun add(@Suppress("UNUSED_PARAMETER") value: Nothing?): Boolean = content.add(null)
 
         @JvmName("addAllNumbers")
         public fun addAll(value: List<Number?>): Unit = value.forEach(::add)
@@ -64,18 +59,16 @@ public class DocumentBuilder internal constructor() {
     /**
      * Builds a [Document] list with the given builder.
      */
-    public fun buildList(init: ListBuilder.() -> Unit): Document =
-        ListBuilder().let {
-            it.init()
-            Document(it.content)
-        }
+    public fun buildList(init: ListBuilder.() -> Unit): Document = ListBuilder().let {
+        it.init()
+        Document(it.content)
+    }
 }
 
 /**
  * Builds a [Document] with the given builder.
  */
-public fun buildDocument(init: DocumentBuilder.() -> Unit): Document =
-    DocumentBuilder().let {
-        it.init()
-        Document(it.content)
-    }
+public fun buildDocument(init: DocumentBuilder.() -> Unit): Document = DocumentBuilder().let {
+    it.init()
+    Document(it.content)
+}

@@ -36,11 +36,9 @@ import software.amazon.smithy.model.traits.XmlNameTrait
 class Ec2Query : QueryHttpBindingProtocolGenerator() {
     override val protocol: ShapeId = Ec2QueryTrait.ID
 
-    override fun structuredDataSerializer(ctx: ProtocolGenerator.GenerationContext): StructuredDataSerializerGenerator =
-        Ec2QuerySerializerGenerator(this)
+    override fun structuredDataSerializer(ctx: ProtocolGenerator.GenerationContext): StructuredDataSerializerGenerator = Ec2QuerySerializerGenerator(this)
 
-    override fun structuredDataParser(ctx: ProtocolGenerator.GenerationContext): StructuredDataParserGenerator =
-        Ec2QueryParserGenerator(this)
+    override fun structuredDataParser(ctx: ProtocolGenerator.GenerationContext): StructuredDataParserGenerator = Ec2QueryParserGenerator(this)
 
     override fun renderDeserializeErrorDetails(
         ctx: ProtocolGenerator.GenerationContext,
@@ -67,17 +65,15 @@ private class Ec2QuerySerdeFormUrlDescriptorGenerator(
                 ?: objectShape.getTrait<XmlNameTrait>()?.value?.replaceFirstChar(Char::uppercaseChar)
                 ?: super.objectSerialName
 
-    override fun getMemberSerialNameOverride(member: MemberShape): String? =
-        member.getTrait<Ec2QueryNameTrait>()?.value
-            ?: member.getTrait<XmlNameTrait>()?.value?.replaceFirstChar(Char::uppercaseChar)
-            ?: if (member.memberName.firstOrNull()?.isUpperCase() == false) {
-                member.memberName.replaceFirstChar(Char::uppercaseChar)
-            } else {
-                null
-            }
+    override fun getMemberSerialNameOverride(member: MemberShape): String? = member.getTrait<Ec2QueryNameTrait>()?.value
+        ?: member.getTrait<XmlNameTrait>()?.value?.replaceFirstChar(Char::uppercaseChar)
+        ?: if (member.memberName.firstOrNull()?.isUpperCase() == false) {
+            member.memberName.replaceFirstChar(Char::uppercaseChar)
+        } else {
+            null
+        }
 
-    override fun isMemberFlattened(member: MemberShape, targetShape: Shape): Boolean =
-        targetShape.type == ShapeType.LIST
+    override fun isMemberFlattened(member: MemberShape, targetShape: Shape): Boolean = targetShape.type == ShapeType.LIST
 }
 
 private class Ec2QuerySerializerGenerator(

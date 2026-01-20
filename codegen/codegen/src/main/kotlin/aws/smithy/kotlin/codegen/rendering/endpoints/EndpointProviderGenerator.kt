@@ -22,12 +22,11 @@ class EndpointProviderGenerator(
     private val writer: KotlinWriter,
 ) {
     companion object {
-        fun getSymbol(settings: KotlinSettings): Symbol =
-            buildSymbol {
-                val prefix = clientName(settings.sdkId)
-                name = "${prefix}EndpointProvider"
-                namespace = "${settings.pkg.name}.endpoints"
-            }
+        fun getSymbol(settings: KotlinSettings): Symbol = buildSymbol {
+            val prefix = clientName(settings.sdkId)
+            name = "${prefix}EndpointProvider"
+            namespace = "${settings.pkg.name}.endpoints"
+        }
     }
 
     private val providerSymbol = getSymbol(ctx.settings)

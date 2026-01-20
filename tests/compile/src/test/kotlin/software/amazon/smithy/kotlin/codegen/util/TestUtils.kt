@@ -130,10 +130,9 @@ fun MockManifest.writeToDirectory(dir: String) {
 }
 
 // Convert a MockManifest into the Source File list expected by the compiler tool.
-fun MockManifest.toSourceFileList() =
-    files
-        .filter { file -> file.toString().endsWith(".kt") }
-        .map { file -> SourceFile.kotlin(file.fileName.toString(), expectFileString(file)) }
+fun MockManifest.toSourceFileList() = files
+    .filter { file -> file.toString().endsWith(".kt") }
+    .map { file -> SourceFile.kotlin(file.fileName.toString(), expectFileString(file)) }
 
 // Produce the generated service code given model inputs.
 fun generateSdk(

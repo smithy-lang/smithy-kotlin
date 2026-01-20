@@ -113,5 +113,4 @@ fun <T : Shape> ProtocolGenerator.GenerationContext.toRenderingContext(
     protocolGenerator: ProtocolGenerator,
     forShape: T? = null,
     writer: KotlinWriter,
-): RenderingContext<T> =
-    RenderingContext(writer, forShape, model, symbolProvider, settings, protocolGenerator, integrations)
+): RenderingContext<T> = RenderingContext(writer, forShape, model, symbolProvider, settings, protocolGenerator, integrations)

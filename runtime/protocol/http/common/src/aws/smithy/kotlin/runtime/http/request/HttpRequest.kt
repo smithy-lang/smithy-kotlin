@@ -37,8 +37,7 @@ public sealed interface HttpRequest {
     public val trailingHeaders: DeferredHeaders
 
     public companion object {
-        public operator fun invoke(block: HttpRequestBuilder.() -> Unit): HttpRequest =
-            HttpRequestBuilder().apply(block).build()
+        public operator fun invoke(block: HttpRequestBuilder.() -> Unit): HttpRequest = HttpRequestBuilder().apply(block).build()
     }
 }
 

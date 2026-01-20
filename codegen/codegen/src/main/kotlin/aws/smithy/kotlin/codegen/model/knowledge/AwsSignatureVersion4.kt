@@ -24,12 +24,11 @@ object AwsSignatureVersion4 {
      * @param serviceShape service shape for the API
      * @return if the SigV4 trait is used by the service.
      */
-    fun isSupportedAuthentication(model: Model, serviceShape: ServiceShape): Boolean =
-        ServiceIndex
-            .of(model)
-            .getAuthSchemes(serviceShape)
-            .values
-            .any { it.javaClass == SigV4Trait::class.java }
+    fun isSupportedAuthentication(model: Model, serviceShape: ServiceShape): Boolean = ServiceIndex
+        .of(model)
+        .getAuthSchemes(serviceShape)
+        .values
+        .any { it.javaClass == SigV4Trait::class.java }
 
     /**
      * Get the SigV4Trait auth name to sign request for

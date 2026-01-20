@@ -41,10 +41,9 @@ import software.amazon.smithy.model.traits.PaginatedTrait
  * https://awslabs.github.io/smithy/1.0/spec/core/behavior-traits.html#paginated-trait for details.
  */
 class PaginatorGenerator : KotlinIntegration {
-    override fun enabledForService(model: Model, settings: KotlinSettings): Boolean =
-        TopDownIndex.of(model)
-            .getContainedOperations(settings.service)
-            .any { it.hasTrait<PaginatedTrait>() }
+    override fun enabledForService(model: Model, settings: KotlinSettings): Boolean = TopDownIndex.of(model)
+        .getContainedOperations(settings.service)
+        .any { it.hasTrait<PaginatedTrait>() }
 
     override fun writeAdditionalFiles(ctx: CodegenContext, delegator: KotlinDelegator) {
         val service = ctx.model.expectShape<ServiceShape>(ctx.settings.service)

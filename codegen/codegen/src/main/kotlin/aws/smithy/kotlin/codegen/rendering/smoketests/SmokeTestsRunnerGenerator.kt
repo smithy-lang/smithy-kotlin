@@ -254,14 +254,14 @@ class SmokeTestsRunnerGenerator(
     }
 
     // Helpers
+
     /**
      * Tries to get the specific exception required in the failure criterion of a test.
      * If no specific exception is required we default to the generic smoke tests failure exception.
      */
-    private fun getFailureCriterion(testCase: SmokeTestCase): Symbol =
-        testCase.expectation.failure.getOrNull()?.errorId?.getOrNull()?.let {
-            symbolProvider.toSymbol(model.getShape(it).get())
-        } ?: RuntimeTypes.HttpClient.Interceptors.SmokeTestsFailureException
+    private fun getFailureCriterion(testCase: SmokeTestCase): Symbol = testCase.expectation.failure.getOrNull()?.errorId?.getOrNull()?.let {
+        symbolProvider.toSymbol(model.getShape(it).get())
+    } ?: RuntimeTypes.HttpClient.Interceptors.SmokeTestsFailureException
 
     /**
      * Renders print statement for smoke test result in accordance to design doc & test anything protocol (TAP)

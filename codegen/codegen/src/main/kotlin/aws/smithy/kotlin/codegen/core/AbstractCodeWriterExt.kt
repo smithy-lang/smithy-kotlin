@@ -132,17 +132,15 @@ fun <T : AbstractCodeWriter<T>> T.declareSection(
     return this
 }
 
-private fun <T : AbstractCodeWriter<T>> T.removeContext(context: Map<String, Any?>): Unit =
-    context.keys.forEach { key -> removeContext(key) }
+private fun <T : AbstractCodeWriter<T>> T.removeContext(context: Map<String, Any?>): Unit = context.keys.forEach { key -> removeContext(key) }
 
 /**
  * Convenience function to get a typed value out of the context or throw if the key doesn't exist
  * or the type is wrong
  */
-inline fun <W : AbstractCodeWriter<W>, reified V> AbstractCodeWriter<W>.getContextValue(key: String): V =
-    checkNotNull(getContext(key) as? V) {
-        "Expected `$key` in CodeWriter context"
-    }
+inline fun <W : AbstractCodeWriter<W>, reified V> AbstractCodeWriter<W>.getContextValue(key: String): V = checkNotNull(getContext(key) as? V) {
+    "Expected `$key` in CodeWriter context"
+}
 
 /**
  * Convenience function to get a typed value out of the context or throw if the key doesn't exist
@@ -198,5 +196,4 @@ fun <T : AbstractCodeWriter<T>> T.callIf(test: Boolean, runnable: Runnable): T {
 }
 
 /** Escape the [expressionStart] character to avoid problems during formatting */
-fun <T : AbstractCodeWriter<T>> T.escape(text: String): String =
-    text.replace("$expressionStart", "$expressionStart$expressionStart")
+fun <T : AbstractCodeWriter<T>> T.escape(text: String): String = text.replace("$expressionStart", "$expressionStart$expressionStart")

@@ -222,8 +222,7 @@ public class AttributesBuilder {
  * }
  * ```
  */
-public inline fun mutableAttributesOf(block: AttributesBuilder.() -> Unit): MutableAttributes =
-    AttributesBuilder().apply(block).attributes
+public inline fun mutableAttributesOf(block: AttributesBuilder.() -> Unit): MutableAttributes = AttributesBuilder().apply(block).attributes
 
 /**
  * Return a new set of attributes using [AttributesBuilder].
@@ -239,8 +238,7 @@ public inline fun mutableAttributesOf(block: AttributesBuilder.() -> Unit): Muta
  * }
  * ```
  */
-public inline fun attributesOf(block: AttributesBuilder.() -> Unit): Attributes =
-    mutableAttributesOf(block)
+public inline fun attributesOf(block: AttributesBuilder.() -> Unit): Attributes = mutableAttributesOf(block)
 
 /**
  * Returns a new [MutableAttributes] instance with elements from this set of attributes.

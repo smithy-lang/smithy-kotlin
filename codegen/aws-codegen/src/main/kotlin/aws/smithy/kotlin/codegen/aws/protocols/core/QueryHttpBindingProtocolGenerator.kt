@@ -48,8 +48,7 @@ abstract class QueryHttpBindingProtocolGenerator : HttpBindingProtocolGenerator(
         return middleware + queryMiddleware
     }
 
-    override fun getProtocolHttpBindingResolver(model: Model, serviceShape: ServiceShape): HttpBindingResolver =
-        QueryBindingResolver(model, serviceShape)
+    override fun getProtocolHttpBindingResolver(model: Model, serviceShape: ServiceShape): HttpBindingResolver = QueryBindingResolver(model, serviceShape)
 
     override fun renderSerializeHttpBody(
         ctx: ProtocolGenerator.GenerationContext,

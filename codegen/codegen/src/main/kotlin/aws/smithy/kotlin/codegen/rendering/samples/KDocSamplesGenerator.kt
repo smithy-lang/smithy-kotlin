@@ -74,12 +74,11 @@ class KDocSamplesGenerator : KotlinIntegration {
         }
     }
 
-    private fun sampleIdentifier(settings: KotlinSettings, op: OperationShape, index: Int): String =
-        listOf(
-            samplePackage(settings),
-            sampleClassName(op),
-            sampleFunctionName(index),
-        ).joinToString(separator = ".")
+    private fun sampleIdentifier(settings: KotlinSettings, op: OperationShape, index: Int): String = listOf(
+        samplePackage(settings),
+        sampleClassName(op),
+        sampleFunctionName(index),
+    ).joinToString(separator = ".")
 
     private fun sampleFunctionName(index: Int): String = "sample" + if (index > 0) "${index + 1}" else ""
     private fun sampleClassName(op: OperationShape): String = op.id.name

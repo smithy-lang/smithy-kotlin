@@ -125,16 +125,15 @@ class Docker {
             }
         }
 
-        private fun isReady() =
-            Socket().use { socket ->
-                val endpoint = InetSocketAddress(InetAddress.getLocalHost(), hostPort)
-                try {
-                    socket.connect(endpoint, POLL_CONNECT_TIMEOUT_MS)
-                    true
-                } catch (e: IOException) {
-                    false
-                }
+        private fun isReady() = Socket().use { socket ->
+            val endpoint = InetSocketAddress(InetAddress.getLocalHost(), hostPort)
+            try {
+                socket.connect(endpoint, POLL_CONNECT_TIMEOUT_MS)
+                true
+            } catch (e: IOException) {
+                false
             }
+        }
 
         fun start() {
             client.startContainerCmd(id).execAndMeasure { "Container $id running" }

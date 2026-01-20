@@ -38,9 +38,8 @@ internal class ChannelCapacity(private val totalCapacity: Int) {
     inline val isFull: Boolean
         get() = _availableForWrite.value == 0
 
-    override fun toString(): String =
-        "BufferCapacity(availableForRead: $availableForRead, availableForWrite: $availableForWrite, " +
-            "pendingFlush: $pendingToFlush, capacity: $totalCapacity)"
+    override fun toString(): String = "BufferCapacity(availableForRead: $availableForRead, availableForWrite: $availableForWrite, " +
+        "pendingFlush: $pendingToFlush, capacity: $totalCapacity)"
 
     /**
      * @return true if there are bytes available for read after flush

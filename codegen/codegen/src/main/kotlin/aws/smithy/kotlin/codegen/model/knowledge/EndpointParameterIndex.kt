@@ -36,8 +36,7 @@ class EndpointParameterIndex private constructor(model: Model) : KnowledgeIndex 
      * @param op the operation shape to get context params for
      * @return map of parameter name to input member shape
      */
-    fun inputContextParams(op: OperationShape) =
-        // maps endpoint parameter name -> input member shape
+    fun inputContextParams(op: OperationShape) = // maps endpoint parameter name -> input member shape
         buildMap {
             opIndex.getInput(op).getOrNull()?.members()?.forEach { member ->
                 member.getTrait<ContextParamTrait>()?.let { trait ->
@@ -52,8 +51,7 @@ class EndpointParameterIndex private constructor(model: Model) : KnowledgeIndex 
      *
      * @param op the operation shape to get context params for.
      */
-    fun operationContextParams(op: OperationShape): Map<String, OperationContextParamDefinition>? =
-        op.getTrait<OperationContextParamsTrait>()?.parameters
+    fun operationContextParams(op: OperationShape): Map<String, OperationContextParamDefinition>? = op.getTrait<OperationContextParamsTrait>()?.parameters
 
     /**
      * Check if there are any context parameters bound to an operation
@@ -61,8 +59,7 @@ class EndpointParameterIndex private constructor(model: Model) : KnowledgeIndex 
      * @param op operation to check parameters for
      * @return true if there are any static, input, or operation context parameters for the given operation
      */
-    fun hasContextParams(op: OperationShape): Boolean =
-        staticContextParams(op) != null || inputContextParams(op).isNotEmpty() || operationContextParams(op) != null
+    fun hasContextParams(op: OperationShape): Boolean = staticContextParams(op) != null || inputContextParams(op).isNotEmpty() || operationContextParams(op) != null
 
     companion object {
         fun of(model: Model): EndpointParameterIndex = EndpointParameterIndex(model)

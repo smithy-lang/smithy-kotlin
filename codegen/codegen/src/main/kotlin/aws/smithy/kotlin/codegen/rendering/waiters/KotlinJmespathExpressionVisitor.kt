@@ -84,8 +84,7 @@ class KotlinJmespathExpressionVisitor(
         return name
     }
 
-    private fun bestTempVarName(preferredName: String): String =
-        suffixSequence.map { "$preferredName$it" }.first(tempVars::add)
+    private fun bestTempVarName(preferredName: String): String = suffixSequence.map { "$preferredName$it" }.first(tempVars::add)
 
     private fun flatMappingBlock(right: JmespathExpression, leftName: String, leftShape: Shape, innerShape: Shape?): VisitedExpression {
         if (right is CurrentExpression) return VisitedExpression(leftName, leftShape) // nothing to map
@@ -143,8 +142,7 @@ class KotlinJmespathExpressionVisitor(
         return VisitedExpression(addTempVar(name, codegen), member, nullable = currentShape.isNullable)
     }
 
-    private fun subfieldCodegen(expression: FieldExpression, parentName: String, isObject: Boolean = false): String =
-        subfieldLogic(expression, parentName, isObject).codegen
+    private fun subfieldCodegen(expression: FieldExpression, parentName: String, isObject: Boolean = false): String = subfieldLogic(expression, parentName, isObject).codegen
 
     override fun visitAnd(expression: AndExpression): VisitedExpression {
         writer.addImport(RuntimeTypes.Core.Utils.truthiness)
@@ -186,8 +184,7 @@ class KotlinJmespathExpressionVisitor(
 
     override fun visitExpressionType(expression: ExpressionTypeExpression): VisitedExpression = throw CodegenException("ExpressionTypeExpression is unsupported")
 
-    override fun visitField(expression: FieldExpression): VisitedExpression =
-        if (shapeCursor.size == 1) subfield(expression, topLevelParentName) else subfield(expression, "it")
+    override fun visitField(expression: FieldExpression): VisitedExpression = if (shapeCursor.size == 1) subfield(expression, topLevelParentName) else subfield(expression, "it")
 
     override fun visitFilterProjection(expression: FilterProjectionExpression): VisitedExpression {
         val left = expression.left.accept(this)
@@ -217,14 +214,11 @@ class KotlinJmespathExpressionVisitor(
         return VisitedExpression(ident, currentShape, inner.projected)
     }
 
-    private fun FunctionExpression.singleArg(): VisitedExpression =
-        acceptSubexpression(this.arguments[0])
+    private fun FunctionExpression.singleArg(): VisitedExpression = acceptSubexpression(this.arguments[0])
 
-    private fun FunctionExpression.twoArgs(): Pair<VisitedExpression, VisitedExpression> =
-        acceptSubexpression(this.arguments[0]) to acceptSubexpression(this.arguments[1])
+    private fun FunctionExpression.twoArgs(): Pair<VisitedExpression, VisitedExpression> = acceptSubexpression(this.arguments[0]) to acceptSubexpression(this.arguments[1])
 
-    private fun FunctionExpression.args(): List<VisitedExpression> =
-        this.arguments.map { acceptSubexpression(it) }
+    private fun FunctionExpression.args(): List<VisitedExpression> = this.arguments.map { acceptSubexpression(it) }
 
     private fun VisitedExpression.dotFunction(
         expression: FunctionExpression,
@@ -505,14 +499,13 @@ class KotlinJmespathExpressionVisitor(
         return processRightSubexpression(expression.right, left.identifier, left.isObject)
     }
 
-    private fun processRightSubexpression(expression: JmespathExpression, leftName: String, isObject: Boolean = false): VisitedExpression =
-        when (expression) {
-            is FieldExpression -> subfield(expression, leftName, isObject)
-            is IndexExpression -> index(expression, leftName)
-            is Subexpression -> subexpression(expression, leftName)
-            is ProjectionExpression -> projection(expression, leftName)
-            else -> throw CodegenException("Subexpression type $expression is unsupported")
-        }
+    private fun processRightSubexpression(expression: JmespathExpression, leftName: String, isObject: Boolean = false): VisitedExpression = when (expression) {
+        is FieldExpression -> subfield(expression, leftName, isObject)
+        is IndexExpression -> index(expression, leftName)
+        is Subexpression -> subexpression(expression, leftName)
+        is ProjectionExpression -> projection(expression, leftName)
+        else -> throw CodegenException("Subexpression type $expression is unsupported")
+    }
 
     private fun index(expression: IndexExpression, parentName: String): VisitedExpression {
         val index = if (expression.index < 0) "$parentName.size${expression.index}" else expression.index
@@ -527,32 +520,30 @@ class KotlinJmespathExpressionVisitor(
     private val Shape.isEnumMap: Boolean
         get() = this is MapShape && ctx.model.expectShape(value.target).isEnum
 
-    private fun ensureNullGuard(shape: Shape?, expr: String, elvisExpr: String? = null): String =
-        if (shape?.isNullable == true) {
-            buildString {
-                append("?.$expr")
-                elvisExpr?.let { append(" ?: $it") }
-            }
-        } else {
-            ".$expr"
+    private fun ensureNullGuard(shape: Shape?, expr: String, elvisExpr: String? = null): String = if (shape?.isNullable == true) {
+        buildString {
+            append("?.$expr")
+            elvisExpr?.let { append(" ?: $it") }
         }
+    } else {
+        ".$expr"
+    }
 
     /*
     Smithy spec expects a map, JMESPath spec expects an object
     Smithy spec: https://smithy.io/2.0/additional-specs/rules-engine/parameters.html#smithy-rules-operationcontextparams-trait
     JMESPath spec: https://jmespath.org/specification.html#keys
      */
-    private fun VisitedExpression.getKeys(): String =
-        if (shape?.targetOrSelf(ctx.model)?.type == ShapeType.MAP) {
-            "$identifier?.keys?.map { it.toString() }?.toList()"
-        } else {
-            shape
-                ?.targetOrSelf(ctx.model)
-                ?.allMembers
-                ?.keys
-                ?.joinToString(", ", "listOf(", ")") { it.doubleQuote() }
-                ?: "listOf<String>()"
-        }
+    private fun VisitedExpression.getKeys(): String = if (shape?.targetOrSelf(ctx.model)?.type == ShapeType.MAP) {
+        "$identifier?.keys?.map { it.toString() }?.toList()"
+    } else {
+        shape
+            ?.targetOrSelf(ctx.model)
+            ?.allMembers
+            ?.keys
+            ?.joinToString(", ", "listOf(", ")") { it.doubleQuote() }
+            ?: "listOf<String>()"
+    }
 
     private fun VisitedExpression.getValues(): String {
         val values = this.shape?.targetOrSelf(ctx.model)?.allMembers?.keys
@@ -575,11 +566,9 @@ class KotlinJmespathExpressionVisitor(
         return union
     }
 
-    private fun VisitedExpression.jmesPathToString(): String =
-        addTempVar("answer", "if(${this.identifier} as Any is String) ${this.identifier} else ${this.identifier}.toString()")
+    private fun VisitedExpression.jmesPathToString(): String = addTempVar("answer", "if(${this.identifier} as Any is String) ${this.identifier} else ${this.identifier}.toString()")
 
-    private fun VisitedExpression.toArray(): String =
-        addTempVar("answer", "if(${this.identifier} as Any is List<*> || ${this.identifier} as Any is Array<*>) ${this.identifier} as List<*> else listOf(${this.identifier})")
+    private fun VisitedExpression.toArray(): String = addTempVar("answer", "if(${this.identifier} as Any is List<*> || ${this.identifier} as Any is Array<*>) ${this.identifier} as List<*> else listOf(${this.identifier})")
 
     private fun List<VisitedExpression>.getNotNull(): String {
         val notNull = bestTempVarName("notNull")

@@ -49,21 +49,20 @@ class EventStreamSerializerGenerator(
      * private suspend fun serializeFooOperationBody(input: FooInput): HttpBody { ... }
      * ```
      */
-    fun requestHandler(ctx: ProtocolGenerator.GenerationContext, op: OperationShape): Symbol =
-        op.bodySerializer(ctx.settings) { writer ->
-            val inputSymbol = ctx.symbolProvider.toSymbol(ctx.model.expectShape<StructureShape>(op.input.get()))
-            writer.withBlock(
-                // FIXME - revert to private, exposed as internal temporarily while we figure out integration tests
-                "internal suspend fun #L(context: #T, input: #T): #T {",
-                "}",
-                op.bodySerializerName(),
-                RuntimeTypes.Core.ExecutionContext,
-                inputSymbol,
-                RuntimeTypes.Http.HttpBody,
-            ) {
-                renderSerializeEventStream(ctx, op, writer)
-            }
+    fun requestHandler(ctx: ProtocolGenerator.GenerationContext, op: OperationShape): Symbol = op.bodySerializer(ctx.settings) { writer ->
+        val inputSymbol = ctx.symbolProvider.toSymbol(ctx.model.expectShape<StructureShape>(op.input.get()))
+        writer.withBlock(
+            // FIXME - revert to private, exposed as internal temporarily while we figure out integration tests
+            "internal suspend fun #L(context: #T, input: #T): #T {",
+            "}",
+            op.bodySerializerName(),
+            RuntimeTypes.Core.ExecutionContext,
+            inputSymbol,
+            RuntimeTypes.Http.HttpBody,
+        ) {
+            renderSerializeEventStream(ctx, op, writer)
         }
+    }
 
     private fun renderSerializeEventStream(
         ctx: ProtocolGenerator.GenerationContext,

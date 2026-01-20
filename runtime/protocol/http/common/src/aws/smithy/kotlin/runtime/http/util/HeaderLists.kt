@@ -125,10 +125,9 @@ private const val QUOTABLE_HEADER_VALUE_CHARS = "\",()"
  * Conditionally quotes and escapes a header value if the header value contains a comma or quote
  */
 @InternalApi
-public fun quoteHeaderValue(value: String): String =
-    if (value.trim().length != value.length || QUOTABLE_HEADER_VALUE_CHARS.any { value.contains(it) }) {
-        val formatted = value.replace("\\", "\\\\").replace("\"", "\\\"")
-        "\"$formatted\""
-    } else {
-        value
-    }
+public fun quoteHeaderValue(value: String): String = if (value.trim().length != value.length || QUOTABLE_HEADER_VALUE_CHARS.any { value.contains(it) }) {
+    val formatted = value.replace("\\", "\\\\").replace("\"", "\\\"")
+    "\"$formatted\""
+} else {
+    value
+}

@@ -25,8 +25,7 @@ public interface HttpClientEngineConfig {
          * Initializes a new [HttpClientEngineConfig] via a DSL builder block
          * @param block A receiver lambda which sets the properties of the config to be built
          */
-        public operator fun invoke(block: Builder.() -> Unit): HttpClientEngineConfig =
-            HttpClientEngineConfigImpl(Builder().apply(block))
+        public operator fun invoke(block: Builder.() -> Unit): HttpClientEngineConfig = HttpClientEngineConfigImpl(Builder().apply(block))
 
         /**
          * Default client engine config

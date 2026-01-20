@@ -41,8 +41,7 @@ public class ClockSkewInterceptor : HttpInterceptor {
          * @param errorCode the server's error code
          * @param serverTime the server's time
          */
-        internal fun Instant.isSkewed(serverTime: Instant, errorCode: String): Boolean =
-            CLOCK_SKEW_ERROR_CODES.contains(errorCode) || (POSSIBLE_CLOCK_SKEW_ERROR_CODES.contains(errorCode) && until(serverTime).absoluteValue >= CLOCK_SKEW_THRESHOLD)
+        internal fun Instant.isSkewed(serverTime: Instant, errorCode: String): Boolean = CLOCK_SKEW_ERROR_CODES.contains(errorCode) || (POSSIBLE_CLOCK_SKEW_ERROR_CODES.contains(errorCode) && until(serverTime).absoluteValue >= CLOCK_SKEW_THRESHOLD)
 
         // Errors definitely caused by clock skew
         private val CLOCK_SKEW_ERROR_CODES = listOf(

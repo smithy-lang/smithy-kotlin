@@ -22,8 +22,7 @@ import software.amazon.smithy.model.Model
  * Registers support for setting AwsQueryCompatible error metadata when deserializing operation errors
  */
 class AwsQueryCompatibleErrorDeserialization : KotlinIntegration {
-    override fun enabledForService(model: Model, settings: KotlinSettings): Boolean =
-        model.expectShape(settings.service).hasTrait<AwsQueryCompatibleTrait>()
+    override fun enabledForService(model: Model, settings: KotlinSettings): Boolean = model.expectShape(settings.service).hasTrait<AwsQueryCompatibleTrait>()
 
     override val sectionWriters: List<SectionWriterBinding>
         get() = listOf(

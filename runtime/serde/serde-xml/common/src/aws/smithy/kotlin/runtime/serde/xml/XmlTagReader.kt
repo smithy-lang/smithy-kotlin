@@ -86,8 +86,7 @@ public class XmlTagReader(
  * deserialization.
  */
 @InternalApi
-public fun xmlTagReader(payload: ByteArray): XmlTagReader =
-    xmlStreamReader(payload).root()
+public fun xmlTagReader(payload: ByteArray): XmlTagReader = xmlStreamReader(payload).root()
 
 private fun XmlStreamReader.root(): XmlTagReader {
     val start = seek<XmlToken.BeginElement>() ?: error("expected start tag: last = $lastToken")
@@ -108,12 +107,11 @@ public fun XmlToken.BeginElement.tagReader(reader: XmlStreamReader): XmlTagReade
  * Unwrap the next token as [XmlToken.Text] and return its value or throw a [DeserializationException]
  */
 @InternalApi
-public fun XmlTagReader.data(): String =
-    when (val next = nextToken()) {
-        is XmlToken.Text -> next.value ?: ""
-        null, is XmlToken.EndElement -> ""
-        else -> throw DeserializationException("expected XmlToken.Text element, found $next")
-    }
+public fun XmlTagReader.data(): String = when (val next = nextToken()) {
+    is XmlToken.Text -> next.value ?: ""
+    null, is XmlToken.EndElement -> ""
+    else -> throw DeserializationException("expected XmlToken.Text element, found $next")
+}
 
 /**
  * Attempt to get the text token as [XmlToken.Text] and return a result containing its' value on success

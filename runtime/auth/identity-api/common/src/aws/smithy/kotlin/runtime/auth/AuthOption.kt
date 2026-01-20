@@ -24,8 +24,7 @@ public interface AuthOption {
     public val attributes: Attributes
 }
 
-public fun AuthOption(id: AuthSchemeId, attributes: Attributes = emptyAttributes()): AuthOption =
-    AuthOptionImpl(id, attributes)
+public fun AuthOption(id: AuthSchemeId, attributes: Attributes = emptyAttributes()): AuthOption = AuthOptionImpl(id, attributes)
 
 private data class AuthOptionImpl(
     override val schemeId: AuthSchemeId,

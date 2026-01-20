@@ -51,18 +51,16 @@ class EndpointResolverAdapterGenerator(
     companion object {
         const val CLASS_NAME = "EndpointResolverAdapter"
 
-        fun getSymbol(settings: KotlinSettings): Symbol =
-            buildSymbol {
-                name = CLASS_NAME
-                namespace = "${settings.pkg.name}.endpoints.internal"
-                definitionFile = "$name.kt"
-            }
+        fun getSymbol(settings: KotlinSettings): Symbol = buildSymbol {
+            name = CLASS_NAME
+            namespace = "${settings.pkg.name}.endpoints.internal"
+            definitionFile = "$name.kt"
+        }
 
-        fun getResolveEndpointParamsFn(settings: KotlinSettings): Symbol =
-            buildSymbol {
-                name = "resolveEndpointParams"
-                namespace = "${settings.pkg.name}.endpoints.internal"
-            }
+        fun getResolveEndpointParamsFn(settings: KotlinSettings): Symbol = buildSymbol {
+            name = "resolveEndpointParams"
+            namespace = "${settings.pkg.name}.endpoints.internal"
+        }
     }
 
     fun render() {
@@ -116,17 +114,16 @@ class EndpointResolverAdapterGenerator(
         }
     }
 
-    private fun renderBindOperationContextFunction(op: OperationShape, epParameterIndex: EndpointParameterIndex) =
-        writer.write("")
-            .withBlock(
-                "private fun #L(builder: #T.Builder, request: #T): Unit {",
-                "}",
-                op.bindEndpointContextFnName(),
-                EndpointParametersGenerator.getSymbol(ctx.settings),
-                RuntimeTypes.HttpClient.Operation.ResolveEndpointRequest,
-            ) {
-                renderBindOperationContextParams(epParameterIndex, op)
-            }
+    private fun renderBindOperationContextFunction(op: OperationShape, epParameterIndex: EndpointParameterIndex) = writer.write("")
+        .withBlock(
+            "private fun #L(builder: #T.Builder, request: #T): Unit {",
+            "}",
+            op.bindEndpointContextFnName(),
+            EndpointParametersGenerator.getSymbol(ctx.settings),
+            RuntimeTypes.HttpClient.Operation.ResolveEndpointRequest,
+        ) {
+            renderBindOperationContextParams(epParameterIndex, op)
+        }
 
     private fun renderResolveEndpointParams() {
         // NOTE: this is internal as it's re-used for auth scheme resolver generators in specific instances where they

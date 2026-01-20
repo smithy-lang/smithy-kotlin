@@ -25,13 +25,12 @@ class RetryMiddlewareTest {
 
     private val policy = object : RetryPolicy<Any?> {
         var attempts = 0
-        override fun evaluate(result: Result<Any?>): RetryDirective =
-            if (attempts < 1) {
-                attempts++
-                RetryDirective.RetryError(RetryErrorType.ServerSide)
-            } else {
-                RetryDirective.TerminateAndSucceed
-            }
+        override fun evaluate(result: Result<Any?>): RetryDirective = if (attempts < 1) {
+            attempts++
+            RetryDirective.RetryError(RetryErrorType.ServerSide)
+        } else {
+            RetryDirective.TerminateAndSucceed
+        }
     }
 
     @Test

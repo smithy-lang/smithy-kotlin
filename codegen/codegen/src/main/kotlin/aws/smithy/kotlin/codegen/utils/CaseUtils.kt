@@ -124,8 +124,7 @@ private fun loweredFollowedByDigit(current: String, nextChar: Char): Boolean {
     return current.last().isLowerCase()
 }
 
-private fun digitFollowedByLower(current: String, nextChar: Char): Boolean =
-    (current.last().isDigit() && nextChar.isLowerCase())
+private fun digitFollowedByLower(current: String, nextChar: Char): Boolean = (current.last().isDigit() && nextChar.isLowerCase())
 
 /**
  * Convert a string to `PascalCase` (uppercase start with upper case word boundaries)

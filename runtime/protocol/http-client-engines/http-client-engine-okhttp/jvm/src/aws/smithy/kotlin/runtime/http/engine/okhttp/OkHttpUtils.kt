@@ -199,8 +199,7 @@ public class OkHttpCall(
     coroutineContext: CoroutineContext = EmptyCoroutineContext,
     public val call: Call,
 ) : HttpCall(request, response, requestTime, responseTime, coroutineContext) {
-    override fun copy(request: HttpRequest, response: HttpResponse): HttpCall =
-        OkHttpCall(request, response, requestTime, responseTime, coroutineContext, call)
+    override fun copy(request: HttpRequest, response: HttpResponse): HttpCall = OkHttpCall(request, response, requestTime, responseTime, coroutineContext, call)
     override fun cancelInFlight() {
         super.cancelInFlight()
         call.cancel()
@@ -232,12 +231,11 @@ public fun URI.toUrl(): Url {
 }
 
 @InternalApi
-public inline fun <T> mapOkHttpExceptions(block: () -> T): T =
-    try {
-        block()
-    } catch (ex: IOException) {
-        throw HttpException(ex, ex.errCode(), retryable = true) // All IOExceptions are retryable
-    }
+public inline fun <T> mapOkHttpExceptions(block: () -> T): T = try {
+    block()
+} catch (ex: IOException) {
+    throw HttpException(ex, ex.errCode(), retryable = true) // All IOExceptions are retryable
+}
 
 @InternalApi
 public fun Exception.errCode(): HttpErrorCode = when {
@@ -248,12 +246,10 @@ public fun Exception.errCode(): HttpErrorCode = when {
     else -> HttpErrorCode.SDK_UNKNOWN
 }
 
-private fun Exception.isConnectTimeoutException(): Boolean =
-    findCauseOrSuppressed<SocketTimeoutException>()?.message?.contains("connect", ignoreCase = true) == true
+private fun Exception.isConnectTimeoutException(): Boolean = findCauseOrSuppressed<SocketTimeoutException>()?.message?.contains("connect", ignoreCase = true) == true
 
-private fun Exception.isConnectionClosedException(): Boolean =
-    message?.contains("unexpected end of stream") == true &&
-        (cause as? Exception)?.findCauseOrSuppressed<EOFException>()?.message?.contains("\\n not found: limit=0") == true
+private fun Exception.isConnectionClosedException(): Boolean = message?.contains("unexpected end of stream") == true &&
+    (cause as? Exception)?.findCauseOrSuppressed<EOFException>()?.message?.contains("\\n not found: limit=0") == true
 
 private inline fun <reified T> Exception.isCauseOrSuppressed(): Boolean = findCauseOrSuppressed<T>() != null
 private inline fun <reified T> Exception.findCauseOrSuppressed(): T? {

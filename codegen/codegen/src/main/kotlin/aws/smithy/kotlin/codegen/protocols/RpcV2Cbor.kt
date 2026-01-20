@@ -43,14 +43,11 @@ class RpcV2Cbor : HttpBindingProtocolGenerator() {
     // between text-based and binary-based protocols
     override val defaultTimestampFormat = TimestampFormatTrait.Format.UNKNOWN
 
-    override fun getProtocolHttpBindingResolver(model: Model, serviceShape: ServiceShape): HttpBindingResolver =
-        RpcV2CborHttpBindingResolver(model, serviceShape)
+    override fun getProtocolHttpBindingResolver(model: Model, serviceShape: ServiceShape): HttpBindingResolver = RpcV2CborHttpBindingResolver(model, serviceShape)
 
-    override fun structuredDataSerializer(ctx: ProtocolGenerator.GenerationContext): StructuredDataSerializerGenerator =
-        CborSerializerGenerator(this)
+    override fun structuredDataSerializer(ctx: ProtocolGenerator.GenerationContext): StructuredDataSerializerGenerator = CborSerializerGenerator(this)
 
-    override fun structuredDataParser(ctx: ProtocolGenerator.GenerationContext): StructuredDataParserGenerator =
-        CborParserGenerator(this)
+    override fun structuredDataParser(ctx: ProtocolGenerator.GenerationContext): StructuredDataParserGenerator = CborParserGenerator(this)
 
     override fun renderDeserializeErrorDetails(ctx: ProtocolGenerator.GenerationContext, op: OperationShape, writer: KotlinWriter) {
         writer.write("#T.deserialize(payload)", RuntimeTypes.SmithyRpcV2Protocols.Cbor.RpcV2CborErrorDeserializer)

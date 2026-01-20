@@ -197,14 +197,13 @@ class KotlinWriter(
         return this
     }
 
-    fun dokka(docs: String): KotlinWriter =
-        dokka {
-            write(
-                cleanForWriter(
-                    formatDocumentation(docs),
-                ),
-            )
-        }
+    fun dokka(docs: String): KotlinWriter = dokka {
+        write(
+            cleanForWriter(
+                formatDocumentation(docs),
+            ),
+        )
+    }
 
     /**
      * Clean/escape any content from the doc that would invalidate the Kotlin output.
@@ -238,8 +237,7 @@ class KotlinWriter(
     fun renderDocumentation(shape: Shape) = shape.getTrait<DocumentationTrait>()?.let { dokka(it.value) }
 
     // handles the documentation for member shapes
-    fun renderMemberDocumentation(model: Model, shape: MemberShape) =
-        shape.getMemberTrait(model, DocumentationTrait::class.java).getOrNull()?.let { dokka(it.value) }
+    fun renderMemberDocumentation(model: Model, shape: MemberShape) = shape.getMemberTrait(model, DocumentationTrait::class.java).getOrNull()?.let { dokka(it.value) }
 
     // handles the documentation for enum definitions
     fun renderEnumDefinitionDocumentation(enumDefinition: EnumDefinition) {
@@ -371,23 +369,21 @@ class InlineKotlinWriterFormatter(private val parent: KotlinWriter) : BiFunction
 }
 
 // Remove leading, trailing, and consecutive blank lines
-private fun formatDocumentation(doc: String, lineSeparator: String = "\n") =
-    doc
-        .split('\n') // Break the doc into lines
-        .dropWhile { it.isBlank() } // Drop leading blank lines
-        .dropLastWhile { it.isBlank() } // Drop trailing blank lines
-        .dropConsecutive { it.isBlank() } // Remove consecutive empty lines
-        .joinToString(separator = lineSeparator)
+private fun formatDocumentation(doc: String, lineSeparator: String = "\n") = doc
+    .split('\n') // Break the doc into lines
+    .dropWhile { it.isBlank() } // Drop leading blank lines
+    .dropLastWhile { it.isBlank() } // Drop trailing blank lines
+    .dropConsecutive { it.isBlank() } // Remove consecutive empty lines
+    .joinToString(separator = lineSeparator)
 
 /**
  * Filters out consecutive items matching the given [predicate].
  */
-private fun <T> List<T>.dropConsecutive(predicate: (T) -> Boolean) =
-    windowed(2, partialWindows = true)
-        .flatMap { window ->
-            if (predicate(window.first()) && window.first() == window.elementAtOrNull(1)) {
-                listOf()
-            } else {
-                listOf(window.first())
-            }
+private fun <T> List<T>.dropConsecutive(predicate: (T) -> Boolean) = windowed(2, partialWindows = true)
+    .flatMap { window ->
+        if (predicate(window.first()) && window.first() == window.elementAtOrNull(1)) {
+            listOf()
+        } else {
+            listOf(window.first())
         }
+    }

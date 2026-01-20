@@ -21,10 +21,9 @@ import software.amazon.smithy.waiters.*
  * A [KotlinIntegration] that generates the waiters for a service.
  */
 class ServiceWaitersGenerator : KotlinIntegration {
-    override fun enabledForService(model: Model, settings: KotlinSettings): Boolean =
-        TopDownIndex.of(model)
-            .getContainedOperations(settings.service)
-            .any { it.waitableTrait != null }
+    override fun enabledForService(model: Model, settings: KotlinSettings): Boolean = TopDownIndex.of(model)
+        .getContainedOperations(settings.service)
+        .any { it.waitableTrait != null }
 
     override fun writeAdditionalFiles(ctx: CodegenContext, delegator: KotlinDelegator) {
         delegator.useFileWriter("Waiters.kt", "${ctx.settings.pkg.name}.waiters") { writer ->
@@ -40,10 +39,9 @@ class ServiceWaitersGenerator : KotlinIntegration {
 internal fun CodegenContext.allWaiters(): List<WaiterInfo> {
     val service = model.expectShape<ServiceShape>(settings.service)
 
-    fun operationWaiters(op: OperationShape): List<WaiterInfo> =
-        op.waitableTrait?.waiters?.map { (name, waiter) ->
-            WaiterInfo(this, service, op, name, waiter)
-        } ?: listOf()
+    fun operationWaiters(op: OperationShape): List<WaiterInfo> = op.waitableTrait?.waiters?.map { (name, waiter) ->
+        WaiterInfo(this, service, op, name, waiter)
+    } ?: listOf()
 
     return TopDownIndex
         .of(model)

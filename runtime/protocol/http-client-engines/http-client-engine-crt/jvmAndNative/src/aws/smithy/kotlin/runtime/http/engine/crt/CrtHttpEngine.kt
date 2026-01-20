@@ -30,8 +30,7 @@ public class CrtHttpEngine(public override val config: CrtHttpEngineConfig) : Ht
     public constructor() : this(CrtHttpEngineConfig.Default)
 
     public companion object : EngineFactory<CrtHttpEngineConfig.Builder, CrtHttpEngine> {
-        public operator fun invoke(block: CrtHttpEngineConfig.Builder.() -> Unit): CrtHttpEngine =
-            CrtHttpEngine(CrtHttpEngineConfig(block))
+        public operator fun invoke(block: CrtHttpEngineConfig.Builder.() -> Unit): CrtHttpEngine = CrtHttpEngine(CrtHttpEngineConfig(block))
 
         override val engineConstructor: (CrtHttpEngineConfig.Builder.() -> Unit) -> CrtHttpEngine = ::invoke
     }

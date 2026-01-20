@@ -212,11 +212,9 @@ private fun Node.hasAncestor(predicate: (Node) -> Boolean): Boolean {
     return parent != null && (predicate(parent) || parent.hasAncestor(predicate))
 }
 
-private fun Node.isList() =
-    nodeName().let { it == "ul" || it == "ol" }
+private fun Node.isList() = nodeName().let { it == "ul" || it == "ol" }
 
-private fun Node.isPreformat() =
-    nodeName().let { it == "code" || it == "pre" }
+private fun Node.isPreformat() = nodeName().let { it == "code" || it == "pre" }
 
 private fun TextNode.markdownText() = when {
     // If we're inside a preformat block, everything is literal, ie. no escapes required.
@@ -252,10 +250,9 @@ private fun String.applyWithin(start: String, end: String, transform: (String) -
         substring(substringEnd + end.length).applyWithin(start, end, transform)
 }
 
-private fun String.escapeHtml() =
-    replace("&", "&amp;")
-        .replace("<", "&lt;")
-        .replace(">", "&gt;")
+private fun String.escapeHtml() = replace("&", "&amp;")
+    .replace("<", "&lt;")
+    .replace(">", "&gt;")
 
 private fun StringBuilder.ensureLineBreak() {
     if (!endsWith("\n")) {

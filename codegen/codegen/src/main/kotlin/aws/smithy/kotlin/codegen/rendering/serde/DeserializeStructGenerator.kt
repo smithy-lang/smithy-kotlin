@@ -50,8 +50,7 @@ open class DeserializeStructGenerator(
      * @param forMemberShape [MemberShape] associated with entry, if any
      * @param defaultCollectionName the default value produced by this class.
      */
-    open fun collectionReturnExpression(forMemberShape: MemberShape?, defaultCollectionName: String): String =
-        defaultCollectionName
+    open fun collectionReturnExpression(forMemberShape: MemberShape?, defaultCollectionName: String): String = defaultCollectionName
 
     /**
      * Enables overriding of the lhs expression into which a deserialization operation's

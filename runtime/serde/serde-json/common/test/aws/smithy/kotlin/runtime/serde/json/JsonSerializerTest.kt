@@ -259,58 +259,52 @@ class JsonSerializerTest {
     }
 
     @Test
-    fun canSerializeDocumentNumberField() =
-        testSerializeDocument(
-            Document(10.5),
-            "10.5",
-        )
+    fun canSerializeDocumentNumberField() = testSerializeDocument(
+        Document(10.5),
+        "10.5",
+    )
 
     @Test
-    fun canSerializeDocumentStringField() =
-        testSerializeDocument(
-            Document("foo"),
-            "\"foo\"",
-        )
+    fun canSerializeDocumentStringField() = testSerializeDocument(
+        Document("foo"),
+        "\"foo\"",
+    )
 
     @Test
-    fun canSerializeDocumentBooleanField() =
-        testSerializeDocument(
-            Document(false),
-            "false",
-        )
+    fun canSerializeDocumentBooleanField() = testSerializeDocument(
+        Document(false),
+        "false",
+    )
 
     @Test
-    fun canSerializeDocumentNullField() =
-        testSerializeDocument(
-            null,
-            "null",
-        )
+    fun canSerializeDocumentNullField() = testSerializeDocument(
+        null,
+        "null",
+    )
 
     @Test
-    fun canSerializeDocumentListField() =
-        testSerializeDocument(
-            Document.List(
-                listOf(
-                    Document(1),
-                    Document("foo"),
-                    Document(true),
-                    null,
-                ),
+    fun canSerializeDocumentListField() = testSerializeDocument(
+        Document.List(
+            listOf(
+                Document(1),
+                Document("foo"),
+                Document(true),
+                null,
             ),
-            "[1,\"foo\",true,null]",
-        )
+        ),
+        "[1,\"foo\",true,null]",
+    )
 
     @Test
-    fun canSerializeDocumentMapField() =
-        testSerializeDocument(
-            buildDocument {
-                "number" to 12L
-                "string" to "foo"
-                "bool" to true
-                "null" to null
-            },
-            """{"number":12,"string":"foo","bool":true,"null":null}""",
-        )
+    fun canSerializeDocumentMapField() = testSerializeDocument(
+        buildDocument {
+            "number" to 12L
+            "string" to "foo"
+            "bool" to true
+            "null" to null
+        },
+        """{"number":12,"string":"foo","bool":true,"null":null}""",
+    )
 
     @Test
     fun canSerializeComplexDocument() {

@@ -273,10 +273,9 @@ enum class DefaultValueSerializationMode(val value: String) {
          */
         val DEFAULT = ALWAYS
 
-        fun fromValue(value: String): DefaultValueSerializationMode =
-            requireNotNull(entries.find { it.value.equals(value, ignoreCase = true) }) {
-                "$value is not a valid DefaultValueSerializationMode, expected one of ${values().map { it.value }}"
-            }
+        fun fromValue(value: String): DefaultValueSerializationMode = requireNotNull(entries.find { it.value.equals(value, ignoreCase = true) }) {
+            "$value is not a valid DefaultValueSerializationMode, expected one of ${values().map { it.value }}"
+        }
     }
 }
 

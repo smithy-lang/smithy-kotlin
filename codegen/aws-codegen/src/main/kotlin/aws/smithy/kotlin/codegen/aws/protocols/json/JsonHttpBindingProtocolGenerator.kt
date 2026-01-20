@@ -29,11 +29,9 @@ abstract class JsonHttpBindingProtocolGenerator : HttpBindingProtocolGenerator()
      */
     open val supportsJsonNameTrait: Boolean = true
 
-    override fun structuredDataParser(ctx: ProtocolGenerator.GenerationContext): StructuredDataParserGenerator =
-        JsonParserGenerator(this, supportsJsonNameTrait = supportsJsonNameTrait)
+    override fun structuredDataParser(ctx: ProtocolGenerator.GenerationContext): StructuredDataParserGenerator = JsonParserGenerator(this, supportsJsonNameTrait = supportsJsonNameTrait)
 
-    override fun structuredDataSerializer(ctx: ProtocolGenerator.GenerationContext): StructuredDataSerializerGenerator =
-        JsonSerializerGenerator(this, supportsJsonNameTrait = supportsJsonNameTrait)
+    override fun structuredDataSerializer(ctx: ProtocolGenerator.GenerationContext): StructuredDataSerializerGenerator = JsonSerializerGenerator(this, supportsJsonNameTrait = supportsJsonNameTrait)
 
     override fun renderDeserializeErrorDetails(
         ctx: ProtocolGenerator.GenerationContext,

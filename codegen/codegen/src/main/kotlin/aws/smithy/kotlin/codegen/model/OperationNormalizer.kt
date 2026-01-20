@@ -110,19 +110,17 @@ object OperationNormalizer {
         return ShapeId.fromParts("$SYNTHETIC_NAMESPACE.$lastNs", opShapeId.name + suffix)
     }
 
-    private fun emptyOperationIOStruct(opShapeId: ShapeId, suffix: String): StructureShape =
-        StructureShape
-            .builder()
-            .id(syntheticShapeId(opShapeId, suffix))
-            .addTrait(SyntheticClone.build { archetype = UnitTypeTrait.UNIT })
-            .addTrait(if (suffix == REQUEST_SUFFIX) OperationInput() else OperationOutput())
-            .build()
+    private fun emptyOperationIOStruct(opShapeId: ShapeId, suffix: String): StructureShape = StructureShape
+        .builder()
+        .id(syntheticShapeId(opShapeId, suffix))
+        .addTrait(SyntheticClone.build { archetype = UnitTypeTrait.UNIT })
+        .addTrait(if (suffix == REQUEST_SUFFIX) OperationInput() else OperationOutput())
+        .build()
 
-    private fun cloneOperationIOShape(opShapeId: ShapeId, structure: StructureShape, suffix: String): StructureShape =
-        structure
-            .toBuilder()
-            .id(syntheticShapeId(opShapeId, suffix))
-            .addTrait(SyntheticClone.build { archetype = structure.id })
-            .addTrait(if (suffix == REQUEST_SUFFIX) OperationInput() else OperationOutput())
-            .build()
+    private fun cloneOperationIOShape(opShapeId: ShapeId, structure: StructureShape, suffix: String): StructureShape = structure
+        .toBuilder()
+        .id(syntheticShapeId(opShapeId, suffix))
+        .addTrait(SyntheticClone.build { archetype = structure.id })
+        .addTrait(if (suffix == REQUEST_SUFFIX) OperationInput() else OperationOutput())
+        .build()
 }

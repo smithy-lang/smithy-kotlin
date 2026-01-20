@@ -100,8 +100,7 @@ class KotlinSymbolProvider(private val model: Model, private val settings: Kotli
 
     override fun doubleShape(shape: DoubleShape): Symbol = numberShape(shape, "Double")
 
-    private fun numberShape(shape: Shape, typeName: String): Symbol =
-        createSymbolBuilder(shape, typeName, namespace = "kotlin").build()
+    private fun numberShape(shape: Shape, typeName: String): Symbol = createSymbolBuilder(shape, typeName, namespace = "kotlin").build()
 
     // strip nullability from these runtime symbols as nullability is context dependent
     override fun bigIntegerShape(shape: BigIntegerShape): Symbol = RuntimeTypes.Core.Content.BigInteger.asNonNullable()
@@ -121,8 +120,7 @@ class KotlinSymbolProvider(private val model: Model, private val settings: Kotli
             .build()
     }
 
-    override fun booleanShape(shape: BooleanShape?): Symbol =
-        createSymbolBuilder(shape, "Boolean", namespace = "kotlin").build()
+    override fun booleanShape(shape: BooleanShape?): Symbol = createSymbolBuilder(shape, "Boolean", namespace = "kotlin").build()
 
     override fun structureShape(shape: StructureShape): Symbol {
         val name = shape.defaultName(service)
@@ -322,8 +320,7 @@ class KotlinSymbolProvider(private val model: Model, private val settings: Kotli
         createSymbolBuilder(shape, "ByteArray", namespace = "kotlin").build()
     }
 
-    override fun documentShape(shape: DocumentShape?): Symbol =
-        RuntimeTypes.Core.Content.Document.asNullable()
+    override fun documentShape(shape: DocumentShape?): Symbol = RuntimeTypes.Core.Content.Document.asNullable()
 
     override fun unionShape(shape: UnionShape): Symbol {
         val name = shape.defaultName(service)
@@ -357,10 +354,9 @@ class KotlinSymbolProvider(private val model: Model, private val settings: Kotli
     /**
      * Creates a symbol builder for the shape with the given type name in the root namespace.
      */
-    private fun createSymbolBuilder(shape: Shape?, typeName: String): Symbol.Builder =
-        Symbol.builder()
-            .putProperty(SymbolProperty.SHAPE_KEY, shape)
-            .name(typeName)
+    private fun createSymbolBuilder(shape: Shape?, typeName: String): Symbol.Builder = Symbol.builder()
+        .putProperty(SymbolProperty.SHAPE_KEY, shape)
+        .name(typeName)
 
     private fun getDefaultValueForNumber(type: ShapeType, value: String) = when (type) {
         ShapeType.LONG -> "${value}L"

@@ -80,19 +80,17 @@ public sealed class LogMode(private val mask: Int) {
          * @return the parsed LogMode
          * @throws ClientException if the LogMode could not be parsed
          */
-        public fun fromString(string: String): LogMode =
-            string
-                .trim()
-                .split("|")
-                .map { logModeString ->
-                    allModes().firstOrNull { logMode -> logModeString.equals(logMode.toString(), ignoreCase = true) }
-                        ?: throw ClientException("Log mode $logModeString is not supported, should be one or more of: ${allModes().joinToString(", ")}")
-                }
-                .reduce { acc, logMode -> acc + logMode }
+        public fun fromString(string: String): LogMode = string
+            .trim()
+            .split("|")
+            .map { logModeString ->
+                allModes().firstOrNull { logMode -> logModeString.equals(logMode.toString(), ignoreCase = true) }
+                    ?: throw ClientException("Log mode $logModeString is not supported, should be one or more of: ${allModes().joinToString(", ")}")
+            }
+            .reduce { acc, logMode -> acc + logMode }
     }
 
-    override fun toString(): String =
-        allModes()
-            .filter { isEnabled(it) }
-            .joinToString("|")
+    override fun toString(): String = allModes()
+        .filter { isEnabled(it) }
+        .joinToString("|")
 }

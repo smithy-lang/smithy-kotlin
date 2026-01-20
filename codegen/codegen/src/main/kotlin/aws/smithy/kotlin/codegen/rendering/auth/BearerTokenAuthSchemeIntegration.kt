@@ -34,10 +34,9 @@ class BearerTokenAuthSchemeIntegration : KotlinIntegration {
     // Allow integrations to customize the service config props, later integrations take precedence
     override val order: Byte = -50
 
-    override fun enabledForService(model: Model, settings: KotlinSettings): Boolean =
-        ServiceIndex.of(model)
-            .getAuthSchemes(settings.service)
-            .containsKey(HttpBearerAuthTrait.ID)
+    override fun enabledForService(model: Model, settings: KotlinSettings): Boolean = ServiceIndex.of(model)
+        .getAuthSchemes(settings.service)
+        .containsKey(HttpBearerAuthTrait.ID)
     override fun authSchemes(ctx: ProtocolGenerator.GenerationContext): List<AuthSchemeHandler> = listOf(BearerTokenAuthSchemeHandler())
 
     override fun additionalServiceConfigProps(ctx: CodegenContext): List<ConfigProperty> {

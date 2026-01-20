@@ -42,8 +42,7 @@ data class GenerationContext(
 /**
  * Convert this context into a context for rendering a specific shape
  */
-fun <T : Shape> CodegenContext.toRenderingContext(writer: KotlinWriter, forShape: T? = null): RenderingContext<T> =
-    RenderingContext(this, writer, forShape)
+fun <T : Shape> CodegenContext.toRenderingContext(writer: KotlinWriter, forShape: T? = null): RenderingContext<T> = RenderingContext(this, writer, forShape)
 
 /**
  * Context passed to an individual generator for rendering (writing) a shape

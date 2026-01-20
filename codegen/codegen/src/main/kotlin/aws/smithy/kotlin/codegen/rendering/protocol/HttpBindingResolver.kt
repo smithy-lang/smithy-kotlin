@@ -90,10 +90,9 @@ interface HttpBindingResolver {
 /**
  * @return true if the operation contains request data bound to the PAYLOAD or DOCUMENT locations
  */
-fun HttpBindingResolver.hasHttpBody(operationShape: OperationShape): Boolean =
-    requestBindings(operationShape).any {
-        it.location == HttpBinding.Location.PAYLOAD || it.location == HttpBinding.Location.DOCUMENT
-    }
+fun HttpBindingResolver.hasHttpBody(operationShape: OperationShape): Boolean = requestBindings(operationShape).any {
+    it.location == HttpBinding.Location.PAYLOAD || it.location == HttpBinding.Location.DOCUMENT
+}
 
 /**
  * Protocol content type mappings
@@ -161,6 +160,5 @@ class HttpTraitResolver(
         member: ToShapeId,
         location: HttpBinding.Location,
         defaultFormat: TimestampFormatTrait.Format,
-    ): TimestampFormatTrait.Format =
-        bindingIndex.determineTimestampFormat(member, location, defaultFormat)
+    ): TimestampFormatTrait.Format = bindingIndex.determineTimestampFormat(member, location, defaultFormat)
 }

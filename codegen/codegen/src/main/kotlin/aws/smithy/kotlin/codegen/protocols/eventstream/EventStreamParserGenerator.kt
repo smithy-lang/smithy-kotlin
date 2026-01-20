@@ -65,23 +65,22 @@ class EventStreamParserGenerator(
      * private suspend fun deserializeFooOperationBody(builder: Foo.Builder, body: HttpBody) { ... }
      * ```
      */
-    fun responseHandler(ctx: ProtocolGenerator.GenerationContext, op: OperationShape): Symbol =
-        op.bodyDeserializer(ctx.settings) { writer ->
-            val outputSymbol = ctx.symbolProvider.toSymbol(ctx.model.expectShape<StructureShape>(op.output.get()))
-            // we have access to the builder for the output type and the full HttpBody
-            // members bound via HTTP bindings (e.g. httpHeader, statusCode, etc) are already deserialized via HttpDeserialize impl
-            // we just need to deserialize the event stream member (and/or the initial response)
-            writer.withBlock(
-                // FIXME - revert to private, exposed as internal temporarily while we figure out integration tests
-                "internal suspend fun #L(builder: #T.Builder, call: #T) {",
-                "}",
-                op.bodyDeserializerName(),
-                outputSymbol,
-                RuntimeTypes.Http.HttpCall,
-            ) {
-                renderDeserializeEventStream(ctx, op, writer)
-            }
+    fun responseHandler(ctx: ProtocolGenerator.GenerationContext, op: OperationShape): Symbol = op.bodyDeserializer(ctx.settings) { writer ->
+        val outputSymbol = ctx.symbolProvider.toSymbol(ctx.model.expectShape<StructureShape>(op.output.get()))
+        // we have access to the builder for the output type and the full HttpBody
+        // members bound via HTTP bindings (e.g. httpHeader, statusCode, etc) are already deserialized via HttpDeserialize impl
+        // we just need to deserialize the event stream member (and/or the initial response)
+        writer.withBlock(
+            // FIXME - revert to private, exposed as internal temporarily while we figure out integration tests
+            "internal suspend fun #L(builder: #T.Builder, call: #T) {",
+            "}",
+            op.bodyDeserializerName(),
+            outputSymbol,
+            RuntimeTypes.Http.HttpCall,
+        ) {
+            renderDeserializeEventStream(ctx, op, writer)
         }
+    }
 
     private fun renderDeserializeEventStream(ctx: ProtocolGenerator.GenerationContext, op: OperationShape, writer: KotlinWriter) {
         val output = ctx.model.expectShape<StructureShape>(op.output.get())

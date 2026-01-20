@@ -47,8 +47,7 @@ open class RestXml : HttpBindingProtocolGenerator() {
     override val defaultTimestampFormat: TimestampFormatTrait.Format = TimestampFormatTrait.Format.DATE_TIME
 
     // See https://awslabs.github.io/smithy/1.0/spec/aws/aws-restxml-protocol.html#content-type
-    override fun getProtocolHttpBindingResolver(model: Model, serviceShape: ServiceShape): HttpBindingResolver =
-        HttpTraitResolver(model, serviceShape, ProtocolContentTypes.consistent("application/xml"))
+    override fun getProtocolHttpBindingResolver(model: Model, serviceShape: ServiceShape): HttpBindingResolver = HttpTraitResolver(model, serviceShape, ProtocolContentTypes.consistent("application/xml"))
 
     // See: https://github.com/awslabs/aws-sdk-kotlin/issues/1050
     override fun renderContentTypeHeader(
@@ -64,11 +63,9 @@ open class RestXml : HttpBindingProtocolGenerator() {
         }
     }
 
-    override fun structuredDataParser(ctx: ProtocolGenerator.GenerationContext): StructuredDataParserGenerator =
-        RestXmlParserGenerator(this)
+    override fun structuredDataParser(ctx: ProtocolGenerator.GenerationContext): StructuredDataParserGenerator = RestXmlParserGenerator(this)
 
-    override fun structuredDataSerializer(ctx: ProtocolGenerator.GenerationContext): StructuredDataSerializerGenerator =
-        RestXmlSerializerGenerator(this, defaultTimestampFormat)
+    override fun structuredDataSerializer(ctx: ProtocolGenerator.GenerationContext): StructuredDataSerializerGenerator = RestXmlSerializerGenerator(this, defaultTimestampFormat)
 
     override fun renderDeserializeErrorDetails(
         ctx: ProtocolGenerator.GenerationContext,

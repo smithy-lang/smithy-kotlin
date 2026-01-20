@@ -24,8 +24,7 @@ public class OkHttpEngineConfig private constructor(builder: Builder) : HttpClie
          * Initializes a new [OkHttpEngineConfig] via a DSL builder block
          * @param block A receiver lambda which sets the properties of the config to be built
          */
-        public operator fun invoke(block: Builder.() -> Unit): OkHttpEngineConfig =
-            OkHttpEngineConfig(Builder().apply(block))
+        public operator fun invoke(block: Builder.() -> Unit): OkHttpEngineConfig = OkHttpEngineConfig(Builder().apply(block))
 
         /**
          * The default engine config. Most clients should use this.

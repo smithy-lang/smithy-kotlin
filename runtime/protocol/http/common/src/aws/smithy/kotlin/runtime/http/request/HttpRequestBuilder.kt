@@ -26,11 +26,9 @@ public class HttpRequestBuilder private constructor(
 ) : CanDeepCopy<HttpRequestBuilder> {
     public constructor() : this(HttpMethod.GET, Url.Builder(), HeadersBuilder(), HttpBody.Empty, DeferredHeadersBuilder())
 
-    public fun build(): HttpRequest =
-        HttpRequest(method, url.build(), if (headers.isEmpty()) Headers.Empty else headers.build(), body, if (trailingHeaders.isEmpty()) DeferredHeaders.Empty else trailingHeaders.build())
+    public fun build(): HttpRequest = HttpRequest(method, url.build(), if (headers.isEmpty()) Headers.Empty else headers.build(), body, if (trailingHeaders.isEmpty()) DeferredHeaders.Empty else trailingHeaders.build())
 
-    override fun deepCopy(): HttpRequestBuilder =
-        HttpRequestBuilder(method, url.deepCopy(), headers.deepCopy(), body, trailingHeaders.deepCopy())
+    override fun deepCopy(): HttpRequestBuilder = HttpRequestBuilder(method, url.deepCopy(), headers.deepCopy(), body, trailingHeaders.deepCopy())
 
     override fun toString(): String = buildString {
         append("HttpRequestBuilder(method=$method, url=$url, headers=$headers, body=$body, trailingHeaders=$trailingHeaders)")
@@ -135,8 +133,7 @@ private suspend fun copyHttpBody(original: HttpBody, buffer: SdkBuffer): HttpBod
     val content = original.readAll() ?: return HttpBody.Empty
     buffer.write(content)
     return object : HttpBody.SourceContent() {
-        override fun readFrom(): SdkSource =
-            content.source()
+        override fun readFrom(): SdkSource = content.source()
 
         // even though we know the content length we preserve the original in case it was chunked encoding
         override val contentLength: Long? = original.contentLength

@@ -119,20 +119,18 @@ internal suspend fun HttpStream.sendChunkedBody(body: HttpBody) {
     }
 }
 
-internal fun crtException(errorCode: Int, errorName: String? = CRT.errorName(errorCode), cause: Throwable? = null) =
-    HttpException(
-        message = fmtCrtErrorMessage(errorCode),
-        cause = cause,
-        errorCode = mapCrtErrorCode(errorName),
-        retryable = isRetryable(errorCode, errorName),
-    )
+internal fun crtException(errorCode: Int, errorName: String? = CRT.errorName(errorCode), cause: Throwable? = null) = HttpException(
+    message = fmtCrtErrorMessage(errorCode),
+    cause = cause,
+    errorCode = mapCrtErrorCode(errorName),
+    retryable = isRetryable(errorCode, errorName),
+)
 
-internal inline fun <T> mapCrtException(block: () -> T): T =
-    try {
-        block()
-    } catch (ex: CrtRuntimeException) {
-        throw crtException(ex.errorCode, ex.errorName, ex)
-    }
+internal inline fun <T> mapCrtException(block: () -> T): T = try {
+    block()
+} catch (ex: CrtRuntimeException) {
+    throw crtException(ex.errorCode, ex.errorName, ex)
+}
 
 internal fun fmtCrtErrorMessage(errorCode: Int): String {
     val errorDescription = CRT.errorString(errorCode)

@@ -113,8 +113,7 @@ open class SymbolBuilder {
 /**
  * Build a symbol inside the given block
  */
-fun buildSymbol(block: SymbolBuilder.() -> Unit): Symbol =
-    SymbolBuilder().apply(block).build()
+fun buildSymbol(block: SymbolBuilder.() -> Unit): Symbol = SymbolBuilder().apply(block).build()
 
 fun SymbolBuilder.namespace(dependency: KotlinDependency, subpackage: String = "") {
     namespace = if (subpackage.isNotEmpty()) {
@@ -132,12 +131,11 @@ fun SymbolBuilder.namespace(dependency: KotlinDependency, subpackage: String = "
  *
  * ex: com.foo.bar.Thing -> (name=Thing, namespace=com.foo.bar)
  */
-fun String.toSymbol(): Symbol =
-    buildSymbol {
-        require(this@toSymbol.isNotBlank()) { "Invalid string to convert to symbol" }
-        val segments = split(".")
-        name = segments.last()
-        namespace = segments
-            .dropLast(1)
-            .joinToString(separator = ".") { it }
-    }
+fun String.toSymbol(): Symbol = buildSymbol {
+    require(this@toSymbol.isNotBlank()) { "Invalid string to convert to symbol" }
+    val segments = split(".")
+    name = segments.last()
+    namespace = segments
+        .dropLast(1)
+        .joinToString(separator = ".") { it }
+}

@@ -203,8 +203,7 @@ class DefaultEndpointProviderGeneratorTest {
         generatedClass = writer.toString()
     }
 
-    private fun createTestRuleSet(json: String): EndpointRuleSet =
-        EndpointRuleSet.fromNode(Node.parse(json))
+    private fun createTestRuleSet(json: String): EndpointRuleSet = EndpointRuleSet.fromNode(Node.parse(json))
 
     @Test
     fun testBalancedSyntax() {

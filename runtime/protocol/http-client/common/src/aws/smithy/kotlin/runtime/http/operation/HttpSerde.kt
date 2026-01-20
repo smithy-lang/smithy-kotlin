@@ -18,8 +18,7 @@ public sealed interface HttpSerializer<T> {
     @InternalApi
     public companion object {
         public val Unit: HttpSerializer<Unit> = object : NonStreaming<Unit> {
-            override fun serialize(context: ExecutionContext, input: Unit): HttpRequestBuilder =
-                HttpRequestBuilder()
+            override fun serialize(context: ExecutionContext, input: Unit): HttpRequestBuilder = HttpRequestBuilder()
         }
     }
 
@@ -48,8 +47,7 @@ public sealed interface HttpDeserializer<T> {
     @InternalApi
     public companion object {
         public val Identity: HttpDeserializer<HttpResponse> = object : NonStreaming<HttpResponse> {
-            override fun deserialize(context: ExecutionContext, call: HttpCall, payload: ByteArray?): HttpResponse =
-                call.response
+            override fun deserialize(context: ExecutionContext, call: HttpCall, payload: ByteArray?): HttpResponse = call.response
         }
 
         public val Unit: HttpDeserializer<Unit> = object : NonStreaming<Unit> {

@@ -22,35 +22,34 @@ public actual class Gzip : CompressionAlgorithm {
     actual override val id: String = "gzip"
     actual override val contentEncoding: String = "gzip"
 
-    actual override fun compress(stream: ByteStream): ByteStream =
-        when (stream) {
-            is ByteStream.Buffer ->
-                object : ByteStream.Buffer() {
-                    override fun bytes(): ByteArray {
-                        val byteArrayOutputStream = ByteArrayOutputStream()
-                        val gzipOutputStream = GZIPOutputStream(byteArrayOutputStream)
+    actual override fun compress(stream: ByteStream): ByteStream = when (stream) {
+        is ByteStream.Buffer ->
+            object : ByteStream.Buffer() {
+                override fun bytes(): ByteArray {
+                    val byteArrayOutputStream = ByteArrayOutputStream()
+                    val gzipOutputStream = GZIPOutputStream(byteArrayOutputStream)
 
-                        gzipOutputStream.write(stream.bytes())
-                        gzipOutputStream.close()
+                    gzipOutputStream.write(stream.bytes())
+                    gzipOutputStream.close()
 
-                        val compressedBody = byteArrayOutputStream.toByteArray()
-                        byteArrayOutputStream.close()
+                    val compressedBody = byteArrayOutputStream.toByteArray()
+                    byteArrayOutputStream.close()
 
-                        return compressedBody
-                    }
-                    override val contentLength: Long? = null
+                    return compressedBody
                 }
-            is ByteStream.ChannelStream ->
-                object : ByteStream.ChannelStream() {
-                    override fun readFrom(): SdkByteReadChannel = GzipByteReadChannel(stream.readFrom())
-                    override val contentLength: Long? = null
-                    override val isOneShot: Boolean = stream.isOneShot
-                }
-            is ByteStream.SourceStream ->
-                object : ByteStream.SourceStream() {
-                    override fun readFrom(): SdkSource = GzipSdkSource(stream.readFrom())
-                    override val contentLength: Long? = null
-                    override val isOneShot: Boolean = stream.isOneShot
-                }
-        }
+                override val contentLength: Long? = null
+            }
+        is ByteStream.ChannelStream ->
+            object : ByteStream.ChannelStream() {
+                override fun readFrom(): SdkByteReadChannel = GzipByteReadChannel(stream.readFrom())
+                override val contentLength: Long? = null
+                override val isOneShot: Boolean = stream.isOneShot
+            }
+        is ByteStream.SourceStream ->
+            object : ByteStream.SourceStream() {
+                override fun readFrom(): SdkSource = GzipSdkSource(stream.readFrom())
+                override val contentLength: Long? = null
+                override val isOneShot: Boolean = stream.isOneShot
+            }
+    }
 }

@@ -44,10 +44,9 @@ private class InputAdapter(private val ch: SdkByteReadChannel) : InputStream() {
         return buffer.read(b, off, len)
     }
 
-    private fun readBlocking(): Long =
-        runBlocking {
-            ch.read(buffer, DEFAULT_READ_BYTES)
-        }
+    private fun readBlocking(): Long = runBlocking {
+        ch.read(buffer, DEFAULT_READ_BYTES)
+    }
 
     override fun available(): Int = ch.availableForRead
 

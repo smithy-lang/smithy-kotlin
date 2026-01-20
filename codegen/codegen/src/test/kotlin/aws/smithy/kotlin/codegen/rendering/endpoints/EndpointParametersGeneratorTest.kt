@@ -98,18 +98,17 @@ class EndpointParametersGeneratorTest {
         generatedClass = writer.toString()
     }
 
-    private fun createTestRulesetParams(paramsJson: String = "{}"): EndpointRuleSet =
-        EndpointRuleSet.fromNode(
-            Node.parse(
-                """
+    private fun createTestRulesetParams(paramsJson: String = "{}"): EndpointRuleSet = EndpointRuleSet.fromNode(
+        Node.parse(
+            """
                 {
                     "version": "1.1",
                     "parameters": $paramsJson,
                     "rules": []
                 }
             """,
-            ),
-        )
+        ),
+    )
 
     @Test
     fun testPackageDecl() {

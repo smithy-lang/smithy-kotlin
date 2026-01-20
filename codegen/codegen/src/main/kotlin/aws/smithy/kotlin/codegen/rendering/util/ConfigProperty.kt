@@ -135,8 +135,7 @@ class ConfigProperty private constructor(builder: Builder) {
         get() = builderBaseClass != null
 
     companion object {
-        operator fun invoke(block: Builder.() -> Unit): ConfigProperty =
-            Builder().apply(block).build()
+        operator fun invoke(block: Builder.() -> Unit): ConfigProperty = Builder().apply(block).build()
 
         /**
          * Convenience init for an integer symbol.
@@ -153,8 +152,7 @@ class ConfigProperty private constructor(builder: Builder) {
             defaultValue: Int? = null,
             documentation: String? = null,
             baseClass: Symbol? = null,
-        ): ConfigProperty =
-            builtInProperty(name, builtInSymbol("Int", defaultValue?.toString()), documentation, baseClass)
+        ): ConfigProperty = builtInProperty(name, builtInSymbol("Int", defaultValue?.toString()), documentation, baseClass)
 
         /**
          * Convenience init for a boolean symbol.
@@ -171,8 +169,7 @@ class ConfigProperty private constructor(builder: Builder) {
             defaultValue: Boolean? = null,
             documentation: String? = null,
             baseClass: Symbol? = null,
-        ): ConfigProperty =
-            builtInProperty(name, builtInSymbol("Boolean", defaultValue?.toString()), documentation, baseClass)
+        ): ConfigProperty = builtInProperty(name, builtInSymbol("Boolean", defaultValue?.toString()), documentation, baseClass)
 
         /**
          * Convenience init for a string symbol.
@@ -189,8 +186,7 @@ class ConfigProperty private constructor(builder: Builder) {
             defaultValue: String? = null,
             documentation: String? = null,
             baseClass: Symbol? = null,
-        ): ConfigProperty =
-            builtInProperty(name, builtInSymbol("String", defaultValue), documentation, baseClass)
+        ): ConfigProperty = builtInProperty(name, builtInSymbol("String", defaultValue), documentation, baseClass)
     }
 
     fun toBuilder(): Builder = Builder().apply {
@@ -281,10 +277,9 @@ private fun builtInProperty(
     symbol: Symbol,
     documentation: String?,
     baseClass: Symbol?,
-): ConfigProperty =
-    ConfigProperty {
-        this.symbol = symbol
-        this.name = name
-        this.documentation = documentation
-        this.baseClass = baseClass
-    }
+): ConfigProperty = ConfigProperty {
+    this.symbol = symbol
+    this.name = name
+    this.documentation = documentation
+    this.baseClass = baseClass
+}

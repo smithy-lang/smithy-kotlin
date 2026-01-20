@@ -39,14 +39,12 @@ inline fun <reified T : Shape> Model.shapes(): List<T> = shapes(T::class.java).c
  * Extension function to return a shape of expected type.
  */
 @Suppress("EXTENSION_SHADOWED_BY_MEMBER")
-inline fun <reified T : Shape> Model.expectShape(shapeId: ShapeId): T =
-    expectShape(shapeId, T::class.java)
+inline fun <reified T : Shape> Model.expectShape(shapeId: ShapeId): T = expectShape(shapeId, T::class.java)
 
 /**
  * Extension function to return a shape of expected type.
  */
-inline fun <reified T : Shape> Model.expectShape(shapeId: String): T =
-    this.expectShape(ShapeId.from(shapeId), T::class.java)
+inline fun <reified T : Shape> Model.expectShape(shapeId: String): T = this.expectShape(ShapeId.from(shapeId), T::class.java)
 
 /**
  * Returns this shape's ID name with the suffix changed (if applicable). For example, given a shape with the name
@@ -92,11 +90,9 @@ fun UnionShape.hasStreamingMember(model: Model) = findMemberWithTrait<StreamingT
  */
 fun StructureShape.findStreamingMember(model: Model): MemberShape? = findMemberWithTrait<StreamingTrait>(model)
 
-inline fun <reified T : Trait> StructureShape.findMemberWithTrait(model: Model): MemberShape? =
-    members().find { it.getMemberTrait(model, T::class.java).isPresent }
+inline fun <reified T : Trait> StructureShape.findMemberWithTrait(model: Model): MemberShape? = members().find { it.getMemberTrait(model, T::class.java).isPresent }
 
-inline fun <reified T : Trait> UnionShape.findMemberWithTrait(model: Model): MemberShape? =
-    members().find { it.getMemberTrait(model, T::class.java).isPresent }
+inline fun <reified T : Trait> UnionShape.findMemberWithTrait(model: Model): MemberShape? = members().find { it.getMemberTrait(model, T::class.java).isPresent }
 
 /**
  * Returns true if any operation bound to the service contains an input member marked with the IdempotencyTokenTrait
@@ -266,22 +262,19 @@ val Shape.hasAllOptionalMembers: Boolean
 /**
  * Derive the input and output symbols for an operation.
  */
-fun OperationIndex.getOperationInputOutputSymbols(op: OperationShape, symbolProvider: SymbolProvider): Pair<Symbol, Symbol> =
-    Pair(
-        getInput(op).map { symbolProvider.toSymbol(it) }.getOrNull() ?: KotlinTypes.Unit,
-        getOutput(op).map { symbolProvider.toSymbol(it) }.getOrNull() ?: KotlinTypes.Unit,
-    )
+fun OperationIndex.getOperationInputOutputSymbols(op: OperationShape, symbolProvider: SymbolProvider): Pair<Symbol, Symbol> = Pair(
+    getInput(op).map { symbolProvider.toSymbol(it) }.getOrNull() ?: KotlinTypes.Unit,
+    getOutput(op).map { symbolProvider.toSymbol(it) }.getOrNull() ?: KotlinTypes.Unit,
+)
 
 /**
  * Extract a service's endpoint rules if present.
  */
-fun ServiceShape.getEndpointRules(): EndpointRuleSet? =
-    getTrait<EndpointRuleSetTrait>()?.let {
-        EndpointRuleSet.fromNode(it.ruleSet)
-    }
+fun ServiceShape.getEndpointRules(): EndpointRuleSet? = getTrait<EndpointRuleSetTrait>()?.let {
+    EndpointRuleSet.fromNode(it.ruleSet)
+}
 
 /**
  * Extract endpoint test cases from a service if present.
  */
-fun ServiceShape.getEndpointTests(): List<EndpointTestCase> =
-    getTrait<EndpointTestsTrait>()?.testCases ?: emptyList()
+fun ServiceShape.getEndpointTests(): List<EndpointTestCase> = getTrait<EndpointTestsTrait>()?.testCases ?: emptyList()

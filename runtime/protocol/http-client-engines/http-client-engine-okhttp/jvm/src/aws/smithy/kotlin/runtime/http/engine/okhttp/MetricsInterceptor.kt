@@ -76,8 +76,7 @@ internal class InstrumentedRequestBody(
     }
 }
 
-internal fun RequestBody.instrument(counter: MonotonicCounter, attributes: Attributes): RequestBody =
-    InstrumentedRequestBody(this, counter, attributes)
+internal fun RequestBody.instrument(counter: MonotonicCounter, attributes: Attributes): RequestBody = InstrumentedRequestBody(this, counter, attributes)
 
 internal class InstrumentedSource(
     private val delegate: Source,
@@ -104,9 +103,7 @@ internal class InstrumentedResponseBody(
 ) : ResponseBody() {
     override fun contentType(): MediaType? = delegate.contentType()
     override fun contentLength(): Long = delegate.contentLength()
-    override fun source(): BufferedSource =
-        InstrumentedSource(delegate.source(), counter, attributes).buffer()
+    override fun source(): BufferedSource = InstrumentedSource(delegate.source(), counter, attributes).buffer()
 }
 
-internal fun ResponseBody.instrument(counter: MonotonicCounter, attributes: Attributes): ResponseBody =
-    InstrumentedResponseBody(this, counter, attributes)
+internal fun ResponseBody.instrument(counter: MonotonicCounter, attributes: Attributes): ResponseBody = InstrumentedResponseBody(this, counter, attributes)

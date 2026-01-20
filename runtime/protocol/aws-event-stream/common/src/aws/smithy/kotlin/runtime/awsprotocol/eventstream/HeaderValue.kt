@@ -29,8 +29,7 @@ internal enum class HeaderType(val value: Byte) {
         /**
          * Construct [HeaderType] from raw value
          */
-        fun fromTypeId(value: Byte): HeaderType =
-            requireNotNull(values().find { it.value == value }) { "Unknown HeaderType: $value" }
+        fun fromTypeId(value: Byte): HeaderType = requireNotNull(values().find { it.value == value }) { "Unknown HeaderType: $value" }
     }
 }
 
@@ -191,9 +190,7 @@ public fun HeaderValue.expectTimestamp(): Instant = checkNotNull((this as? Heade
 public fun HeaderValue.expectUuid(): Uuid = checkNotNull((this as? HeaderValue.Uuid)?.value) { "expected HeaderValue.Bool, found: $this" }
 
 @InternalApi
-public fun <T> HeaderValue.expectEnumValue(fromValue: (String) -> T): T =
-    fromValue(expectString())
+public fun <T> HeaderValue.expectEnumValue(fromValue: (String) -> T): T = fromValue(expectString())
 
 @InternalApi
-public fun <T> HeaderValue.expectIntEnumValue(fromValue: (Int) -> T): T =
-    fromValue(expectInt32())
+public fun <T> HeaderValue.expectIntEnumValue(fromValue: (Int) -> T): T = fromValue(expectInt32())

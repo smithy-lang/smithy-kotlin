@@ -39,19 +39,18 @@ private fun createTestSource(
     data: String,
     dataLength: Long,
     readCycles: Int,
-) =
-    object : SdkSource {
-        var remainingReadCycles = readCycles
+) = object : SdkSource {
+    var remainingReadCycles = readCycles
 
-        override fun read(sink: SdkBuffer, limit: Long): Long {
-            if (remainingReadCycles == 0) {
-                return -1L
-            }
-
-            sink.writeUtf8(data)
-            remainingReadCycles--
-            return dataLength
+    override fun read(sink: SdkBuffer, limit: Long): Long {
+        if (remainingReadCycles == 0) {
+            return -1L
         }
 
-        override fun close() {}
+        sink.writeUtf8(data)
+        remainingReadCycles--
+        return dataLength
     }
+
+    override fun close() {}
+}

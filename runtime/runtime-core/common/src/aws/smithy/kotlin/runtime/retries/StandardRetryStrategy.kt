@@ -26,8 +26,7 @@ import kotlinx.coroutines.CancellationException
  */
 public open class StandardRetryStrategy(override val config: Config = Config.default()) : RetryStrategy {
     public companion object : DslFactory<Config.Builder, StandardRetryStrategy> {
-        public override operator fun invoke(block: Config.Builder.() -> Unit): StandardRetryStrategy =
-            StandardRetryStrategy(Config(Config.Builder().apply(block)))
+        public override operator fun invoke(block: Config.Builder.() -> Unit): StandardRetryStrategy = StandardRetryStrategy(Config(Config.Builder().apply(block)))
     }
 
     /**
@@ -169,16 +168,15 @@ public open class StandardRetryStrategy(override val config: Config = Config.def
      * @param attempt The number of attempts completed.
      * @param result The [Result] that yielded the non-retryable condition.
      */
-    private fun <R> throwFailure(attempt: Int, result: Result<R>): Nothing =
-        when (val ex = result.exceptionOrNull()) {
-            null -> throw RetryFailureException(
-                "The operation resulted in a non-retryable failure",
-                null,
-                attempt,
-                result.getOrNull(),
-            )
-            else -> throw ex
-        }
+    private fun <R> throwFailure(attempt: Int, result: Result<R>): Nothing = when (val ex = result.exceptionOrNull()) {
+        null -> throw RetryFailureException(
+            "The operation resulted in a non-retryable failure",
+            null,
+            attempt,
+            result.getOrNull(),
+        )
+        else -> throw ex
+    }
 
     /**
      * Handles the termination of the retry loop because too many attempts have been made by throwing a
@@ -187,17 +185,16 @@ public open class StandardRetryStrategy(override val config: Config = Config.def
      * @param result The [Result] that yielded a retryable condition (but which won't be retried because we've already
      * tried too many times).
      */
-    private fun <R> throwTooManyAttempts(attempt: Int, result: Result<R>): Nothing =
-        when (val ex = result.exceptionOrNull()) {
-            null -> throw TooManyAttemptsException(
-                "Took more than ${config.maxAttempts} attempts to get a successful response",
-                null,
-                attempt,
-                result.getOrNull(),
-                result.exceptionOrNull(),
-            )
-            else -> throw ex
-        }
+    private fun <R> throwTooManyAttempts(attempt: Int, result: Result<R>): Nothing = when (val ex = result.exceptionOrNull()) {
+        null -> throw TooManyAttemptsException(
+            "Took more than ${config.maxAttempts} attempts to get a successful response",
+            null,
+            attempt,
+            result.getOrNull(),
+            result.exceptionOrNull(),
+        )
+        else -> throw ex
+    }
 
     /**
      * Configuration options for [StandardRetryStrategy]

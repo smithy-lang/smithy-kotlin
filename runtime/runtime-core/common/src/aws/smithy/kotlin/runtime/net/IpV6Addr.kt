@@ -157,8 +157,7 @@ public data class IpV6Addr(
         }
     }
 
-    private fun StringBuilder.formatSegments(range: IntRange) =
-        range.joinTo(this, separator = ":") { segments[it].toString(16) }
+    private fun StringBuilder.formatSegments(range: IntRange) = range.joinTo(this, separator = ":") { segments[it].toString(16) }
 
     /**
      * Returns true if this is the loopback address (`::1`), as defined in

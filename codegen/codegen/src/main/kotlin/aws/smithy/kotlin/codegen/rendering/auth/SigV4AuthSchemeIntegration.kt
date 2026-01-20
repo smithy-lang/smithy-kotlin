@@ -51,8 +51,7 @@ class SigV4AuthSchemeIntegration : KotlinIntegration {
     // Needs to happen after the `SigV4AsymmetricTraitCustomization` (-60).
     override val order: Byte = -50
 
-    override fun enabledForService(model: Model, settings: KotlinSettings): Boolean =
-        AwsSignatureVersion4.isSupportedAuthentication(model, settings.getService(model))
+    override fun enabledForService(model: Model, settings: KotlinSettings): Boolean = AwsSignatureVersion4.isSupportedAuthentication(model, settings.getService(model))
 
     override fun authSchemes(ctx: ProtocolGenerator.GenerationContext): List<AuthSchemeHandler> = listOf(SigV4AuthSchemeHandler())
 
@@ -63,8 +62,7 @@ class SigV4AuthSchemeIntegration : KotlinIntegration {
 
     override fun additionalServiceConfigProps(ctx: CodegenContext): List<ConfigProperty> = listOf(credentialsProviderProp)
 
-    override fun customizeEndpointResolution(ctx: ProtocolGenerator.GenerationContext): EndpointCustomization =
-        Sigv4EndpointCustomization
+    override fun customizeEndpointResolution(ctx: ProtocolGenerator.GenerationContext): EndpointCustomization = Sigv4EndpointCustomization
 
     override val sectionWriters: List<SectionWriterBinding>
         get() = listOf(

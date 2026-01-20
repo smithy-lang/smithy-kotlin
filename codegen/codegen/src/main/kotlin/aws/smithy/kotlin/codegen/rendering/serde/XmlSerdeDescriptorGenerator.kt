@@ -149,12 +149,11 @@ open class XmlSerdeDescriptorGenerator(
     }
 }
 
-private fun XmlNamespaceTrait.toSdkTrait(namespaceTraitSymbol: Symbol = SerdeXml.XmlNamespace): SdkFieldDescriptorTrait =
-    if (prefix.isPresent) {
-        SdkFieldDescriptorTrait(namespaceTraitSymbol, uri.dq(), prefix.get().dq())
-    } else {
-        SdkFieldDescriptorTrait(namespaceTraitSymbol, uri.dq())
-    }
+private fun XmlNamespaceTrait.toSdkTrait(namespaceTraitSymbol: Symbol = SerdeXml.XmlNamespace): SdkFieldDescriptorTrait = if (prefix.isPresent) {
+    SdkFieldDescriptorTrait(namespaceTraitSymbol, uri.dq(), prefix.get().dq())
+} else {
+    SdkFieldDescriptorTrait(namespaceTraitSymbol, uri.dq())
+}
 
 private fun XmlAttributeTrait.toSdkTrait(): SdkFieldDescriptorTrait = SdkFieldDescriptorTrait(SerdeXml.XmlAttribute)
 private fun XmlFlattenedTrait.toSdkTrait(): SdkFieldDescriptorTrait = SdkFieldDescriptorTrait(SerdeXml.Flattened)

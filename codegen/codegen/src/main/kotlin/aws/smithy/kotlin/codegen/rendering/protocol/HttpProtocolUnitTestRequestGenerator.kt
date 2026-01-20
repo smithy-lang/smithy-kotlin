@@ -293,7 +293,6 @@ open class HttpProtocolUnitTestRequestGenerator protected constructor(builder: B
     }
 
     open class Builder : HttpProtocolUnitTestGenerator.Builder<HttpRequestTestCase>() {
-        override fun build(): HttpProtocolUnitTestGenerator<HttpRequestTestCase> =
-            HttpProtocolUnitTestRequestGenerator(this)
+        override fun build(): HttpProtocolUnitTestGenerator<HttpRequestTestCase> = HttpProtocolUnitTestRequestGenerator(this)
     }
 }

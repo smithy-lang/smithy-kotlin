@@ -34,28 +34,25 @@ import software.amazon.smithy.model.shapes.ShapeId
  * Register support for the `aws.auth#sigv4a` auth scheme.
  */
 class SigV4AsymmetricAuthSchemeIntegration : KotlinIntegration {
-    override fun enabledForService(model: Model, settings: KotlinSettings): Boolean =
-        ServiceIndex
-            .of(model)
-            .getAuthSchemes(settings.service)
-            .values
-            .any { it.javaClass == SigV4ATrait::class.java }
+    override fun enabledForService(model: Model, settings: KotlinSettings): Boolean = ServiceIndex
+        .of(model)
+        .getAuthSchemes(settings.service)
+        .values
+        .any { it.javaClass == SigV4ATrait::class.java }
 
-    override fun authSchemes(ctx: ProtocolGenerator.GenerationContext): List<AuthSchemeHandler> =
-        listOf(SigV4AsymmetricAuthSchemeHandler())
+    override fun authSchemes(ctx: ProtocolGenerator.GenerationContext): List<AuthSchemeHandler> = listOf(SigV4AsymmetricAuthSchemeHandler())
 
-    override fun additionalServiceConfigProps(ctx: CodegenContext): List<ConfigProperty> =
-        listOf(
-            ConfigProperty {
-                name = "sigV4aSigningRegionSet"
-                symbol = KotlinTypes.Collections.set(KotlinTypes.String).asNullable()
-                baseClass = RuntimeTypes.Auth.Credentials.AwsCredentials.SigV4aClientConfig
-                useNestedBuilderBaseClass()
-                documentation = """
+    override fun additionalServiceConfigProps(ctx: CodegenContext): List<ConfigProperty> = listOf(
+        ConfigProperty {
+            name = "sigV4aSigningRegionSet"
+            symbol = KotlinTypes.Collections.set(KotlinTypes.String).asNullable()
+            baseClass = RuntimeTypes.Auth.Credentials.AwsCredentials.SigV4aClientConfig
+            useNestedBuilderBaseClass()
+            documentation = """
                 The set of regions to use when signing a request with SigV4a. If not provided this will automatically be set by the SDK.
-                """.trimIndent()
-            },
-        )
+            """.trimIndent()
+        },
+    )
 
     override val sectionWriters: List<SectionWriterBinding>
         get() = listOf(

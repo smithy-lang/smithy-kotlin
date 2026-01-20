@@ -37,13 +37,12 @@ public class StringTextStream(private val source: String) {
      * @param text The text to look for at the current offset.
      * @return True if the given [text] was found and the offset was advanced; otherwise, false.
      */
-    public fun advanceIf(text: String): Boolean =
-        if (source.startsWith(text, offset)) {
-            offset += text.length
-            true
-        } else {
-            false
-        }
+    public fun advanceIf(text: String): Boolean = if (source.startsWith(text, offset)) {
+        offset += text.length
+        true
+    } else {
+        false
+    }
 
     /**
      * Advances the position until a whitespace character is found (i.e., one of ' ', '\r', '\n', '\t').

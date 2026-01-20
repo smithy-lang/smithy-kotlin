@@ -15,8 +15,7 @@ import aws.smithy.kotlin.runtime.time.TimestampFormat
  * @param sha256Provider the [HashSupplier] to use for computing SHA-256 hashes
  */
 internal class SigV4SignatureCalculator(override val sha256Provider: HashSupplier = ::Sha256) : BaseSigV4SignatureCalculator(AwsSigningAlgorithm.SIGV4, sha256Provider) {
-    override fun calculate(signingKey: ByteArray, stringToSign: String): String =
-        hmac(signingKey, stringToSign.encodeToByteArray(), sha256Provider).encodeToHex()
+    override fun calculate(signingKey: ByteArray, stringToSign: String): String = hmac(signingKey, stringToSign.encodeToByteArray(), sha256Provider).encodeToHex()
 
     override fun signingKey(config: AwsSigningConfig): ByteArray {
         fun hmac(key: ByteArray, message: String) = hmac(key, message.encodeToByteArray(), sha256Provider)

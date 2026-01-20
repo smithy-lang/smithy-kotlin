@@ -99,24 +99,23 @@ class ServiceClientConfigGenerator(
     /**
      * Derives client config properties from the service context params trait.
      */
-    private fun clientContextConfigProps(trait: ClientContextParamsTrait): List<ConfigProperty> =
-        trait
-            .parameters
-            .map { (k, v) ->
-                when (v.type) {
-                    ShapeType.BOOLEAN -> ConfigProperty.Boolean(
-                        name = k.toCamelCase(),
-                        defaultValue = false,
-                        documentation = v.documentation.getOrNull(),
-                    )
-                    ShapeType.STRING -> ConfigProperty.String(
-                        name = k.toCamelCase(),
-                        defaultValue = null,
-                        documentation = v.documentation.getOrNull(),
-                    )
-                    else -> throw CodegenException("unsupported client context param type ${v.type}")
-                }
+    private fun clientContextConfigProps(trait: ClientContextParamsTrait): List<ConfigProperty> = trait
+        .parameters
+        .map { (k, v) ->
+            when (v.type) {
+                ShapeType.BOOLEAN -> ConfigProperty.Boolean(
+                    name = k.toCamelCase(),
+                    defaultValue = false,
+                    documentation = v.documentation.getOrNull(),
+                )
+                ShapeType.STRING -> ConfigProperty.String(
+                    name = k.toCamelCase(),
+                    defaultValue = null,
+                    documentation = v.documentation.getOrNull(),
+                )
+                else -> throw CodegenException("unsupported client context param type ${v.type}")
             }
+        }
 
     fun render(ctx: CodegenContext, writer: KotlinWriter) = render(ctx, emptyList(), writer)
 

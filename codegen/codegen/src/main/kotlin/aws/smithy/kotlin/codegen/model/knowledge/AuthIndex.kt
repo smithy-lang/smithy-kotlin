@@ -27,10 +27,9 @@ class AuthIndex {
      * scheme ID with the last integration taking precedence. This map is not yet reconciled with the
      * auth schemes used by the model.
      */
-    fun authHandlers(ctx: ProtocolGenerator.GenerationContext): Map<ShapeId, AuthSchemeHandler> =
-        ctx.integrations
-            .flatMap { it.authSchemes(ctx) }
-            .associateBy(AuthSchemeHandler::authSchemeId)
+    fun authHandlers(ctx: ProtocolGenerator.GenerationContext): Map<ShapeId, AuthSchemeHandler> = ctx.integrations
+        .flatMap { it.authSchemes(ctx) }
+        .associateBy(AuthSchemeHandler::authSchemeId)
 
     /**
      * Get the prioritized list of effective [AuthSchemeHandler] for an operation.

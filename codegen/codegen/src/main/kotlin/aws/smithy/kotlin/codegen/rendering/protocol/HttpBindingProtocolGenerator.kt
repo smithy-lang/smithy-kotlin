@@ -132,20 +132,19 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
      * @param ctx the protocol generator context
      * @param op the operation shape to render error matching
      */
-    open fun operationErrorHandler(ctx: ProtocolGenerator.GenerationContext, op: OperationShape): Symbol =
-        op.errorHandler(ctx.settings) { writer ->
-            writer.withBlock(
-                "private fun #L(context: #T, call: #T, payload: #T?): #Q {",
-                "}",
-                op.errorHandlerName(),
-                RuntimeTypes.Core.ExecutionContext,
-                RuntimeTypes.Http.HttpCall,
-                KotlinTypes.ByteArray,
-                KotlinTypes.Nothing,
-            ) {
-                renderThrowOperationError(ctx, op, writer)
-            }
+    open fun operationErrorHandler(ctx: ProtocolGenerator.GenerationContext, op: OperationShape): Symbol = op.errorHandler(ctx.settings) { writer ->
+        writer.withBlock(
+            "private fun #L(context: #T, call: #T, payload: #T?): #Q {",
+            "}",
+            op.errorHandlerName(),
+            RuntimeTypes.Core.ExecutionContext,
+            RuntimeTypes.Http.HttpCall,
+            KotlinTypes.ByteArray,
+            KotlinTypes.Nothing,
+        ) {
+            renderThrowOperationError(ctx, op, writer)
         }
+    }
 
     @Suppress("DEPRECATION")
     open fun renderThrowOperationError(ctx: ProtocolGenerator.GenerationContext, op: OperationShape, writer: KotlinWriter) {
@@ -1228,10 +1227,9 @@ internal fun stringToNumber(shape: NumberShape): String = when (shape.type) {
 /**
  * Return member shapes bound to the DOCUMENT
  */
-fun List<HttpBindingDescriptor>.filterDocumentBoundMembers(): List<MemberShape> =
-    filter { it.location == HttpBinding.Location.DOCUMENT }
-        .sortedBy { it.memberName }
-        .map { it.member }
+fun List<HttpBindingDescriptor>.filterDocumentBoundMembers(): List<MemberShape> = filter { it.location == HttpBinding.Location.DOCUMENT }
+    .sortedBy { it.memberName }
+    .map { it.member }
 
 /**
  * The default operation error handler function name
@@ -1256,9 +1254,8 @@ private fun renderNonBlankGuard(ctx: ProtocolGenerator.GenerationContext, member
         writer.write("""require(input.#1L$nullCheck.isNotBlank() == true) { "#1L is bound to the URI and must be a non-blank value" }""", member.defaultName())
     }
 }
-private fun MemberShape.isNonBlankInStruct(ctx: ProtocolGenerator.GenerationContext): Boolean =
-    ctx.model.expectShape(target).isStringShape &&
-        getTrait<LengthTrait>()?.min?.getOrNull()?.takeIf { it > 0 } != null
+private fun MemberShape.isNonBlankInStruct(ctx: ProtocolGenerator.GenerationContext): Boolean = ctx.model.expectShape(target).isStringShape &&
+    getTrait<LengthTrait>()?.min?.getOrNull()?.takeIf { it > 0 } != null
 
 private data class HttpSerdeMeta(val isStreaming: Boolean) {
     /**

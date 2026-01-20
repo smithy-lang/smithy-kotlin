@@ -52,34 +52,29 @@ class RestJsonTestProtocolGenerator(
     override val protocol: ShapeId = RestJson1Trait.ID,
 ) : HttpBindingProtocolGenerator() {
 
-    override fun getProtocolHttpBindingResolver(model: Model, serviceShape: ServiceShape): HttpBindingResolver =
-        HttpTraitResolver(model, serviceShape, ProtocolContentTypes.consistent("application/json"))
+    override fun getProtocolHttpBindingResolver(model: Model, serviceShape: ServiceShape): HttpBindingResolver = HttpTraitResolver(model, serviceShape, ProtocolContentTypes.consistent("application/json"))
 
     override fun generateProtocolUnitTests(ctx: ProtocolGenerator.GenerationContext) {
         // NOP
     }
 
-    override fun getHttpProtocolClientGenerator(ctx: ProtocolGenerator.GenerationContext): HttpProtocolClientGenerator =
-        MockRestJsonProtocolClientGenerator(ctx, getHttpMiddleware(ctx), getProtocolHttpBindingResolver(ctx.model, ctx.service))
+    override fun getHttpProtocolClientGenerator(ctx: ProtocolGenerator.GenerationContext): HttpProtocolClientGenerator = MockRestJsonProtocolClientGenerator(ctx, getHttpMiddleware(ctx), getProtocolHttpBindingResolver(ctx.model, ctx.service))
 
-    override fun structuredDataSerializer(ctx: ProtocolGenerator.GenerationContext): StructuredDataSerializerGenerator =
-        JsonSerializerGenerator(this)
+    override fun structuredDataSerializer(ctx: ProtocolGenerator.GenerationContext): StructuredDataSerializerGenerator = JsonSerializerGenerator(this)
 
-    override fun structuredDataParser(ctx: ProtocolGenerator.GenerationContext): StructuredDataParserGenerator =
-        JsonParserGenerator(this)
+    override fun structuredDataParser(ctx: ProtocolGenerator.GenerationContext): StructuredDataParserGenerator = JsonParserGenerator(this)
 
-    override fun operationErrorHandler(ctx: ProtocolGenerator.GenerationContext, op: OperationShape): Symbol =
-        op.errorHandler(ctx.settings) { writer ->
-            writer.withBlock(
-                "private fun ${op.errorHandlerName()}(context: #T, call: #T, payload: #T?): Nothing {",
-                "}",
-                RuntimeTypes.Core.ExecutionContext,
-                RuntimeTypes.Http.HttpCall,
-                KotlinTypes.ByteArray,
-            ) {
-                write("error(\"not needed for compile tests\")")
-            }
+    override fun operationErrorHandler(ctx: ProtocolGenerator.GenerationContext, op: OperationShape): Symbol = op.errorHandler(ctx.settings) { writer ->
+        writer.withBlock(
+            "private fun ${op.errorHandlerName()}(context: #T, call: #T, payload: #T?): Nothing {",
+            "}",
+            RuntimeTypes.Core.ExecutionContext,
+            RuntimeTypes.Http.HttpCall,
+            KotlinTypes.ByteArray,
+        ) {
+            write("error(\"not needed for compile tests\")")
         }
+    }
 }
 
 class MockRestJsonProtocolClientGenerator(
@@ -96,34 +91,29 @@ class RestXmlTestProtocolGenerator(
     override val protocol: ShapeId = RestXmlTrait.ID,
 ) : HttpBindingProtocolGenerator() {
 
-    override fun getProtocolHttpBindingResolver(model: Model, serviceShape: ServiceShape): HttpBindingResolver =
-        HttpTraitResolver(model, serviceShape, ProtocolContentTypes.consistent("application/xml"))
+    override fun getProtocolHttpBindingResolver(model: Model, serviceShape: ServiceShape): HttpBindingResolver = HttpTraitResolver(model, serviceShape, ProtocolContentTypes.consistent("application/xml"))
 
     override fun generateProtocolUnitTests(ctx: ProtocolGenerator.GenerationContext) {
         // NOOP
     }
 
-    override fun getHttpProtocolClientGenerator(ctx: ProtocolGenerator.GenerationContext): HttpProtocolClientGenerator =
-        MockRestXmlProtocolClientGenerator(ctx, getHttpMiddleware(ctx), getProtocolHttpBindingResolver(ctx.model, ctx.service))
+    override fun getHttpProtocolClientGenerator(ctx: ProtocolGenerator.GenerationContext): HttpProtocolClientGenerator = MockRestXmlProtocolClientGenerator(ctx, getHttpMiddleware(ctx), getProtocolHttpBindingResolver(ctx.model, ctx.service))
 
-    override fun structuredDataSerializer(ctx: ProtocolGenerator.GenerationContext): StructuredDataSerializerGenerator =
-        XmlSerializerGenerator(this, TimestampFormatTrait.Format.EPOCH_SECONDS)
+    override fun structuredDataSerializer(ctx: ProtocolGenerator.GenerationContext): StructuredDataSerializerGenerator = XmlSerializerGenerator(this, TimestampFormatTrait.Format.EPOCH_SECONDS)
 
-    override fun structuredDataParser(ctx: ProtocolGenerator.GenerationContext): StructuredDataParserGenerator =
-        XmlParserGenerator(TimestampFormatTrait.Format.EPOCH_SECONDS)
+    override fun structuredDataParser(ctx: ProtocolGenerator.GenerationContext): StructuredDataParserGenerator = XmlParserGenerator(TimestampFormatTrait.Format.EPOCH_SECONDS)
 
-    override fun operationErrorHandler(ctx: ProtocolGenerator.GenerationContext, op: OperationShape): Symbol =
-        op.errorHandler(ctx.settings) { writer ->
-            writer.withBlock(
-                "private fun ${op.errorHandlerName()}(context: #T, call: #T, payload: #T?): Nothing {",
-                "}",
-                RuntimeTypes.Core.ExecutionContext,
-                RuntimeTypes.Http.HttpCall,
-                KotlinTypes.ByteArray,
-            ) {
-                write("error(\"not needed for compile tests\")")
-            }
+    override fun operationErrorHandler(ctx: ProtocolGenerator.GenerationContext, op: OperationShape): Symbol = op.errorHandler(ctx.settings) { writer ->
+        writer.withBlock(
+            "private fun ${op.errorHandlerName()}(context: #T, call: #T, payload: #T?): Nothing {",
+            "}",
+            RuntimeTypes.Core.ExecutionContext,
+            RuntimeTypes.Http.HttpCall,
+            KotlinTypes.ByteArray,
+        ) {
+            write("error(\"not needed for compile tests\")")
         }
+    }
 }
 
 class MockRestXmlProtocolClientGenerator(

@@ -149,11 +149,9 @@ fun TestContext.requestMembers(shape: Shape, location: HttpBinding.Location = Ht
         .map { it.member }
 }
 
-fun TestContext.toGenerationContext(): GenerationContext =
-    GenerationContext(generationCtx.model, generationCtx.symbolProvider, generationCtx.settings, generator)
+fun TestContext.toGenerationContext(): GenerationContext = GenerationContext(generationCtx.model, generationCtx.symbolProvider, generationCtx.settings, generator)
 
-fun <T : Shape> TestContext.toRenderingContext(writer: KotlinWriter, forShape: T? = null): RenderingContext<T> =
-    toGenerationContext().toRenderingContext(writer, forShape)
+fun <T : Shape> TestContext.toRenderingContext(writer: KotlinWriter, forShape: T? = null): RenderingContext<T> = toGenerationContext().toRenderingContext(writer, forShape)
 
 /** An HttpProtocolClientGenerator for testing */
 class TestProtocolClientGenerator(
@@ -175,8 +173,7 @@ private val allProtocols = setOf(
 /** An HttpBindingProtocolGenerator for testing (nothing is rendered for serializing/deserializing payload bodies) */
 class MockHttpProtocolGenerator(model: Model) : HttpBindingProtocolGenerator() {
     override val defaultTimestampFormat: TimestampFormatTrait.Format = TimestampFormatTrait.Format.EPOCH_SECONDS
-    override fun getProtocolHttpBindingResolver(model: Model, serviceShape: ServiceShape): HttpBindingResolver =
-        HttpTraitResolver(model, serviceShape, ProtocolContentTypes.consistent("application/json"))
+    override fun getProtocolHttpBindingResolver(model: Model, serviceShape: ServiceShape): HttpBindingResolver = HttpTraitResolver(model, serviceShape, ProtocolContentTypes.consistent("application/json"))
 
     override val protocol: ShapeId = model
         .serviceShapes
@@ -189,49 +186,46 @@ class MockHttpProtocolGenerator(model: Model) : HttpBindingProtocolGenerator() {
 
     override fun generateProtocolUnitTests(ctx: ProtocolGenerator.GenerationContext) {}
 
-    override fun getHttpProtocolClientGenerator(ctx: ProtocolGenerator.GenerationContext): HttpProtocolClientGenerator =
-        TestProtocolClientGenerator(ctx, getHttpMiddleware(ctx), getProtocolHttpBindingResolver(ctx.model, ctx.service))
+    override fun getHttpProtocolClientGenerator(ctx: ProtocolGenerator.GenerationContext): HttpProtocolClientGenerator = TestProtocolClientGenerator(ctx, getHttpMiddleware(ctx), getProtocolHttpBindingResolver(ctx.model, ctx.service))
 
-    override fun structuredDataParser(ctx: ProtocolGenerator.GenerationContext): StructuredDataParserGenerator =
-        object : StructuredDataParserGenerator {
-            override fun operationDeserializer(ctx: ProtocolGenerator.GenerationContext, op: OperationShape, members: List<MemberShape>): Symbol = buildSymbol {
-                name = op.bodyDeserializerName()
-            }
-
-            override fun errorDeserializer(
-                ctx: ProtocolGenerator.GenerationContext,
-                errorShape: StructureShape,
-                members: List<MemberShape>,
-            ): Symbol = buildSymbol {
-                val errSymbol = ctx.symbolProvider.toSymbol(errorShape)
-                name = errSymbol.errorDeserializerName()
-            }
-
-            override fun payloadDeserializer(
-                ctx: ProtocolGenerator.GenerationContext,
-                shape: Shape,
-                members: Collection<MemberShape>?,
-            ): Symbol = buildSymbol {
-                val symbol = ctx.symbolProvider.toSymbol(shape)
-                name = "deserialize" + StringUtils.capitalize(symbol.name) + "Payload"
-            }
+    override fun structuredDataParser(ctx: ProtocolGenerator.GenerationContext): StructuredDataParserGenerator = object : StructuredDataParserGenerator {
+        override fun operationDeserializer(ctx: ProtocolGenerator.GenerationContext, op: OperationShape, members: List<MemberShape>): Symbol = buildSymbol {
+            name = op.bodyDeserializerName()
         }
 
-    override fun structuredDataSerializer(ctx: ProtocolGenerator.GenerationContext): StructuredDataSerializerGenerator =
-        object : StructuredDataSerializerGenerator {
-            override fun operationSerializer(ctx: ProtocolGenerator.GenerationContext, op: OperationShape, members: List<MemberShape>): Symbol = buildSymbol {
-                name = op.bodySerializerName()
-            }
-
-            override fun payloadSerializer(
-                ctx: ProtocolGenerator.GenerationContext,
-                shape: Shape,
-                members: Collection<MemberShape>?,
-            ): Symbol = buildSymbol {
-                val symbol = ctx.symbolProvider.toSymbol(shape)
-                name = "serialize" + StringUtils.capitalize(symbol.name) + "Payload"
-            }
+        override fun errorDeserializer(
+            ctx: ProtocolGenerator.GenerationContext,
+            errorShape: StructureShape,
+            members: List<MemberShape>,
+        ): Symbol = buildSymbol {
+            val errSymbol = ctx.symbolProvider.toSymbol(errorShape)
+            name = errSymbol.errorDeserializerName()
         }
+
+        override fun payloadDeserializer(
+            ctx: ProtocolGenerator.GenerationContext,
+            shape: Shape,
+            members: Collection<MemberShape>?,
+        ): Symbol = buildSymbol {
+            val symbol = ctx.symbolProvider.toSymbol(shape)
+            name = "deserialize" + StringUtils.capitalize(symbol.name) + "Payload"
+        }
+    }
+
+    override fun structuredDataSerializer(ctx: ProtocolGenerator.GenerationContext): StructuredDataSerializerGenerator = object : StructuredDataSerializerGenerator {
+        override fun operationSerializer(ctx: ProtocolGenerator.GenerationContext, op: OperationShape, members: List<MemberShape>): Symbol = buildSymbol {
+            name = op.bodySerializerName()
+        }
+
+        override fun payloadSerializer(
+            ctx: ProtocolGenerator.GenerationContext,
+            shape: Shape,
+            members: Collection<MemberShape>?,
+        ): Symbol = buildSymbol {
+            val symbol = ctx.symbolProvider.toSymbol(shape)
+            name = "serialize" + StringUtils.capitalize(symbol.name) + "Payload"
+        }
+    }
 
     override fun operationErrorHandler(ctx: ProtocolGenerator.GenerationContext, op: OperationShape): Symbol = buildSymbol {
         name = op.errorHandlerName()

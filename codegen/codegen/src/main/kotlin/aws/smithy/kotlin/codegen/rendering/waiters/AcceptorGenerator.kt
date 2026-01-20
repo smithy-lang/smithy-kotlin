@@ -100,9 +100,8 @@ private fun KotlinWriter.renderPathAcceptor(wi: WaiterInfo, directive: String, i
     }
 }
 
-private fun buildSyntheticInputOutputShape(opName: String, input: ShapeId, output: ShapeId): StructureShape =
-    StructureShape.Builder()
-        .id("software.amazon.smithy.kotlin.codegen.rendering.waiters.synthetic#${opName}RequestResponse")
-        .addMember("input", input)
-        .addMember("output", output)
-        .build()
+private fun buildSyntheticInputOutputShape(opName: String, input: ShapeId, output: ShapeId): StructureShape = StructureShape.Builder()
+    .id("software.amazon.smithy.kotlin.codegen.rendering.waiters.synthetic#${opName}RequestResponse")
+    .addMember("input", input)
+    .addMember("output", output)
+    .build()

@@ -262,5 +262,4 @@ private fun Pair<String, List<String>>.canonicalLine(): String {
 private val multipleSpaces = " +".toRegex()
 private fun String.trimAll() = replace(multipleSpaces, " ").trim()
 
-private fun includeHeader(name: String, config: AwsSigningConfig): Boolean =
-    name.lowercase() !in skipHeaders && config.shouldSignHeader(name)
+private fun includeHeader(name: String, config: AwsSigningConfig): Boolean = name.lowercase() !in skipHeaders && config.shouldSignHeader(name)

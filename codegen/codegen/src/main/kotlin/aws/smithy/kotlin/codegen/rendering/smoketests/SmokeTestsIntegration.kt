@@ -19,18 +19,16 @@ import software.amazon.smithy.smoketests.traits.SmokeTestsTrait
  * Renders smoke test runner for a service if any of the operations have the [SmokeTestsTrait].
  */
 class SmokeTestsIntegration : KotlinIntegration {
-    override fun enabledForService(model: Model, settings: KotlinSettings): Boolean =
-        model.topDownOperations(settings.service).any { it.hasTrait<SmokeTestsTrait>() }
+    override fun enabledForService(model: Model, settings: KotlinSettings): Boolean = model.topDownOperations(settings.service).any { it.hasTrait<SmokeTestsTrait>() }
 
-    override fun writeAdditionalFiles(ctx: CodegenContext, delegator: KotlinDelegator) =
-        delegator.useFileWriter(
-            "SmokeTests.kt",
-            "${ctx.settings.pkg.name}.smoketests",
-            DEFAULT_TEST_SOURCE_SET_ROOT,
-        ) { writer ->
-            SmokeTestsRunnerGenerator(
-                writer,
-                ctx,
-            ).render()
-        }
+    override fun writeAdditionalFiles(ctx: CodegenContext, delegator: KotlinDelegator) = delegator.useFileWriter(
+        "SmokeTests.kt",
+        "${ctx.settings.pkg.name}.smoketests",
+        DEFAULT_TEST_SOURCE_SET_ROOT,
+    ) { writer ->
+        SmokeTestsRunnerGenerator(
+            writer,
+            ctx,
+        ).render()
+    }
 }

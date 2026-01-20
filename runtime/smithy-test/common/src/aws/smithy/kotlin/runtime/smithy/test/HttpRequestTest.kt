@@ -195,21 +195,20 @@ public class ExpectedHttpRequestBuilder {
     public var bodyAssert: BodyAssertFn? = null
     public var bodyMediaType: String? = null
 
-    public fun build(): ExpectedHttpRequest =
-        ExpectedHttpRequest(
-            this.method,
-            this.uri,
-            this.queryParams,
-            this.forbiddenQueryParams,
-            this.requiredQueryParams,
-            this.headers,
-            this.forbiddenHeaders,
-            this.requiredHeaders,
-            this.resolvedHost,
-            this.body,
-            this.bodyAssert,
-            this.bodyMediaType,
-        )
+    public fun build(): ExpectedHttpRequest = ExpectedHttpRequest(
+        this.method,
+        this.uri,
+        this.queryParams,
+        this.forbiddenQueryParams,
+        this.requiredQueryParams,
+        this.headers,
+        this.forbiddenHeaders,
+        this.requiredHeaders,
+        this.resolvedHost,
+        this.body,
+        this.bodyAssert,
+        this.bodyMediaType,
+    )
 }
 
 public class HttpRequestTestBuilder {

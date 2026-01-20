@@ -37,13 +37,12 @@ private suspend fun signableBodyStream(
 public suspend fun HttpRequest.toSignableCrtRequest(
     unsignedPayload: Boolean = false,
     awsChunked: Boolean = false,
-): HttpRequestCrt =
-    HttpRequestCrt(
-        method = method.name,
-        encodedPath = url.requestRelativePath,
-        headers = headers.toCrtHeaders(),
-        body = signableBodyStream(body, unsignedPayload, awsChunked),
-    )
+): HttpRequestCrt = HttpRequestCrt(
+    method = method.name,
+    encodedPath = url.requestRelativePath,
+    headers = headers.toCrtHeaders(),
+    body = signableBodyStream(body, unsignedPayload, awsChunked),
+)
 
 // proxy the smithy-client-rt version of Headers to CRT (which is based on our client-rt version in the first place)
 private class HttpHeadersCrt(val headers: HeadersBuilder) : HeadersCrt {

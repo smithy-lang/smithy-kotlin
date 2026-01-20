@@ -20,9 +20,7 @@ object SerdeJsonProtocolGenerator : SerdeProtocolGenerator() {
     override val contentTypes = ProtocolContentTypes.consistent("application/json")
     override val protocol: ShapeId = SerdeJsonProtocol.ID
 
-    override fun structuredDataSerializer(ctx: ProtocolGenerator.GenerationContext): StructuredDataSerializerGenerator =
-        JsonSerializerGenerator(this)
+    override fun structuredDataSerializer(ctx: ProtocolGenerator.GenerationContext): StructuredDataSerializerGenerator = JsonSerializerGenerator(this)
 
-    override fun structuredDataParser(ctx: ProtocolGenerator.GenerationContext): StructuredDataParserGenerator =
-        JsonParserGenerator(this)
+    override fun structuredDataParser(ctx: ProtocolGenerator.GenerationContext): StructuredDataParserGenerator = JsonParserGenerator(this)
 }

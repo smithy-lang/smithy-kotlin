@@ -37,11 +37,9 @@ import software.amazon.smithy.model.traits.XmlNameTrait
 class AwsQuery : QueryHttpBindingProtocolGenerator() {
     override val protocol: ShapeId = AwsQueryTrait.ID
 
-    override fun structuredDataSerializer(ctx: ProtocolGenerator.GenerationContext): StructuredDataSerializerGenerator =
-        AwsQuerySerializerGenerator(this)
+    override fun structuredDataSerializer(ctx: ProtocolGenerator.GenerationContext): StructuredDataSerializerGenerator = AwsQuerySerializerGenerator(this)
 
-    override fun structuredDataParser(ctx: ProtocolGenerator.GenerationContext): StructuredDataParserGenerator =
-        AwsQueryXmlParserGenerator(this)
+    override fun structuredDataParser(ctx: ProtocolGenerator.GenerationContext): StructuredDataParserGenerator = AwsQueryXmlParserGenerator(this)
 
     override fun getErrorCode(ctx: ProtocolGenerator.GenerationContext, errShapeId: ShapeId): String {
         val errShape = ctx.model.expectShape(errShapeId)
@@ -72,8 +70,7 @@ private class AwsQuerySerdeFormUrlDescriptorGenerator(
 
     override fun getMemberSerialNameOverride(member: MemberShape): String? = member.getTrait<XmlNameTrait>()?.value
 
-    override fun isMemberFlattened(member: MemberShape, targetShape: Shape): Boolean =
-        member.hasTrait<XmlFlattenedTrait>()
+    override fun isMemberFlattened(member: MemberShape, targetShape: Shape): Boolean = member.hasTrait<XmlFlattenedTrait>()
 }
 
 private class AwsQuerySerializerGenerator(

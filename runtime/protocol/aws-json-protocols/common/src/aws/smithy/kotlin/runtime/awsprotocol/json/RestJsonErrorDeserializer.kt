@@ -68,7 +68,7 @@ public object RestJsonErrorDeserializer {
                 }
             }
         }
-        /**
+        /*
          * According to the spec we should check the following locations in order:
          *
          * HTTP header x-amzn-errortype

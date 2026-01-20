@@ -48,17 +48,16 @@ class SerdeIndex(private val model: Model) : KnowledgeIndex {
      * Find and return the set of shapes reachable from the given shape that would require a "document" serializer.
      * @return The set of shapes that require a serializer implementation
      */
-    fun requiresDocumentSerializer(shape: Shape, members: Collection<MemberShape> = shape.members()): Set<Shape> =
-        when (shape) {
-            is OperationShape -> requiresDocumentSerializer(listOf(shape))
-            else -> {
-                val topLevelMembers = members
-                    .map { model.expectShape(it.target) }
-                    .filter { it.isStructureShape || it.isUnionShape || it is CollectionShape || it.isMapShape }
-                    .toSet()
-                walkNestedShapesRequiringSerde(model, topLevelMembers)
-            }
+    fun requiresDocumentSerializer(shape: Shape, members: Collection<MemberShape> = shape.members()): Set<Shape> = when (shape) {
+        is OperationShape -> requiresDocumentSerializer(listOf(shape))
+        else -> {
+            val topLevelMembers = members
+                .map { model.expectShape(it.target) }
+                .filter { it.isStructureShape || it.isUnionShape || it is CollectionShape || it.isMapShape }
+                .toSet()
+            walkNestedShapesRequiringSerde(model, topLevelMembers)
         }
+    }
 
     /**
      * Find and return the set of shapes that are not operation outputs but do require a deserializer
@@ -102,17 +101,16 @@ class SerdeIndex(private val model: Model) : KnowledgeIndex {
      * Find and return the set of shapes reachable from the given shape that would require a "document" deserializer.
      * @return The set of shapes that require a deserializer implementation
      */
-    fun requiresDocumentDeserializer(shape: Shape, members: Collection<MemberShape> = shape.members()): Set<Shape> =
-        when (shape) {
-            is OperationShape -> requiresDocumentDeserializer(listOf(shape))
-            else -> {
-                val topLevelMembers = members
-                    .map { model.expectShape(it.target) }
-                    .filter { it.isStructureShape || it.isUnionShape || it is CollectionShape || it.isMapShape }
-                    .toMutableSet()
-                walkNestedShapesRequiringSerde(model, topLevelMembers)
-            }
+    fun requiresDocumentDeserializer(shape: Shape, members: Collection<MemberShape> = shape.members()): Set<Shape> = when (shape) {
+        is OperationShape -> requiresDocumentDeserializer(listOf(shape))
+        else -> {
+            val topLevelMembers = members
+                .map { model.expectShape(it.target) }
+                .filter { it.isStructureShape || it.isUnionShape || it is CollectionShape || it.isMapShape }
+                .toMutableSet()
+            walkNestedShapesRequiringSerde(model, topLevelMembers)
         }
+    }
 }
 
 private fun walkNestedShapesRequiringSerde(model: Model, shapes: Set<Shape>): Set<Shape> {

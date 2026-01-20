@@ -38,8 +38,7 @@ public class OkHttp4Engine(
          * Initializes a new [OkHttp4Engine] via a DSL builder block
          * @param block A receiver lambda which sets the properties of the config to be built
          */
-        public operator fun invoke(block: OkHttpEngineConfig.Builder.() -> Unit): OkHttp4Engine =
-            OkHttp4Engine(OkHttpEngineConfig(block))
+        public operator fun invoke(block: OkHttpEngineConfig.Builder.() -> Unit): OkHttp4Engine = OkHttp4Engine(OkHttpEngineConfig(block))
 
         override val engineConstructor: (OkHttpEngineConfig.Builder.() -> Unit) -> OkHttp4Engine = ::invoke
     }

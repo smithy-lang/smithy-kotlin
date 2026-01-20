@@ -83,8 +83,7 @@ open class FormUrlSerdeDescriptorGenerator(
         return traits
     }
 
-    private fun getMemberSerialName(member: MemberShape): String =
-        getMemberSerialNameOverride(member) ?: member.memberName
+    private fun getMemberSerialName(member: MemberShape): String = getMemberSerialNameOverride(member) ?: member.memberName
 
     /**
      * Gets any applicable name override for a [MemberShape]. Implementing protocols can check specific traits or other

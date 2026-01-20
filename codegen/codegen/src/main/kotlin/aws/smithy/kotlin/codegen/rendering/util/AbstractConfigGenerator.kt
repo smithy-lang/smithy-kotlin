@@ -183,5 +183,4 @@ abstract class AbstractConfigGenerator {
     }
 }
 
-private fun Symbol.format(delegate: Delegate?): String =
-    name + (delegate?.let { " by ${it.delegationExpression}" } ?: "")
+private fun Symbol.format(delegate: Delegate?): String = name + (delegate?.let { " by ${it.delegationExpression}" } ?: "")

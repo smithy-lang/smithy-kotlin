@@ -21,9 +21,7 @@ public class AcceptorRetryPolicy<in I, in O>(
     private val input: I,
     private val acceptors: List<Acceptor<I, O>>,
 ) : RetryPolicy<O> {
-    override fun evaluate(result: Result<O>): RetryDirective =
-        acceptors.firstNotNullOfOrNull { it.evaluate(input, result) } ?: result.toDefaultDirective()
+    override fun evaluate(result: Result<O>): RetryDirective = acceptors.firstNotNullOfOrNull { it.evaluate(input, result) } ?: result.toDefaultDirective()
 
-    private fun Result<O>.toDefaultDirective(): RetryDirective =
-        if (isSuccess) RetryDirective.RetryError(RetryErrorType.ServerSide) else RetryDirective.TerminateAndFail
+    private fun Result<O>.toDefaultDirective(): RetryDirective = if (isSuccess) RetryDirective.RetryError(RetryErrorType.ServerSide) else RetryDirective.TerminateAndFail
 }

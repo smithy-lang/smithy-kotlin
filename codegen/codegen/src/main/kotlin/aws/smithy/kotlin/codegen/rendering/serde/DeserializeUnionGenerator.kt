@@ -87,13 +87,12 @@ class DeserializeUnionGenerator(
     override fun deserializationResultName(defaultName: String): String = "value"
 
     // Return the type that deserializes the incoming value.  Example: `MyAggregateUnion.IntList`
-    override fun collectionReturnExpression(forMemberShape: MemberShape?, defaultCollectionName: String) =
-        if (forMemberShape != null && forMemberShape in members) {
-            // We're returning a top-level collection for a member value—nest it inside a union variant
-            val unionTypeName = forMemberShape.unionTypeName(ctx)
-            "$unionTypeName($defaultCollectionName)"
-        } else {
-            // We're returning a nested collection type—don't nest it inside a union variant
-            super.collectionReturnExpression(null, defaultCollectionName)
-        }
+    override fun collectionReturnExpression(forMemberShape: MemberShape?, defaultCollectionName: String) = if (forMemberShape != null && forMemberShape in members) {
+        // We're returning a top-level collection for a member value—nest it inside a union variant
+        val unionTypeName = forMemberShape.unionTypeName(ctx)
+        "$unionTypeName($defaultCollectionName)"
+    } else {
+        // We're returning a nested collection type—don't nest it inside a union variant
+        super.collectionReturnExpression(null, defaultCollectionName)
+    }
 }

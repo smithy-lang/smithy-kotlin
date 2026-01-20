@@ -141,14 +141,13 @@ internal class RealSdkByteChannel(
         }
     }
 
-    private inline fun writing(block: () -> Long) =
-        try {
-            check(_writeInProgress.compareAndSet(false, true)) { "Write operation already in progress" }
-            val wc = block()
-            afterWrite(wc.toInt())
-        } finally {
-            _writeInProgress.compareAndSet(true, false)
-        }
+    private inline fun writing(block: () -> Long) = try {
+        check(_writeInProgress.compareAndSet(false, true)) { "Write operation already in progress" }
+        val wc = block()
+        afterWrite(wc.toInt())
+    } finally {
+        _writeInProgress.compareAndSet(true, false)
+    }
 
     // read side only
     private fun ensureNotFailed() {

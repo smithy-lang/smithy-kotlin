@@ -30,30 +30,27 @@ fun Parameter.defaultName(): String = name.defaultName()
 /**
  * Get the symbol for an endpoint parameter type. All endpoint parameter members are nullable.
  */
-fun ParameterType.toSymbol(): Symbol =
-    when (this) {
-        ParameterType.STRING -> KotlinTypes.String
-        ParameterType.BOOLEAN -> KotlinTypes.Boolean
-        ParameterType.STRING_ARRAY -> KotlinTypes.Collections.list(KotlinTypes.String)
-    }.asNullable()
+fun ParameterType.toSymbol(): Symbol = when (this) {
+    ParameterType.STRING -> KotlinTypes.String
+    ParameterType.BOOLEAN -> KotlinTypes.Boolean
+    ParameterType.STRING_ARRAY -> KotlinTypes.Collections.list(KotlinTypes.String)
+}.asNullable()
 
 /**
  * Get the writable literal for a rules engine value.
  */
-fun Value.toLiteral(): String =
-    when (this) {
-        is StringValue -> value.doubleQuote()
-        is BooleanValue -> value.toString()
-        is ArrayValue -> values.joinToString(", ", "listOf(", ")") { value ->
-            value.expectStringValue().value.doubleQuote()
-        }
-        else -> throw IllegalArgumentException("unrecognized parameter value type $type")
+fun Value.toLiteral(): String = when (this) {
+    is StringValue -> value.doubleQuote()
+    is BooleanValue -> value.toString()
+    is ArrayValue -> values.joinToString(", ", "listOf(", ")") { value ->
+        value.expectStringValue().value.doubleQuote()
     }
+    else -> throw IllegalArgumentException("unrecognized parameter value type $type")
+}
 
 /**
  * Format a list of string nodes for codegen
  */
-fun List<Node>.format(): String =
-    this.joinToString(", ", "listOf(", ")") { element ->
-        element.expectStringNode().value.doubleQuote()
-    }
+fun List<Node>.format(): String = this.joinToString(", ", "listOf(", ")") { element ->
+    element.expectStringNode().value.doubleQuote()
+}

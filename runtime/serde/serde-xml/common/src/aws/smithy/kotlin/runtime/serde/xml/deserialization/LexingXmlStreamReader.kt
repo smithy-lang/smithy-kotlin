@@ -29,8 +29,7 @@ public class LexingXmlStreamReader(private val source: XmlLexer) : XmlStreamRead
     override var lastToken: XmlToken? = null
         private set
 
-    override fun nextToken(): XmlToken? =
-        (peekQueue.removeFirstOrNull() ?: source.parseNext()).also { lastToken = it }
+    override fun nextToken(): XmlToken? = (peekQueue.removeFirstOrNull() ?: source.parseNext()).also { lastToken = it }
 
     override fun peek(index: Int): XmlToken? {
         while (index > peekQueue.size && !source.endOfDocument) {
@@ -53,14 +52,13 @@ public class LexingXmlStreamReader(private val source: XmlLexer) : XmlStreamRead
         }
     }
 
-    override fun subTreeReader(subtreeStartDepth: XmlStreamReader.SubtreeStartDepth): XmlStreamReader =
-        if (peek(1).terminates(lastToken)) {
-            // Special case—return an empty subtree _and_ advance the token.
-            nextToken()
-            EmptyXmlStreamReader(this)
-        } else {
-            ChildXmlStreamReader(this, subtreeStartDepth)
-        }
+    override fun subTreeReader(subtreeStartDepth: XmlStreamReader.SubtreeStartDepth): XmlStreamReader = if (peek(1).terminates(lastToken)) {
+        // Special case—return an empty subtree _and_ advance the token.
+        nextToken()
+        EmptyXmlStreamReader(this)
+    } else {
+        ChildXmlStreamReader(this, subtreeStartDepth)
+    }
 }
 
 /**
@@ -109,8 +107,7 @@ private class ChildXmlStreamReader(
 
     override fun skipNext() = parent.skipNext()
 
-    override fun subTreeReader(subtreeStartDepth: XmlStreamReader.SubtreeStartDepth): XmlStreamReader =
-        parent.subTreeReader(subtreeStartDepth)
+    override fun subTreeReader(subtreeStartDepth: XmlStreamReader.SubtreeStartDepth): XmlStreamReader = parent.subTreeReader(subtreeStartDepth)
 }
 
 /**

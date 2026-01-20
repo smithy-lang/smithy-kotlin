@@ -628,8 +628,7 @@ open class SerializeStructGenerator(
      * @param memberShape shape which would have the IdempotencyTokenTrait
      * @return string intended for codegen output
      */
-    private fun idempotencyTokenPostfix(memberShape: MemberShape): String =
-        // https://github.com/smithy-lang/smithy-kotlin/issues/1128
+    private fun idempotencyTokenPostfix(memberShape: MemberShape): String = // https://github.com/smithy-lang/smithy-kotlin/issues/1128
         if (topLevelIndex.isTopLevelInputMember(memberShape)) {
             writer.addImport(RuntimeTypes.SmithyClient.IdempotencyTokenProviderExt)
             " ?: field(${memberShape.descriptorName()}, context.idempotencyTokenProvider.generateToken())"

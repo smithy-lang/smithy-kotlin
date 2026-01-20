@@ -21,8 +21,7 @@ class ImportDeclarations {
         imports.add(ImportStatement(packageName, symbolName, canonicalAlias))
     }
 
-    fun symbolCollides(packageName: String, symbolName: String): Boolean =
-        imports.any { it.alias == "" && it.symbolName == symbolName && it.packageName != packageName && symbolName != "*" }
+    fun symbolCollides(packageName: String, symbolName: String): Boolean = imports.any { it.alias == "" && it.symbolName == symbolName && it.packageName != packageName && symbolName != "*" }
 
     override fun toString(): String {
         if (imports.isEmpty()) {

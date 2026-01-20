@@ -171,46 +171,43 @@ class HttpBindingProtocolGeneratorTest {
         override val defaultTimestampFormat: TimestampFormatTrait.Format
             get() = error("Unneeded for test")
 
-        override fun getProtocolHttpBindingResolver(model: Model, serviceShape: ServiceShape): HttpBindingResolver =
-            AwsJsonHttpBindingResolver(model, serviceShape, "application/x-amz-json-1.0")
+        override fun getProtocolHttpBindingResolver(model: Model, serviceShape: ServiceShape): HttpBindingResolver = AwsJsonHttpBindingResolver(model, serviceShape, "application/x-amz-json-1.0")
 
-        override fun structuredDataParser(ctx: ProtocolGenerator.GenerationContext): StructuredDataParserGenerator =
-            object : StructuredDataParserGenerator {
-                override fun operationDeserializer(ctx: ProtocolGenerator.GenerationContext, op: OperationShape, members: List<MemberShape>): Symbol {
-                    error("Unneeded for test")
-                }
-
-                override fun errorDeserializer(
-                    ctx: ProtocolGenerator.GenerationContext,
-                    errorShape: StructureShape,
-                    members: List<MemberShape>,
-                ): Symbol {
-                    error("Unneeded for test")
-                }
-
-                override fun payloadDeserializer(
-                    ctx: ProtocolGenerator.GenerationContext,
-                    shape: Shape,
-                    members: Collection<MemberShape>?,
-                ): Symbol {
-                    error("Unneeded for test")
-                }
+        override fun structuredDataParser(ctx: ProtocolGenerator.GenerationContext): StructuredDataParserGenerator = object : StructuredDataParserGenerator {
+            override fun operationDeserializer(ctx: ProtocolGenerator.GenerationContext, op: OperationShape, members: List<MemberShape>): Symbol {
+                error("Unneeded for test")
             }
 
-        override fun structuredDataSerializer(ctx: ProtocolGenerator.GenerationContext): StructuredDataSerializerGenerator =
-            object : StructuredDataSerializerGenerator {
-                override fun operationSerializer(ctx: ProtocolGenerator.GenerationContext, op: OperationShape, members: List<MemberShape>): Symbol {
-                    error("Unneeded for test")
-                }
-
-                override fun payloadSerializer(
-                    ctx: ProtocolGenerator.GenerationContext,
-                    shape: Shape,
-                    members: Collection<MemberShape>?,
-                ): Symbol {
-                    error("Unneeded for test")
-                }
+            override fun errorDeserializer(
+                ctx: ProtocolGenerator.GenerationContext,
+                errorShape: StructureShape,
+                members: List<MemberShape>,
+            ): Symbol {
+                error("Unneeded for test")
             }
+
+            override fun payloadDeserializer(
+                ctx: ProtocolGenerator.GenerationContext,
+                shape: Shape,
+                members: Collection<MemberShape>?,
+            ): Symbol {
+                error("Unneeded for test")
+            }
+        }
+
+        override fun structuredDataSerializer(ctx: ProtocolGenerator.GenerationContext): StructuredDataSerializerGenerator = object : StructuredDataSerializerGenerator {
+            override fun operationSerializer(ctx: ProtocolGenerator.GenerationContext, op: OperationShape, members: List<MemberShape>): Symbol {
+                error("Unneeded for test")
+            }
+
+            override fun payloadSerializer(
+                ctx: ProtocolGenerator.GenerationContext,
+                shape: Shape,
+                members: Collection<MemberShape>?,
+            ): Symbol {
+                error("Unneeded for test")
+            }
+        }
 
         override val protocol: ShapeId
             get() = error("Unneeded for test")

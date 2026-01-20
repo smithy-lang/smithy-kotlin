@@ -28,5 +28,4 @@ public fun TraceSpan.recordException(ex: Throwable, escaped: Boolean) {
  * @param key the attribute key to use
  * @param value the value to associate with the key
  */
-public fun <T : Any> TraceSpan.setAttribute(key: String, value: T): Unit =
-    set(AttributeKey(key), value)
+public fun <T : Any> TraceSpan.setAttribute(key: String, value: T): Unit = set(AttributeKey(key), value)

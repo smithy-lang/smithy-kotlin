@@ -31,12 +31,11 @@ class EndpointParametersGenerator(
 ) {
     companion object {
 
-        fun getSymbol(settings: KotlinSettings): Symbol =
-            buildSymbol {
-                val prefix = clientName(settings.sdkId)
-                name = "${prefix}EndpointParameters"
-                namespace = "${settings.pkg.name}.endpoints"
-            }
+        fun getSymbol(settings: KotlinSettings): Symbol = buildSymbol {
+            val prefix = clientName(settings.sdkId)
+            name = "${prefix}EndpointParameters"
+            namespace = "${settings.pkg.name}.endpoints"
+        }
     }
 
     private val params: List<KotlinEndpointParameter> = (rules?.parameters?.toList() ?: emptyList())
@@ -187,8 +186,6 @@ private fun KotlinEndpointParameter.renderDeclaration(writer: KotlinWriter, init
     writer.write("")
 }
 
-private fun Deprecated.writeKotlinAnnotation(writer: KotlinWriter) =
-    writer.write("@Deprecated(#S)", message.getOrNull() ?: DEFAULT_DEPRECATED_MESSAGE)
+private fun Deprecated.writeKotlinAnnotation(writer: KotlinWriter) = writer.write("@Deprecated(#S)", message.getOrNull() ?: DEFAULT_DEPRECATED_MESSAGE)
 
-private fun KotlinWriter.ensureSuppressDeprecation(param: KotlinEndpointParameter) =
-    param.deprecated?.let { write("@Suppress(\"DEPRECATION\")") }
+private fun KotlinWriter.ensureSuppressDeprecation(param: KotlinEndpointParameter) = param.deprecated?.let { write("@Suppress(\"DEPRECATION\")") }

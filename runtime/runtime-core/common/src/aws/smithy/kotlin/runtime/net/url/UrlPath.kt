@@ -30,19 +30,16 @@ public class UrlPath private constructor(
          */
         public inline operator fun invoke(block: Builder.() -> Unit): UrlPath = Builder().apply(block).build()
 
-        private fun asDecoded(segments: List<Encodable>, trailingSlash: Boolean) =
-            asString(segments, trailingSlash, Encodable::decoded)
+        private fun asDecoded(segments: List<Encodable>, trailingSlash: Boolean) = asString(segments, trailingSlash, Encodable::decoded)
 
-        private fun asEncoded(segments: List<Encodable>, trailingSlash: Boolean) =
-            asString(segments, trailingSlash, Encodable::encoded)
+        private fun asEncoded(segments: List<Encodable>, trailingSlash: Boolean) = asString(segments, trailingSlash, Encodable::encoded)
 
-        private fun asString(segments: List<Encodable>, trailingSlash: Boolean, encodableForm: (Encodable) -> String) =
-            segments.joinToString(
-                separator = "/",
-                prefix = if (segments.isEmpty()) "" else "/",
-                postfix = if (trailingSlash) "/" else "",
-                transform = encodableForm,
-            )
+        private fun asString(segments: List<Encodable>, trailingSlash: Boolean, encodableForm: (Encodable) -> String) = segments.joinToString(
+            separator = "/",
+            prefix = if (segments.isEmpty()) "" else "/",
+            postfix = if (trailingSlash) "/" else "",
+            transform = encodableForm,
+        )
 
         /**
          * Parse a **decoded** path string into a [UrlPath] instance
@@ -187,8 +184,7 @@ public class UrlPath private constructor(
          */
         public var trailingSlash: Boolean = path?.trailingSlash ?: false
 
-        internal fun parse(text: String, encoding: UrlEncoding): Unit =
-            if (UrlEncoding.Path in encoding) parseEncoded(text) else parseDecoded(text)
+        internal fun parse(text: String, encoding: UrlEncoding): Unit = if (UrlEncoding.Path in encoding) parseEncoded(text) else parseDecoded(text)
 
         internal fun parseDecoded(decoded: String): Unit = parse(decoded, PercentEncoding.Path::encodableFromDecoded)
         internal fun parseEncoded(encoded: String): Unit = parse(encoded, PercentEncoding.Path::encodableFromEncoded)

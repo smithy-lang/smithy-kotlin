@@ -11,8 +11,7 @@ import aws.smithy.kotlin.runtime.InternalApi
  * a [success][Result.isSuccess] value untouched.
  */
 @InternalApi
-public inline fun <T> Result<T>.mapErr(onFailure: (Throwable) -> Throwable): Result<T> =
-    when (val ex = exceptionOrNull()) {
-        null -> this
-        else -> Result.failure(onFailure(ex))
-    }
+public inline fun <T> Result<T>.mapErr(onFailure: (Throwable) -> Throwable): Result<T> = when (val ex = exceptionOrNull()) {
+    null -> this
+    else -> Result.failure(onFailure(ex))
+}

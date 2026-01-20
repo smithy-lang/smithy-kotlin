@@ -45,8 +45,7 @@ fun OperationShape.defaultName(): String = id.name.toCamelCase()
  */
 fun OperationShape.capitalizedDefaultName(): String = defaultName().replaceFirstChar(Char::uppercaseChar)
 
-private fun String.sanitizeClientName(): String =
-    replace(Regex("(API|Client|Service)\$", setOf(RegexOption.IGNORE_CASE)), "")
+private fun String.sanitizeClientName(): String = replace(Regex("(API|Client|Service)\$", setOf(RegexOption.IGNORE_CASE)), "")
 
 /**
  * Get the generated SDK service client name to use.

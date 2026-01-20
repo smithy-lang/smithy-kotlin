@@ -83,21 +83,20 @@ class RegionSupport : KotlinIntegration {
 
     override fun additionalServiceConfigProps(ctx: CodegenContext): List<ConfigProperty> = listOf(RegionProp, RegionProviderProp)
 
-    override fun customizeEndpointResolution(ctx: ProtocolGenerator.GenerationContext): EndpointCustomization =
-        object : EndpointCustomization {
-            override fun renderBindEndpointBuiltins(
-                ctx: ProtocolGenerator.GenerationContext,
-                rules: EndpointRuleSet,
-                writer: KotlinWriter,
-            ) {
-                val builtins = rules.parameters?.toList()?.filter(Parameter::isBuiltIn) ?: return
-                builtins.forEach {
-                    when (it.builtIn.get()) {
-                        BUILTIN_NAME -> writer.write("#L = config.#L", it.defaultName(), RegionProp.propertyName)
-                    }
+    override fun customizeEndpointResolution(ctx: ProtocolGenerator.GenerationContext): EndpointCustomization = object : EndpointCustomization {
+        override fun renderBindEndpointBuiltins(
+            ctx: ProtocolGenerator.GenerationContext,
+            rules: EndpointRuleSet,
+            writer: KotlinWriter,
+        ) {
+            val builtins = rules.parameters?.toList()?.filter(Parameter::isBuiltIn) ?: return
+            builtins.forEach {
+                when (it.builtIn.get()) {
+                    BUILTIN_NAME -> writer.write("#L = config.#L", it.defaultName(), RegionProp.propertyName)
                 }
             }
         }
+    }
     override val sectionWriters: List<SectionWriterBinding>
         get() = listOf(
             SectionWriterBinding(HttpProtocolUnitTestRequestGenerator.ConfigureServiceClient, renderHttpProtocolRequestTestConfigureServiceClient),

@@ -35,11 +35,10 @@ class DefaultEndpointProviderTestGenerator(
     companion object {
         const val CLASS_NAME = "DefaultEndpointProviderTest"
 
-        fun getSymbol(settings: KotlinSettings): Symbol =
-            buildSymbol {
-                name = CLASS_NAME
-                namespace = "${settings.pkg.name}.endpoints"
-            }
+        fun getSymbol(settings: KotlinSettings): Symbol = buildSymbol {
+            name = CLASS_NAME
+            namespace = "${settings.pkg.name}.endpoints"
+        }
     }
 
     private val paramsSymbol = EndpointParametersGenerator.getSymbol(ctx.settings)

@@ -16,11 +16,10 @@ import kotlinx.coroutines.runBlocking
 open class XmlDeserializerBenchmark : BenchmarkBase() {
     private val source = javaClass.getResource("/countries-states.xml")!!.readBytes()
 
-    private fun deserialize(): CountriesAndStates =
-        runBlocking {
-            val deserializer = xmlTagReader(source)
-            deserializeCountriesAndStatesDocument(deserializer)
-        }
+    private fun deserialize(): CountriesAndStates = runBlocking {
+        val deserializer = xmlTagReader(source)
+        deserializeCountriesAndStatesDocument(deserializer)
+    }
 
     @Setup
     fun init() {

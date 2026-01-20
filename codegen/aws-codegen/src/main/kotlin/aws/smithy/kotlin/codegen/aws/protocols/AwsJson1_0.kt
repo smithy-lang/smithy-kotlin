@@ -37,9 +37,7 @@ class AwsJson1_0 : JsonHttpBindingProtocolGenerator() {
         return httpMiddleware + awsJsonMiddleware
     }
 
-    override fun getProtocolHttpBindingResolver(model: Model, serviceShape: ServiceShape): HttpBindingResolver =
-        AwsJsonHttpBindingResolver(model, serviceShape, "application/x-amz-json-1.0")
+    override fun getProtocolHttpBindingResolver(model: Model, serviceShape: ServiceShape): HttpBindingResolver = AwsJsonHttpBindingResolver(model, serviceShape, "application/x-amz-json-1.0")
 
-    override fun structuredDataParser(ctx: ProtocolGenerator.GenerationContext): StructuredDataParserGenerator =
-        AwsJsonProtocolParserGenerator(this, supportsJsonNameTrait)
+    override fun structuredDataParser(ctx: ProtocolGenerator.GenerationContext): StructuredDataParserGenerator = AwsJsonProtocolParserGenerator(this, supportsJsonNameTrait)
 }

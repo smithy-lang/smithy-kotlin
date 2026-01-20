@@ -58,16 +58,14 @@ fun String.shouldContain(expectedStart: String, expectedEnd: String) {
     assertNotNull(endIndex, "Cannot find $expectedEnd after $expectedStart in $this")
 }
 
-fun <T> List<T>.indexOfSublistOrNull(sublist: List<T>, startFrom: Int = 0): Int? =
-    drop(startFrom).windowed(sublist.size).indexOf(sublist).takeIf { it >= 0 }
+fun <T> List<T>.indexOfSublistOrNull(sublist: List<T>, startFrom: Int = 0): Int? = drop(startFrom).windowed(sublist.size).indexOf(sublist).takeIf { it >= 0 }
 
 /** Format a multi-line string suitable for comparison with codegen, defaults to one level of indention. */
-fun String.formatForTest(indent: String = "    ") =
-    trimIndent()
-        .prependIndent(indent)
-        .split('\n')
-        .map { if (it.isBlank()) "" else it }
-        .joinToString(separator = "\n") { it }
+fun String.formatForTest(indent: String = "    ") = trimIndent()
+    .prependIndent(indent)
+    .split('\n')
+    .map { if (it.isBlank()) "" else it }
+    .joinToString(separator = "\n") { it }
 
 fun String.stripCodegenPrefix(packageName: String = "test"): String {
     val packageDirective = "package $packageName"

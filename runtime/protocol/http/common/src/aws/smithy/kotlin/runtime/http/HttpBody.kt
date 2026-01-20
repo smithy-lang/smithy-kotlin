@@ -37,11 +37,10 @@ public sealed class HttpBody {
      */
     public open val isDuplex: Boolean = false
 
-    override fun equals(other: Any?): Boolean =
-        other is HttpBody &&
-            other.contentLength == contentLength &&
-            other.isOneShot == isOneShot &&
-            other.isDuplex == isDuplex
+    override fun equals(other: Any?): Boolean = other is HttpBody &&
+        other.contentLength == contentLength &&
+        other.isOneShot == isOneShot &&
+        other.isDuplex == isDuplex
 
     /**
      * Variant of a [HttpBody] without a payload
@@ -164,12 +163,11 @@ public fun SdkByteReadChannel.toHttpBody(contentLength: Long? = null): HttpBody 
  * @param contentLength the total content length of the source, if known
  */
 @InternalApi
-public fun SdkSource.toHttpBody(contentLength: Long? = null): HttpBody =
-    object : HttpBody.SourceContent() {
-        override val contentLength: Long? = contentLength
-        override val isOneShot: Boolean = true
-        override fun readFrom(): SdkSource = this@toHttpBody
-    }
+public fun SdkSource.toHttpBody(contentLength: Long? = null): HttpBody = object : HttpBody.SourceContent() {
+    override val contentLength: Long? = contentLength
+    override val isOneShot: Boolean = true
+    override fun readFrom(): SdkSource = this@toHttpBody
+}
 
 /**
  * Convert an [HttpBody.SourceContent] or [HttpBody.ChannelContent] to a body with a [HashingSource] or [HashingByteReadChannel], respectively.
@@ -237,6 +235,7 @@ public class CompletingByteReadChannel(
 }
 
 // FIXME - replace/move to reading to SdkBuffer instead
+
 /**
  * Consume the [HttpBody] and pull the entire contents into memory as a [ByteArray].
  * Only do this if you are sure the contents fit in-memory as this will read the entire contents

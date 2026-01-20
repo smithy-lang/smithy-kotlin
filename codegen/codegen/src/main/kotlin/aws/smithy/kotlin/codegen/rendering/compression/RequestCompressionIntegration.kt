@@ -35,48 +35,45 @@ import software.amazon.smithy.model.traits.RequestCompressionTrait
  */
 class RequestCompressionIntegration : KotlinIntegration {
 
-    override fun enabledForService(model: Model, settings: KotlinSettings): Boolean =
-        model.isTraitApplied(RequestCompressionTrait::class.java)
+    override fun enabledForService(model: Model, settings: KotlinSettings): Boolean = model.isTraitApplied(RequestCompressionTrait::class.java)
 
     override fun customizeMiddleware(
         ctx: ProtocolGenerator.GenerationContext,
         resolved: List<ProtocolMiddleware>,
     ): List<ProtocolMiddleware> = resolved + requestCompressionTraitMiddleware
 
-    override fun additionalServiceConfigProps(ctx: CodegenContext): List<ConfigProperty> =
-        listOf(
-            ConfigProperty {
-                name = "requestCompression"
-                symbol = RuntimeTypes.SmithyClient.Config.RequestCompressionConfig
-                builderSymbol = RuntimeTypes.SmithyClient.Config.RequestCompressionConfig.nestedBuilder.toBuilder()
-                    .defaultValue("${this.symbol}.Builder()")
-                    .nonNullable()
-                    .build()
-                toBuilderExpression = ".toBuilder()"
-                baseClass = RuntimeTypes.SmithyClient.Config.CompressionClientConfig
-                builderBaseClass = RuntimeTypes.SmithyClient.Config.CompressionClientConfig.nestedBuilder
-                propertyType = ConfigPropertyType.Custom(
-                    render = { prop, writer ->
-                        writer.write(
-                            "override val #1L: #2T = #2T(builder.#1L)",
-                            prop.propertyName,
-                            prop.symbol,
-                        )
-                    },
-                )
-                documentation = """
+    override fun additionalServiceConfigProps(ctx: CodegenContext): List<ConfigProperty> = listOf(
+        ConfigProperty {
+            name = "requestCompression"
+            symbol = RuntimeTypes.SmithyClient.Config.RequestCompressionConfig
+            builderSymbol = RuntimeTypes.SmithyClient.Config.RequestCompressionConfig.nestedBuilder.toBuilder()
+                .defaultValue("${this.symbol}.Builder()")
+                .nonNullable()
+                .build()
+            toBuilderExpression = ".toBuilder()"
+            baseClass = RuntimeTypes.SmithyClient.Config.CompressionClientConfig
+            builderBaseClass = RuntimeTypes.SmithyClient.Config.CompressionClientConfig.nestedBuilder
+            propertyType = ConfigPropertyType.Custom(
+                render = { prop, writer ->
+                    writer.write(
+                        "override val #1L: #2T = #2T(builder.#1L)",
+                        prop.propertyName,
+                        prop.symbol,
+                    )
+                },
+            )
+            documentation = """
                 Configuration settings related to request compression.
                 See [aws.smithy.kotlin.runtime.client.config.CompressionClientConfig] for more information
-                """.trimIndent()
-            },
-        )
+            """.trimIndent()
+        },
+    )
 }
 
 private val requestCompressionTraitMiddleware = object : ProtocolMiddleware {
     override val name: String = "RequestCompressionMiddleware"
 
-    override fun isEnabledFor(ctx: ProtocolGenerator.GenerationContext, op: OperationShape): Boolean =
-        op.hasTrait<RequestCompressionTrait>()
+    override fun isEnabledFor(ctx: ProtocolGenerator.GenerationContext, op: OperationShape): Boolean = op.hasTrait<RequestCompressionTrait>()
 
     override fun render(ctx: ProtocolGenerator.GenerationContext, op: OperationShape, writer: KotlinWriter) {
         val requestCompressionTrait = op.getTrait<RequestCompressionTrait>()!!

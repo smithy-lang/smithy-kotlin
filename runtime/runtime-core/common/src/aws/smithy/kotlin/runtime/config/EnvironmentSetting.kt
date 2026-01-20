@@ -30,8 +30,7 @@ public data class EnvironmentSetting<T>(
 ) {
     @InternalApi
     public companion object {
-        public operator fun <T> invoke(asTyped: (String) -> T): EnvSettingFactory<T> =
-            { sysProp: String, envVar: String -> EnvironmentSetting(asTyped, sysProp, envVar) }
+        public operator fun <T> invoke(asTyped: (String) -> T): EnvSettingFactory<T> = { sysProp: String, envVar: String -> EnvironmentSetting(asTyped, sysProp, envVar) }
     }
 
     public fun orElse(defaultValue: T): EnvironmentSetting<T> = copy(defaultValue = defaultValue)
@@ -73,8 +72,7 @@ public inline fun <reified T : Enum<T>> enumEnvSetting(sysProp: String, envVar: 
 public fun <T> EnvironmentSetting<T>.withCaseInsensitiveSuffixes(
     sysPropSuffix: String,
     envVarSuffix: String,
-): CaseInsensitiveEnvironmentSetting<T> =
-    CaseInsensitiveEnvironmentSetting(parse, sysProp, sysPropSuffix, envVar, envVarSuffix, defaultValue)
+): CaseInsensitiveEnvironmentSetting<T> = CaseInsensitiveEnvironmentSetting(parse, sysProp, sysPropSuffix, envVar, envVarSuffix, defaultValue)
 
 @InternalApi
 public data class CaseInsensitiveEnvironmentSetting<T>(
@@ -89,14 +87,13 @@ public data class CaseInsensitiveEnvironmentSetting<T>(
     internal val envVarRegex = caseInsensitiveRegex(envVarBase, envVarSuffix)
 }
 
-private fun caseInsensitiveRegex(base: String, caseInsensitiveSuffix: String) =
-    buildString {
-        append('^') // beginning of string
-        append(Regex.escape(base)) // base component, escaped
-        append("(?i)") // turn on case-insensitivity
-        append(Regex.escape(caseInsensitiveSuffix)) // case-insensitive suffix, escaped
-        append('$') // end of string
-    }.toRegex()
+private fun caseInsensitiveRegex(base: String, caseInsensitiveSuffix: String) = buildString {
+    append('^') // beginning of string
+    append(Regex.escape(base)) // base component, escaped
+    append("(?i)") // turn on case-insensitivity
+    append(Regex.escape(caseInsensitiveSuffix)) // case-insensitive suffix, escaped
+    append('$') // end of string
+}.toRegex()
 
 /**
  * Resolves an environment setting from the environment. This method attempts to resolve the setting via the system
@@ -114,8 +111,7 @@ public fun <T> CaseInsensitiveEnvironmentSetting<T>.resolve(
     return stringValue?.let(parse) ?: defaultValue
 }
 
-private fun resolveStringValue(sourceValues: Map<String, String>, keyRegex: Regex): String? =
-    sourceValues.entries.firstNotNullOfOrNull { (key, value) -> value.takeIf { keyRegex.matches(key) } }
+private fun resolveStringValue(sourceValues: Map<String, String>, keyRegex: Regex): String? = sourceValues.entries.firstNotNullOfOrNull { (key, value) -> value.takeIf { keyRegex.matches(key) } }
 
 @InternalApi
 public data class MultipleKeyEnvironmentSetting<T>(

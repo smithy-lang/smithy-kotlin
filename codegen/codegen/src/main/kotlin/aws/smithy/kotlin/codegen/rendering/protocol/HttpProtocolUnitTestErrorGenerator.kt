@@ -56,7 +56,6 @@ open class HttpProtocolUnitTestErrorGenerator protected constructor(builder: Bui
          */
         fun error(shape: Shape) = apply { error = shape }
 
-        override fun build(): HttpProtocolUnitTestGenerator<HttpResponseTestCase> =
-            HttpProtocolUnitTestErrorGenerator(this)
+        override fun build(): HttpProtocolUnitTestGenerator<HttpResponseTestCase> = HttpProtocolUnitTestErrorGenerator(this)
     }
 }

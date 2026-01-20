@@ -68,12 +68,11 @@ class DefaultEndpointProviderGenerator(
     private val writer: KotlinWriter,
 ) : ExpressionRenderer {
     companion object {
-        fun getSymbol(settings: KotlinSettings): Symbol =
-            buildSymbol {
-                val prefix = clientName(settings.sdkId)
-                name = "Default${prefix}EndpointProvider"
-                namespace = "${settings.pkg.name}.endpoints"
-            }
+        fun getSymbol(settings: KotlinSettings): Symbol = buildSymbol {
+            val prefix = clientName(settings.sdkId)
+            name = "Default${prefix}EndpointProvider"
+            namespace = "${settings.pkg.name}.endpoints"
+        }
     }
 
     private val endpointCustomizations = ctx.integrations.mapNotNull { it.customizeEndpointResolution(ctx) }
@@ -410,16 +409,14 @@ private fun List<Condition>.partition(): Pair<List<Condition>, List<Condition>> 
 }
 
 // build an "isSet" expression that checks the nullness of the result of an assignment operation
-private fun Condition.buildResultIsSetExpression() =
-    Condition
-        .Builder()
-        .fn(isSet(Reference(result.get(), SourceLocation.NONE)))
-        .build()
+private fun Condition.buildResultIsSetExpression() = Condition
+    .Builder()
+    .fn(isSet(Reference(result.get(), SourceLocation.NONE)))
+    .build()
 
-private fun isSet(expression: Expression) =
-    IsSet
-        .getDefinition()
-        .createFunction(FunctionNode.ofExpressions(IsSet.ID, ToExpression { expression }))
+private fun isSet(expression: Expression) = IsSet
+    .getDefinition()
+    .createFunction(FunctionNode.ofExpressions(IsSet.ID, ToExpression { expression }))
 
 private fun Expression.isBooleanFunction(): Boolean {
     if (this !is LibraryFunction) {

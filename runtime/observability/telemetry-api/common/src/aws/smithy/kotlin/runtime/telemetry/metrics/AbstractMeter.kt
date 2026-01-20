@@ -9,8 +9,7 @@ package aws.smithy.kotlin.runtime.telemetry.metrics
  * overridden in a subclass.
  */
 public abstract class AbstractMeter : Meter {
-    override fun createUpDownCounter(name: String, units: String?, description: String?): UpDownCounter =
-        UpDownCounter.None
+    override fun createUpDownCounter(name: String, units: String?, description: String?): UpDownCounter = UpDownCounter.None
 
     override fun createAsyncUpDownCounter(
         name: String,
@@ -19,14 +18,11 @@ public abstract class AbstractMeter : Meter {
         description: String?,
     ): AsyncMeasurementHandle = AsyncMeasurementHandle.None
 
-    override fun createMonotonicCounter(name: String, units: String?, description: String?): MonotonicCounter =
-        MonotonicCounter.None
+    override fun createMonotonicCounter(name: String, units: String?, description: String?): MonotonicCounter = MonotonicCounter.None
 
-    override fun createLongHistogram(name: String, units: String?, description: String?): LongHistogram =
-        Histogram.LongNone
+    override fun createLongHistogram(name: String, units: String?, description: String?): LongHistogram = Histogram.LongNone
 
-    override fun createDoubleHistogram(name: String, units: String?, description: String?): DoubleHistogram =
-        Histogram.DoubleNone
+    override fun createDoubleHistogram(name: String, units: String?, description: String?): DoubleHistogram = Histogram.DoubleNone
 
     override fun createLongGauge(
         name: String,

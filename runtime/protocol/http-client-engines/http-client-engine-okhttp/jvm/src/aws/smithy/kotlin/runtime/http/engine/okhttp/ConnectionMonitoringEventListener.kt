@@ -40,11 +40,10 @@ internal class ConnectionMonitoringEventListener(private val pollInterval: Durat
         monitorJob.cancelAndJoin()
     }
 
-    private fun Call.callContext() =
-        request()
-            .tag(SdkRequestTag::class.java)
-            ?.callContext
-            ?: Dispatchers.IO
+    private fun Call.callContext() = request()
+        .tag(SdkRequestTag::class.java)
+        ?.callContext
+        ?: Dispatchers.IO
 
     // Cancel monitoring when a connection is acquired
     override fun connectionAcquired(call: Call, connection: Connection) {

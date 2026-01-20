@@ -79,9 +79,7 @@ public class AwsChunkedSource(
 private fun SdkSource.asStream(): AwsChunkedReader.Stream = object : AwsChunkedReader.Stream {
     private val delegate = this@asStream.buffer()
 
-    override fun isClosedForRead(): Boolean =
-        delegate.exhausted()
+    override fun isClosedForRead(): Boolean = delegate.exhausted()
 
-    override suspend fun read(sink: SdkBuffer, limit: Long): Long =
-        delegate.read(sink, limit)
+    override suspend fun read(sink: SdkBuffer, limit: Long): Long = delegate.read(sink, limit)
 }

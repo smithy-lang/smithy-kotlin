@@ -49,8 +49,7 @@ internal abstract class AbstractBufferedSinkAdapter(
         delegate.write(source.toOkio(), byteCount)
     }
 
-    override fun writeAll(source: SdkSource): Long =
-        delegate.writeAll(source.toOkio())
+    override fun writeAll(source: SdkSource): Long = delegate.writeAll(source.toOkio())
 
     override fun writeUtf8(string: String, start: Int, endExclusive: Int) {
         delegate.writeUtf8(string, start, endExclusive)

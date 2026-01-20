@@ -47,11 +47,10 @@ class KotlinDelegator(
         }
     }
 
-    private fun unprocessedDependencies(writtenDependencies: Set<String>) =
-        dependencies
-            .mapNotNull { it.properties[SymbolProperty.GENERATED_DEPENDENCY] as? GeneratedDependency }
-            .filterNot { writtenDependencies.contains(it.fullName) }
-            .distinctBy { it.fullName }
+    private fun unprocessedDependencies(writtenDependencies: Set<String>) = dependencies
+        .mapNotNull { it.properties[SymbolProperty.GENERATED_DEPENDENCY] as? GeneratedDependency }
+        .filterNot { writtenDependencies.contains(it.fullName) }
+        .distinctBy { it.fullName }
 
     /**
      * Writes all pending writers to disk and then clears them out.
@@ -202,7 +201,6 @@ internal data class GeneratedDependency(
     }
 }
 
-fun KotlinDelegator.useFileWriter(symbol: Symbol, block: (KotlinWriter) -> Unit) =
-    useFileWriter("${symbol.name}.kt", symbol.namespace, DEFAULT_SOURCE_SET_ROOT, block)
+fun KotlinDelegator.useFileWriter(symbol: Symbol, block: (KotlinWriter) -> Unit) = useFileWriter("${symbol.name}.kt", symbol.namespace, DEFAULT_SOURCE_SET_ROOT, block)
 
 fun KotlinDelegator.applyFileWriter(symbol: Symbol, block: KotlinWriter.() -> Unit) = useFileWriter(symbol, block)

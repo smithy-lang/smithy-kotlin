@@ -76,7 +76,6 @@ public class RetryStrategyClientConfigImpl private constructor(
         }
 
         @InternalApi
-        override fun buildRetryStrategyClientConfig(): RetryStrategyClientConfig =
-            RetryStrategyClientConfigImpl(retryStrategyProperty.supply())
+        override fun buildRetryStrategyClientConfig(): RetryStrategyClientConfig = RetryStrategyClientConfigImpl(retryStrategyProperty.supply())
     }
 }
