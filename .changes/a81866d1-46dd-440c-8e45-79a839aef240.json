@@ -1,6 +1,0 @@
-{
-    "id": "a81866d1-46dd-440c-8e45-79a839aef240",
-    "type": "misc",
-    "description": "⚠️ **IMPORTANT**: Upgrade to Kotlin 2.3.0",
-    "requiresMinorVersionBump": true
-}
