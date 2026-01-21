@@ -1,5 +1,15 @@
 # Changelog
 
+## [1.6.0] - 01/21/2026
+
+### Features
+* ⚠️ **IMPORTANT**: Enable retryOnConnectionFailure by default in OkHttpEngine
+
+### Miscellaneous
+* ⚠️**IMPORTANT**: Remove 'smithy' and 'kotlin' from codegen module names
+* ⚠️ **IMPORTANT**: Upgrade to Kotlin 2.3.0
+* ⚠️**IMPORTANT**: Refactor software.amazon.smithy.kotlin code into aws.smithy.kotlin namespace
+
 ## [1.5.28] - 01/16/2026
 
 ## [1.5.27] - 01/12/2026
