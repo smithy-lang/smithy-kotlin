@@ -27,6 +27,7 @@ jobs:
       - name: Checkout sources
         uses: actions/checkout@v4
         with:
+          token: ${{ secrets.CI_USER_PAT }}
           path: 'smithy-kotlin'
 
       - name: Setup build
