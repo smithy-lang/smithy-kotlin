@@ -8,9 +8,11 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.CI_USER_PAT }}
 
       - name: Configure Gradle
-        uses: awslabs/aws-kotlin-repo-tools/.github/actions/configure-gradle@main
+        uses: aws/aws-kotlin-repo-tools/.github/actions/configure-gradle@main
 
       - name: Build
         shell: bash
@@ -19,7 +21,7 @@ jobs:
           ./gradlew publishAllPublicationsToTestLocalRepository --parallel
 
       - name: Calculate metrics
-        uses: awslabs/aws-kotlin-repo-tools/.github/actions/artifact-size-metrics/calculate-and-upload@main
+        uses: aws/aws-kotlin-repo-tools/.github/actions/artifact-size-metrics/calculate-and-upload@main
         with:
           upload: 'false'
           release_metrics: 'false'
@@ -31,7 +33,7 @@ jobs:
           aws-region: us-west-2
 
       - name: Process metrics
-        uses: awslabs/aws-kotlin-repo-tools/.github/actions/artifact-size-metrics/download-and-process@main
+        uses: aws/aws-kotlin-repo-tools/.github/actions/artifact-size-metrics/download-and-process@main
         with:
           download: 'false'
 
