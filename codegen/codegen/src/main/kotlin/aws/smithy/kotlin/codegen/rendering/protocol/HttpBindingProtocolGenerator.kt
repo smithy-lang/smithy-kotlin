@@ -591,8 +591,15 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
 
                 queryMapBindings.forEach {
                     // either Map<String, String> or Map<String, Collection<String>>
-                    // https://awslabs.github.io/smithy/1.0/spec/core/http-traits.html#httpqueryparams-trait
+                    // https://smithy.io/2.0/spec/http-bindings.html#smithy-api-httpqueryparams-trait
                     val target = ctx.model.expectShape<MapShape>(it.member.target)
+
+                    val keyTarget = ctx.model.expectShape(target.key.target)
+                    val keyRef = when {
+                        keyTarget.isEnum -> "key.value"
+                        else -> "key"
+                    }
+
                     val valueTarget = ctx.model.expectShape(target.value.target)
                     val fn = when (valueTarget.type) {
                         ShapeType.STRING -> "add"
@@ -610,9 +617,9 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                         .indent()
                         // ensure query precedence rules are enforced by filtering keys already set
                         // (httpQuery bound members take precedence over a query map with same key)
-                        .write("?.filterNot{ contains(it.key) }")
+                        .write("?.filterNot { contains(it.#L) }", keyRef)
                         .withBlock("?.forEach { (key, value) ->", "}") {
-                            write("${nullCheck}$fn(key, value)")
+                            write("#L#L(#L, value)", nullCheck, fn, keyRef)
                         }
                         .dedent()
                 }

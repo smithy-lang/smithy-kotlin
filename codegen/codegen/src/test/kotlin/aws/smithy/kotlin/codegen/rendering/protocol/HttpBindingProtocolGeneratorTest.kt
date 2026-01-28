@@ -7,6 +7,7 @@ package aws.smithy.kotlin.codegen.rendering.protocol
 import aws.smithy.kotlin.codegen.core.RUNTIME_ROOT_NS
 import aws.smithy.kotlin.codegen.loadModelFromResource
 import aws.smithy.kotlin.codegen.test.assertBalancedBracesAndParens
+import aws.smithy.kotlin.codegen.test.formatForTest
 import aws.smithy.kotlin.codegen.test.newTestContext
 import aws.smithy.kotlin.codegen.test.prependNamespaceAndService
 import aws.smithy.kotlin.codegen.test.shouldContainOnlyOnceWithDiff
@@ -28,8 +29,15 @@ class HttpBindingProtocolGeneratorTest {
         return getSerdeFileContents(manifest, filename)
     }
 
-    private fun getSerdeFileContents(manifest: MockManifest, filename: String): String = manifest
-        .expectFileString("src/main/kotlin/com/test/serde/$filename")
+    private fun getSerdeFileContents(manifest: MockManifest, filename: String): String = try {
+        manifest.expectFileString("src/main/kotlin/com/test/serde/$filename")
+    } catch (e: Throwable) {
+        println("Failed to retrieve filename $filename from manifest. Manifest contains files:")
+        manifest.files.forEach {
+            println("* $it")
+        }
+        throw e
+    }
 
     @Test
     fun itCreatesSerializeTransformsInCorrectPackage() {
@@ -572,6 +580,54 @@ internal class SmokeTestOperationDeserializer: HttpDeserializer.NonStreaming<Smo
                 if (input.quux != null) add("quux", input.quux.toString())
             }
         """
+
+        contents.shouldContainOnlyOnceWithDiff(expected)
+    }
+
+    @Test
+    fun itRendersStringMapQueryParams() {
+        val contents = getSerdeFileContents("StringMapQueryBindingOperationSerializer.kt")
+        val expected = """
+            val builder = HttpRequestBuilder()
+            builder.method = HttpMethod.POST
+
+            builder.url {
+                path.encoded = "/stringMapQueryBinding"
+                parameters.decodedParameters(PercentEncoding.SmithyLabel) {
+                    input.fields
+                        ?.filterNot { contains(it.key) }
+                        ?.forEach { (key, value) ->
+                            add(key, value)
+                        }
+                }
+            }
+
+            return builder
+        """.formatForTest(indent = "        ")
+
+        contents.shouldContainOnlyOnceWithDiff(expected)
+    }
+
+    @Test
+    fun itRendersEnumMapQueryParams() {
+        val contents = getSerdeFileContents("EnumMapQueryBindingOperationSerializer.kt")
+        val expected = """
+            val builder = HttpRequestBuilder()
+            builder.method = HttpMethod.POST
+
+            builder.url {
+                path.encoded = "/enumMapQueryBinding"
+                parameters.decodedParameters(PercentEncoding.SmithyLabel) {
+                    input.fields
+                        ?.filterNot { contains(it.key.value) }
+                        ?.forEach { (key, value) ->
+                            add(key.value, value)
+                        }
+                }
+            }
+
+            return builder
+        """.formatForTest(indent = "        ")
 
         contents.shouldContainOnlyOnceWithDiff(expected)
     }
