@@ -1,5 +1,0 @@
-{
-    "id": "b2518a7e-b601-4600-b636-9ef691732950",
-    "type": "bugfix",
-    "description": "Handle HTTP query bindings based on a map of enum keys"
-}

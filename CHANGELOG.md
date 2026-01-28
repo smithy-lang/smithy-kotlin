@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.6.1] - 01/28/2026
+
+### Fixes
+* Handle HTTP query bindings based on a map of enum keys
+
 ## [1.6.0] - 01/21/2026
 
 ### Features
