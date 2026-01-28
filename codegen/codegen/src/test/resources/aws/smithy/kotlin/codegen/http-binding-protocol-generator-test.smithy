@@ -28,6 +28,8 @@ service Test {
         UnionAggregateOutput
         PrimitiveShapesOperation
         HeaderListInput
+        StringMapQueryBinding
+        EnumMapQueryBinding
     ]
 }
 
@@ -552,4 +554,41 @@ structure PrimitiveShapes {
 
     @default(false)
     bBool: PrimitiveBoolean
+}
+
+@http(method: "POST", uri: "/stringMapQueryBinding")
+operation StringMapQueryBinding {
+    input: StringMapQueryBindingInput
+}
+
+structure StringMapQueryBindingInput {
+    @httpQueryParams
+    fields: StringKeyedMap
+}
+
+map StringKeyedMap {
+    key: String
+    value: String
+}
+
+@http(method: "POST", uri: "/enumMapQueryBinding")
+operation EnumMapQueryBinding {
+    input: EnumMapQueryBindingInput
+}
+
+structure EnumMapQueryBindingInput {
+    @httpQueryParams
+    fields: EnumKeyedMap
+}
+
+enum Suit {
+    CLUBS = "♣️"
+    DIAMONDS = "♦️"
+    HEARTS = "♥️"
+    SPADES = "♠️"
+}
+
+map EnumKeyedMap {
+    key: Suit
+    value: String
 }
