@@ -80,8 +80,6 @@ public class CrtHttpEngine(public override val config: CrtHttpEngineConfig) : Ht
             }
         }
 
-        // Note: Do NOT call stream.close() - CRT manages stream lifecycle
-
         if (request.isChunked) {
             withContext(SdkDispatchers.IO) {
                 stream.sendChunkedBody(request.body)

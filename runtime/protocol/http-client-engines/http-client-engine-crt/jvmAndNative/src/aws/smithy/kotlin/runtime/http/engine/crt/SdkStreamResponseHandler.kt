@@ -66,9 +66,6 @@ internal class SdkStreamResponseHandler(
      */
     private fun onDataConsumed(size: Int) {
         lock.withLock {
-            if (streamCompleted) {
-                return
-            }
             crtStream?.incrementWindow(size)
         }
     }
