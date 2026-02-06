@@ -106,19 +106,15 @@ public suspend fun <I, O, R> SdkHttpOperation<I, O>.execute(
     input: I,
     block: suspend (O) -> R,
 ): R {
-    println("in roundTrip -> execute")
     val handler = execution.decorate(httpHandler, this)
     val request = OperationRequest(context, input)
     val (span, telemetryCtx) = instrument()
     try {
         return withSpan(span, telemetryCtx) {
-            println("roundTrip -> execute -> handler.call: $request")
             val output = handler.call(request)
-            println("roundTrip -> execute -> block(output): $output")
             block(output)
         }
     } finally {
-        println("roundTrip -> execute -> context.cleanup()")
         context.cleanup()
     }
 }

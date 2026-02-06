@@ -41,7 +41,6 @@ public class SdkHttpClient(
         // and as such has a smaller scope than the overall call (which doesn't end until the response body is
         // consumed or the call is disposed of).
         return engine.async(reqCoroutineContext) {
-            println("SdkHttpClient -> executeWithCallContext -> engine.roundTrip(): $request")
             engine.roundTrip(context, request)
         }.await()
     }

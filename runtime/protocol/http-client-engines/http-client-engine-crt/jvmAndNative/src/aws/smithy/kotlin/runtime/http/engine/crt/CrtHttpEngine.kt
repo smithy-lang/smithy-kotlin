@@ -55,7 +55,6 @@ public class CrtHttpEngine(public override val config: CrtHttpEngineConfig) : Ht
     private val connectionManager = ConnectionManager(config)
 
     override suspend fun roundTrip(context: ExecutionContext, request: HttpRequest): HttpCall = requestLimiter.withPermit {
-        println("in CrtHttpEngine -> roundTrip")
         val callContext = callContext()
         val logger = callContext.logger<CrtHttpEngine>()
 
@@ -64,11 +63,9 @@ public class CrtHttpEngine(public override val config: CrtHttpEngineConfig) : Ht
         // handler)
         val conn = connectionManager.acquire(request)
         logger.trace { "Acquired connection ${conn.id}" }
-        println("Acquired connection ${conn.id}")
 
         val respHandler = SdkStreamResponseHandler(conn, callContext)
         callContext.job.invokeOnCompletion {
-            println("completing handler; cause=$it")
             logger.trace { "completing handler; cause=$it" }
             // ensures the stream is driven to completion regardless of what the downstream consumer does
             respHandler.complete()
@@ -77,7 +74,6 @@ public class CrtHttpEngine(public override val config: CrtHttpEngineConfig) : Ht
         val reqTime = Instant.now()
         val engineRequest = request.toCrtRequest(callContext)
 
-        println("CrtHttpEngine -> roundTrip: activating stream")
         val stream = mapCrtException {
             conn.makeRequest(engineRequest, respHandler).also { stream ->
                 stream.activate()
@@ -92,14 +88,9 @@ public class CrtHttpEngine(public override val config: CrtHttpEngineConfig) : Ht
             }
         }
 
-        println("CrtHttpEngine -> roundTrip: waiting for response")
         val resp = respHandler.waitForResponse()
 
-        println("CrtHttpEngine -> roundTrip: got a response, status=${resp.status}, body type=${resp.body::class.simpleName}")
-        println("CrtHttpEngine -> roundTrip: creating HttpCall")
-        val call = HttpCall(request, resp, reqTime, Instant.now(), callContext)
-        println("CrtHttpEngine -> roundTrip: returning HttpCall")
-        return call
+        return HttpCall(request, resp, reqTime, Instant.now(), callContext)
     }
 
     override fun shutdown() {
