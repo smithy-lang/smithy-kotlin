@@ -66,7 +66,13 @@ internal class SdkStreamResponseHandler(
      */
     private fun onDataConsumed(size: Int) {
         lock.withLock {
+            println("SdkStreamResponseHandler -> onDataConsumed: size=$size, crtStream=$crtStream, streamCompleted=$streamCompleted")
+            if (streamCompleted) {
+                println("SdkStreamResponseHandler -> onDataConsumed: stream already completed, skipping incrementWindow")
+                return
+            }
             crtStream?.incrementWindow(size)
+            println("SdkStreamResponseHandler -> onDataConsumed: incrementWindow completed")
         }
     }
 
@@ -84,25 +90,36 @@ internal class SdkStreamResponseHandler(
     }
 
     private fun createHttpResponseBody(contentLength: Long?): HttpBody {
+        println("SdkStreamResponseHandler -> createHttpResponseBody: contentLength=$contentLength")
         val ch = SdkByteChannel(true)
         val writerContext = callContext + callContext.derivedName("response-body-writer")
         val job = GlobalScope.launch(writerContext) {
+            println("SdkStreamResponseHandler -> body writer coroutine: started")
             val result = runCatching {
                 for (buffer in bodyChan) {
+                    println("SdkStreamResponseHandler -> body writer: received buffer size=${buffer.size}")
                     val wc = buffer.size.toInt()
                     ch.write(buffer)
+                    println("SdkStreamResponseHandler -> body writer: wrote to channel, calling onDataConsumed")
                     // increment window
                     onDataConsumed(wc)
+                    println("SdkStreamResponseHandler -> body writer: onDataConsumed returned")
                 }
             }
 
+            println("SdkStreamResponseHandler -> body writer: loop completed, result=${result.exceptionOrNull()}")
             // immediately close when done to signal end of body stream
+            println("SdkStreamResponseHandler -> body writer: calling ch.close")
             ch.close(result.exceptionOrNull())
+            println("SdkStreamResponseHandler -> body writer: ch.close returned")
         }
 
         job.invokeOnCompletion { cause ->
+            println("SdkStreamResponseHandler -> body writer job: invokeOnCompletion called with cause=$cause")
             // close is idempotent, if not previously closed then close with cause
+            println("SdkStreamResponseHandler -> body writer job: calling ch.close in completion handler")
             ch.close(cause)
+            println("SdkStreamResponseHandler -> body writer job: ch.close in completion handler returned")
         }
         return object : HttpBody.ChannelContent() {
             override val contentLength: Long? = contentLength
@@ -112,8 +129,12 @@ internal class SdkStreamResponseHandler(
 
     // signal response ready and engine can proceed (all that is required is headers, body is consumed asynchronously)
     private fun signalResponse(stream: HttpStream) {
+        println("SdkStreamResponseHandler -> signalResponse: called")
         // already signalled
-        if (responseReady.isClosedForSend) return
+        if (responseReady.isClosedForSend) {
+            println("SdkStreamResponseHandler -> signalResponse: already signalled, returning")
+            return
+        }
 
         val transferEncoding = headers["Transfer-Encoding"]?.lowercase()
         val chunked = transferEncoding == "chunked"
@@ -124,20 +145,25 @@ internal class SdkStreamResponseHandler(
             (status !in listOf(HttpStatusCode.NotModified, HttpStatusCode.NoContent)) &&
             !status.isInformational()
 
+        println("SdkStreamResponseHandler -> signalResponse: status=$status, hasBody=$hasBody, contentLength=$contentLength")
+
         val body = when (hasBody) {
             false -> HttpBody.Empty
             true -> createHttpResponseBody(contentLength)
         }
 
+        println("SdkStreamResponseHandler -> signalResponse: creating HttpResponse")
         val resp = HttpResponse(
             status,
             headers.build(),
             body,
         )
 
+        println("SdkStreamResponseHandler -> signalResponse: sending response to channel")
         val result = responseReady.trySend(resp)
         check(result.isSuccess) { "signalling response failed, result was: ${result.exceptionOrNull()}" }
         responseReady.close()
+        println("SdkStreamResponseHandler -> signalResponse: completed")
     }
 
     override fun onResponseHeadersDone(stream: HttpStream, blockType: Int) {
@@ -146,6 +172,7 @@ internal class SdkStreamResponseHandler(
     }
 
     override fun onResponseBody(stream: HttpStream, bodyBytesIn: Buffer): Int {
+        println("SdkStreamResponseHandler -> onResponseBody: received ${bodyBytesIn.len} bytes")
         val isCancelled = lock.withLock {
             crtStream = stream
             cancelled
@@ -153,8 +180,7 @@ internal class SdkStreamResponseHandler(
 
         // short circuit, stop buffering data and discard remaining incoming bytes
         if (isCancelled) {
-            crtStream?.close()
-            stream.close()
+            println("SdkStreamResponseHandler -> onResponseBody: cancelled, discarding data")
             return bodyBytesIn.len
         }
 
@@ -163,36 +189,48 @@ internal class SdkStreamResponseHandler(
             write(bytes)
         }
 
+        println("SdkStreamResponseHandler -> onResponseBody: sending buffer to bodyChan")
         bodyChan.trySend(buffer).getOrThrow()
+        println("SdkStreamResponseHandler -> onResponseBody: buffer sent, returning 0")
 
         // explicit window management is handled by `onDataConsumed` as data is read from the channel
         return 0
     }
 
     override fun onResponseComplete(stream: HttpStream, errorCode: Int) {
+        println("SdkStreamResponseHandler -> onResponseComplete: errorCode=$errorCode")
         // stream is only valid until the end of this callback, ensure any further data being read downstream
         // doesn't call incrementWindow on a resource that has been free'd
         lock.withLock {
-            crtStream?.close()
+            println("SdkStreamResponseHandler -> onResponseComplete: nulling out crtStream reference")
             crtStream = null
             streamCompleted = true
         }
-        stream.close()
+        println("SdkStreamResponseHandler -> onResponseComplete: NOT closing stream (CRT will handle it)")
 
         // close the body channel
         if (errorCode != 0) {
+            println("SdkStreamResponseHandler -> onResponseComplete: error, closing channels with exception")
             val ex = crtException(errorCode)
             responseReady.close(ex)
             bodyChan.close(ex)
         } else {
+            println("SdkStreamResponseHandler -> onResponseComplete: success, closing bodyChan")
             // closing the channel to indicate no more data will be sent
             bodyChan.close()
             // ensure a response was signalled (will close the channel on it's own if it wasn't already sent)
+            println("SdkStreamResponseHandler -> onResponseComplete: signalling response")
             signalResponse(stream)
         }
+        println("SdkStreamResponseHandler -> onResponseComplete: completed")
     }
 
-    internal suspend fun waitForResponse(): HttpResponse = responseReady.receive()
+    internal suspend fun waitForResponse(): HttpResponse {
+        println("SdkStreamResponseHandler -> waitForResponse: waiting for response")
+        val resp = responseReady.receive()
+        println("SdkStreamResponseHandler -> waitForResponse: received response, status=${resp.status}")
+        return resp
+    }
 
     /**
      * Invoked only after the consumer is finished with the response and it is safe to cleanup resources
