@@ -19,5 +19,10 @@ kotlin {
                 api(libs.kotlinx.coroutines.test)
             }
         }
+        nativeMain {
+            dependencies {
+                implementation(libs.kotlin.test)
+            }
+        }
     }
 }
