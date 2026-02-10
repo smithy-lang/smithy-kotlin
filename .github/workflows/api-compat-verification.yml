@@ -7,15 +7,14 @@ on:
       - main
       - '*-main'
 
-permissions: { }
+permissions:
+  contents: read
 
 jobs:
   api-compat-verification:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-        with:
-          token: ${{ secrets.CI_USER_PAT }}
       - name: Check for API compatibility
         if: ${{ !contains(github.event.pull_request.labels.*.name, 'acknowledge-api-break') }}
         run: |
