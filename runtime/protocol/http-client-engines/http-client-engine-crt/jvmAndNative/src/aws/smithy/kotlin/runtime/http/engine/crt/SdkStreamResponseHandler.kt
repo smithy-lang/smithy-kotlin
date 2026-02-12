@@ -47,7 +47,6 @@ internal class SdkStreamResponseHandler(
 
     private val lock = reentrantLock() // protects crtStream and cancelled state
     private var crtStream: HttpStream? = null
-    private var bodyDataReceived = false
 
     // if the (coroutine) job is completed before the stream's onResponseComplete callback is
     // invoked (for any reason) we consider the stream "cancelled"
@@ -121,7 +120,7 @@ internal class SdkStreamResponseHandler(
         val contentLength = headers["Content-Length"]?.toLong()
         val status = HttpStatusCode.fromValue(stream.responseStatusCode)
 
-        val hasBody = ((contentLength != null && contentLength > 0) || (chunked && bodyDataReceived)) &&
+        val hasBody = ((contentLength != null && contentLength > 0) || chunked) &&
             (status !in listOf(HttpStatusCode.NotModified, HttpStatusCode.NoContent)) &&
             !status.isInformational()
 
@@ -143,19 +142,12 @@ internal class SdkStreamResponseHandler(
 
     override fun onResponseHeadersDone(stream: HttpStream, blockType: Int) {
         if (!blockType.isMainHeadersBlock) return
-        
-        // For chunked responses, defer signaling until onResponseComplete
-        // so we can determine if body data actually arrived
-        val transferEncoding = headers["Transfer-Encoding"]?.lowercase()
-        if (transferEncoding != "chunked") {
-            signalResponse(stream)
-        }
+        signalResponse(stream)
     }
 
     override fun onResponseBody(stream: HttpStream, bodyBytesIn: Buffer): Int {
         val isCancelled = lock.withLock {
             crtStream = stream
-            bodyDataReceived = true
             cancelled
         }
 
