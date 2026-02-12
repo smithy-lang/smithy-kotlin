@@ -13,3 +13,5 @@ public annotation class IgnoreWindows(val reason: String)
 public actual typealias BeforeAll = org.junit.jupiter.api.BeforeAll
 
 public actual typealias AfterAll = org.junit.jupiter.api.AfterAll
+
+public actual annotation class IgnoreNative { /* no-op on JVM */ }

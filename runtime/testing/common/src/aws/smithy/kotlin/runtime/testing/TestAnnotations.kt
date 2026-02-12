@@ -18,3 +18,10 @@ public expect annotation class BeforeAll()
 @Target(AnnotationTarget.FUNCTION)
 @Retention(AnnotationRetention.RUNTIME)
 public expect annotation class AfterAll()
+
+/**
+ * Marks a test which should be ignored on Native targets only
+ */
+@Target(AnnotationTarget.FUNCTION)
+@Retention(AnnotationRetention.RUNTIME)
+public expect annotation class IgnoreNative()

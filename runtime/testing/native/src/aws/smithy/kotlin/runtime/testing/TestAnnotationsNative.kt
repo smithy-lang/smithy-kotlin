@@ -8,3 +8,5 @@ package aws.smithy.kotlin.runtime.testing
 public actual typealias BeforeAll = kotlin.test.BeforeClass
 
 public actual typealias AfterAll = kotlin.test.AfterClass
+
+public actual typealias IgnoreNative = kotlin.test.Ignore
