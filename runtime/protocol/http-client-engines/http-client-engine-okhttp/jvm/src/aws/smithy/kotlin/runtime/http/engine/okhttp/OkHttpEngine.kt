@@ -6,10 +6,10 @@
 package aws.smithy.kotlin.runtime.http.engine.okhttp
 
 import aws.smithy.kotlin.runtime.InternalApi
+import aws.smithy.kotlin.runtime.PlannedRemoval
 import aws.smithy.kotlin.runtime.http.HttpCall
 import aws.smithy.kotlin.runtime.http.config.EngineFactory
 import aws.smithy.kotlin.runtime.http.engine.AlpnId
-import aws.smithy.kotlin.runtime.http.engine.HttpClientEngine
 import aws.smithy.kotlin.runtime.http.engine.HttpClientEngineBase
 import aws.smithy.kotlin.runtime.http.engine.TlsContext
 import aws.smithy.kotlin.runtime.http.engine.callContext
@@ -56,6 +56,8 @@ public class OkHttpEngine private constructor(
     }
 
     // Create a single shared connection monitoring listener if idle polling is enabled
+    @Suppress("DEPRECATION")
+    @OptIn(PlannedRemoval::class)
     private val connectionMonitoringListener: EventListener? =
         config.connectionIdlePollingInterval?.let {
             ConnectionMonitoringEventListener(it)

@@ -1,0 +1,6 @@
+{
+    "id": "5fab7b09-e799-4345-8fae-c44f4a9fddc8",
+    "type": "misc",
+    "description": "⚠️ **IMPORTANT**: Deprecate [`OkHttpEngineConfig.connectionIdlePollingInterval`](https://docs.aws.amazon.com/smithy-kotlin/api/latest/http-client-engine-okhttp/aws.smithy.kotlin.runtime.http.engine.okhttp/-ok-http-engine-config/connection-idle-polling-interval.html), which has been superseded by [`OkHttpEngineConfig.retryOnConnectionFailure`](https://docs.aws.amazon.com/smithy-kotlin/api/latest/http-client-engine-okhttp/aws.smithy.kotlin.runtime.http.engine.okhttp/-ok-http-engine-config/retry-on-connection-failure.html)",
+    "requiresMinorVersionBump": true
+}
