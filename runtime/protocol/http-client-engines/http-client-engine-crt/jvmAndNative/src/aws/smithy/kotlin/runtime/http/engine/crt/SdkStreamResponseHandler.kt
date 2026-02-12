@@ -128,8 +128,8 @@ internal class SdkStreamResponseHandler(
             receivedBodyData
         } else {
             (contentLength != null && contentLength > 0) &&
-            (status !in listOf(HttpStatusCode.NotModified, HttpStatusCode.NoContent)) &&
-            !status.isInformational()
+                (status !in listOf(HttpStatusCode.NotModified, HttpStatusCode.NoContent)) &&
+                !status.isInformational()
         }
 
         val body = when (hasBody) {

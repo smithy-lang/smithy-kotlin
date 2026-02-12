@@ -17,7 +17,7 @@ public actual class RandomTempFile actual constructor(
     binaryData: Boolean,
 ) {
     private val tmpDir: String = getenv("TMPDIR")?.toKString() ?: "/tmp"
-    private val path: String = "${tmpDir}/${Clock.System.now().epochMilliseconds}-$filename"
+    private val path: String = "$tmpDir/${Clock.System.now().epochMilliseconds}-$filename"
 
     private val data: ByteArray = if (binaryData) {
         Random.nextBytes(sizeInBytes.toInt())

@@ -4,8 +4,8 @@
  */
 package aws.smithy.kotlin.runtime.testing
 
-import aws.smithy.kotlin.runtime.util.Uuid
 import aws.smithy.kotlin.runtime.InternalApi
+import aws.smithy.kotlin.runtime.util.Uuid
 
 /**
  * Creates a temporary file with random data
