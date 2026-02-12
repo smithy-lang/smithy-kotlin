@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 import aws.sdk.kotlin.gradle.codegen.smithyKotlinProjectionSrcDir
-import aws.sdk.kotlin.gradle.dsl.skipPublishing
+import aws.sdk.kotlin.gradle.publishing.skipPublishing
 
 plugins {
     id(libs.plugins.kotlin.jvm.get().pluginId)

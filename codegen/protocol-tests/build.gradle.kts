@@ -5,7 +5,7 @@
 import aws.sdk.kotlin.gradle.codegen.dsl.generateSmithyProjections
 import aws.sdk.kotlin.gradle.codegen.dsl.smithyKotlinPlugin
 import aws.sdk.kotlin.gradle.codegen.smithyKotlinProjectionPath
-import aws.sdk.kotlin.gradle.dsl.skipPublishing
+import aws.sdk.kotlin.gradle.publishing.skipPublishing
 
 plugins {
     kotlin("jvm")
