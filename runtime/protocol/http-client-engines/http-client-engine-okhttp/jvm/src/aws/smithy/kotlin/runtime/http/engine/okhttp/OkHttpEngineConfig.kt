@@ -51,7 +51,7 @@ public class OkHttpEngineConfig private constructor(builder: Builder) : HttpClie
      * encounter errors when they are acquired for a subsequent call.
      */
     @Deprecated("Connection idle polling is now deprecated. See https://github.com/aws/aws-sdk-kotlin/discussions/1797 for more details.")
-    @PlannedRemoval(major = 1, minor = 7)
+    @PlannedRemoval(major = 1, minor = 8)
     @Suppress("DEPRECATION")
     public val connectionIdlePollingInterval: Duration? = builder.connectionIdlePollingInterval
 
@@ -147,7 +147,7 @@ public class OkHttpEngineConfig private constructor(builder: Builder) : HttpClie
          * encounter errors when they are acquired for a subsequent call.
          */
         @Deprecated("Connection idle polling is now deprecated. See https://github.com/aws/aws-sdk-kotlin/discussions/1797 for more details.")
-        @PlannedRemoval(major = 1, minor = 7)
+        @PlannedRemoval(major = 1, minor = 8)
         public var connectionIdlePollingInterval: Duration? = null
 
         /**
