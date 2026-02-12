@@ -59,6 +59,7 @@ internal class SdkStreamResponseHandler(
         }
 
     private var streamCompleted = false
+    private var receivedBodyData = false
 
     /**
      * Called by the response read channel as data is consumed
@@ -120,9 +121,16 @@ internal class SdkStreamResponseHandler(
         val contentLength = headers["Content-Length"]?.toLong()
         val status = HttpStatusCode.fromValue(stream.responseStatusCode)
 
-        val hasBody = ((contentLength != null && contentLength > 0) || chunked) &&
+        val hasBody = if (chunked && contentLength == null) {
+            // Some responses are chunked but have an empty body.
+            // If we get a chunked response with an unknown content length,
+            // ensure we actually received a body when setting hasBody
+            receivedBodyData
+        } else {
+            (contentLength != null && contentLength > 0) &&
             (status !in listOf(HttpStatusCode.NotModified, HttpStatusCode.NoContent)) &&
             !status.isInformational()
+        }
 
         val body = when (hasBody) {
             false -> HttpBody.Empty
@@ -142,6 +150,9 @@ internal class SdkStreamResponseHandler(
 
     override fun onResponseHeadersDone(stream: HttpStream, blockType: Int) {
         if (!blockType.isMainHeadersBlock) return
+        val chunked = headers["Transfer-Encoding"]?.lowercase() == "chunked"
+        val contentLength = headers["Content-Length"]?.toLong()
+        if (chunked && contentLength == null) return // Defer signaling until we know there's body data
         signalResponse(stream)
     }
 
@@ -155,6 +166,11 @@ internal class SdkStreamResponseHandler(
         if (isCancelled) {
             stream.close()
             return bodyBytesIn.len
+        }
+
+        if (!receivedBodyData) {
+            receivedBodyData = true
+            signalResponse(stream)
         }
 
         val buffer = SdkBuffer().apply {
