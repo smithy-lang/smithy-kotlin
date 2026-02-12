@@ -153,7 +153,7 @@ internal class SdkStreamResponseHandler(
 
         // short circuit, stop buffering data and discard remaining incoming bytes
         if (isCancelled) {
-            cleanupStream(stream)
+            stream.close()
             return bodyBytesIn.len
         }
 
@@ -188,8 +188,7 @@ internal class SdkStreamResponseHandler(
             signalResponse(stream)
         }
 
-        // Platform-specific stream cleanup
-        cleanupStream(stream)
+        stream.close()
     }
 
     internal suspend fun waitForResponse(): HttpResponse = responseReady.receive()

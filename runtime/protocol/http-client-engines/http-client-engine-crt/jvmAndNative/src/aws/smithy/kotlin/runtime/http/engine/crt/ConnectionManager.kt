@@ -124,13 +124,7 @@ internal class ConnectionManager(
         connManagers.forEach { entry -> entry.value.close() }
         runBlocking {
             connManagers.forEach { entry ->
-                // FIXME In some test cases, we are leaking CRT stream resources somewhere, which leaves a connection open,
-                //  causing waitForShutdown to hang indefinitely.
-                //  My attempts to properly close the stream introduce segfaults / double-frees.
-                //  Need to find the right place to call crtStream?.close(), or another solution
-                withTimeoutOrNull(50) {
-                    entry.value.waitForShutdown()
-                } ?: println("Shutdown timed out for ${entry.key}, continuing...")
+                entry.value.waitForShutdown()
             }
         }
         crtTlsContext.close()
