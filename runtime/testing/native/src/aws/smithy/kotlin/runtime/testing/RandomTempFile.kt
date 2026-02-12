@@ -4,25 +4,29 @@
  */
 package aws.smithy.kotlin.runtime.testing
 
+import aws.smithy.kotlin.runtime.time.Clock
+import aws.smithy.kotlin.runtime.time.epochMilliseconds
 import kotlinx.cinterop.*
 import platform.posix.*
 import kotlin.random.Random
 
+@OptIn(ExperimentalForeignApi::class)
 public actual class RandomTempFile actual constructor(
     sizeInBytes: Long,
     filename: String,
-    private val binaryData: Boolean,
+    binaryData: Boolean,
 ) {
-    private val path: String = "${tmpDir()}/${currentTimeMillis()}-$filename"
-    private val data: ByteArray
+    private val tmpDir: String = getenv("TMPDIR")?.toKString() ?: "/tmp"
+    private val path: String = "${tmpDir}/${Clock.System.now().epochMilliseconds}-$filename"
+
+    private val data: ByteArray = if (binaryData) {
+        Random.nextBytes(sizeInBytes.toInt())
+    } else {
+        // Generate random ASCII printable characters
+        ByteArray(sizeInBytes.toInt()) { Random.nextInt(32, 127).toByte() }
+    }
 
     init {
-        data = if (binaryData) {
-            Random.Default.nextBytes(sizeInBytes.toInt())
-        } else {
-            // Generate random ASCII printable characters
-            ByteArray(sizeInBytes.toInt()) { Random.nextInt(32, 127).toByte() }
-        }
         writeFile()
     }
 
@@ -49,15 +53,3 @@ public actual class RandomTempFile actual constructor(
         return true
     }
 }
-
-private fun tmpDir(): String = getenv("TMPDIR")?.toKString() ?: "/tmp"
-
-private fun currentTimeMillis(): Long {
-    memScoped {
-        val timeVal = alloc<timeval>()
-        gettimeofday(timeVal.ptr, null)
-        return timeVal.tv_sec * 1000L + timeVal.tv_usec / 1000L
-    }
-}
-
-internal actual fun randomFilename(): String = Random.Default.nextInt().toString()

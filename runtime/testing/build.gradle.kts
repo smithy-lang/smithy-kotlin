@@ -10,6 +10,7 @@ kotlin {
         commonMain {
             dependencies {
                 implementation(libs.kotlin.test)
+                implementation(project(":runtime:runtime-core")) // for Uuid
             }
         }
         jvmMain {

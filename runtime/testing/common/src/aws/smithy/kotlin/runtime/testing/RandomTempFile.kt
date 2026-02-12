@@ -4,13 +4,15 @@
  */
 package aws.smithy.kotlin.runtime.testing
 
+import aws.smithy.kotlin.runtime.util.Uuid
+import aws.smithy.kotlin.runtime.InternalApi
+
 /**
  * Creates a temporary file with random data
  */
+@OptIn(InternalApi::class)
 public expect class RandomTempFile(
     sizeInBytes: Long,
-    filename: String = randomFilename(),
+    filename: String = Uuid.random().toString(),
     binaryData: Boolean = false,
 )
-
-internal expect fun randomFilename(): String

@@ -48,5 +48,3 @@ public actual class RandomTempFile actual constructor(
         private val TEMP_DIR: String = System.getProperty("java.io.tmpdir")
     }
 }
-
-internal actual fun randomFilename(): String = UUID.randomUUID().toString()
