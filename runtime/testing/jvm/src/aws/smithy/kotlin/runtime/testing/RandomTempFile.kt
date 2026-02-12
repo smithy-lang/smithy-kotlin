@@ -44,6 +44,13 @@ public actual class RandomTempFile actual constructor(
         }
     }
 
+    override fun delete(): Boolean {
+        if (!super.delete()) {
+            throw RuntimeException("Could not delete: $absolutePath")
+        }
+        return true
+    }
+
     public companion object {
         private val TEMP_DIR: String = System.getProperty("java.io.tmpdir")
     }
