@@ -80,6 +80,10 @@ public class CrtHttpEngine(public override val config: CrtHttpEngineConfig) : Ht
             }
         }
 
+        callContext.job.invokeOnCompletion {
+            stream.close()
+        }
+
         if (request.isChunked) {
             withContext(SdkDispatchers.IO) {
                 stream.sendChunkedBody(request.body)
