@@ -22,6 +22,7 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.Semaphore
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withTimeout
+import kotlinx.coroutines.withTimeoutOrNull
 import aws.sdk.kotlin.crt.io.TlsContext as CrtTlsContext
 import aws.sdk.kotlin.crt.io.TlsVersion as CrtTlsVersion
 import aws.smithy.kotlin.runtime.net.TlsVersion as SdkTlsVersion
@@ -122,7 +123,15 @@ internal class ConnectionManager(
     override fun close() {
         connManagers.forEach { entry -> entry.value.close() }
         runBlocking {
-            connManagers.forEach { entry -> entry.value.waitForShutdown() }
+            connManagers.forEach { entry ->
+                // FIXME In some cases, we are leaking CRT stream resources somewhere, which leaves a connection open
+                //  Trying to wait for this shutdown hangs indefinitely
+                //  My attempts to properly close the stream introduce segfaults / double-frees.
+                //  Need to find the right place to call crtStream?.close(), or another solution
+                withTimeoutOrNull(5000) {
+                    entry.value.waitForShutdown()
+                } ?: println("Shutdown timed out for ${entry.key}, continuing...")
+            }
         }
         crtTlsContext.close()
 
