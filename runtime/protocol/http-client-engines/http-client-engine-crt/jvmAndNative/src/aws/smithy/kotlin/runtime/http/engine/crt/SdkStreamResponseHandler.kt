@@ -164,6 +164,7 @@ internal class SdkStreamResponseHandler(
 
         // short circuit, stop buffering data and discard remaining incoming bytes
         if (isCancelled) {
+            crtStream?.close()
             stream.close()
             return bodyBytesIn.len
         }
