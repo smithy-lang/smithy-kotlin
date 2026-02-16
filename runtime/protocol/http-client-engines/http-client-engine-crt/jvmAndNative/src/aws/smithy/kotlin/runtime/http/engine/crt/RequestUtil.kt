@@ -44,7 +44,7 @@ internal val HttpRequest.uri: Uri
 
 internal fun HttpRequest.toCrtRequest(callContext: CoroutineContext): aws.sdk.kotlin.crt.http.HttpRequest {
     val body = this.body
-    check(!body.isDuplex) { "CrtHttpEngine does not yet support full duplex streams" }
+    if (!canSendDuplexBody) { check(!body.isDuplex) { "CrtHttpEngine does not yet support full duplex streams" } }
     val bodyStream = if (isChunked) {
         null
     } else {
@@ -67,6 +67,11 @@ internal fun HttpRequest.toCrtRequest(callContext: CoroutineContext): aws.sdk.ko
         headers.forEach { key, values -> appendAll(key, values) }
     }
 
+    // Duplex requests are treated as chunked
+    if (body.isDuplex && canSendDuplexBody && !headers.contains("Transfer-Encoding", "chunked")) {
+        crtHeaders["Transfer-Encoding"] = "chunked"
+    }
+
     val contentLength = body.contentLength?.takeIf { it >= 0 }?.toString() ?: headers[CONTENT_LENGTH_HEADER]
     contentLength?.let { crtHeaders[CONTENT_LENGTH_HEADER] = it }
 
@@ -77,9 +82,11 @@ internal fun HttpRequest.toCrtRequest(callContext: CoroutineContext): aws.sdk.ko
  * @return whether this HttpRequest is a chunked request.
  * Specifically, this means return `true` if a request contains a `Transfer-Encoding` header with the value `chunked`,
  * and the body is either [HttpBody.SourceContent] or [HttpBody.ChannelContent].
+ * For duplex bodies (event streams), also treat as chunked since they require chunked encoding.
  */
-internal val HttpRequest.isChunked: Boolean get() = (this.body is HttpBody.SourceContent || this.body is HttpBody.ChannelContent) &&
-    headers.contains("Transfer-Encoding", "chunked")
+internal val HttpRequest.isChunked: Boolean get() =
+    (this.body is HttpBody.SourceContent || this.body is HttpBody.ChannelContent) &&
+    (headers.contains("Transfer-Encoding", "chunked") || (body.isDuplex && canSendDuplexBody))
 
 /**
  * Send a chunked body using the CRT writeChunk bindings.
