@@ -5,7 +5,6 @@
 
 package aws.smithy.kotlin.runtime.testing
 
-
 // Note: We can't just use kotlin.test.BeforeClass / kotlin.test.AfterClass because
 // those are only available in Native, not Common: https://youtrack.jetbrains.com/issue/KT-49141
 /**
