@@ -17,10 +17,12 @@ import aws.smithy.kotlin.runtime.http.request.HttpRequest
 import aws.smithy.kotlin.runtime.io.Closeable
 import aws.smithy.kotlin.runtime.net.TlsVersion
 import kotlinx.coroutines.TimeoutCancellationException
+import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.Semaphore
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withTimeout
+import kotlinx.coroutines.withTimeoutOrNull
 import aws.sdk.kotlin.crt.io.TlsContext as CrtTlsContext
 import aws.sdk.kotlin.crt.io.TlsVersion as CrtTlsVersion
 import aws.smithy.kotlin.runtime.net.TlsVersion as SdkTlsVersion
@@ -120,6 +122,11 @@ internal class ConnectionManager(
 
     override fun close() {
         connManagers.forEach { entry -> entry.value.close() }
+        runBlocking {
+            connManagers.forEach { entry ->
+                entry.value.waitForShutdown()
+            }
+        }
         crtTlsContext.close()
 
         if (manageClientBootstrap) clientBootstrap.close()

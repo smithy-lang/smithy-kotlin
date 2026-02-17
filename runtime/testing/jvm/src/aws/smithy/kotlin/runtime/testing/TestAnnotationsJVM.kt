@@ -9,3 +9,11 @@ import org.junit.jupiter.api.condition.OS
 
 @DisabledOnOs(OS.WINDOWS)
 public annotation class IgnoreWindows(val reason: String)
+
+public actual typealias BeforeAll = org.junit.jupiter.api.BeforeAll
+
+public actual typealias AfterAll = org.junit.jupiter.api.AfterAll
+
+@Retention(AnnotationRetention.RUNTIME)
+@Target(AnnotationTarget.FUNCTION)
+public actual annotation class IgnoreNative { /* no-op on JVM */ }
