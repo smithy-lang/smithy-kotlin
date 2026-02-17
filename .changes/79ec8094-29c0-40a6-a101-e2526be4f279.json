@@ -1,5 +1,5 @@
 {
     "id": "79ec8094-29c0-40a6-a101-e2526be4f279",
-    "type": "misc",
-    "description": "Improved handling of incomplete server responses — SDK now throws an error when required response fields are missing."
+    "type": "bugfix",
+    "description": "Throw DeserializationException for null values in non-sparse collections"
 }
