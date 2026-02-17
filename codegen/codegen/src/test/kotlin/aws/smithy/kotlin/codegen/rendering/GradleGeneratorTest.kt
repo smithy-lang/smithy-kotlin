@@ -7,11 +7,11 @@ package aws.smithy.kotlin.codegen.rendering
 import aws.smithy.kotlin.codegen.BuildSettings
 import aws.smithy.kotlin.codegen.KotlinSettings
 import aws.smithy.kotlin.codegen.core.KotlinDependency
-import aws.smithy.kotlin.codegen.core.KotlinDependency.Companion.CORE
 import aws.smithy.kotlin.codegen.core.RUNTIME_GROUP
 import aws.smithy.kotlin.codegen.core.RUNTIME_VERSION
 import aws.smithy.kotlin.codegen.loadModelFromResource
 import io.kotest.matchers.string.shouldContain
+import io.kotest.matchers.string.shouldNotContain
 import software.amazon.smithy.build.MockManifest
 import software.amazon.smithy.model.node.Node
 import kotlin.test.Test
@@ -35,14 +35,15 @@ class GradleGeneratorTest {
         )
 
         val manifest = MockManifest()
-        val dependencies = listOf(KotlinDependency.CORE)
+        val dependencies = listOf(KotlinDependency.CORE, KotlinDependency.KOTLIN_STDLIB)
         writeGradleBuild(settings, manifest, dependencies)
         val contents = manifest.getFileString("build.gradle.kts").get()
         val expected = """
-            api("$RUNTIME_GROUP:${CORE.artifact}:$RUNTIME_VERSION")
+            api("$RUNTIME_GROUP:${KotlinDependency.CORE.artifact}:$RUNTIME_VERSION")
         """.trimIndent()
 
         contents.shouldContain(expected)
+        contents.shouldNotContain("stdlib") // stdlib dependencies are implicit
     }
 
     @Test
@@ -69,7 +70,7 @@ class GradleGeneratorTest {
         )
 
         val manifest = MockManifest()
-        val dependencies = listOf(KotlinDependency.CORE)
+        val dependencies = listOf(KotlinDependency.CORE, KotlinDependency.KOTLIN_STDLIB)
         writeGradleBuild(settings, manifest, dependencies)
         val contents = manifest.getFileString("build.gradle.kts").get()
         val expectedRepositories = """
@@ -88,6 +89,7 @@ class GradleGeneratorTest {
         contents.shouldContain(expectedRepositories)
         contents.shouldContain(expectedVersion)
         contents.shouldContain(expectedExplicitApi)
+        contents.shouldNotContain("stdlib") // stdlib dependencies are implicit
     }
 
     @Test
@@ -113,7 +115,7 @@ class GradleGeneratorTest {
         )
 
         val manifest = MockManifest()
-        val dependencies = listOf(KotlinDependency.CORE)
+        val dependencies = listOf(KotlinDependency.CORE, KotlinDependency.KOTLIN_STDLIB)
         writeGradleBuild(settings, manifest, dependencies)
         val contents = manifest.getFileString("build.gradle.kts").get()
         val expectedVersion = """
@@ -125,5 +127,6 @@ class GradleGeneratorTest {
 
         contents.shouldContain(expectedVersion)
         contents.shouldContain(expectedExplicitApi)
+        contents.shouldNotContain("stdlib") // stdlib dependencies are implicit
     }
 }
