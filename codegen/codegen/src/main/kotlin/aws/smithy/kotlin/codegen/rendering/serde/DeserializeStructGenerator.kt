@@ -6,6 +6,7 @@ package aws.smithy.kotlin.codegen.rendering.serde
 
 import aws.smithy.kotlin.codegen.core.KotlinWriter
 import aws.smithy.kotlin.codegen.core.RuntimeTypes
+import aws.smithy.kotlin.codegen.core.RuntimeTypes.Serde.DeserializationException
 import aws.smithy.kotlin.codegen.core.defaultName
 import aws.smithy.kotlin.codegen.core.withBlock
 import aws.smithy.kotlin.codegen.lang.KotlinTypes
@@ -71,6 +72,7 @@ open class DeserializeStructGenerator(
             writer.addImport(RuntimeTypes.Serde.SdkObjectDescriptor)
             "SdkObjectDescriptor.build {}"
         }
+        writer.addImport(DeserializationException)
         writer.withBlock("deserializer.#T($objDescriptor) {", "}", RuntimeTypes.Serde.deserializeStruct) {
             withBlock("loop@while (true) {", "}") {
                 withBlock("when (findNextFieldIndex()) {", "}") {
@@ -245,7 +247,7 @@ open class DeserializeStructGenerator(
      *
      * ```
      * val k0 = key()
-     * val v0 = if (nextHasValue()) { deserializeString().let { Instant.fromEpochSeconds(it) } } else { deserializeNull(); throw Exception("Invalid server response, missing required field from 'X'.") }
+     * val v0 = if (nextHasValue()) { deserializeString().let { Instant.fromEpochSeconds(it) } } else { deserializeNull(); throw DeserializationException("Invalid server response, missing required field from 'X'.") }
      * map0[k0] = v0
      * ```
      */
@@ -261,7 +263,7 @@ open class DeserializeStructGenerator(
         val deserializerFn = deserializerForShape(elementShape)
         val keyName = nestingLevel.variableNameFor(NestedIdentifierType.KEY)
         val valueName = nestingLevel.variableNameFor(NestedIdentifierType.VALUE)
-        val populateNullValuePostfix = if (isSparse) "" else "; throw Exception(\"Invalid server response, missing required field from '${rootMemberShape.memberName}'.\")"
+        val populateNullValuePostfix = if (isSparse) "" else "; throw DeserializationException(\"Invalid server response, missing required field from '${rootMemberShape.memberName}'.\")"
         if (elementShape.isStructureShape || elementShape.isUnionShape) {
             val symbol = ctx.symbolProvider.toSymbol(elementShape)
             writer.addImport(symbol)
@@ -297,7 +299,7 @@ open class DeserializeStructGenerator(
     ) {
         val keyName = nestingLevel.variableNameFor(NestedIdentifierType.KEY)
         val valueName = nestingLevel.variableNameFor(NestedIdentifierType.VALUE)
-        val populateNullValuePostfix = if (isSparse) "" else "; throw Exception(\"Invalid server response, missing required field from '${rootMemberShape.memberName}'.\")"
+        val populateNullValuePostfix = if (isSparse) "" else "; throw DeserializationException(\"Invalid server response, missing required field from '${rootMemberShape.memberName}'.\")"
         val descriptorName = rootMemberShape.descriptorName(nestingLevel.nestedDescriptorName())
         val nextNestingLevel = nestingLevel + 1
         val memberName = nextNestingLevel.variableNameFor(NestedIdentifierType.MAP)
@@ -351,7 +353,7 @@ open class DeserializeStructGenerator(
     ) {
         val keyName = nestingLevel.variableNameFor(NestedIdentifierType.KEY)
         val valueName = nestingLevel.variableNameFor(NestedIdentifierType.VALUE)
-        val populateNullValuePostfix = if (isSparse) "" else "; throw Exception(\"Invalid server response, missing required field from '${rootMemberShape.memberName}'.\")"
+        val populateNullValuePostfix = if (isSparse) "" else "; throw DeserializationException(\"Invalid server response, missing required field from '${rootMemberShape.memberName}'.\")"
         val descriptorName = rootMemberShape.descriptorName(nestingLevel.nestedDescriptorName())
         val nextNestingLevel = nestingLevel + 1
         val memberName = nextNestingLevel.variableNameFor(NestedIdentifierType.COLLECTION)
@@ -398,7 +400,7 @@ open class DeserializeStructGenerator(
         val deserializerFn = deserializerForShape(elementShape)
         val keyName = nestingLevel.variableNameFor(NestedIdentifierType.KEY)
         val valueName = nestingLevel.variableNameFor(NestedIdentifierType.VALUE)
-        val populateNullValuePostfix = if (isSparse) "" else "; throw Exception(\"Invalid server response, missing required field from '${rootMemberShape.memberName}'.\")"
+        val populateNullValuePostfix = if (isSparse) "" else "; throw DeserializationException(\"Invalid server response, missing required field from '${rootMemberShape.memberName}'.\")"
 
         writeKeyVal(keyShape, keySymbol, keyName)
         writer.write("val $valueName = if (nextHasValue()) { $deserializerFn } else { deserializeNull()$populateNullValuePostfix }")
@@ -491,7 +493,7 @@ open class DeserializeStructGenerator(
     private fun renderNestedStructureElement(rootMemberShape: MemberShape, elementShape: Shape, nestingLevel: Int, isSparse: Boolean, parentMemberName: String) {
         val deserializer = deserializerForShape(elementShape)
         val elementName = nestingLevel.variableNameFor(NestedIdentifierType.ELEMENT)
-        val populateNullValuePostfix = if (isSparse) "" else "; throw Exception(\"Invalid server response, missing required field from '${rootMemberShape.memberName}'.\")"
+        val populateNullValuePostfix = if (isSparse) "" else "; throw DeserializationException(\"Invalid server response, missing required field from '${rootMemberShape.memberName}'.\")"
         if (elementShape.isStructureShape || elementShape.isUnionShape) {
             val symbol = ctx.symbolProvider.toSymbol(elementShape)
             writer.addImport(symbol)
@@ -593,7 +595,7 @@ open class DeserializeStructGenerator(
     private fun renderElement(rootMemberShape: MemberShape, elementShape: Shape, nestingLevel: Int, isSparse: Boolean, listMemberName: String) {
         val deserializerFn = deserializerForShape(elementShape)
         val elementName = nestingLevel.variableNameFor(NestedIdentifierType.ELEMENT)
-        val populateNullValuePostfix = if (isSparse) "" else "; throw Exception(\"Invalid server response, missing required field from '${rootMemberShape.memberName}'.\")"
+        val populateNullValuePostfix = if (isSparse) "" else "; throw DeserializationException(\"Invalid server response, missing required field from '${rootMemberShape.memberName}'.\")"
 
         writer.write("val $elementName = if (nextHasValue()) { $deserializerFn } else { deserializeNull()$populateNullValuePostfix }")
         writer.write("$listMemberName.add($elementName)")
