@@ -5,12 +5,13 @@
 
 package aws.smithy.kotlin.runtime.http.engine.crt
 
+import aws.sdk.kotlin.crt.http.Http2ClientConnection
+import aws.sdk.kotlin.crt.http.HttpVersion
 import aws.smithy.kotlin.runtime.http.HttpCall
 import aws.smithy.kotlin.runtime.http.config.EngineFactory
 import aws.smithy.kotlin.runtime.http.engine.HttpClientEngine
 import aws.smithy.kotlin.runtime.http.engine.HttpClientEngineBase
 import aws.smithy.kotlin.runtime.http.engine.callContext
-import aws.smithy.kotlin.runtime.http.readAll
 import aws.smithy.kotlin.runtime.http.request.HttpRequest
 import aws.smithy.kotlin.runtime.io.internal.SdkDispatchers
 import aws.smithy.kotlin.runtime.operation.ExecutionContext
@@ -62,7 +63,7 @@ public class CrtHttpEngine(public override val config: CrtHttpEngineConfig) : Ht
         // the response completes OR on exception (both handled by the completion handler registered on the stream
         // handler)
         val conn = connectionManager.acquire(request)
-        logger.trace { "Acquired connection ${conn.id}" }
+        logger.trace { "Acquired connection ${conn.id} (${conn.version})" }
 
         val respHandler = SdkStreamResponseHandler(conn, callContext)
         callContext.job.invokeOnCompletion {
@@ -72,10 +73,15 @@ public class CrtHttpEngine(public override val config: CrtHttpEngineConfig) : Ht
         }
 
         val reqTime = Instant.now()
-        val engineRequest = request.toCrtRequest(callContext)
 
         val stream = mapCrtException {
-            conn.makeRequest(engineRequest, respHandler).also { stream ->
+            if (conn.version == HttpVersion.HTTP_2) {
+                val engineRequest = request.toHttp2Request(callContext)
+                (conn as Http2ClientConnection).makeRequest(engineRequest, respHandler)
+            } else {
+                val engineRequest = request.toCrtRequest(callContext)
+                conn.makeRequest(engineRequest, respHandler)
+            }.also { stream ->
                 stream.activate()
             }
         }
@@ -84,9 +90,9 @@ public class CrtHttpEngine(public override val config: CrtHttpEngineConfig) : Ht
             stream.close()
         }
 
-        if (request.isChunked) {
+        if (conn.version != HttpVersion.HTTP_2 && request.isChunked) {
             withContext(SdkDispatchers.IO) {
-                stream.sendChunkedBody(request.body)
+                (stream as aws.sdk.kotlin.crt.http.HttpStream).sendChunkedBody(request.body)
             }
         }
 

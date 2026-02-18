@@ -46,7 +46,7 @@ internal class SdkStreamResponseHandler(
     private val bodyChan = Channel<SdkBuffer>(Channel.UNLIMITED)
 
     private val lock = reentrantLock() // protects crtStream and cancelled state
-    private var crtStream: HttpStream? = null
+    private var crtStream: HttpStreamBase? = null
 
     // if the (coroutine) job is completed before the stream's onResponseComplete callback is
     // invoked (for any reason) we consider the stream "cancelled"
@@ -72,7 +72,7 @@ internal class SdkStreamResponseHandler(
     }
 
     override fun onResponseHeaders(
-        stream: HttpStream,
+        stream: HttpStreamBase,
         responseStatusCode: Int,
         blockType: Int,
         nextHeaders: List<HttpHeader>?,
@@ -112,7 +112,7 @@ internal class SdkStreamResponseHandler(
     }
 
     // signal response ready and engine can proceed (all that is required is headers, body is consumed asynchronously)
-    private fun signalResponse(stream: HttpStream) {
+    private fun signalResponse(stream: HttpStreamBase) {
         // already signalled
         if (responseReady.isClosedForSend) return
 
@@ -120,12 +120,16 @@ internal class SdkStreamResponseHandler(
         val chunked = transferEncoding == "chunked"
         val contentLength = headers["Content-Length"]?.toLong()
         val status = HttpStatusCode.fromValue(stream.responseStatusCode)
+        val isEventStream = headers["Content-Type"]?.contains("application/vnd.amazon.eventstream") == true
 
         val hasBody = if (chunked && contentLength == null) {
             // Some responses are chunked but have an empty body.
             // If we get a chunked response with an unknown content length,
             // ensure we actually received a body when setting hasBody
             receivedBodyData
+        } else if (isEventStream) {
+            // Event streams have no content-length header, aren't chunked, but do have a body
+            true
         } else {
             (contentLength != null && contentLength > 0) &&
                 (status !in listOf(HttpStatusCode.NotModified, HttpStatusCode.NoContent)) &&
@@ -148,7 +152,7 @@ internal class SdkStreamResponseHandler(
         responseReady.close()
     }
 
-    override fun onResponseHeadersDone(stream: HttpStream, blockType: Int) {
+    override fun onResponseHeadersDone(stream: HttpStreamBase, blockType: Int) {
         if (!blockType.isMainHeadersBlock) return
         val chunked = headers["Transfer-Encoding"]?.lowercase() == "chunked"
         val contentLength = headers["Content-Length"]?.toLong()
@@ -156,7 +160,7 @@ internal class SdkStreamResponseHandler(
         signalResponse(stream)
     }
 
-    override fun onResponseBody(stream: HttpStream, bodyBytesIn: Buffer): Int {
+    override fun onResponseBody(stream: HttpStreamBase, bodyBytesIn: Buffer): Int {
         val isCancelled = lock.withLock {
             crtStream = stream
             cancelled
@@ -185,7 +189,7 @@ internal class SdkStreamResponseHandler(
         return 0
     }
 
-    override fun onResponseComplete(stream: HttpStream, errorCode: Int) {
+    override fun onResponseComplete(stream: HttpStreamBase, errorCode: Int) {
         // stream is only valid until the end of this callback, ensure any further data being read downstream
         // doesn't call incrementWindow on a resource that has been free'd
         lock.withLock {
