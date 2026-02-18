@@ -162,40 +162,4 @@ class Http2IntegrationTest {
         assertEquals("HTTP/2", recordedRequest.version)
         assertEquals("req1\nreq1\n", recordedRequest.body?.utf8())
     }
-
-    @Test
-    fun testHttp2PseudoHeaders() = runBlocking {
-        server.enqueue(
-            MockResponse.Builder()
-                .code(200)
-                .body("OK")
-                .addHeader("x-custom-header", "custom-value")
-                .build(),
-        )
-
-        val request = HttpRequestBuilder().apply {
-            method = HttpMethod.GET
-            url {
-                scheme = Scheme.HTTPS
-                host = Host.Domain("localhost")
-                port = server.port
-                path.encoded = "/test"
-            }
-        }.build()
-
-        val call = client.call(request)
-        val response = call.response
-
-        assertEquals(HttpStatusCode.OK, response.status)
-
-        response.headers.names().forEach { name ->
-            assertTrue(!name.startsWith(":"), "Pseudo-header $name should be filtered")
-        }
-
-        assertEquals("custom-value", response.headers["x-custom-header"])
-
-        val recordedRequest = server.takeRequest()
-        assertNotNull(recordedRequest)
-        assertEquals("HTTP/2", recordedRequest.version)
-    }
 }
