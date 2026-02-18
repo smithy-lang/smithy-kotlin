@@ -35,8 +35,8 @@ internal class ConnectionManager(
     private val crtTlsContext: TlsContext = TlsContextOptionsBuilder()
         .apply {
             // Default to HTTP/2 and HTTP/1.1 if no ALPN list is configured
-            val alpnList = config.tlsContext.alpn.ifEmpty { 
-                listOf(AlpnId.HTTP2, AlpnId.HTTP1_1) 
+            val alpnList = config.tlsContext.alpn.ifEmpty {
+                listOf(AlpnId.HTTP2, AlpnId.HTTP1_1)
             }
             alpn = alpnList.joinToString(separator = ";") { it.protocolId }
             minTlsVersion = toCrtTlsVersion(config.tlsContext.minVersion)

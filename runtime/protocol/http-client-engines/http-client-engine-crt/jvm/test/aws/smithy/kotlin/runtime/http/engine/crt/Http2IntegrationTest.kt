@@ -8,9 +8,9 @@ package aws.smithy.kotlin.runtime.http.engine.crt
 import aws.smithy.kotlin.runtime.http.*
 import aws.smithy.kotlin.runtime.http.request.HttpRequestBuilder
 import aws.smithy.kotlin.runtime.http.request.url
+import aws.smithy.kotlin.runtime.io.SdkBuffer
 import aws.smithy.kotlin.runtime.io.SdkByteChannel
 import aws.smithy.kotlin.runtime.io.SdkByteReadChannel
-import aws.smithy.kotlin.runtime.io.SdkBuffer
 import aws.smithy.kotlin.runtime.net.Host
 import aws.smithy.kotlin.runtime.net.Scheme
 import kotlinx.coroutines.delay
@@ -63,7 +63,7 @@ class Http2IntegrationTest {
                 .code(200)
                 .body("Hello HTTP/2")
                 .addHeader("content-type", "text/plain")
-                .build()
+                .build(),
         )
 
         val request = HttpRequestBuilder().apply {
@@ -104,7 +104,7 @@ class Http2IntegrationTest {
                 .code(200)
                 .body(responseBody)
                 .addHeader("content-type", "text/plain")
-                .build()
+                .build(),
         )
 
         val requestChannel = SdkByteChannel(true)
@@ -130,7 +130,7 @@ class Http2IntegrationTest {
             val response = call.response
 
             assertEquals(HttpStatusCode.OK, response.status)
-            
+
             val channel = (response.body.toByteStream() as? aws.smithy.kotlin.runtime.content.ByteStream.ChannelStream)?.readFrom()!!
             val buffer = SdkBuffer()
             while (!channel.isClosedForRead) {
@@ -170,7 +170,7 @@ class Http2IntegrationTest {
                 .code(200)
                 .body("OK")
                 .addHeader("x-custom-header", "custom-value")
-                .build()
+                .build(),
         )
 
         val request = HttpRequestBuilder().apply {
