@@ -371,6 +371,7 @@ public final class aws/smithy/kotlin/codegen/core/KotlinDependencyKt {
 	public static final field RUNTIME_ROOT_NS Ljava/lang/String;
 	public static final fun getKOTLIN_COMPILER_VERSION ()Ljava/lang/String;
 	public static final fun getRUNTIME_VERSION ()Ljava/lang/String;
+	public static final fun isImplicit (Laws/smithy/kotlin/codegen/core/KotlinDependency;)Z
 	public static final fun isValidVersion (Ljava/lang/String;)Z
 }
 
