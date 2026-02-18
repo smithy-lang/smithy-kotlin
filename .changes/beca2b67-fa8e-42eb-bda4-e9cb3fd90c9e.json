@@ -1,5 +1,0 @@
-{
-    "id": "beca2b67-fa8e-42eb-bda4-e9cb3fd90c9e",
-    "type": "bugfix",
-    "description": "Do not code-generate explicit Gradle dependencies on kotlin-stdlib"
-}

@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.6.4] - 02/18/2026
+
+### Fixes
+* Do not code-generate explicit Gradle dependencies on kotlin-stdlib
+
 ## [1.6.3] - 02/17/2026
 
 ## [1.6.2] - 02/11/2026
