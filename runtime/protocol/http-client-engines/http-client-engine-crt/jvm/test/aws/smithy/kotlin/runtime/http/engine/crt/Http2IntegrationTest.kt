@@ -89,21 +89,16 @@ class Http2IntegrationTest {
 
     @Test
     fun testHttp2BidirectionalStreaming() = runBlocking {
-        val responseBody = okio.Buffer()
-        launch {
-            delay(100.milliseconds)
-            responseBody.writeUtf8("resp1\n")
-            delay(100.milliseconds)
-            responseBody.writeUtf8("resp2\n")
-            delay(100.milliseconds)
-            responseBody.writeUtf8("resp3\n")
+        val responseBody = okio.Buffer().apply {
+            writeUtf8("resp1\nresp2\nresp3\n")
         }
 
         server.enqueue(
             MockResponse.Builder()
                 .code(200)
                 .body(responseBody)
-                .addHeader("content-type", "text/plain")
+                .removeHeader("content-length")
+                .addHeader("content-type", "application/vnd.amazon.eventstream")
                 .build(),
         )
 
@@ -160,6 +155,6 @@ class Http2IntegrationTest {
         val recordedRequest = server.takeRequest()
         assertNotNull(recordedRequest)
         assertEquals("HTTP/2", recordedRequest.version)
-        assertEquals("req1\nreq1\n", recordedRequest.body?.utf8())
+        assertEquals("req1\nreq2\n", recordedRequest.body?.utf8())
     }
 }
