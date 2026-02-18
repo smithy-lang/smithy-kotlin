@@ -148,6 +148,9 @@ data class KotlinDependency(
     }
 }
 
+val KotlinDependency.isImplicit: Boolean
+    get() = group == "org.jetbrains.kotlin" && artifact == "kotlin-stdlib"
+
 abstract class RuntimeTypePackage(
     val dependency: KotlinDependency,
     val defaultSubpackage: String = "",
