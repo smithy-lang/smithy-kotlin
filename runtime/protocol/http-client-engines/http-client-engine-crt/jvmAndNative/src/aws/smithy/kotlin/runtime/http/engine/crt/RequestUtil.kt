@@ -8,7 +8,6 @@ package aws.smithy.kotlin.runtime.http.engine.crt
 import aws.sdk.kotlin.crt.CRT
 import aws.sdk.kotlin.crt.CrtRuntimeException
 import aws.sdk.kotlin.crt.http.HeadersBuilder
-import aws.sdk.kotlin.crt.http.HttpRequest as HttpRequestCrt
 import aws.sdk.kotlin.crt.http.HttpRequestBodyStream
 import aws.sdk.kotlin.crt.http.HttpStream
 import aws.sdk.kotlin.crt.io.Protocol
@@ -25,6 +24,7 @@ import aws.smithy.kotlin.runtime.io.buffer
 import aws.smithy.kotlin.runtime.io.readToByteArray
 import kotlinx.coroutines.job
 import kotlin.coroutines.CoroutineContext
+import aws.sdk.kotlin.crt.http.HttpRequest as HttpRequestCrt
 
 private const val CONTENT_LENGTH_HEADER: String = "Content-Length"
 
