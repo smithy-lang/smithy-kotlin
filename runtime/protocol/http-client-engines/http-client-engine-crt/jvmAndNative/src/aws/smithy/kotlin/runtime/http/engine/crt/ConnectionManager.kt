@@ -142,6 +142,7 @@ internal class ConnectionManager(
     private inner class LeasedConnection(private val delegate: HttpClientConnection) : HttpClientConnection by delegate {
         override fun close() {
             try {
+                // close actually returns to the pool
                 delegate.close()
             } finally {
                 leases.release()
