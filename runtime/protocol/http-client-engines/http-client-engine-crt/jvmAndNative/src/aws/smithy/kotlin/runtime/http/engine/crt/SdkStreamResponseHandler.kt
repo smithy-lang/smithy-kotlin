@@ -46,7 +46,7 @@ internal class SdkStreamResponseHandler(
     private val bodyChan = Channel<SdkBuffer>(Channel.UNLIMITED)
 
     private val lock = reentrantLock() // protects crtStream and cancelled state
-    private var crtStream: HttpStreamBase? = null
+    private var crtStream: HttpStream? = null
 
     // if the (coroutine) job is completed before the stream's onResponseComplete callback is
     // invoked (for any reason) we consider the stream "cancelled"
@@ -72,7 +72,7 @@ internal class SdkStreamResponseHandler(
     }
 
     override fun onResponseHeaders(
-        stream: HttpStreamBase,
+        stream: HttpStream,
         responseStatusCode: Int,
         blockType: Int,
         nextHeaders: List<HttpHeader>?,
@@ -112,7 +112,7 @@ internal class SdkStreamResponseHandler(
     }
 
     // signal response ready and engine can proceed (all that is required is headers, body is consumed asynchronously)
-    private fun signalResponse(stream: HttpStreamBase) {
+    private fun signalResponse(stream: HttpStream) {
         // already signalled
         if (responseReady.isClosedForSend) return
 
@@ -152,7 +152,7 @@ internal class SdkStreamResponseHandler(
         responseReady.close()
     }
 
-    override fun onResponseHeadersDone(stream: HttpStreamBase, blockType: Int) {
+    override fun onResponseHeadersDone(stream: HttpStream, blockType: Int) {
         if (!blockType.isMainHeadersBlock) return
         val chunked = headers["Transfer-Encoding"]?.lowercase() == "chunked"
         val contentLength = headers["Content-Length"]?.toLong()
@@ -160,7 +160,7 @@ internal class SdkStreamResponseHandler(
         signalResponse(stream)
     }
 
-    override fun onResponseBody(stream: HttpStreamBase, bodyBytesIn: Buffer): Int {
+    override fun onResponseBody(stream: HttpStream, bodyBytesIn: Buffer): Int {
         val isCancelled = lock.withLock {
             crtStream = stream
             cancelled
@@ -189,7 +189,7 @@ internal class SdkStreamResponseHandler(
         return 0
     }
 
-    override fun onResponseComplete(stream: HttpStreamBase, errorCode: Int) {
+    override fun onResponseComplete(stream: HttpStream, errorCode: Int) {
         // stream is only valid until the end of this callback, ensure any further data being read downstream
         // doesn't call incrementWindow on a resource that has been free'd
         lock.withLock {

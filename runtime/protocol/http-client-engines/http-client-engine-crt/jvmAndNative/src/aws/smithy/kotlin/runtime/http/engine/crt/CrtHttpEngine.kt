@@ -5,7 +5,6 @@
 
 package aws.smithy.kotlin.runtime.http.engine.crt
 
-import aws.sdk.kotlin.crt.http.Http2ClientConnection
 import aws.sdk.kotlin.crt.http.HttpVersion
 import aws.smithy.kotlin.runtime.http.HttpCall
 import aws.smithy.kotlin.runtime.http.config.EngineFactory
@@ -75,13 +74,12 @@ public class CrtHttpEngine(public override val config: CrtHttpEngineConfig) : Ht
         val reqTime = Instant.now()
 
         val stream = mapCrtException {
-            if (conn.version == HttpVersion.HTTP_2) {
-                val engineRequest = request.toHttp2Request(callContext)
-                (conn as Http2ClientConnection).makeRequest(engineRequest, respHandler)
+            val engineRequest = if (conn.version == HttpVersion.HTTP_2) {
+                request.toHttp2Request(callContext)
             } else {
-                val engineRequest = request.toCrtRequest(callContext)
-                conn.makeRequest(engineRequest, respHandler)
-            }.also { stream ->
+                request.toCrtRequest(callContext)
+            }
+            conn.makeRequest(engineRequest, respHandler).also { stream ->
                 stream.activate()
             }
         }
@@ -92,7 +90,7 @@ public class CrtHttpEngine(public override val config: CrtHttpEngineConfig) : Ht
 
         if (conn.version != HttpVersion.HTTP_2 && request.isChunked) {
             withContext(SdkDispatchers.IO) {
-                (stream as aws.sdk.kotlin.crt.http.HttpStream).sendChunkedBody(request.body)
+                stream.sendChunkedBody(request.body)
             }
         }
 

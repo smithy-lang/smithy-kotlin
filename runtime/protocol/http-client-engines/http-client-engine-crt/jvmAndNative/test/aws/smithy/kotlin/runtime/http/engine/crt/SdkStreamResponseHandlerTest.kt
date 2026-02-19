@@ -42,7 +42,7 @@ class SdkStreamResponseHandlerTest {
         override fun close() {
             isClosed = true
         }
-        override fun makeRequest(httpReq: HttpRequest, handler: HttpStreamResponseHandler): HttpStreamBase = throw UnsupportedOperationException("not implemented for test")
+        override fun makeRequest(httpReq: HttpRequest, handler: HttpStreamResponseHandler): HttpStream = throw UnsupportedOperationException("not implemented for test")
         override fun shutdown() { }
     }
 

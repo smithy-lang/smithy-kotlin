@@ -86,11 +86,7 @@ internal class ConnectionManager(
                 manager.acquireConnection()
             }
 
-            if (conn is Http2ClientConnection) {
-                LeasedHttp2Connection(conn)
-            } else {
-                LeasedConnection(conn)
-            }
+            LeasedConnection(conn)
         } catch (ex: Exception) {
             if (leaseAcquired) {
                 leases.release()
@@ -144,16 +140,6 @@ internal class ConnectionManager(
     }
 
     private inner class LeasedConnection(private val delegate: HttpClientConnection) : HttpClientConnection by delegate {
-        override fun close() {
-            try {
-                delegate.close()
-            } finally {
-                leases.release()
-            }
-        }
-    }
-
-    private inner class LeasedHttp2Connection(private val delegate: Http2ClientConnection) : Http2ClientConnection by delegate {
         override fun close() {
             try {
                 delegate.close()

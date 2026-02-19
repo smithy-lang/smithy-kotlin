@@ -8,7 +8,7 @@ package aws.smithy.kotlin.runtime.http.engine.crt
 import aws.sdk.kotlin.crt.CRT
 import aws.sdk.kotlin.crt.CrtRuntimeException
 import aws.sdk.kotlin.crt.http.HeadersBuilder
-import aws.sdk.kotlin.crt.http.Http2Request
+import aws.sdk.kotlin.crt.http.HttpRequest as HttpRequestCrt
 import aws.sdk.kotlin.crt.http.HttpRequestBodyStream
 import aws.sdk.kotlin.crt.http.HttpStream
 import aws.sdk.kotlin.crt.io.Protocol
@@ -73,7 +73,7 @@ internal fun HttpRequest.toCrtRequest(callContext: CoroutineContext): aws.sdk.ko
     return aws.sdk.kotlin.crt.http.HttpRequest(method.name, url.requestRelativePath, crtHeaders.build(), bodyStream)
 }
 
-internal fun HttpRequest.toHttp2Request(callContext: CoroutineContext): Http2Request {
+internal fun HttpRequest.toHttp2Request(callContext: CoroutineContext): HttpRequestCrt {
     val body = this.body
     val bodyStream = when (body) {
         is HttpBody.Empty -> null
@@ -86,7 +86,7 @@ internal fun HttpRequest.toHttp2Request(callContext: CoroutineContext): Http2Req
         }
     }
 
-    return Http2Request.build {
+    return HttpRequestCrt.build {
         method = this@toHttp2Request.method.name
         encodedPath = url.requestRelativePath
 
