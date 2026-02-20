@@ -4,7 +4,21 @@
  */
 package aws.smithy.kotlin.runtime.hashing
 
+import aws.sdk.kotlin.crt.CrtRuntimeException
+import aws.sdk.kotlin.crt.util.hashing.eccKeyPairFromPrivateKey
+import aws.sdk.kotlin.crt.util.hashing.releaseEccKeyPair
+import aws.sdk.kotlin.crt.util.hashing.signMessage
+import kotlinx.cinterop.ExperimentalForeignApi
+
 /**
  * ECDSA on the SECP256R1 curve.
  */
-public actual fun ecdsaSecp256r1(key: ByteArray, message: ByteArray): ByteArray = error("This function should not be invoked on Native, which uses the CrtAwsSigner.")
+@OptIn(ExperimentalForeignApi::class)
+public actual fun ecdsaSecp256r1(key: ByteArray, message: ByteArray): ByteArray {
+    val keyPair = eccKeyPairFromPrivateKey(key) ?: throw CrtRuntimeException("Failed to create ECC key pair from private key")
+    try {
+        return signMessage(keyPair, message)
+    } finally {
+        releaseEccKeyPair(keyPair)
+    }
+}
