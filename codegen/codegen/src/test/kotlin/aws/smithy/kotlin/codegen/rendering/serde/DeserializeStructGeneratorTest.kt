@@ -107,7 +107,7 @@ class DeserializeStructGeneratorTest {
                             deserializer.deserializeList(PAYLOAD_DESCRIPTOR) {
                                 val col0 = mutableListOf<Instant>()
                                 while (hasNextElement()) {
-                                    val el0 = if (nextHasValue()) { deserializeInstant(TimestampFormat.EPOCH_SECONDS) } else { deserializeNull(); continue }
+                                    val el0 = if (nextHasValue()) { deserializeInstant(TimestampFormat.EPOCH_SECONDS) } else { deserializeNull(); throw DeserializationException("Invalid server response, missing required field from 'payload'.") }
                                     col0.add(el0)
                                 }
                                 col0
@@ -146,7 +146,7 @@ class DeserializeStructGeneratorTest {
                             deserializer.deserializeList(PAYLOAD_DESCRIPTOR) {
                                 val col0 = mutableListOf<Document>()
                                 while (hasNextElement()) {
-                                    val el0 = if (nextHasValue()) { deserializeDocument() } else { deserializeNull(); continue }
+                                    val el0 = if (nextHasValue()) { deserializeDocument() } else { deserializeNull(); throw DeserializationException("Invalid server response, missing required field from 'payload'.") }
                                     col0.add(el0)
                                 }
                                 col0
@@ -250,7 +250,7 @@ class DeserializeStructGeneratorTest {
                             deserializer.deserializeList(PAYLOAD_DESCRIPTOR) {
                                 val col0 = mutableListOf<Int>()
                                 while (hasNextElement()) {
-                                    val el0 = if (nextHasValue()) { deserializeInt() } else { deserializeNull(); continue }
+                                    val el0 = if (nextHasValue()) { deserializeInt() } else { deserializeNull(); throw DeserializationException("Invalid server response, missing required field from 'payload'.") }
                                     col0.add(el0)
                                 }
                                 col0
@@ -291,7 +291,7 @@ class DeserializeStructGeneratorTest {
                                 val map0 = mutableMapOf<String, Int>()
                                 while (hasNextEntry()) {
                                     val k0 = key()
-                                    val v0 = if (nextHasValue()) { deserializeInt() } else { deserializeNull(); continue }
+                                    val v0 = if (nextHasValue()) { deserializeInt() } else { deserializeNull(); throw DeserializationException("Invalid server response, missing required field from 'payload'.") }
                                     map0[k0] = v0
                                 }
                                 map0
@@ -336,7 +336,7 @@ class DeserializeStructGeneratorTest {
                             deserializer.deserializeList(PAYLOAD_DESCRIPTOR) {
                                 val col0 = mutableListOf<FooUnion>()
                                 while (hasNextElement()) {
-                                    val el0 = if (nextHasValue()) { deserializeFooUnionDocument(deserializer) } else { deserializeNull(); continue }
+                                    val el0 = if (nextHasValue()) { deserializeFooUnionDocument(deserializer) } else { deserializeNull(); throw DeserializationException("Invalid server response, missing required field from 'payload'.") }
                                     col0.add(el0)
                                 }
                                 col0
@@ -466,7 +466,7 @@ class DeserializeStructGeneratorTest {
                                     val el0 = deserializer.deserializeList(PAYLOAD_C0_DESCRIPTOR) {
                                         val col1 = mutableListOf<String>()
                                         while (hasNextElement()) {
-                                            val el1 = if (nextHasValue()) { deserializeString() } else { deserializeNull(); continue }
+                                            val el1 = if (nextHasValue()) { deserializeString() } else { deserializeNull(); throw DeserializationException("Invalid server response, missing required field from 'payload'.") }
                                             col1.add(el1)
                                         }
                                         col1
@@ -513,7 +513,7 @@ class DeserializeStructGeneratorTest {
                             deserializer.deserializeList(PAYLOAD_DESCRIPTOR) {
                                 val col0 = mutableListOf<NestedStructure>()
                                 while (hasNextElement()) {
-                                    val el0 = if (nextHasValue()) { deserializeNestedStructureDocument(deserializer) } else { deserializeNull(); continue }
+                                    val el0 = if (nextHasValue()) { deserializeNestedStructureDocument(deserializer) } else { deserializeNull(); throw DeserializationException("Invalid server response, missing required field from 'payload'.") }
                                     col0.add(el0)
                                 }
                                 col0
@@ -566,7 +566,7 @@ class DeserializeStructGeneratorTest {
                                             val el1 = deserializer.deserializeList(PAYLOAD_C1_DESCRIPTOR) {
                                                 val col2 = mutableListOf<Boolean>()
                                                 while (hasNextElement()) {
-                                                    val el2 = if (nextHasValue()) { deserializeBoolean() } else { deserializeNull(); continue }
+                                                    val el2 = if (nextHasValue()) { deserializeBoolean() } else { deserializeNull(); throw DeserializationException("Invalid server response, missing required field from 'payload'.") }
                                                     col2.add(el2)
                                                 }
                                                 col2
@@ -614,7 +614,7 @@ class DeserializeStructGeneratorTest {
                             deserializer.deserializeList(PAYLOAD_DESCRIPTOR) {
                                 val col0 = mutableListOf<Int>()
                                 while (hasNextElement()) {
-                                    val el0 = if (nextHasValue()) { deserializeInt() } else { deserializeNull(); continue }
+                                    val el0 = if (nextHasValue()) { deserializeInt() } else { deserializeNull(); throw DeserializationException("Invalid server response, missing required field from 'payload'.") }
                                     col0.add(el0)
                                 }
                                 col0
@@ -663,7 +663,7 @@ class DeserializeStructGeneratorTest {
                                         val map1 = mutableMapOf<String, String>()
                                         while (hasNextEntry()) {
                                             val k1 = key()
-                                            val v1 = if (nextHasValue()) { deserializeString() } else { deserializeNull(); continue }
+                                            val v1 = if (nextHasValue()) { deserializeString() } else { deserializeNull(); throw DeserializationException("Invalid server response, missing required field from 'payload'.") }
                                             map1[k1] = v1
                                         }
                                         map1
@@ -714,7 +714,7 @@ class DeserializeStructGeneratorTest {
                                     val el0 = deserializer.deserializeList(PAYLOAD_C0_DESCRIPTOR) {
                                         val col1 = mutableListOf<String>()
                                         while (hasNextElement()) {
-                                            val el1 = if (nextHasValue()) { deserializeString() } else { deserializeNull(); continue }
+                                            val el1 = if (nextHasValue()) { deserializeString() } else { deserializeNull(); throw DeserializationException("Invalid server response, missing required field from 'payload'.") }
                                             col1.add(el1)
                                         }
                                         col1
@@ -801,7 +801,7 @@ class DeserializeStructGeneratorTest {
                                     val el0 = deserializer.deserializeList(PAYLOAD_C0_DESCRIPTOR) {
                                         val col1 = mutableListOf<Int>()
                                         while (hasNextElement()) {
-                                            val el1 = if (nextHasValue()) { deserializeInt() } else { deserializeNull(); continue }
+                                            val el1 = if (nextHasValue()) { deserializeInt() } else { deserializeNull(); throw DeserializationException("Invalid server response, missing required field from 'payload'.") }
                                             col1.add(el1)
                                         }
                                         col1
@@ -856,12 +856,12 @@ class DeserializeStructGeneratorTest {
                                             deserializer.deserializeList(PAYLOAD_C0_DESCRIPTOR) {
                                                 val col1 = mutableListOf<Int>()
                                                 while (hasNextElement()) {
-                                                    val el1 = if (nextHasValue()) { deserializeInt() } else { deserializeNull(); continue }
+                                                    val el1 = if (nextHasValue()) { deserializeInt() } else { deserializeNull(); throw DeserializationException("Invalid server response, missing required field from 'payload'.") }
                                                     col1.add(el1)
                                                 }
                                                 col1
                                             }
-                                        } else { deserializeNull(); continue }
+                                        } else { deserializeNull(); throw DeserializationException("Invalid server response, missing required field from 'payload'.") }
             
                                     map0[k0] = v0
                                 }
@@ -914,7 +914,7 @@ class DeserializeStructGeneratorTest {
                                             deserializer.deserializeList(PAYLOAD_C0_DESCRIPTOR) {
                                                 val col1 = mutableListOf<Int>()
                                                 while (hasNextElement()) {
-                                                    val el1 = if (nextHasValue()) { deserializeInt() } else { deserializeNull(); continue }
+                                                    val el1 = if (nextHasValue()) { deserializeInt() } else { deserializeNull(); throw DeserializationException("Invalid server response, missing required field from 'payload'.") }
                                                     col1.add(el1)
                                                 }
                                                 col1
@@ -968,7 +968,7 @@ class DeserializeStructGeneratorTest {
                                         val map1 = mutableMapOf<String, Boolean>()
                                         while (hasNextEntry()) {
                                             val k1 = key()
-                                            val v1 = if (nextHasValue()) { deserializeBoolean() } else { deserializeNull(); continue }
+                                            val v1 = if (nextHasValue()) { deserializeBoolean() } else { deserializeNull(); throw DeserializationException("Invalid server response, missing required field from 'payload'.") }
                                             map1[k1] = v1
                                         }
                                         map1
@@ -1013,7 +1013,7 @@ class DeserializeStructGeneratorTest {
                                 val map0 = mutableMapOf<String, String>()
                                 while (hasNextEntry()) {
                                     val k0 = key()
-                                    val v0 = if (nextHasValue()) { deserializeString() } else { deserializeNull(); continue }
+                                    val v0 = if (nextHasValue()) { deserializeString() } else { deserializeNull(); throw DeserializationException("Invalid server response, missing required field from 'payload'.") }
                                     map0[k0] = v0
                                 }
                                 map0
@@ -1064,7 +1064,7 @@ class DeserializeStructGeneratorTest {
                                 val map0 = mutableMapOf<KeyType, String>()
                                 while (hasNextEntry()) {
                                     val k0 = KeyType.fromValue(key())
-                                    val v0 = if (nextHasValue()) { deserializeString() } else { deserializeNull(); continue }
+                                    val v0 = if (nextHasValue()) { deserializeString() } else { deserializeNull(); throw DeserializationException("Invalid server response, missing required field from 'payload'.") }
                                     map0[k0] = v0
                                 }
                                 map0
@@ -1136,12 +1136,12 @@ class DeserializeStructGeneratorTest {
                                                 val map1 = mutableMapOf<InnerKeyType, String>()
                                                 while (hasNextEntry()) {
                                                     val k1 = InnerKeyType.fromValue(key())
-                                                    val v1 = if (nextHasValue()) { deserializeString() } else { deserializeNull(); continue }
+                                                    val v1 = if (nextHasValue()) { deserializeString() } else { deserializeNull(); throw DeserializationException("Invalid server response, missing required field from 'payload'.") }
                                                     map1[k1] = v1
                                                 }
                                                 map1
                                             }
-                                        } else { deserializeNull(); continue }
+                                        } else { deserializeNull(); throw DeserializationException("Invalid server response, missing required field from 'payload'.") }
 
                                     map0[k0] = v0
                                 }
@@ -1189,7 +1189,7 @@ class DeserializeStructGeneratorTest {
                                 val map0 = mutableMapOf<String, FooUnion>()
                                 while (hasNextEntry()) {
                                     val k0 = key()
-                                    val v0 = if (nextHasValue()) { deserializeFooUnionDocument(deserializer) } else { deserializeNull(); continue }
+                                    val v0 = if (nextHasValue()) { deserializeFooUnionDocument(deserializer) } else { deserializeNull(); throw DeserializationException("Invalid server response, missing required field from 'payload'.") }
                                     map0[k0] = v0
                                 }
                                 map0
@@ -1327,12 +1327,12 @@ class DeserializeStructGeneratorTest {
                                             deserializer.deserializeList(PAYLOAD_C0_DESCRIPTOR) {
                                                 val col1 = mutableListOf<String>()
                                                 while (hasNextElement()) {
-                                                    val el1 = if (nextHasValue()) { deserializeString() } else { deserializeNull(); continue }
+                                                    val el1 = if (nextHasValue()) { deserializeString() } else { deserializeNull(); throw DeserializationException("Invalid server response, missing required field from 'payload'.") }
                                                     col1.add(el1)
                                                 }
                                                 col1
                                             }
-                                        } else { deserializeNull(); continue }
+                                        } else { deserializeNull(); throw DeserializationException("Invalid server response, missing required field from 'payload'.") }
             
                                     map0[k0] = v0
                                 }
@@ -1392,7 +1392,7 @@ class DeserializeStructGeneratorTest {
                                                         val map2 = mutableMapOf<String, Boolean>()
                                                         while (hasNextEntry()) {
                                                             val k2 = key()
-                                                            val v2 = if (nextHasValue()) { deserializeBoolean() } else { deserializeNull(); continue }
+                                                            val v2 = if (nextHasValue()) { deserializeBoolean() } else { deserializeNull(); throw DeserializationException("Invalid server response, missing required field from 'payload'.") }
                                                             map2[k2] = v2
                                                         }
                                                         map2
@@ -1401,7 +1401,7 @@ class DeserializeStructGeneratorTest {
                                                 }
                                                 col1
                                             }
-                                        } else { deserializeNull(); continue }
+                                        } else { deserializeNull(); throw DeserializationException("Invalid server response, missing required field from 'payload'.") }
             
                                     map0[k0] = v0
                                 }
@@ -1447,7 +1447,7 @@ class DeserializeStructGeneratorTest {
                                 val map0 = mutableMapOf<String, FooStructure>()
                                 while (hasNextEntry()) {
                                     val k0 = key()
-                                    val v0 = if (nextHasValue()) { deserializeFooStructureDocument(deserializer) } else { deserializeNull(); continue }
+                                    val v0 = if (nextHasValue()) { deserializeFooStructureDocument(deserializer) } else { deserializeNull(); throw DeserializationException("Invalid server response, missing required field from 'payload'.") }
                                     map0[k0] = v0
                                 }
                                 map0
@@ -1499,12 +1499,12 @@ deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
                                     val map1 = mutableMapOf<String, Int>()
                                     while (hasNextEntry()) {
                                         val k1 = key()
-                                        val v1 = if (nextHasValue()) { deserializeInt() } else { deserializeNull(); continue }
+                                        val v1 = if (nextHasValue()) { deserializeInt() } else { deserializeNull(); throw DeserializationException("Invalid server response, missing required field from 'payload'.") }
                                         map1[k1] = v1
                                     }
                                     map1
                                 }
-                            } else { deserializeNull(); continue }
+                            } else { deserializeNull(); throw DeserializationException("Invalid server response, missing required field from 'payload'.") }
 
                         map0[k0] = v0
                     }
@@ -1558,7 +1558,7 @@ deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
                                     val map1 = mutableMapOf<String, Int>()
                                     while (hasNextEntry()) {
                                         val k1 = key()
-                                        val v1 = if (nextHasValue()) { deserializeInt() } else { deserializeNull(); continue }
+                                        val v1 = if (nextHasValue()) { deserializeInt() } else { deserializeNull(); throw DeserializationException("Invalid server response, missing required field from 'payload'.") }
                                         map1[k1] = v1
                                     }
                                     map1
@@ -1641,7 +1641,7 @@ deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
                             deserializer.deserializeList(PAYLOAD_DESCRIPTOR) {
                                 val col0 = mutableListOf<SimpleYesNo>()
                                 while (hasNextElement()) {
-                                    val el0 = if (nextHasValue()) { deserializeString().let { SimpleYesNo.fromValue(it) } } else { deserializeNull(); continue }
+                                    val el0 = if (nextHasValue()) { deserializeString().let { SimpleYesNo.fromValue(it) } } else { deserializeNull(); throw DeserializationException("Invalid server response, missing required field from 'payload'.") }
                                     col0.add(el0)
                                 }
                                 col0
@@ -1685,7 +1685,7 @@ deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
                                 val map0 = mutableMapOf<String, SimpleYesNo>()
                                 while (hasNextEntry()) {
                                     val k0 = key()
-                                    val v0 = if (nextHasValue()) { deserializeString().let { SimpleYesNo.fromValue(it) } } else { deserializeNull(); continue }
+                                    val v0 = if (nextHasValue()) { deserializeString().let { SimpleYesNo.fromValue(it) } } else { deserializeNull(); throw DeserializationException("Invalid server response, missing required field from 'payload'.") }
                                     map0[k0] = v0
                                 }
                                 map0
@@ -1817,7 +1817,7 @@ deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
                                 val map0 = mutableMapOf<String, ByteArray>()
                                 while (hasNextEntry()) {
                                     val k0 = key()
-                                    val v0 = if (nextHasValue()) { deserializeByteArray() } else { deserializeNull(); continue }
+                                    val v0 = if (nextHasValue()) { deserializeByteArray() } else { deserializeNull(); throw DeserializationException("Invalid server response, missing required field from 'fooBlobMap'.") }
                                     map0[k0] = v0
                                 }
                                 map0
@@ -1856,7 +1856,7 @@ deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
                             deserializer.deserializeList(FOOBLOBLIST_DESCRIPTOR) {
                                 val col0 = mutableListOf<ByteArray>()
                                 while (hasNextElement()) {
-                                    val el0 = if (nextHasValue()) { deserializeByteArray() } else { deserializeNull(); continue }
+                                    val el0 = if (nextHasValue()) { deserializeByteArray() } else { deserializeNull(); throw DeserializationException("Invalid server response, missing required field from 'fooBlobList'.") }
                                     col0.add(el0)
                                 }
                                 col0
@@ -1924,7 +1924,7 @@ deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
                                 val map0 = mutableMapOf<String, Instant>()
                                 while (hasNextEntry()) {
                                     val k0 = key()
-                                    val v0 = if (nextHasValue()) { deserializeInstant(TimestampFormat.EPOCH_SECONDS) } else { deserializeNull(); continue }
+                                    val v0 = if (nextHasValue()) { deserializeInstant(TimestampFormat.EPOCH_SECONDS) } else { deserializeNull(); throw DeserializationException("Invalid server response, missing required field from 'fooTimestampMap'.") }
                                     map0[k0] = v0
                                 }
                                 map0

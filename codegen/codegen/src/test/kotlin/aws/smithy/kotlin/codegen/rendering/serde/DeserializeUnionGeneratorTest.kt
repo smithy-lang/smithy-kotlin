@@ -90,7 +90,7 @@ class DeserializeUnionGeneratorTest {
                             deserializer.deserializeList(UNIONLIST_DESCRIPTOR) {
                                 val col0 = mutableListOf<MyAggregateUnion>()
                                 while (hasNextElement()) {
-                                    val el0 = if (nextHasValue()) { deserializeMyAggregateUnionDocument(deserializer) } else { deserializeNull(); continue }
+                                    val el0 = if (nextHasValue()) { deserializeMyAggregateUnionDocument(deserializer) } else { deserializeNull(); throw DeserializationException("Invalid server response, missing required field from 'unionList'.") }
                                     col0.add(el0)
                                 }
                                 MyAggregateUnion.UnionList(col0)
@@ -100,7 +100,7 @@ class DeserializeUnionGeneratorTest {
                                 val map0 = mutableMapOf<String, MyAggregateUnion>()
                                 while (hasNextEntry()) {
                                     val k0 = key()
-                                    val v0 = if (nextHasValue()) { deserializeMyAggregateUnionDocument(deserializer) } else { deserializeNull(); continue }
+                                    val v0 = if (nextHasValue()) { deserializeMyAggregateUnionDocument(deserializer) } else { deserializeNull(); throw DeserializationException("Invalid server response, missing required field from 'unionMap'.") }
                                     map0[k0] = v0
                                 }
                                 MyAggregateUnion.UnionMap(map0)
@@ -171,7 +171,7 @@ class DeserializeUnionGeneratorTest {
                             deserializer.deserializeList(INTLISTVAL_DESCRIPTOR) {
                                 val col0 = mutableListOf<Int>()
                                 while (hasNextElement()) {
-                                    val el0 = if (nextHasValue()) { deserializeInt() } else { deserializeNull(); continue }
+                                    val el0 = if (nextHasValue()) { deserializeInt() } else { deserializeNull(); throw DeserializationException("Invalid server response, missing required field from 'intListVal'.") }
                                     col0.add(el0)
                                 }
                                 FooUnion.IntListVal(col0)
@@ -190,7 +190,7 @@ class DeserializeUnionGeneratorTest {
                                                         val map2 = mutableMapOf<String, BarUnion>()
                                                         while (hasNextEntry()) {
                                                             val k2 = key()
-                                                            val v2 = if (nextHasValue()) { deserializeBarUnionDocument(deserializer) } else { deserializeNull(); continue }
+                                                            val v2 = if (nextHasValue()) { deserializeBarUnionDocument(deserializer) } else { deserializeNull(); throw DeserializationException("Invalid server response, missing required field from 'strMapVal'.") }
                                                             map2[k2] = v2
                                                         }
                                                         map2
@@ -199,7 +199,7 @@ class DeserializeUnionGeneratorTest {
                                                 }
                                                 col1
                                             }
-                                        } else { deserializeNull(); continue }
+                                        } else { deserializeNull(); throw DeserializationException("Invalid server response, missing required field from 'strMapVal'.") }
             
                                     map0[k0] = v0
                                 }
@@ -260,7 +260,7 @@ class DeserializeUnionGeneratorTest {
                             deserializer.deserializeList(INTLIST_DESCRIPTOR) {
                                 val col0 = mutableListOf<Int>()
                                 while (hasNextElement()) {
-                                    val el0 = if (nextHasValue()) { deserializeInt() } else { deserializeNull(); continue }
+                                    val el0 = if (nextHasValue()) { deserializeInt() } else { deserializeNull(); throw DeserializationException("Invalid server response, missing required field from 'intList'.") }
                                     col0.add(el0)
                                 }
                                 MyAggregateUnion.IntList(col0)
@@ -272,7 +272,7 @@ class DeserializeUnionGeneratorTest {
                                     val el0 = deserializer.deserializeList(LISTOFINTLIST_C0_DESCRIPTOR) {
                                         val col1 = mutableListOf<Int>()
                                         while (hasNextElement()) {
-                                            val el1 = if (nextHasValue()) { deserializeInt() } else { deserializeNull(); continue }
+                                            val el1 = if (nextHasValue()) { deserializeInt() } else { deserializeNull(); throw DeserializationException("Invalid server response, missing required field from 'listOfIntList'.") }
                                             col1.add(el1)
                                         }
                                         col1
@@ -291,12 +291,12 @@ class DeserializeUnionGeneratorTest {
                                             deserializer.deserializeList(MAPOFLISTS_C0_DESCRIPTOR) {
                                                 val col1 = mutableListOf<Int>()
                                                 while (hasNextElement()) {
-                                                    val el1 = if (nextHasValue()) { deserializeInt() } else { deserializeNull(); continue }
+                                                    val el1 = if (nextHasValue()) { deserializeInt() } else { deserializeNull(); throw DeserializationException("Invalid server response, missing required field from 'mapOfLists'.") }
                                                     col1.add(el1)
                                                 }
                                                 col1
                                             }
-                                        } else { deserializeNull(); continue }
+                                        } else { deserializeNull(); throw DeserializationException("Invalid server response, missing required field from 'mapOfLists'.") }
             
                                     map0[k0] = v0
                                 }
