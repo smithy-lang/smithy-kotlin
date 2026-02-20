@@ -36,6 +36,13 @@ kotlin {
             }
         }
 
+        jvmTest {
+            dependencies {
+                implementation(libs.okhttp.mockwebserver)
+                implementation(libs.okhttp.tls)
+            }
+        }
+
         all {
             languageSettings.optIn("aws.smithy.kotlin.runtime.InternalApi")
         }
