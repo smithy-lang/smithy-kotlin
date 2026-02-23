@@ -105,7 +105,7 @@ public actual class Instant(internal val delegate: KtInstant) : Comparable<Insta
         /**
          * Parse a string formatted as epoch-seconds into an [Instant]
          */
-        public actual fun fromEpochSeconds(ts: String): Instant = fromEpochSeconds(ts.toLong(), 0)
+        public actual fun fromEpochSeconds(ts: String): Instant = parseEpoch(ts)
 
         /**
          * Create an [Instant] from the current system time

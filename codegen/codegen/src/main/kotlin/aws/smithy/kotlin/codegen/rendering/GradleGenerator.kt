@@ -5,10 +5,7 @@
 package aws.smithy.kotlin.codegen.rendering
 
 import aws.smithy.kotlin.codegen.KotlinSettings
-import aws.smithy.kotlin.codegen.core.InlineCodeWriter
-import aws.smithy.kotlin.codegen.core.InlineCodeWriterFormatter
-import aws.smithy.kotlin.codegen.core.KOTLIN_COMPILER_VERSION
-import aws.smithy.kotlin.codegen.core.KotlinDependency
+import aws.smithy.kotlin.codegen.core.*
 import software.amazon.smithy.build.FileManifest
 import software.amazon.smithy.utils.AbstractCodeWriter
 
@@ -212,14 +209,11 @@ private enum class Scope {
 }
 
 private fun renderDependencies(writer: GradleWriter, scope: Scope, isKmp: Boolean, dependencies: List<KotlinDependency>) {
-    if (!isKmp) {
-        writer.write("implementation(kotlin(\"stdlib\"))")
-    }
-
     // TODO - can we make kotlin dependencies not specify a version e.g. kotlin("kotlin-test")
     // TODO - Kotlin MPP setup (pass through KotlinSettings) - maybe separate gradle writers
     val orderedDependencies = dependencies.sortedWith(compareBy({ it.config }, { it.artifact }))
     orderedDependencies
+        .filterNot { it.isImplicit }
         .filter {
             if (isKmp) {
                 if (scope == Scope.SOURCE) !it.config.isTestScope else it.config.isTestScope

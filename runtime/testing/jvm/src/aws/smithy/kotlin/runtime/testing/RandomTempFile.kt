@@ -22,10 +22,10 @@ import java.util.*
  * directory as declared in the JRE's system properties.
  * @param binaryData Flag controlling whether binary or character data is used.
  */
-public class RandomTempFile(
+public actual class RandomTempFile actual constructor(
     sizeInBytes: Long,
-    filename: String = UUID.randomUUID().toString(),
-    private val binaryData: Boolean = false,
+    filename: String,
+    private val binaryData: Boolean,
 ) : File(TEMP_DIR + separator + System.currentTimeMillis().toString() + "-" + filename) {
 
     init {

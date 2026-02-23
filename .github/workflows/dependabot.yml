@@ -15,7 +15,5 @@ jobs:
     steps:
       - name: Checkout sources
         uses: actions/checkout@v4
-        with:
-          token: ${{ secrets.CI_USER_PAT }}
       - name: Generate and submit dependency graph
         uses: gradle/actions/dependency-submission@v3

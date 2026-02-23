@@ -11,6 +11,12 @@ apply(plugin = "org.jetbrains.kotlinx.atomicfu")
 
 kotlin {
     sourceSets {
+        commonMain {
+            dependencies {
+                api(libs.crt.kotlin)
+            }
+        }
+
         jvmAndNativeMain {
             dependencies {
                 api(project(":runtime:runtime-core"))
@@ -27,6 +33,13 @@ kotlin {
                 implementation(project(":runtime:testing"))
                 implementation(project(":runtime:protocol:http-test"))
                 implementation(libs.kotlinx.coroutines.test)
+            }
+        }
+
+        jvmTest {
+            dependencies {
+                implementation(libs.okhttp.mockwebserver)
+                implementation(libs.okhttp.tls)
             }
         }
 

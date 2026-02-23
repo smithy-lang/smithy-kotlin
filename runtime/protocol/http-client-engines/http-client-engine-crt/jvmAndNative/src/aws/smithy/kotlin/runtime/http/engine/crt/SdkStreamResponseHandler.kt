@@ -59,6 +59,7 @@ internal class SdkStreamResponseHandler(
         }
 
     private var streamCompleted = false
+    private var receivedBodyData = false
 
     /**
      * Called by the response read channel as data is consumed
@@ -119,10 +120,18 @@ internal class SdkStreamResponseHandler(
         val chunked = transferEncoding == "chunked"
         val contentLength = headers["Content-Length"]?.toLong()
         val status = HttpStatusCode.fromValue(stream.responseStatusCode)
+        val isEventStream = headers["Content-Type"]?.contains("application/vnd.amazon.eventstream") == true
 
-        val hasBody = ((contentLength != null && contentLength > 0) || chunked) &&
-            (status !in listOf(HttpStatusCode.NotModified, HttpStatusCode.NoContent)) &&
-            !status.isInformational()
+        val hasBody = if ((chunked || isEventStream) && contentLength == null) {
+            // Some responses are chunked or event streams but have an empty body.
+            // If we get a response with an unknown content length,
+            // ensure we actually received a body when setting hasBody
+            receivedBodyData
+        } else {
+            (contentLength != null && contentLength > 0) &&
+                (status !in listOf(HttpStatusCode.NotModified, HttpStatusCode.NoContent)) &&
+                !status.isInformational()
+        }
 
         val body = when (hasBody) {
             false -> HttpBody.Empty
@@ -142,6 +151,10 @@ internal class SdkStreamResponseHandler(
 
     override fun onResponseHeadersDone(stream: HttpStream, blockType: Int) {
         if (!blockType.isMainHeadersBlock) return
+        val chunked = headers["Transfer-Encoding"]?.lowercase() == "chunked"
+        val contentLength = headers["Content-Length"]?.toLong()
+        val isEventStream = headers["Content-Type"]?.contains("application/vnd.amazon.eventstream") == true
+        if ((chunked || isEventStream) && contentLength == null) return // Defer signaling until we know there's body data
         signalResponse(stream)
     }
 
@@ -156,6 +169,11 @@ internal class SdkStreamResponseHandler(
             crtStream?.close()
             stream.close()
             return bodyBytesIn.len
+        }
+
+        if (!receivedBodyData) {
+            receivedBodyData = true
+            signalResponse(stream)
         }
 
         val buffer = SdkBuffer().apply {

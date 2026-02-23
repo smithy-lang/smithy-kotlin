@@ -2,7 +2,7 @@
  * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
  * SPDX-License-Identifier: Apache-2.0
  */
-import aws.sdk.kotlin.gradle.dsl.skipPublishing
+import aws.sdk.kotlin.gradle.publishing.skipPublishing
 description = "Common test suite for AWS signing"
 extra["displayName"] = "Smithy :: Kotlin :: AWS Signing Test Suite"
 extra["moduleName"] = "aws.smithy.kotlin.runtime.auth.awssigning.tests"
