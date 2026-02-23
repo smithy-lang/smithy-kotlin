@@ -168,6 +168,25 @@ class InstantTest {
         }
     }
 
+    private val epochParseTests = listOf(
+        FromTest("1604604157", 1604604157, 0),
+        FromTest("1604604157.0", 1604604157, 0),
+        FromTest("1604604157.345", 1604604157, 345_000_000),
+        FromTest("1604604157.000000345", 1604604157, 345),
+        FromTest("1604604157.0000345", 1604604157, 34_500),
+        FromTest("1604604157.345006", 1604604157, 345_006_000),
+        FromTest("1604604157.123456789", 1604604157, 123_456_789),
+    )
+
+    @Test
+    fun testFromEpochSecondsString() {
+        for ((idx, test) in epochParseTests.withIndex()) {
+            val actual = Instant.fromEpochSeconds(test.input)
+            assertEquals(test.expectedSec, actual.epochSeconds, "test[$idx]: failed to correctly parse ${test.input}")
+            assertEquals(test.expectedNs, actual.nanosecondsOfSecond, "test[$idx]: failed to correctly parse ${test.input}")
+        }
+    }
+
     @Test
     fun testToEpochDouble() {
         val sec = 1604604157L

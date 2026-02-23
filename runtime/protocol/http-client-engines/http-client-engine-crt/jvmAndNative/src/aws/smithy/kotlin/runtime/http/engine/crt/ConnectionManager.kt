@@ -12,11 +12,13 @@ import aws.sdk.kotlin.crt.io.TlsContextOptionsBuilder
 import aws.sdk.kotlin.crt.io.Uri
 import aws.smithy.kotlin.runtime.http.HttpErrorCode
 import aws.smithy.kotlin.runtime.http.HttpException
+import aws.smithy.kotlin.runtime.http.engine.AlpnId
 import aws.smithy.kotlin.runtime.http.engine.ProxyConfig
 import aws.smithy.kotlin.runtime.http.request.HttpRequest
 import aws.smithy.kotlin.runtime.io.Closeable
 import aws.smithy.kotlin.runtime.net.TlsVersion
 import kotlinx.coroutines.TimeoutCancellationException
+import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.Semaphore
 import kotlinx.coroutines.sync.withLock
@@ -32,7 +34,11 @@ internal class ConnectionManager(
 
     private val crtTlsContext: TlsContext = TlsContextOptionsBuilder()
         .apply {
-            alpn = config.tlsContext.alpn.joinToString(separator = ";") { it.protocolId }
+            // Default to HTTP/2 and HTTP/1.1 if no ALPN list is configured
+            val alpnList = config.tlsContext.alpn.ifEmpty {
+                listOf(AlpnId.HTTP2, AlpnId.HTTP1_1)
+            }
+            alpn = alpnList.joinToString(separator = ";") { it.protocolId }
             minTlsVersion = toCrtTlsVersion(config.tlsContext.minVersion)
             caRoot = config.certificatePem
             caFile = config.certificateFile
@@ -63,6 +69,9 @@ internal class ConnectionManager(
     private val mutex = Mutex()
 
     suspend fun acquire(request: HttpRequest): HttpClientConnection {
+        // TODO: Consider using Http2StreamManager for HTTP/2 connections for better performance.
+        //  Http2StreamManager provides optimized stream multiplexing and connection management
+        //  specifically for HTTP/2, but would require separate code paths from HttpClientConnectionManager.
         val proxyConfig = config.proxySelector.select(request.url)
 
         val manager = getManagerForUri(request.uri, proxyConfig)
@@ -120,6 +129,11 @@ internal class ConnectionManager(
 
     override fun close() {
         connManagers.forEach { entry -> entry.value.close() }
+        runBlocking {
+            connManagers.forEach { entry ->
+                entry.value.waitForShutdown()
+            }
+        }
         crtTlsContext.close()
 
         if (manageClientBootstrap) clientBootstrap.close()

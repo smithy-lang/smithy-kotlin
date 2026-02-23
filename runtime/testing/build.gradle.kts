@@ -10,6 +10,7 @@ kotlin {
         commonMain {
             dependencies {
                 implementation(libs.kotlin.test)
+                implementation(project(":runtime:runtime-core")) // for Uuid
             }
         }
         jvmMain {
@@ -17,6 +18,11 @@ kotlin {
                 api(libs.junit.jupiter)
                 implementation(libs.kotlin.test)
                 api(libs.kotlinx.coroutines.test)
+            }
+        }
+        nativeMain {
+            dependencies {
+                implementation(libs.kotlin.test)
             }
         }
     }

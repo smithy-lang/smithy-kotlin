@@ -24,6 +24,7 @@ import aws.smithy.kotlin.runtime.io.buffer
 import aws.smithy.kotlin.runtime.io.readToByteArray
 import kotlinx.coroutines.job
 import kotlin.coroutines.CoroutineContext
+import aws.sdk.kotlin.crt.http.HttpRequest as HttpRequestCrt
 
 private const val CONTENT_LENGTH_HEADER: String = "Content-Length"
 
@@ -44,7 +45,6 @@ internal val HttpRequest.uri: Uri
 
 internal fun HttpRequest.toCrtRequest(callContext: CoroutineContext): aws.sdk.kotlin.crt.http.HttpRequest {
     val body = this.body
-    check(!body.isDuplex) { "CrtHttpEngine does not yet support full duplex streams" }
     val bodyStream = if (isChunked) {
         null
     } else {
@@ -73,6 +73,40 @@ internal fun HttpRequest.toCrtRequest(callContext: CoroutineContext): aws.sdk.ko
     return aws.sdk.kotlin.crt.http.HttpRequest(method.name, url.requestRelativePath, crtHeaders.build(), bodyStream)
 }
 
+internal fun HttpRequest.toHttp2Request(callContext: CoroutineContext): HttpRequestCrt {
+    val body = this.body
+    val bodyStream = when (body) {
+        is HttpBody.Empty -> null
+        is HttpBody.Bytes -> HttpRequestBodyStream.fromByteArray(body.bytes())
+        is HttpBody.ChannelContent -> ReadChannelBodyStream(body.readFrom(), callContext)
+        is HttpBody.SourceContent -> {
+            val source = body.readFrom()
+            callContext.job.invokeOnCompletion { source.close() }
+            SdkSourceBodyStream(source)
+        }
+    }
+
+    return HttpRequestCrt.build {
+        method = this@toHttp2Request.method.name
+        encodedPath = url.requestRelativePath
+
+        // Add HTTP/2 pseudo-headers first
+        headers.append(":method", this@toHttp2Request.method.name)
+        headers.append(":path", url.requestRelativePath)
+        headers.append(":scheme", url.scheme.protocolName)
+        headers.append(":authority", url.host.toString() + if (url.port != url.scheme.defaultPort) ":${url.port}" else "")
+
+        // Regular headers
+        this@toHttp2Request.headers.forEach { key, values ->
+            values.forEach { value ->
+                headers.append(key, value)
+            }
+        }
+
+        this.body = bodyStream
+    }
+}
+
 /**
  * @return whether this HttpRequest is a chunked request.
  * Specifically, this means return `true` if a request contains a `Transfer-Encoding` header with the value `chunked`,
@@ -98,21 +132,14 @@ internal suspend fun HttpStream.sendChunkedBody(body: HttpBody) {
         }
         is HttpBody.ChannelContent -> {
             val chan = body.readFrom()
-            var buffer = SdkBuffer()
-            val nextBuffer = SdkBuffer()
-            var sentFirstChunk = false
+            val buffer = SdkBuffer()
 
             while (!chan.isClosedForRead) {
                 val bytesRead = chan.read(buffer, CHUNK_BUFFER_SIZE)
-                if (!sentFirstChunk && bytesRead == -1L) {
-                    throw RuntimeException("CRT does not support empty chunked bodies.")
-                }
+                if (bytesRead == -1L) break
 
-                val isFinalChunk = chan.read(nextBuffer, CHUNK_BUFFER_SIZE) == -1L
-
-                writeChunk(buffer.readToByteArray(), isFinalChunk)
-                if (isFinalChunk) break else buffer = nextBuffer
-                sentFirstChunk = true
+                val chunk = buffer.readToByteArray()
+                writeChunk(chunk, isFinalChunk = chan.isClosedForRead)
             }
         }
         else -> error("sendChunkedBody should not be called for non-chunked body types")

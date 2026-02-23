@@ -2,7 +2,7 @@
  * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
  * SPDX-License-Identifier: Apache-2.0
  */
-import aws.sdk.kotlin.gradle.dsl.skipPublishing
+import aws.sdk.kotlin.gradle.publishing.skipPublishing
 import java.io.Closeable
 import java.net.URLClassLoader
 
