@@ -12,8 +12,7 @@ import kotlinx.cinterop.ExperimentalForeignApi
  * ECDSA on the SECP256R1 curve.
  */
 @OptIn(ExperimentalForeignApi::class)
-public actual fun ecdsaSecp256r1(key: ByteArray, message: ByteArray): ByteArray =
-    EcdsaNative().use { ecdsa ->
-        ecdsa.initializeEccKeyPairFromPrivateKey(key)
-        ecdsa.signMessage(message)
-    }
+public actual fun ecdsaSecp256r1(key: ByteArray, message: ByteArray): ByteArray = EcdsaNative().use { ecdsa ->
+    ecdsa.initializeEccKeyPairFromPrivateKey(key)
+    ecdsa.signMessage(message)
+}
