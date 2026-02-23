@@ -120,10 +120,11 @@ internal class SdkStreamResponseHandler(
         val chunked = transferEncoding == "chunked"
         val contentLength = headers["Content-Length"]?.toLong()
         val status = HttpStatusCode.fromValue(stream.responseStatusCode)
+        val isEventStream = headers["Content-Type"]?.contains("application/vnd.amazon.eventstream") == true
 
-        val hasBody = if (chunked && contentLength == null) {
-            // Some responses are chunked but have an empty body.
-            // If we get a chunked response with an unknown content length,
+        val hasBody = if ((chunked || isEventStream) && contentLength == null) {
+            // Some responses are chunked or event streams but have an empty body.
+            // If we get a response with an unknown content length,
             // ensure we actually received a body when setting hasBody
             receivedBodyData
         } else {
@@ -152,7 +153,8 @@ internal class SdkStreamResponseHandler(
         if (!blockType.isMainHeadersBlock) return
         val chunked = headers["Transfer-Encoding"]?.lowercase() == "chunked"
         val contentLength = headers["Content-Length"]?.toLong()
-        if (chunked && contentLength == null) return // Defer signaling until we know there's body data
+        val isEventStream = headers["Content-Type"]?.contains("application/vnd.amazon.eventstream") == true
+        if ((chunked || isEventStream) && contentLength == null) return // Defer signaling until we know there's body data
         signalResponse(stream)
     }
 

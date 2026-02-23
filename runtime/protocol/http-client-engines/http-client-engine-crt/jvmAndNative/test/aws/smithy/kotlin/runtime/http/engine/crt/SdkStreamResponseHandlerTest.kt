@@ -37,6 +37,7 @@ class SdkStreamResponseHandlerTest {
 
     private class MockHttpClientConnection : HttpClientConnection {
         override val id: String = "<mock connection>"
+        override val version: HttpVersion = HttpVersion.HTTP_1_1
         var isClosed: Boolean = false
         override fun close() {
             isClosed = true
