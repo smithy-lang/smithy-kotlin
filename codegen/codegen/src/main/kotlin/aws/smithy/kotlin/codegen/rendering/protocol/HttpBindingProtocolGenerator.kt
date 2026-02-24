@@ -290,6 +290,12 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                 // likely bug in Smithy's HTTP header traits spec
                 "RestJsonHttpEmptyPrefixHeadersRequestClient",
                 "HttpEmptyPrefixHeadersRequestClient",
+
+                // TODO: Enable if tests are updated
+                // We're now supposed to throw an exception when there are null values in dense (non-sparse) collections (SDK-KT-1059)
+                // See: https://github.com/smithy-lang/smithy/pull/2972
+                "RestJsonDeserializesDenseSetMapAndSkipsNull",
+                "RpcV2CborDeserializesDenseSetMapAndSkipsNull",
             ),
         )
 
