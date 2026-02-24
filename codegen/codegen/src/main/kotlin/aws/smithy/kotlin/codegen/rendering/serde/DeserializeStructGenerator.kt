@@ -242,11 +242,19 @@ open class DeserializeStructGenerator(
     }
 
     /**
-     * Renders the deserialization of a nested structure contained in a map.  Example:
+     * Renders the deserialization of a nested structure contained in a map.
      *
+     * Dense example:
      * ```
      * val k0 = key()
      * val v0 = if (nextHasValue()) { deserializeString().let { Instant.fromEpochSeconds(it) } } else { throw DeserializationException("Invalid server response, missing required field from 'X'.") }
+     * map0[k0] = v0
+     * ```
+     *
+     * Sparse example:
+     * ```
+     * val k0 = key()
+     * val v0 = if (nextHasValue()) { deserializeString().let { Instant.fromEpochSeconds(it) } } else { deserializeNull() }
      * map0[k0] = v0
      * ```
      */
@@ -262,7 +270,7 @@ open class DeserializeStructGenerator(
         val deserializerFn = deserializerForShape(elementShape)
         val keyName = nestingLevel.variableNameFor(NestedIdentifierType.KEY)
         val valueName = nestingLevel.variableNameFor(NestedIdentifierType.VALUE)
-        val nullValueHandler = if (isSparse) "deserializeNull()" else "throw DeserializationException(\"Invalid server response, missing required field from '${rootMemberShape.memberName}'.\")"
+        val nullValueHandler = if (isSparse) "deserializeNull()" else denseCollectionNullValueHandler(rootMemberShape.memberName)
         if (elementShape.isStructureShape || elementShape.isUnionShape) {
             val symbol = ctx.symbolProvider.toSymbol(elementShape)
             writer.addImport(symbol)
@@ -298,7 +306,7 @@ open class DeserializeStructGenerator(
     ) {
         val keyName = nestingLevel.variableNameFor(NestedIdentifierType.KEY)
         val valueName = nestingLevel.variableNameFor(NestedIdentifierType.VALUE)
-        val nullValueHandler = if (isSparse) "deserializeNull()" else "throw DeserializationException(\"Invalid server response, missing required field from '${rootMemberShape.memberName}'.\")"
+        val nullValueHandler = if (isSparse) "deserializeNull()" else denseCollectionNullValueHandler(rootMemberShape.memberName)
         val descriptorName = rootMemberShape.descriptorName(nestingLevel.nestedDescriptorName())
         val nextNestingLevel = nestingLevel + 1
         val memberName = nextNestingLevel.variableNameFor(NestedIdentifierType.MAP)
@@ -352,7 +360,7 @@ open class DeserializeStructGenerator(
     ) {
         val keyName = nestingLevel.variableNameFor(NestedIdentifierType.KEY)
         val valueName = nestingLevel.variableNameFor(NestedIdentifierType.VALUE)
-        val nullValueHandler = if (isSparse) "deserializeNull()" else "throw DeserializationException(\"Invalid server response, missing required field from '${rootMemberShape.memberName}'.\")"
+        val nullValueHandler = if (isSparse) "deserializeNull()" else denseCollectionNullValueHandler(rootMemberShape.memberName)
         val descriptorName = rootMemberShape.descriptorName(nestingLevel.nestedDescriptorName())
         val nextNestingLevel = nestingLevel + 1
         val memberName = nextNestingLevel.variableNameFor(NestedIdentifierType.COLLECTION)
@@ -380,10 +388,17 @@ open class DeserializeStructGenerator(
     }
 
     /**
-     * Example:
+     * Dense example:
      * ```
      * val k0 = key()
      * val el0 = if (nextHasValue()) { deserializeString() } else { throw DeserializationException("Invalid server response, missing required field from 'X'.") }
+     * map0[k0] = el0
+     *```
+     *
+     * Sparse example:
+     * ```
+     * val k0 = key()
+     * val el0 = if (nextHasValue()) { deserializeString() } else { deserializeNull() }
      * map0[k0] = el0
      * ```
      */
@@ -399,7 +414,7 @@ open class DeserializeStructGenerator(
         val deserializerFn = deserializerForShape(elementShape)
         val keyName = nestingLevel.variableNameFor(NestedIdentifierType.KEY)
         val valueName = nestingLevel.variableNameFor(NestedIdentifierType.VALUE)
-        val nullValueHandler = if (isSparse) "deserializeNull()" else "throw DeserializationException(\"Invalid server response, missing required field from '${rootMemberShape.memberName}'.\")"
+        val nullValueHandler = if (isSparse) "deserializeNull()" else denseCollectionNullValueHandler(rootMemberShape.memberName)
 
         writeKeyVal(keyShape, keySymbol, keyName)
         writer.write("val $valueName = if (nextHasValue()) { $deserializerFn } else { $nullValueHandler }")
@@ -483,16 +498,22 @@ open class DeserializeStructGenerator(
     }
 
     /**
-     * Example:
+     * Dense example:
      * ```
      * val el0 = if (nextHasValue()) { NestedStructureDeserializer().deserialize(deserializer) } else { throw DeserializationException("Invalid server response, missing required field from 'X'.") }
+     * col0.add(el0)
+     * ```
+     *
+     * Sparse example:
+     * ```
+     * val el0 = if (nextHasValue()) { NestedStructureDeserializer().deserialize(deserializer) } else { deserializeNull() }
      * col0.add(el0)
      * ```
      */
     private fun renderNestedStructureElement(rootMemberShape: MemberShape, elementShape: Shape, nestingLevel: Int, isSparse: Boolean, parentMemberName: String) {
         val deserializer = deserializerForShape(elementShape)
         val elementName = nestingLevel.variableNameFor(NestedIdentifierType.ELEMENT)
-        val nullValueHandler = if (isSparse) "deserializeNull()" else "throw DeserializationException(\"Invalid server response, missing required field from '${rootMemberShape.memberName}'.\")"
+        val nullValueHandler = if (isSparse) "deserializeNull()" else denseCollectionNullValueHandler(rootMemberShape.memberName)
         if (elementShape.isStructureShape || elementShape.isUnionShape) {
             val symbol = ctx.symbolProvider.toSymbol(elementShape)
             writer.addImport(symbol)
@@ -585,16 +606,22 @@ open class DeserializeStructGenerator(
     }
 
     /**
-     * Example:
+     * Dense example:
      * ```
      * val el0 = if (nextHasValue()) { deserializeInt() } else { throw DeserializationException("Invalid server response, missing required field from 'X'.") }
+     * col0.add(el0)
+     * ```
+     *
+     * Sparse example:
+     * ```
+     * val el0 = if (nextHasValue()) { deserializeInt() } else { deserializeNull() }
      * col0.add(el0)
      * ```
      */
     private fun renderElement(rootMemberShape: MemberShape, elementShape: Shape, nestingLevel: Int, isSparse: Boolean, listMemberName: String) {
         val deserializerFn = deserializerForShape(elementShape)
         val elementName = nestingLevel.variableNameFor(NestedIdentifierType.ELEMENT)
-        val nullValueHandler = if (isSparse) "deserializeNull()" else "throw DeserializationException(\"Invalid server response, missing required field from '${rootMemberShape.memberName}'.\")"
+        val nullValueHandler = if (isSparse) "deserializeNull()" else denseCollectionNullValueHandler(rootMemberShape.memberName)
 
         writer.write("val $elementName = if (nextHasValue()) { $deserializerFn } else { $nullValueHandler }")
         writer.write("$listMemberName.add($elementName)")
@@ -650,4 +677,6 @@ open class DeserializeStructGenerator(
             else -> throw CodegenException("unknown deserializer for member: $shape; target: $target")
         }
     }
+
+    private fun denseCollectionNullValueHandler(member: String) = "throw DeserializationException(\"Invalid server response, missing required field from '$member'.\")"
 }
