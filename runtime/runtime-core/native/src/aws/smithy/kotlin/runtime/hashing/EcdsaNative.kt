@@ -5,14 +5,14 @@
 package aws.smithy.kotlin.runtime.hashing
 
 import aws.sdk.kotlin.crt.use
-import aws.sdk.kotlin.crt.util.hashing.EcdsaNative
+import aws.sdk.kotlin.crt.util.hashing.EcdsaSecp256r1Native
 import kotlinx.cinterop.ExperimentalForeignApi
 
 /**
  * ECDSA on the SECP256R1 curve.
  */
 @OptIn(ExperimentalForeignApi::class)
-public actual fun ecdsaSecp256r1(key: ByteArray, message: ByteArray): ByteArray = EcdsaNative().use { ecdsa ->
+public actual fun ecdsaSecp256r1(key: ByteArray, message: ByteArray): ByteArray = EcdsaSecp256r1Native().use { ecdsa ->
     ecdsa.initializeEccKeyPairFromPrivateKey(key)
     ecdsa.signMessage(message)
 }
