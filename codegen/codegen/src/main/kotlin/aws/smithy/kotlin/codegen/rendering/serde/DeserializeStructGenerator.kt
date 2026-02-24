@@ -246,7 +246,7 @@ open class DeserializeStructGenerator(
      *
      * ```
      * val k0 = key()
-     * val v0 = if (nextHasValue()) { deserializeString().let { Instant.fromEpochSeconds(it) } } else { deserializeNull(); throw DeserializationException("Invalid server response, missing required field from 'X'.") }
+     * val v0 = if (nextHasValue()) { deserializeString().let { Instant.fromEpochSeconds(it) } } else { throw DeserializationException("Invalid server response, missing required field from 'X'.") }
      * map0[k0] = v0
      * ```
      */
@@ -383,7 +383,7 @@ open class DeserializeStructGenerator(
      * Example:
      * ```
      * val k0 = key()
-     * val el0 = if (nextHasValue()) { deserializeString() } else { deserializeNull(); throw Exception("Invalid server response, missing required field from 'X'.") }
+     * val el0 = if (nextHasValue()) { deserializeString() } else { throw DeserializationException("Invalid server response, missing required field from 'X'.") }
      * map0[k0] = el0
      * ```
      */
@@ -485,7 +485,7 @@ open class DeserializeStructGenerator(
     /**
      * Example:
      * ```
-     * val el0 = if (nextHasValue()) { NestedStructureDeserializer().deserialize(deserializer) } else { deserializeNull(); throw Exception("Invalid server response, missing required field from 'X'.") }
+     * val el0 = if (nextHasValue()) { NestedStructureDeserializer().deserialize(deserializer) } else { throw DeserializationException("Invalid server response, missing required field from 'X'.") }
      * col0.add(el0)
      * ```
      */
@@ -587,7 +587,7 @@ open class DeserializeStructGenerator(
     /**
      * Example:
      * ```
-     * val el0 = if (nextHasValue()) { deserializeInt() } else { deserializeNull(); throw Exception("Invalid server response, missing required field from 'X'.") }
+     * val el0 = if (nextHasValue()) { deserializeInt() } else { throw DeserializationException("Invalid server response, missing required field from 'X'.") }
      * col0.add(el0)
      * ```
      */
