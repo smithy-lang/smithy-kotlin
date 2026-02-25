@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.6.5] - 02/25/2026
+
+### Features
+* Add HTTP/2 support to CrtHttpEngine
+
+### Fixes
+* Throw DeserializationException for null values in non-sparse collections
+
 ## [1.6.4] - 02/18/2026
 
 ### Fixes
