@@ -1,0 +1,121 @@
+name: CI w/ reduced CRT Kotlin
+
+on:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  id-token: write
+  contents: read
+
+concurrency:
+  group: ci-pr-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  GRADLE_OPTS: "-Dorg.gradle.daemon=false -Dkotlin.incremental=false"
+
+jobs:
+  jvm:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        java-version:
+          - 8
+          - 11
+          - 17
+          - 21
+    steps:
+      - name: Set start timestamp
+        id: start
+        run: printf 'timestamp=%(%s)T\n' >> "$GITHUB_OUTPUT"
+
+      - name: Configure JDK
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'corretto'
+          java-version: 17
+          cache: 'gradle'
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.CI_AWS_ROLE_ARN }}
+          aws-region: us-west-2
+
+      - name: Setup kat
+        uses: aws/aws-kotlin-repo-tools/.github/actions/setup-kat@main
+
+      - name: Checkout smithy-kotlin
+        uses: actions/checkout@v4
+
+      - name: Configure Gradle (Smithy Kotlin)
+        uses: aws/aws-kotlin-repo-tools/.github/actions/configure-gradle@main
+
+      - name: Checkout aws-crt-kotlin
+        uses: ./aws-kotlin-repo-tools/.github/actions/checkout-head
+        with:
+          path: 'aws-crt-kotlin' # '.' would make this a sibling, and include build. Overriding reduced JAR dependency.
+          repository: 'aws/aws-crt-kotlin'
+          submodules: 'true'
+
+      - name: Configure Gradle (CRT Kotlin)
+        uses: aws/aws-kotlin-repo-tools/.github/actions/configure-gradle@main
+        with:
+          working-directory: './aws-crt-kotlin'
+
+      - name: Find checked out CRT Kotlin version
+        id: version
+        uses: aws/aws-kotlin-repo-tools/.github/actions/utils/extract-version@extract-version
+        with:
+          working-directory: './aws-crt-kotlin'
+          file-path: 'gradle.properties'
+          version-name: 'sdkVersion'
+
+      # The checked out CRT Kotlin version might be a SNAPSHOT version e.g. in cross repo features, and include builds are off.
+      - name: Depend on checked out CRT Kotlin version
+        uses: aws/aws-kotlin-repo-tools/.github/actions/utils/depend-on-version@depend-on-version
+        with:
+          dependency: 'crt-kotlin-version'
+          version: ${{steps.version.outputs.result}}
+
+      - name: Enable JAR reduction
+        uses: aws/aws-kotlin-repo-tools/.github/actions/utils/add-to-local-properties@proguard-testing
+        with:
+          working-directory: '~/.sdkdev'
+          addition: 'aws.sdk.proguard = true'
+
+      - name: Publish reduced CRT Kotlin to Maven Local
+        working-directory: './aws-crt-kotlin'
+        shell: bash
+        run: |
+          ./gradlew publishToMavenLocal # publish full size and reduced JARs
+          ./gradlew replaceMavenLocalFullSizeJars # reduce JARs become the default
+
+      - name: Build and Test Smithy Kotlin on JVM (with dependency on reduced CRT Kotlin)
+        shell: bash
+        run: |
+          ./gradlew -Paws.kotlin.native=false -Ptest.java.version=${{ matrix.java-version }} build --stacktrace
+          ./gradlew -Paws.kotlin.native=false -Ptest.java.version=${{ matrix.java-version }} jvmTest --stacktrace
+
+      - name: Calculate duration
+        id: end
+        if: always()
+        run: |
+          printf -v now '%(%s)T'
+          duration=$(( now - ${{ steps.start.outputs.timestamp }} ))
+          echo "duration=$duration" >> "$GITHUB_OUTPUT"
+
+      - name: Emit metrics
+        if: always() # run this step even if previous steps failed or the job is canceled
+        uses: aws/aws-kotlin-repo-tools/.github/actions/emit-metrics@main
+        with:
+          namespace: CI Metrics
+          dimensions: |
+            Product=smithy-kotlin
+            JobName=${{ github.job }}(${{ matrix.java-version }})-reduced
+            Branch=${{ github.base_ref || github.ref_name }}
+          metrics: |
+            WorkflowSucceeded:${{ job.status == 'success' && '1' || '0' }}:Count
+            WorkflowDuration:${{ steps.end.outputs.duration }}:Seconds
