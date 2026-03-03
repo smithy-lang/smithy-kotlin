@@ -84,14 +84,14 @@ jobs:
         uses: aws/aws-kotlin-repo-tools/.github/actions/utils/add-to-local-properties@proguard-testing
         with:
           working-directory: '~/.sdkdev'
-          addition: 'aws.sdk.proguard = true\naws.kotlin.native = false'
+          addition: 'aws.kotlin.native = false\naws.sdk.proguard = true'
 
       - name: Publish reduced CRT Kotlin to Maven Local
         working-directory: './aws-crt-kotlin'
         shell: bash
         run: |
           ./gradlew publishToMavenLocal # publish full size and reduced JARs
-          ./gradlew -Paws.sdk.proguard=true replaceMavenLocalFullSizeJars # reduce JARs become the default
+          ./gradlew replaceMavenLocalFullSizeJars # reduce JARs become the default
 
       - name: Build and Test Smithy Kotlin on JVM (with dependency on reduced CRT Kotlin)
         shell: bash
