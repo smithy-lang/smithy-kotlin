@@ -53,16 +53,16 @@ class CodegenVisitor(context: PluginContext) : ShapeVisitor.Default<Unit>() {
 
     init {
         val classLoader = context.pluginClassLoader.orElse(javaClass.classLoader)
-        logger.fine("Discovering KotlinIntegration providers...")
+        logger.info("Discovering KotlinIntegration providers...")
         integrations = ServiceLoader.load(KotlinIntegration::class.java, classLoader)
-            .onEach { integration -> logger.fine("Loaded KotlinIntegration: ${integration.javaClass.name}") }
+            .onEach { integration -> logger.info("Loaded KotlinIntegration: ${integration.javaClass.name}") }
             .sortedBy(KotlinIntegration::order)
             .toMutableList()
 
         var resolvedModel = context.model
         val disabledIntegrations = mutableListOf<KotlinIntegration>()
 
-        logger.fine("Preprocessing model")
+        logger.info("Preprocessing model")
 
         // Model pre-processing:
         // 1. Start with the model from the plugin context
@@ -71,7 +71,7 @@ class CodegenVisitor(context: PluginContext) : ShapeVisitor.Default<Unit>() {
         // 4. Normalize the operations
         for (integration in integrations) {
             if (integration.enabledForService(resolvedModel, settings)) {
-                logger.fine("Enabled KotlinIntegration: ${integration.javaClass.name}")
+                logger.info("Enabled KotlinIntegration: ${integration.javaClass.name}")
                 resolvedModel = integration.preprocessModel(resolvedModel, settings)
             } else {
                 disabledIntegrations.add(integration)
@@ -120,9 +120,9 @@ class CodegenVisitor(context: PluginContext) : ShapeVisitor.Default<Unit>() {
     }
 
     fun execute() {
-        logger.info("Generating Kotlin client for service ${settings.service}${protocolGenerator?.let { " using ${it.protocol}" } ?: ""}")
+        logger.info("Generating Kotlin client for service ${settings.service}")
 
-        logger.fine("Walking shapes from ${settings.service} to find shapes to generate")
+        logger.info("Walking shapes from ${settings.service} to find shapes to generate")
         val modelWithoutTraits = ModelTransformer.create().getModelWithoutTraitShapes(model)
         val serviceShapes = Walker(modelWithoutTraits).walkShapes(service)
         serviceShapes.forEach { it.accept(this) }
@@ -138,16 +138,16 @@ class CodegenVisitor(context: PluginContext) : ShapeVisitor.Default<Unit>() {
                 writers,
             )
 
-            logger.info("[${service.id}] Generating unit tests")
+            logger.info("[${service.id}] Generating unit tests for protocol $protocol")
             generateProtocolUnitTests(ctx)
 
-            logger.info("[${service.id}] Generating service client")
+            logger.info("[${service.id}] Generating service client for protocol $protocol")
             generateProtocolClient(ctx)
 
-            logger.info("[${service.id}] Generating endpoint provider")
+            logger.info("[${service.id}] Generating endpoint provider for protocol $protocol")
             generateEndpointsSources(ctx)
 
-            logger.info("[${service.id}] Generating auth scheme provider")
+            logger.info("[${service.id}] Generating auth scheme provider for protocol $protocol")
             generateAuthSchemeProvider(ctx)
         }
 
