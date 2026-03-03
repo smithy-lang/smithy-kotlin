@@ -66,11 +66,6 @@ jobs:
           file-path: 'gradle.properties'
           version-name: 'sdkVersion'
 
-      - name: Check GitHub output
-        shell: bash
-        run: |
-          echo $GITHUB_OUTPUT
-
       # The checked out CRT Kotlin version might be a SNAPSHOT version e.g. in cross repo features, and include builds are off.
       - name: Depend on checked out CRT Kotlin version
         uses: aws/aws-kotlin-repo-tools/.github/actions/utils/depend-on-version@depend-on-version
