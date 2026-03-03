@@ -9,7 +9,7 @@ permissions:
   contents: read
 
 concurrency:
-  group: ci-pr-${{ github.ref }}
+  group: ci-reduced-pr-${{ github.ref }}
   cancel-in-progress: true
 
 env:
@@ -47,7 +47,7 @@ jobs:
         uses: aws/aws-kotlin-repo-tools/.github/actions/configure-gradle@main
 
       - name: Checkout aws-crt-kotlin
-        uses: ./aws-kotlin-repo-tools/.github/actions/checkout-head
+        uses: aws/aws-kotlin-repo-tools/.github/actions/checkout-head
         with:
           path: 'aws-crt-kotlin' # '.' would make this a sibling, and include build. Overriding reduced JAR dependency.
           repository: 'aws/aws-crt-kotlin'
