@@ -65,7 +65,7 @@ jobs:
           file-path: 'gradle.properties'
           version-name: 'sdkVersion'
 
-      - name: Save checked out CRT Kotlin version to env
+      - name: Save checked out CRT Kotlin version to GitHub output
         id: version
         shell: bash
         run: |
@@ -101,7 +101,6 @@ jobs:
       - name: Build and Test Smithy Kotlin on JVM (with dependency on reduced CRT Kotlin)
         shell: bash
         run: |
-          ./gradlew -Ptest.java.version=${{ matrix.java-version }} build --stacktrace
           ./gradlew -Ptest.java.version=${{ matrix.java-version }} jvmTest --stacktrace
 
       - name: Calculate duration
