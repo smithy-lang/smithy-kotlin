@@ -47,7 +47,7 @@ jobs:
         uses: aws/aws-kotlin-repo-tools/.github/actions/configure-gradle@main
 
       - name: Checkout aws-crt-kotlin
-        uses: aws/aws-kotlin-repo-tools/.github/actions/checkout-head
+        uses: aws/aws-kotlin-repo-tools/.github/actions/checkout-head@main
         with:
           path: 'aws-crt-kotlin' # '.' would make this a sibling, and include build. Overriding reduced JAR dependency.
           repository: 'aws/aws-crt-kotlin'
