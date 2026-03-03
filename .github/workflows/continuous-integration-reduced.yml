@@ -31,13 +31,6 @@ jobs:
         id: start
         run: printf 'timestamp=%(%s)T\n' >> "$GITHUB_OUTPUT"
 
-      - name: Configure JDK
-        uses: actions/setup-java@v3
-        with:
-          distribution: 'corretto'
-          java-version: 17
-          cache: 'gradle'
-
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
@@ -80,6 +73,13 @@ jobs:
           dependency: 'crt-kotlin-version'
           version: ${{steps.version.outputs.result}}
 
+      - name: Configure JDK
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'corretto'
+          java-version: 17
+          cache: 'gradle'
+
       - name: Enable JAR reduction
         uses: aws/aws-kotlin-repo-tools/.github/actions/utils/add-to-local-properties@proguard-testing
         with:
@@ -108,7 +108,7 @@ jobs:
           echo "duration=$duration" >> "$GITHUB_OUTPUT"
 
       - name: Emit metrics
-        if: always() # run this step even if previous steps failed or the job is canceled
+        if: always()
         uses: aws/aws-kotlin-repo-tools/.github/actions/emit-metrics@main
         with:
           namespace: CI Metrics
