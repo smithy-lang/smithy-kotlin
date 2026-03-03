@@ -80,18 +80,18 @@ jobs:
           java-version: 17
           cache: 'gradle'
 
-      - name: Enable JAR reduction
+      - name: Enable JAR reduction & turn off Kotlin Native
         uses: aws/aws-kotlin-repo-tools/.github/actions/utils/add-to-local-properties@proguard-testing
         with:
           working-directory: '~/.sdkdev'
-          addition: 'aws.sdk.proguard = true \n aws.kotlin.native = false'
+          addition: 'aws.sdk.proguard = true\naws.kotlin.native = false'
 
       - name: Publish reduced CRT Kotlin to Maven Local
         working-directory: './aws-crt-kotlin'
         shell: bash
         run: |
           ./gradlew publishToMavenLocal # publish full size and reduced JARs
-          ./gradlew replaceMavenLocalFullSizeJars # reduce JARs become the default
+          ./gradlew -Paws.sdk.proguard=true replaceMavenLocalFullSizeJars # reduce JARs become the default
 
       - name: Build and Test Smithy Kotlin on JVM (with dependency on reduced CRT Kotlin)
         shell: bash
