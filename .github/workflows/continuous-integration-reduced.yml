@@ -89,12 +89,16 @@ jobs:
       - name: Publish reduced CRT Kotlin to Maven Local
         working-directory: './aws-crt-kotlin'
         shell: bash
+        # TODO: Set KN ?
+        # TODO: Init submodules ?
         run: |
-          ./gradlew publishToMavenLocal # publish full size and reduced JARs
-          ./gradlew replaceMavenLocalFullSizeJars # reduce JARs become the default
+          cmake --version
+          ./gradlew -Paws.kotlin.native=false publishToMavenLocal # publish full size and reduced JARs
+          ./gradlew -Paws.kotlin.native=false replaceMavenLocalFullSizeJars # reduce JARs become the default
 
       - name: Build and Test Smithy Kotlin on JVM (with dependency on reduced CRT Kotlin)
         shell: bash
+        # TODO: Set KN to false using action
         run: |
           ./gradlew -Paws.kotlin.native=false -Ptest.java.version=${{ matrix.java-version }} build --stacktrace
           ./gradlew -Paws.kotlin.native=false -Ptest.java.version=${{ matrix.java-version }} jvmTest --stacktrace
