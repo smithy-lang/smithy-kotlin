@@ -83,11 +83,11 @@ jobs:
       - name: Depend on checked out CRT Kotlin version
         run: |
           cd aws-crt-kotlin
-          version=$(kat get-property "sdkVersion")
+          version=$(kat get-property sdkVersion)
           echo "Found CRT version: $result"
           
           cd ..
-          kat bump-version --file grade/libs.versions.toml --version $version --property crt-kotlin-version
+          kat bump-version --file gradle/libs.versions.toml --version $version --property crt-kotlin-version
 
       - name: Build and Test Smithy Kotlin on JVM (with dependency on reduced CRT Kotlin)
         run: |
