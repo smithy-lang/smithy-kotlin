@@ -1,3 +1,5 @@
+# Copied and modified from continuous-integration.yml
+
 name: CI w/ reduced CRT Kotlin
 
 on:
@@ -58,26 +60,6 @@ jobs:
         with:
           working-directory: './aws-crt-kotlin'
 
-      - name: Find checked out CRT Kotlin version
-        uses: aws/aws-kotlin-repo-tools/.github/actions/utils/extract-version@extract-version
-        with:
-          working-directory: './aws-crt-kotlin'
-          file-path: 'gradle.properties'
-          version-name: 'sdkVersion'
-
-      - name: Save checked out CRT Kotlin version to GitHub output
-        id: version
-        shell: bash
-        run: |
-          echo "result=$(cat ./aws-crt-kotlin/version.txt)" >> "$GITHUB_OUTPUT"
-
-      # The checked out CRT Kotlin version might be a SNAPSHOT version e.g. in cross repo features, and include builds are off.
-      - name: Depend on checked out CRT Kotlin version
-        uses: aws/aws-kotlin-repo-tools/.github/actions/utils/depend-on-version@depend-on-version
-        with:
-          dependency: 'crt-kotlin-version'
-          version: ${{steps.version.outputs.result}}
-
       - name: Configure JDK
         uses: actions/setup-java@v3
         with:
@@ -85,7 +67,7 @@ jobs:
           java-version: 17
           cache: 'gradle'
 
-      - name: Enable JAR reduction & turn off Kotlin Native
+      - name: Enable JAR reduction & disable Kotlin Native
         uses: aws/aws-kotlin-repo-tools/.github/actions/utils/add-to-local-properties@proguard-testing
         with:
           working-directory: '~/.sdkdev'
@@ -93,13 +75,21 @@ jobs:
 
       - name: Publish reduced CRT Kotlin to Maven Local
         working-directory: './aws-crt-kotlin'
-        shell: bash
         run: |
           ./gradlew publishToMavenLocal # publish full size and reduced JARs
           ./gradlew replaceMavenLocalFullSizeJars # reduce JARs become the default
 
+      # The checked out CRT Kotlin version might be a SNAPSHOT version e.g. in cross repo features (and include builds are off).
+      - name: Depend on checked out CRT Kotlin version
+        run: |
+          cd aws-crt-kotlin
+          version=$(kat get-property "sdkVersion")
+          echo "Found CRT version: $result"
+          
+          cd ..
+          kat bump-version --file grade/libs.versions.toml --version $version --property crt-kotlin-version
+
       - name: Build and Test Smithy Kotlin on JVM (with dependency on reduced CRT Kotlin)
-        shell: bash
         run: |
           ./gradlew -Ptest.java.version=${{ matrix.java-version }} jvmTest --stacktrace
 
