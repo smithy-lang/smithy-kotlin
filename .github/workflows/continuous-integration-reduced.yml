@@ -82,12 +82,12 @@ jobs:
       # The checked out CRT Kotlin version might be a SNAPSHOT version e.g. in cross repo features (and include builds are off).
       - name: Depend on checked out CRT Kotlin version
         run: |
-          cd aws-crt-kotlin
+          cd ./aws-crt-kotlin
           version=$(kat get-property sdkVersion)
-          echo "Found CRT version: $result"
+          echo "Found CRT version: $version"
           
-          cd ..
-          kat bump-version --file gradle/libs.versions.toml --version $version --property crt-kotlin-version
+          cd ../gradle
+          kat bump-version --file libs.versions.toml --version $version --property crt-kotlin-version
 
       - name: Build and Test Smithy Kotlin on JVM (with dependency on reduced CRT Kotlin)
         run: |
