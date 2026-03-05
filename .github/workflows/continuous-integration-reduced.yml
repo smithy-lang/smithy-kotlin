@@ -86,8 +86,8 @@ jobs:
           version=$(kat get-property sdkVersion)
           echo "Found CRT version: $version"
           
-          cd ../gradle
-          kat bump-version --file libs.versions.toml --property crt-kotlin-version --version $version --ignore-changelog --double-quotes
+          cd ..
+          kat bump-version --file gradle/libs.versions.toml --property crt-kotlin-version --version $version
 
       - name: Build and Test Smithy Kotlin on JVM (with dependency on reduced CRT Kotlin)
         run: |
