@@ -26,7 +26,7 @@ jobs:
           ./gradlew publishAllPublicationsToTestLocalRepository --parallel
 
       - name: Calculate metrics
-        uses: aws/aws-kotlin-repo-tools/.github/actions/artifact-size-metrics/calculate-and-upload@reduced-metrics # TODO: Use main
+        uses: aws/aws-kotlin-repo-tools/.github/actions/artifact-size-metrics/calculate-and-upload@main
         with:
           upload: 'false'
           release_metrics: 'false'
