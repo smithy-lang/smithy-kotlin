@@ -14,7 +14,7 @@ jobs:
 
       # TODO: Replace with kat command (SDK-KT-1089)
       - name: Enable JAR reduction
-        uses: aws/aws-kotlin-repo-tools/.github/actions/utils/add-to-local-properties@main
+        uses: aws/aws-kotlin-repo-tools/.github/actions/utils/add-to-local-properties@reduced-metrics # TODO: Use main
         with:
           working-directory: '~/.sdkdev'
           addition: 'aws.sdk.proguard = true'

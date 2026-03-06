@@ -14,6 +14,8 @@ jobs:
       - name: Configure Gradle
         uses: aws/aws-kotlin-repo-tools/.github/actions/configure-gradle@main
 
+      # TODO: Enable just like in pull request metrics
+
       - name: Build
         shell: bash
         run: |
