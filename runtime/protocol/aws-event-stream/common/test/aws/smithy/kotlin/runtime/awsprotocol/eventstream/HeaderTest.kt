@@ -68,4 +68,22 @@ class HeaderTest {
             Header.decode(buffer)
         }.message.shouldContain("Not enough bytes to read header name")
     }
+
+    @Test
+    fun testEncodeHeaderNameLength255() {
+        val header = Header("b".repeat(255), HeaderValue.Bool(true))
+        val buf = SdkBuffer()
+        header.encode(buf)
+        val decoded = Header.decode(buf)
+        assertEquals(header, decoded)
+    }
+
+    @Test
+    fun testEncodeHeaderNameTooLong() {
+        val header = Header("a".repeat(256), HeaderValue.Bool(true))
+        val buf = SdkBuffer()
+        assertFailsWith<IllegalStateException> {
+            header.encode(buf)
+        }.message.shouldContain("Header name length should be in the range [1, 255], got 256")
+    }
 }

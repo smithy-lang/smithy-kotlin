@@ -51,7 +51,7 @@ public data class Header(val name: String, val value: HeaderValue) {
      */
     public fun encode(dest: SdkBufferedSink) {
         val bytes = name.encodeToByteArray()
-        check(bytes.size < MAX_HEADER_NAME_LEN) { "Header name too long" }
+        check(bytes.size in 1..MAX_HEADER_NAME_LEN) { "Header name length should be in the range [1, $MAX_HEADER_NAME_LEN], got ${bytes.size}" }
         dest.writeByte(bytes.size.toByte())
         dest.write(bytes)
         value.encode(dest)
