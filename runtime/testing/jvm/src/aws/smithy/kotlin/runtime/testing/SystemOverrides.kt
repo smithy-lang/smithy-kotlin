@@ -36,7 +36,7 @@ internal fun <K, V> MutableMap<K, V>.setAll(newEntries: Map<K, V>) {
  *
  * Normally environment variables cannot be modified within a JVM instance so this function makes use of private
  * reflection to gain access to the underlying mutable map used by [System.getenv]. At runtime, this requires
- * `--add-opens=java.base/java.util=ALL-UNNAMED` to be passed to the `java` executable. For instance:
+ * `--add-opens=java.base/java.util=ALL-UNNAMED` to be passed to the `java` executable on JDK 9+. For instance:
  *
  * ```sh
  * java \
