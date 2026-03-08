@@ -27,7 +27,7 @@ internal fun <K, V> MutableMap<K, V>.setAll(newEntries: Map<K, V>) {
 /**
  * Runs the given [block] with modified environment variables. The variables given in [newVars] are merged onto the
  * existing environment variables, adding values that did not exist previously and updating values which did exist.
- * After the block completes, environment variables will be restored to their previous value. This method may be nested
+ * After the block completes, environment variables will be restored to their previous values. This method may be nested
  * multiple times to apply/restore hierarchical overrides.
  *
  * **Caution**: This method is not thread-safe as environment variables are global for a JVM instance.
@@ -48,7 +48,8 @@ internal fun <K, V> MutableMap<K, V>.setAll(newEntries: Map<K, V>) {
  * In **smithy-kotlin** and **aws-sdk-kotlin** this is handled in the root scripts by adding a JVM arg to all JVM test
  * JARs (whether they rely on this module or not).
  *
- * @param newVars
+ * @param newVars The new environment variables to merge onto the existing environment variables
+ * @param block The block to execute with updated environment variables
  */
 public suspend inline fun <T> withEnvVars(
     newVars: Map<String, String>,
@@ -63,6 +64,17 @@ public suspend inline fun <T> withEnvVars(
     }
 }
 
+/**
+ * Runs the given [block] with modified JVM system properties. The properties given in [newProps] are merged onto the
+ * existing system properties, adding values that did not exist previously and updating values which did exist. After
+ * the block completes, system properties will be restored to their previous values. This method may be nested multiple
+ * times to apply/restore hierarchical overrides.
+ *
+ * **Caution**: This method is not thread-safe as system properties are global for a JVM instance.
+ *
+ * @param newProps The new system properties to merge onto the existing system properties.
+ * @param block The block to execute with updated system properties
+ */
 public suspend inline fun <T> withSystemProperties(
     newProps: Map<String, String>,
     crossinline block: suspend () -> T,
