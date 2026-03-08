@@ -61,8 +61,8 @@ allprojects {
         }
     }
 
-    if (testJavaVersion != null) {
-        tasks.withType<Test> {
+    tasks.withType<Test>().configureEach {
+        if (testJavaVersion != null) {
             // JDK8 tests fail with out of memory sometimes, not sure why...
             maxHeapSize = "2g"
             val toolchains = project.extensions.getByType<JavaToolchainService>()
@@ -72,6 +72,11 @@ allprojects {
                 },
             )
         }
+
+        // Required to enable reflective access in testing.
+        // See smithy-kotlin/runtime/testing/jvm/src/aws/smithy/kotlin/runtime/testing/SystemOverrides.kt
+        // for more info
+        jvmArgs("--add-opens=java.base/java.util=ALL-UNNAMED")
     }
 
     // Enables running `./gradlew allDeps` to get a comprehensive list of dependencies for every subproject
