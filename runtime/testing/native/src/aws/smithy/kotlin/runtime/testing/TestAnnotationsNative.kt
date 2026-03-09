@@ -13,7 +13,7 @@ public actual typealias IgnoreNative = kotlin.test.Ignore
 
 // Effectively ignored on K/N. This is fine because we only use this to enable non-static @BeforeAll/@AfterAll methods
 // on JVM.
-public actual annotation class TestInstance(val value: TestLifecycle)
+public actual annotation class TestInstance(actual val value: TestLifecycle)
 
 public actual enum class TestLifecycle {
     PER_CLASS,
