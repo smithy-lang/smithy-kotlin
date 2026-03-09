@@ -27,3 +27,12 @@ public expect annotation class AfterAll()
 @Target(AnnotationTarget.FUNCTION)
 @Retention(AnnotationRetention.RUNTIME)
 public expect annotation class IgnoreNative()
+
+@Target(AnnotationTarget.CLASS)
+@Retention(AnnotationRetention.RUNTIME)
+public expect annotation class TestInstance(val value: TestLifecycle)
+
+public expect enum class TestLifecycle {
+    PER_CLASS,
+    PER_METHOD,
+}
