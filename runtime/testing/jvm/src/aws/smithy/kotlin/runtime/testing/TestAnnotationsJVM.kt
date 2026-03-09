@@ -4,6 +4,7 @@
  */
 
 package aws.smithy.kotlin.runtime.testing
+import org.junit.jupiter.api.TestInstance
 import org.junit.jupiter.api.condition.DisabledOnOs
 import org.junit.jupiter.api.condition.OS
 
@@ -17,3 +18,7 @@ public actual typealias AfterAll = org.junit.jupiter.api.AfterAll
 @Retention(AnnotationRetention.RUNTIME)
 @Target(AnnotationTarget.FUNCTION)
 public actual annotation class IgnoreNative { /* no-op on JVM */ }
+
+public actual typealias TestInstance = TestInstance
+
+public actual typealias TestLifecycle = TestInstance.Lifecycle
