@@ -22,7 +22,7 @@ class AdaptiveRetryIntegrationTest {
     @Test
     fun testCubicCases() = runTest {
         val timeSource = testTimeSource
-        val testCases = adaptiveRetryCubicTestCases.deserializeYaml(CubicTestCase.serializer())
+        val testCases = adaptiveRetryCubicTestCases.deserializeYaml<CubicTestCase>()
 
         testCases.forEach { (name, tc) ->
             val start = timeSource.markNow()
@@ -32,12 +32,12 @@ class AdaptiveRetryIntegrationTest {
                 AdaptiveRateLimiter.Config.Default,
                 timeSource,
                 lastMaxRate = tc.given.lastMaxRate,
-                lastThrottleTime = tsSecondsToTimeMark(tc.given.lastThrottleTimeSeconds),
+                lastThrottleTime = tsSecondsToTimeMark(tc.given.lastThrottleTime),
             )
 
             var lastCalculatedRate = tc.given.lastMaxRate
             tc.cases.forEachIndexed { idx, case ->
-                val caseTimeMark = tsSecondsToTimeMark(case.tsSeconds)
+                val caseTimeMark = tsSecondsToTimeMark(case.timestamp)
                 val delayDuration = caseTimeMark - timeSource.markNow()
                 delay(delayDuration)
 
@@ -49,7 +49,7 @@ class AdaptiveRetryIntegrationTest {
                     ResponseType.Throttle -> {
                         rateCalculator.lastMaxRate = lastCalculatedRate
                         rateCalculator.timeWindow = rateCalculator.calculateTimeWindow()
-                        rateCalculator.lastThrottleTime = tsSecondsToTimeMark(case.tsSeconds)
+                        rateCalculator.lastThrottleTime = tsSecondsToTimeMark(case.timestamp)
                         rateCalculator.cubicThrottle(lastCalculatedRate)
                     }
                 }
@@ -67,7 +67,7 @@ class AdaptiveRetryIntegrationTest {
     @Test
     fun testE2eCases() = runTest {
         val timeSource = testTimeSource
-        val testCases = adaptiveRetryE2eTestCases.deserializeYaml(E2eTestCase.serializer())
+        val testCases = adaptiveRetryE2eTestCases.deserializeYaml<E2eTestCase>()
         val config = AdaptiveRateLimiter.Config.Default
         val rateMeasurer = AdaptiveRateMeasurer(config, timeSource)
         val rateCalculator = CubicRateCalculator(config, timeSource)
@@ -78,7 +78,7 @@ class AdaptiveRetryIntegrationTest {
             val tsSecondsToTimeMark = { timestamp: Double -> start + timestamp.seconds }
 
             tc.cases.forEachIndexed { idx, case ->
-                val caseTimeMark = tsSecondsToTimeMark(case.tsSeconds)
+                val caseTimeMark = tsSecondsToTimeMark(case.timestamp)
                 val delayDuration = caseTimeMark - timeSource.markNow()
                 delay(delayDuration)
 

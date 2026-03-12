@@ -5,8 +5,6 @@
 package aws.smithy.kotlin.runtime.retries.impl
 
 import aws.smithy.kotlin.runtime.retries.policy.RetryErrorType
-import kotlinx.serialization.SerialName
-import kotlinx.serialization.Serializable
 
 // Test cases sourced from "new-retries" specification.
 val adaptiveRetryCubicTestCases = mapOf(
@@ -148,38 +146,29 @@ val adaptiveRetryE2eTestCases = mapOf(
         """.trimIndent(),
 )
 
-@Serializable
 enum class ResponseType(val errorType: RetryErrorType?) {
-    @SerialName("success")
     Success(null),
-
-    @SerialName("throttle")
     Throttle(RetryErrorType.Throttling),
 }
 
-@Serializable
 data class CubicTestCase(val given: Given, val cases: List<Case>) {
-    @Serializable
     data class Given(
-        @SerialName("last_max_rate") val lastMaxRate: Double,
-        @SerialName("last_throttle_time") val lastThrottleTimeSeconds: Double,
+        val lastMaxRate: Double,
+        val lastThrottleTime: Double,
     )
 
-    @Serializable
     data class Case(
-        @SerialName("response") val response: ResponseType,
-        @SerialName("timestamp") val tsSeconds: Double,
-        @SerialName("calculated_rate") val calculatedRate: Double,
+        val response: ResponseType,
+        val timestamp: Double,
+        val calculatedRate: Double,
     )
 }
 
-@Serializable
 data class E2eTestCase(val cases: List<Case>) {
-    @Serializable
     data class Case(
-        @SerialName("response") val response: ResponseType,
-        @SerialName("timestamp") val tsSeconds: Double,
-        @SerialName("measured_tx_rate") val measuredTxRate: Double,
-        @SerialName("new_token_bucket_rate") val newTokenBucketRate: Double,
+        val response: ResponseType,
+        val timestamp: Double,
+        val measuredTxRate: Double,
+        val newTokenBucketRate: Double,
     )
 }

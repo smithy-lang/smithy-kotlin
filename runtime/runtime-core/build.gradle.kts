@@ -45,7 +45,8 @@ kotlin {
 
         jvmTest {
             dependencies {
-                implementation(libs.kaml)
+                implementation(libs.jackson.dataformat.yaml)
+                implementation(libs.jackson.module.kotlin)
             }
         }
 

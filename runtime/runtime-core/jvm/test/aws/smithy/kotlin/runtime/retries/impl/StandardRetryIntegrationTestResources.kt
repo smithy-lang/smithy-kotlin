@@ -5,9 +5,6 @@
 
 package aws.smithy.kotlin.runtime.retries.impl
 
-import kotlinx.serialization.SerialName
-import kotlinx.serialization.Serializable
-
 // Test cases sourced from "new-retries" specification.
 val standardRetryIntegrationTestCases = mapOf(
     "Retry eventually succeeds" to // language=YAML
@@ -191,38 +188,29 @@ val standardRetryIntegrationTestCases = mapOf(
         """.trimIndent(),
 )
 
-@Serializable
 data class StandardRetryTestCase(val given: Given, val responses: List<ResponseAndExpectation>)
 
-@Serializable
 data class Given(
-    @SerialName("max_attempts") val maxAttempts: Int,
-    @SerialName("initial_retry_tokens") val initialRetryTokens: Int,
-    @SerialName("exponential_base") val exponentialBase: Double,
-    @SerialName("exponential_power") val exponentialPower: Double,
-    @SerialName("max_backoff_time") val maxBackoffTime: Int,
+    val maxAttempts: Int,
+    val initialRetryTokens: Int,
+    val exponentialBase: Double,
+    val exponentialPower: Double,
+    val maxBackoffTime: Int,
 )
 
-@Serializable
 data class ResponseAndExpectation(val response: Response, val expected: Expectation)
 
-@Serializable
-data class Response(@SerialName("status_code") val statusCode: Int)
+data class Response(val statusCode: Int)
 
-@Serializable
-data class Expectation(val outcome: TestOutcome, @SerialName("retry_quota") val retryQuota: Int, val delay: Int? = null)
+data class Expectation(
+    val outcome: TestOutcome,
+    val retryQuota: Int,
+    val delay: Int? = null,
+)
 
-@Serializable
 enum class TestOutcome {
-    @SerialName("max_attempts_exceeded")
-    MaxAttemptsExceeded,
-
-    @SerialName("retry_quota_exceeded")
-    RetryQuotaExceeded,
-
-    @SerialName("retry_request")
-    RetryRequest,
-
-    @SerialName("success")
-    Success,
+    MAX_ATTEMPTS_EXCEEDED,
+    RETRY_QUOTA_EXCEEDED,
+    RETRY_REQUEST,
+    SUCCESS,
 }

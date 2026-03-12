@@ -16,14 +16,17 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.currentTime
 import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.assertThrows
-import kotlin.test.*
+import kotlin.test.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertTrue
+import kotlin.test.fail
 import kotlin.time.Duration.Companion.milliseconds
 
 class StandardRetryIntegrationTest {
     @OptIn(ExperimentalCoroutinesApi::class)
     @Test
     fun testIntegrationCases() = runTest {
-        val testCases = standardRetryIntegrationTestCases.deserializeYaml(StandardRetryTestCase.serializer())
+        val testCases = standardRetryIntegrationTestCases.deserializeYaml<StandardRetryTestCase>()
         testCases.forEach { (name, tc) ->
             val tokenBucket = StandardRetryTokenBucket { maxCapacity = tc.given.initialRetryTokens }
             val retryer = StandardRetryStrategy {
@@ -48,10 +51,10 @@ class StandardRetryIntegrationTest {
 
             val finalState = tc.responses.last().expected
             when (finalState.outcome) {
-                TestOutcome.Success ->
+                TestOutcome.SUCCESS ->
                     assertEquals(Ok, result.getOrThrow().getOrThrow(), "Unexpected outcome for $name")
 
-                TestOutcome.MaxAttemptsExceeded -> {
+                TestOutcome.MAX_ATTEMPTS_EXCEEDED -> {
                     val e = assertThrows<HttpCodeException>("Expected exception for $name") {
                         result.getOrThrow()
                     }
@@ -59,7 +62,7 @@ class StandardRetryIntegrationTest {
                     assertEquals(tc.responses.last().response.statusCode, e.code, "Unexpected error code for $name")
                 }
 
-                TestOutcome.RetryQuotaExceeded -> {
+                TestOutcome.RETRY_QUOTA_EXCEEDED -> {
                     val e = assertThrows<HttpCodeException>("Expected exception for $name") {
                         result.getOrThrow()
                     }
@@ -75,7 +78,7 @@ class StandardRetryIntegrationTest {
             }
 
             val expectedDelayMs = tc.responses.mapNotNull { it.expected.delay }.sum()
-            if (finalState.outcome == TestOutcome.RetryQuotaExceeded) {
+            if (finalState.outcome == TestOutcome.RETRY_QUOTA_EXCEEDED) {
                 // The retry quota exceeded tests assume that the delayer won't be called when the bucket's out of
                 // capacity but that assumes no refill which is not the case most of the time. Rather than add
                 // specialized handling in the strategy, simplify verify that we saw *at least* as much delay as
