@@ -1,5 +1,0 @@
-{
-    "id": "31df3577-fa7e-4db0-a1e9-3e778ca0db04",
-    "type": "bugfix",
-    "description": "Support event stream header name lengths up to 255"
-}
