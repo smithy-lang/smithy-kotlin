@@ -1,3 +1,15 @@
+public abstract interface class aws/smithy/kotlin/runtime/serde/ClientProtocol : aws/smithy/kotlin/runtime/serde/Shape {
+	public abstract fun createRequest (Laws/smithy/kotlin/runtime/serde/OperationSchema;Ljava/lang/Object;Laws/smithy/kotlin/runtime/operation/ExecutionContext;Laws/smithy/kotlin/runtime/client/endpoints/Endpoint;)Ljava/lang/Object;
+	public abstract fun createResponse (Laws/smithy/kotlin/runtime/serde/OperationSchema;Ljava/lang/Object;Ljava/lang/Object;Laws/smithy/kotlin/runtime/operation/ExecutionContext;)Ljava/lang/Object;
+	public abstract fun getPayloadCodec ()Laws/smithy/kotlin/runtime/serde/Codec;
+	public abstract fun setEndpoint (Ljava/lang/Object;Laws/smithy/kotlin/runtime/client/endpoints/Endpoint;)V
+}
+
+public abstract interface class aws/smithy/kotlin/runtime/serde/Codec {
+	public abstract fun createDeserializer (Laws/smithy/kotlin/runtime/io/SdkSource;)Laws/smithy/kotlin/runtime/serde/Deserializer;
+	public abstract fun createSerializer (Laws/smithy/kotlin/runtime/io/SdkSink;)Laws/smithy/kotlin/runtime/serde/Serializer;
+}
+
 public final class aws/smithy/kotlin/runtime/serde/DeserializationException : aws/smithy/kotlin/runtime/ClientException {
 	public fun <init> ()V
 	public fun <init> (Ljava/lang/String;)V
@@ -46,8 +58,17 @@ public final class aws/smithy/kotlin/runtime/serde/ExceptionsKt {
 public abstract interface class aws/smithy/kotlin/runtime/serde/FieldTrait {
 }
 
+public abstract interface class aws/smithy/kotlin/runtime/serde/ListSchema : aws/smithy/kotlin/runtime/serde/Schema {
+	public abstract fun getMember ()Laws/smithy/kotlin/runtime/serde/Schema;
+}
+
 public abstract interface class aws/smithy/kotlin/runtime/serde/ListSerializer : aws/smithy/kotlin/runtime/serde/PrimitiveSerializer {
 	public abstract fun endList ()V
+}
+
+public abstract interface class aws/smithy/kotlin/runtime/serde/MapSchema : aws/smithy/kotlin/runtime/serde/Schema {
+	public abstract fun getKey ()Laws/smithy/kotlin/runtime/serde/Schema;
+	public abstract fun getValue ()Laws/smithy/kotlin/runtime/serde/Schema;
 }
 
 public abstract interface class aws/smithy/kotlin/runtime/serde/MapSerializer : aws/smithy/kotlin/runtime/serde/PrimitiveSerializer {
@@ -67,6 +88,15 @@ public abstract interface class aws/smithy/kotlin/runtime/serde/MapSerializer : 
 	public abstract fun entry (Ljava/lang/String;[B)V
 	public abstract fun listEntry (Ljava/lang/String;Laws/smithy/kotlin/runtime/serde/SdkFieldDescriptor;Lkotlin/jvm/functions/Function1;)V
 	public abstract fun mapEntry (Ljava/lang/String;Laws/smithy/kotlin/runtime/serde/SdkFieldDescriptor;Lkotlin/jvm/functions/Function1;)V
+}
+
+public abstract interface class aws/smithy/kotlin/runtime/serde/MemberSchema : aws/smithy/kotlin/runtime/serde/Schema {
+	public abstract fun getTarget ()Laws/smithy/kotlin/runtime/serde/Schema;
+}
+
+public abstract interface class aws/smithy/kotlin/runtime/serde/OperationSchema : aws/smithy/kotlin/runtime/serde/Schema {
+	public abstract fun getInput ()Laws/smithy/kotlin/runtime/serde/StructureSchema;
+	public abstract fun getOutput ()Laws/smithy/kotlin/runtime/serde/StructureSchema;
 }
 
 public final class aws/smithy/kotlin/runtime/serde/ParsersKt {
@@ -128,6 +158,24 @@ public abstract interface class aws/smithy/kotlin/runtime/serde/PrimitiveSeriali
 	public abstract fun serializeSdkSerializable (Laws/smithy/kotlin/runtime/serde/SdkSerializable;)V
 	public abstract fun serializeShort (S)V
 	public abstract fun serializeString (Ljava/lang/String;)V
+}
+
+public abstract interface class aws/smithy/kotlin/runtime/serde/ScalarSchema : aws/smithy/kotlin/runtime/serde/Schema {
+}
+
+public abstract interface class aws/smithy/kotlin/runtime/serde/Schema : aws/smithy/kotlin/runtime/serde/Shape {
+	public abstract fun getShapeType ()Laws/smithy/kotlin/runtime/serde/ShapeType;
+}
+
+public final class aws/smithy/kotlin/runtime/serde/SchemaKt {
+	public static final fun ListSchema-klmhQj8 (Ljava/lang/String;Laws/smithy/kotlin/runtime/serde/ShapeType;Laws/smithy/kotlin/runtime/serde/Schema;Ljava/util/List;)Laws/smithy/kotlin/runtime/serde/ListSchema;
+	public static final fun MapSchema-ksaE4WE (Ljava/lang/String;Laws/smithy/kotlin/runtime/serde/ShapeType;Laws/smithy/kotlin/runtime/serde/Schema;Laws/smithy/kotlin/runtime/serde/Schema;Ljava/util/List;)Laws/smithy/kotlin/runtime/serde/MapSchema;
+	public static final fun MemberSchema-klmhQj8 (Ljava/lang/String;Laws/smithy/kotlin/runtime/serde/ShapeType;Laws/smithy/kotlin/runtime/serde/Schema;Ljava/util/List;)Laws/smithy/kotlin/runtime/serde/MemberSchema;
+	public static final fun MemberSchema-klmhQj8 (Ljava/lang/String;Laws/smithy/kotlin/runtime/serde/ShapeType;Lkotlin/Lazy;Ljava/util/List;)Laws/smithy/kotlin/runtime/serde/MemberSchema;
+	public static final fun OperationSchema-ksaE4WE (Ljava/lang/String;Laws/smithy/kotlin/runtime/serde/ShapeType;Laws/smithy/kotlin/runtime/serde/StructureSchema;Laws/smithy/kotlin/runtime/serde/StructureSchema;Ljava/util/List;)Laws/smithy/kotlin/runtime/serde/OperationSchema;
+	public static final fun ScalarSchema-H5acnWc (Ljava/lang/String;Laws/smithy/kotlin/runtime/serde/ShapeType;Ljava/util/List;)Laws/smithy/kotlin/runtime/serde/ScalarSchema;
+	public static final fun ServiceSchema-ksaE4WE (Ljava/lang/String;Laws/smithy/kotlin/runtime/serde/ShapeType;Ljava/util/List;Ljava/util/List;Ljava/util/List;)Laws/smithy/kotlin/runtime/serde/ServiceSchema;
+	public static final fun StructureSchema-klmhQj8 (Ljava/lang/String;Laws/smithy/kotlin/runtime/serde/ShapeType;Ljava/util/List;Ljava/util/List;)Laws/smithy/kotlin/runtime/serde/StructureSchema;
 }
 
 public class aws/smithy/kotlin/runtime/serde/SdkFieldDescriptor {
@@ -272,6 +320,59 @@ public final class aws/smithy/kotlin/runtime/serde/SerializerKt {
 	public static final fun serializeStruct (Laws/smithy/kotlin/runtime/serde/Serializer;Laws/smithy/kotlin/runtime/serde/SdkFieldDescriptor;Lkotlin/jvm/functions/Function1;)V
 }
 
+public abstract interface class aws/smithy/kotlin/runtime/serde/ServiceSchema : aws/smithy/kotlin/runtime/serde/Schema {
+	public abstract fun getErrors ()Ljava/util/List;
+	public abstract fun getOperations ()Ljava/util/List;
+}
+
+public abstract interface class aws/smithy/kotlin/runtime/serde/Shape {
+	public abstract fun getShapeId-MPTvfYU ()Ljava/lang/String;
+	public abstract fun getTraits ()Ljava/util/List;
+}
+
+public final class aws/smithy/kotlin/runtime/serde/ShapeId {
+	public static final synthetic fun box-impl (Ljava/lang/String;)Laws/smithy/kotlin/runtime/serde/ShapeId;
+	public static fun constructor-impl (Ljava/lang/String;)Ljava/lang/String;
+	public fun equals (Ljava/lang/Object;)Z
+	public static fun equals-impl (Ljava/lang/String;Ljava/lang/Object;)Z
+	public static final fun equals-impl0 (Ljava/lang/String;Ljava/lang/String;)Z
+	public final fun getId ()Ljava/lang/String;
+	public fun hashCode ()I
+	public static fun hashCode-impl (Ljava/lang/String;)I
+	public fun toString ()Ljava/lang/String;
+	public static fun toString-impl (Ljava/lang/String;)Ljava/lang/String;
+	public final synthetic fun unbox-impl ()Ljava/lang/String;
+}
+
+public final class aws/smithy/kotlin/runtime/serde/ShapeType : java/lang/Enum {
+	public static final field BIG_DECIMAL Laws/smithy/kotlin/runtime/serde/ShapeType;
+	public static final field BIG_INTEGER Laws/smithy/kotlin/runtime/serde/ShapeType;
+	public static final field BLOB Laws/smithy/kotlin/runtime/serde/ShapeType;
+	public static final field BOOLEAN Laws/smithy/kotlin/runtime/serde/ShapeType;
+	public static final field BYTE Laws/smithy/kotlin/runtime/serde/ShapeType;
+	public static final field DOCUMENT Laws/smithy/kotlin/runtime/serde/ShapeType;
+	public static final field DOUBLE Laws/smithy/kotlin/runtime/serde/ShapeType;
+	public static final field ENUM Laws/smithy/kotlin/runtime/serde/ShapeType;
+	public static final field FLOAT Laws/smithy/kotlin/runtime/serde/ShapeType;
+	public static final field INTEGER Laws/smithy/kotlin/runtime/serde/ShapeType;
+	public static final field INTEGER_ENUM Laws/smithy/kotlin/runtime/serde/ShapeType;
+	public static final field LIST Laws/smithy/kotlin/runtime/serde/ShapeType;
+	public static final field LONG Laws/smithy/kotlin/runtime/serde/ShapeType;
+	public static final field MAP Laws/smithy/kotlin/runtime/serde/ShapeType;
+	public static final field MEMBER Laws/smithy/kotlin/runtime/serde/ShapeType;
+	public static final field OPERATION Laws/smithy/kotlin/runtime/serde/ShapeType;
+	public static final field SERVICE Laws/smithy/kotlin/runtime/serde/ShapeType;
+	public static final field SET Laws/smithy/kotlin/runtime/serde/ShapeType;
+	public static final field SHORT Laws/smithy/kotlin/runtime/serde/ShapeType;
+	public static final field STRING Laws/smithy/kotlin/runtime/serde/ShapeType;
+	public static final field STRUCTURE Laws/smithy/kotlin/runtime/serde/ShapeType;
+	public static final field TIMESTAMP Laws/smithy/kotlin/runtime/serde/ShapeType;
+	public static final field UNION Laws/smithy/kotlin/runtime/serde/ShapeType;
+	public static fun getEntries ()Lkotlin/enums/EnumEntries;
+	public static fun valueOf (Ljava/lang/String;)Laws/smithy/kotlin/runtime/serde/ShapeType;
+	public static fun values ()[Laws/smithy/kotlin/runtime/serde/ShapeType;
+}
+
 public final class aws/smithy/kotlin/runtime/serde/SparseValues : aws/smithy/kotlin/runtime/serde/FieldTrait {
 	public static final field INSTANCE Laws/smithy/kotlin/runtime/serde/SparseValues;
 }
@@ -297,5 +398,17 @@ public abstract interface class aws/smithy/kotlin/runtime/serde/StructSerializer
 	public abstract fun mapField (Laws/smithy/kotlin/runtime/serde/SdkFieldDescriptor;Lkotlin/jvm/functions/Function1;)V
 	public abstract fun nullField (Laws/smithy/kotlin/runtime/serde/SdkFieldDescriptor;)V
 	public abstract fun structField (Laws/smithy/kotlin/runtime/serde/SdkFieldDescriptor;Lkotlin/jvm/functions/Function1;)V
+}
+
+public abstract interface class aws/smithy/kotlin/runtime/serde/StructureSchema : aws/smithy/kotlin/runtime/serde/Schema {
+	public abstract fun getMembers ()Ljava/util/List;
+}
+
+public abstract interface class aws/smithy/kotlin/runtime/serde/Trait : aws/smithy/kotlin/runtime/serde/Shape {
+	public abstract fun getValue ()Laws/smithy/kotlin/runtime/content/Document;
+}
+
+public final class aws/smithy/kotlin/runtime/serde/TraitKt {
+	public static final fun Trait-H5acnWc (Ljava/lang/String;Laws/smithy/kotlin/runtime/content/Document;Ljava/util/List;)Laws/smithy/kotlin/runtime/serde/Trait;
 }
 

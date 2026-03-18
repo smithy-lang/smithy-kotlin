@@ -4,13 +4,7 @@
  */
 package aws.smithy.kotlin.codegen.rendering.protocol
 
-import aws.smithy.kotlin.codegen.core.KotlinDependency
-import aws.smithy.kotlin.codegen.core.KotlinWriter
-import aws.smithy.kotlin.codegen.core.RuntimeTypes
-import aws.smithy.kotlin.codegen.core.addImport
-import aws.smithy.kotlin.codegen.core.declareSection
-import aws.smithy.kotlin.codegen.core.defaultName
-import aws.smithy.kotlin.codegen.core.withBlock
+import aws.smithy.kotlin.codegen.core.*
 import aws.smithy.kotlin.codegen.integration.SectionId
 import aws.smithy.kotlin.codegen.integration.SectionKey
 import aws.smithy.kotlin.codegen.lang.KotlinTypes
@@ -243,7 +237,7 @@ open class HttpProtocolClientGenerator(
                         segment.content
                     }
                 }
-                writer.write("hostPrefix = #S", hostPrefix)
+                writer.write("hostPrefix = #I", hostPrefix)
             }
 
             // telemetry

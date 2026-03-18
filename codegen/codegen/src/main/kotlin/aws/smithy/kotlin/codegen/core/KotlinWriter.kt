@@ -8,15 +8,9 @@ package aws.smithy.kotlin.codegen.core
 import aws.smithy.kotlin.codegen.integration.SectionId
 import aws.smithy.kotlin.codegen.integration.SectionWriter
 import aws.smithy.kotlin.codegen.lang.isBuiltIn
-import aws.smithy.kotlin.codegen.model.defaultValue
-import aws.smithy.kotlin.codegen.model.expectTrait
-import aws.smithy.kotlin.codegen.model.fullNameHint
-import aws.smithy.kotlin.codegen.model.getTrait
-import aws.smithy.kotlin.codegen.model.isDeprecated
-import aws.smithy.kotlin.codegen.model.isExtension
-import aws.smithy.kotlin.codegen.model.isNullable
-import aws.smithy.kotlin.codegen.model.isObjectRef
-import aws.smithy.kotlin.codegen.model.objectRef
+import aws.smithy.kotlin.codegen.lang.toEscapedLiteral
+import aws.smithy.kotlin.codegen.model.*
+import aws.smithy.kotlin.codegen.utils.dq
 import aws.smithy.kotlin.codegen.utils.getOrNull
 import software.amazon.smithy.codegen.core.CodegenException
 import software.amazon.smithy.codegen.core.Symbol
@@ -78,6 +72,12 @@ class KotlinWriter(
 
         // Pass a function receiving a [KotlinWriter] to generate an inline value
         putFormatter('W', InlineKotlinWriterFormatter(this))
+
+        // Override the base smithy string formatter to handle the dollar sign ("$")
+        putFormatter('S') { value, _ -> value.toString().dq().toEscapedLiteral() }
+
+        // A string formatter which _ignores_ dollar signs ("$"), allowing for _I_nterpolation in generated code
+        putFormatter('I') { value, _ -> value.toString().dq() }
     }
 
     /**

@@ -5,14 +5,7 @@
 
 package aws.smithy.kotlin.codegen.rendering.smoketests
 
-import aws.smithy.kotlin.codegen.core.CodegenContext
-import aws.smithy.kotlin.codegen.core.KotlinWriter
-import aws.smithy.kotlin.codegen.core.RuntimeTypes
-import aws.smithy.kotlin.codegen.core.closeAndOpenBlock
-import aws.smithy.kotlin.codegen.core.declareSection
-import aws.smithy.kotlin.codegen.core.defaultName
-import aws.smithy.kotlin.codegen.core.withBlock
-import aws.smithy.kotlin.codegen.core.withInlineBlock
+import aws.smithy.kotlin.codegen.core.*
 import aws.smithy.kotlin.codegen.integration.SectionId
 import aws.smithy.kotlin.codegen.integration.SectionKey
 import aws.smithy.kotlin.codegen.lang.KotlinTypes
@@ -281,7 +274,7 @@ class SmokeTestsRunnerGenerator(
         }
         val status = statusOverride ?: "\$status"
         val testResult = "$status $service $testCase - $expectation $directive"
-        writer.write("printer.appendLine(#S)", testResult)
+        writer.write("printer.appendLine(#I)", testResult)
     }
 
     /**

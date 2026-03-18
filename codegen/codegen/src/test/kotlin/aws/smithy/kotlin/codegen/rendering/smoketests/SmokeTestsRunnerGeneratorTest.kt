@@ -5,12 +5,7 @@
 
 package aws.smithy.kotlin.codegen.rendering.smoketests
 
-import aws.smithy.kotlin.codegen.test.formatForTest
-import aws.smithy.kotlin.codegen.test.newTestContext
-import aws.smithy.kotlin.codegen.test.newWriter
-import aws.smithy.kotlin.codegen.test.shouldContainOnlyOnceWithDiff
-import aws.smithy.kotlin.codegen.test.toCodegenContext
-import aws.smithy.kotlin.codegen.test.toSmithyModel
+import aws.smithy.kotlin.codegen.test.*
 import software.amazon.smithy.model.Model
 import kotlin.test.Test
 
@@ -152,7 +147,6 @@ class SmokeTestsRunnerGeneratorTest {
                         }
                 
                         error("Unexpectedly completed smoke test operation without throwing exception")
-                
                     } catch (exception: Exception) {
                         val success: Boolean = exception is SmokeTestsSuccessException
                         val status: String = if (success) "ok" else "not ok"
@@ -190,7 +184,6 @@ class SmokeTestsRunnerGeneratorTest {
                         }
                 
                         error("Unexpectedly completed smoke test operation without throwing exception")
-                
                     } catch (exception: Exception) {
                         val success: Boolean = exception is InvalidMessageError
                         val status: String = if (success) "ok" else "not ok"
@@ -229,7 +222,6 @@ class SmokeTestsRunnerGeneratorTest {
                         }
                 
                         error("Unexpectedly completed smoke test operation without throwing exception")
-                
                     } catch (exception: Exception) {
                         val success: Boolean = exception is SmokeTestsFailureException
                         val status: String = if (success) "ok" else "not ok"

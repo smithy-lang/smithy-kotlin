@@ -119,6 +119,16 @@ public fun Document(value: Boolean): Document = Document.Boolean(value)
 public fun Document(value: List<Document?>): Document = Document.List(value)
 
 /**
+ * Construct a [Document] from a [List].
+ */
+public fun Document(vararg values: Document?): Document = Document.List(values.toList())
+
+/**
  * Construct a [Document] from a [Map].
  */
 public fun Document(value: Map<String, Document?>): Document = Document.Map(value)
+
+/**
+ * Construct a [Document] from a [List].
+ */
+public fun Document(vararg entries: Pair<String, Document?>): Document = Document.Map(entries.toMap())

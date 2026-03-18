@@ -15,14 +15,10 @@ import aws.smithy.kotlin.codegen.model.getEndpointRules
 import aws.smithy.kotlin.codegen.model.getEndpointTests
 import aws.smithy.kotlin.codegen.model.hasTrait
 import aws.smithy.kotlin.codegen.rendering.*
-import aws.smithy.kotlin.codegen.rendering.EnumGenerator
-import aws.smithy.kotlin.codegen.rendering.ExceptionBaseClassGenerator
-import aws.smithy.kotlin.codegen.rendering.ServiceClientGenerator
-import aws.smithy.kotlin.codegen.rendering.StructureGenerator
-import aws.smithy.kotlin.codegen.rendering.UnionGenerator
 import aws.smithy.kotlin.codegen.rendering.protocol.ApplicationProtocol
 import aws.smithy.kotlin.codegen.rendering.protocol.ProtocolGenerator
-import aws.smithy.kotlin.codegen.rendering.writeGradleBuild
+import aws.smithy.kotlin.codegen.rendering.serde.SchemaGenerator
+import aws.smithy.kotlin.codegen.rendering.serde.useSchemaWriter
 import software.amazon.smithy.build.FileManifest
 import software.amazon.smithy.build.PluginContext
 import software.amazon.smithy.codegen.core.SymbolProvider
@@ -126,6 +122,14 @@ class CodegenVisitor(context: PluginContext) : ShapeVisitor.Default<Unit>() {
         val modelWithoutTraits = ModelTransformer.create().getModelWithoutTraitShapes(model)
         val serviceShapes = Walker(modelWithoutTraits).walkShapes(service)
         serviceShapes.forEach { it.accept(this) }
+
+        logger.info("Walking shapes from ${settings.service} to generate shape schemas")
+        writers.useSchemaWriter(service) { writer ->
+            val renderCtx = baseGenerationContext.toRenderingContext(writer, service)
+            SchemaGenerator(renderCtx).render()
+        }
+        Walker(model).iterateShapes(service).forEach { shape ->
+        }
 
         protocolGenerator?.apply {
             val ctx = ProtocolGenerator.GenerationContext(

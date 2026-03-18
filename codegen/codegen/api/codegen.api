@@ -294,6 +294,7 @@ public final class aws/smithy/kotlin/codegen/core/KotlinDelegator {
 	public synthetic fun <init> (Laws/smithy/kotlin/codegen/core/CodegenContext;Lsoftware/amazon/smithy/build/FileManifest;Ljava/util/List;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public final fun finalize ()V
 	public final fun flushWriters ()V
+	public final fun getCtx ()Laws/smithy/kotlin/codegen/core/CodegenContext;
 	public final fun getDependencies ()Ljava/util/List;
 	public final fun getFileManifest ()Lsoftware/amazon/smithy/build/FileManifest;
 	public final fun getRuntimeDependencies ()Ljava/util/List;
@@ -933,6 +934,10 @@ public final class aws/smithy/kotlin/codegen/core/RuntimeTypes$Serde : aws/smith
 	public final fun getDeserializer ()Lsoftware/amazon/smithy/codegen/core/Symbol;
 	public final fun getField ()Lsoftware/amazon/smithy/codegen/core/Symbol;
 	public final fun getGetOrDeserializeErr ()Lsoftware/amazon/smithy/codegen/core/Symbol;
+	public final fun getListSchema ()Lsoftware/amazon/smithy/codegen/core/Symbol;
+	public final fun getMapSchema ()Lsoftware/amazon/smithy/codegen/core/Symbol;
+	public final fun getMemberSchema ()Lsoftware/amazon/smithy/codegen/core/Symbol;
+	public final fun getOperationSchema ()Lsoftware/amazon/smithy/codegen/core/Symbol;
 	public final fun getParse ()Lsoftware/amazon/smithy/codegen/core/Symbol;
 	public final fun getParseBigDecimal ()Lsoftware/amazon/smithy/codegen/core/Symbol;
 	public final fun getParseBigInteger ()Lsoftware/amazon/smithy/codegen/core/Symbol;
@@ -944,6 +949,8 @@ public final class aws/smithy/kotlin/codegen/core/RuntimeTypes$Serde : aws/smith
 	public final fun getParseLong ()Lsoftware/amazon/smithy/codegen/core/Symbol;
 	public final fun getParseShort ()Lsoftware/amazon/smithy/codegen/core/Symbol;
 	public final fun getParseTimestamp ()Lsoftware/amazon/smithy/codegen/core/Symbol;
+	public final fun getScalarSchema ()Lsoftware/amazon/smithy/codegen/core/Symbol;
+	public final fun getSchema ()Lsoftware/amazon/smithy/codegen/core/Symbol;
 	public final fun getSdkFieldDescriptor ()Lsoftware/amazon/smithy/codegen/core/Symbol;
 	public final fun getSdkObjectDescriptor ()Lsoftware/amazon/smithy/codegen/core/Symbol;
 	public final fun getSerialKind ()Lsoftware/amazon/smithy/codegen/core/Symbol;
@@ -952,6 +959,11 @@ public final class aws/smithy/kotlin/codegen/core/RuntimeTypes$Serde : aws/smith
 	public final fun getSerializeMap ()Lsoftware/amazon/smithy/codegen/core/Symbol;
 	public final fun getSerializeStruct ()Lsoftware/amazon/smithy/codegen/core/Symbol;
 	public final fun getSerializer ()Lsoftware/amazon/smithy/codegen/core/Symbol;
+	public final fun getServiceSchema ()Lsoftware/amazon/smithy/codegen/core/Symbol;
+	public final fun getShapeId ()Lsoftware/amazon/smithy/codegen/core/Symbol;
+	public final fun getShapeType ()Lsoftware/amazon/smithy/codegen/core/Symbol;
+	public final fun getStructureSchema ()Lsoftware/amazon/smithy/codegen/core/Symbol;
+	public final fun getTrait ()Lsoftware/amazon/smithy/codegen/core/Symbol;
 }
 
 public final class aws/smithy/kotlin/codegen/core/RuntimeTypes$Serde$SerdeCbor : aws/smithy/kotlin/codegen/core/RuntimeTypePackage {
@@ -2664,6 +2676,16 @@ public class aws/smithy/kotlin/codegen/rendering/serde/JsonSerializerGenerator :
 	public fun getDefaultTimestampFormat ()Lsoftware/amazon/smithy/model/traits/TimestampFormatTrait$Format;
 	public fun operationSerializer (Laws/smithy/kotlin/codegen/rendering/protocol/ProtocolGenerator$GenerationContext;Lsoftware/amazon/smithy/model/shapes/OperationShape;Ljava/util/List;)Lsoftware/amazon/smithy/codegen/core/Symbol;
 	public fun payloadSerializer (Laws/smithy/kotlin/codegen/rendering/protocol/ProtocolGenerator$GenerationContext;Lsoftware/amazon/smithy/model/shapes/Shape;Ljava/util/Collection;)Lsoftware/amazon/smithy/codegen/core/Symbol;
+}
+
+public final class aws/smithy/kotlin/codegen/rendering/serde/SchemaGenerator {
+	public fun <init> (Laws/smithy/kotlin/codegen/core/RenderingContext;)V
+	public final fun getCtx ()Laws/smithy/kotlin/codegen/core/RenderingContext;
+	public final fun render ()V
+}
+
+public final class aws/smithy/kotlin/codegen/rendering/serde/SchemaGeneratorKt {
+	public static final fun useSchemaWriter (Laws/smithy/kotlin/codegen/core/KotlinDelegator;Lsoftware/amazon/smithy/model/shapes/Shape;Lkotlin/jvm/functions/Function1;)V
 }
 
 public final class aws/smithy/kotlin/codegen/rendering/serde/SdkFieldDescriptorTrait {

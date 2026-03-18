@@ -729,6 +729,8 @@ public final class aws/smithy/kotlin/runtime/content/DocumentKt {
 	public static final fun Document (Ljava/util/List;)Laws/smithy/kotlin/runtime/content/Document;
 	public static final fun Document (Ljava/util/Map;)Laws/smithy/kotlin/runtime/content/Document;
 	public static final fun Document (Z)Laws/smithy/kotlin/runtime/content/Document;
+	public static final fun Document ([Laws/smithy/kotlin/runtime/content/Document;)Laws/smithy/kotlin/runtime/content/Document;
+	public static final fun Document ([Lkotlin/Pair;)Laws/smithy/kotlin/runtime/content/Document;
 }
 
 public final class aws/smithy/kotlin/runtime/content/FileContent : aws/smithy/kotlin/runtime/content/ByteStream$SourceStream {

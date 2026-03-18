@@ -19,7 +19,7 @@ const val DEFAULT_TEST_SOURCE_SET_ROOT = "./src/test/kotlin/"
  * Manages writers for Kotlin files.
  */
 class KotlinDelegator(
-    private val ctx: CodegenContext,
+    val ctx: CodegenContext,
     val fileManifest: FileManifest,
     private val integrations: List<KotlinIntegration> = listOf(),
 ) {
