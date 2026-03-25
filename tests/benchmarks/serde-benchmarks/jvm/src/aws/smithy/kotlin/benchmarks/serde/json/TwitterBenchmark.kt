@@ -13,7 +13,8 @@ import aws.smithy.kotlin.runtime.serde.json.JsonDeserializer
 import aws.smithy.kotlin.runtime.serde.json.JsonSerializer
 import aws.smithy.kotlin.runtime.serde.json.JsonToken
 import aws.smithy.kotlin.runtime.serde.json.jsonStreamReader
-import kotlinx.benchmark.*
+import kotlinx.benchmark.Benchmark
+import kotlinx.benchmark.Setup
 import kotlinx.coroutines.runBlocking
 
 open class TwitterBenchmark : BenchmarkBase() {

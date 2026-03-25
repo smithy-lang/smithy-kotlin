@@ -227,3 +227,47 @@ public final class aws/smithy/kotlin/runtime/serde/json/JsonToken$String : aws/s
 	public fun toString ()Ljava/lang/String;
 }
 
+public final class aws/smithy/kotlin/runtime/serde/json/codec/JsonCodec : aws/smithy/kotlin/runtime/serde/codecs/Codec {
+	public static final field Companion Laws/smithy/kotlin/runtime/serde/json/codec/JsonCodec$Companion;
+	public synthetic fun <init> (Laws/smithy/kotlin/runtime/serde/json/codec/JsonCodec$Builder;Lkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun createDecoder (Laws/smithy/kotlin/runtime/io/SdkBufferedSource;)Laws/smithy/kotlin/runtime/serde/codecs/Decoder;
+	public fun createEncoder (Laws/smithy/kotlin/runtime/io/SdkBufferedSink;)Laws/smithy/kotlin/runtime/serde/codecs/Encoder;
+	public final fun getDefaultTimestampFormat ()Laws/smithy/kotlin/runtime/serde/SmithyTimestampFormat;
+	public final fun getUseHttpBindings ()Z
+	public final fun getUseJsonName ()Z
+}
+
+public final class aws/smithy/kotlin/runtime/serde/json/codec/JsonCodec$Builder {
+	public fun <init> ()V
+	public final fun getDefaultTimestampFormat ()Laws/smithy/kotlin/runtime/serde/SmithyTimestampFormat;
+	public final fun getUseHttpBindings ()Z
+	public final fun getUseJsonName ()Z
+	public final fun setDefaultTimestampFormat (Laws/smithy/kotlin/runtime/serde/SmithyTimestampFormat;)V
+	public final fun setUseHttpBindings (Z)V
+	public final fun setUseJsonName (Z)V
+}
+
+public final class aws/smithy/kotlin/runtime/serde/json/codec/JsonCodec$Companion {
+	public final fun invoke (Lkotlin/jvm/functions/Function1;)Laws/smithy/kotlin/runtime/serde/json/codec/JsonCodec;
+}
+
+public final class aws/smithy/kotlin/runtime/serde/json/codec/JsonEncoder : aws/smithy/kotlin/runtime/serde/codecs/Encoder, aws/smithy/kotlin/runtime/serde/codecs/KeyValueEncoder {
+	public fun <init> (Laws/smithy/kotlin/runtime/io/SdkBufferedSink;)V
+	public fun encodeBigDecimal (Laws/smithy/kotlin/runtime/content/BigDecimal;)V
+	public fun encodeBigInteger (Laws/smithy/kotlin/runtime/content/BigInteger;)V
+	public fun encodeBoolean (Z)V
+	public fun encodeByte (B)V
+	public fun encodeByteStream (Laws/smithy/kotlin/runtime/content/ByteStream;)V
+	public fun encodeDouble (D)V
+	public fun encodeEntry (Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function1;)V
+	public fun encodeFloat (F)V
+	public fun encodeInt (I)V
+	public fun encodeList (Lkotlin/jvm/functions/Function1;)V
+	public fun encodeLong (J)V
+	public fun encodeMap (Lkotlin/jvm/functions/Function1;)V
+	public fun encodeNull ()V
+	public fun encodeShort (S)V
+	public fun encodeString (Ljava/lang/String;)V
+	public fun encodeStructure (Lkotlin/jvm/functions/Function1;)V
+}
+

@@ -1,15 +1,12 @@
-/*
- * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
- * SPDX-License-Identifier: Apache-2.0
- */
-package aws.smithy.kotlin.runtime.serde.json
+package aws.smithy.kotlin.runtime.serde.json.codec
 
-import aws.smithy.kotlin.runtime.io.SdkSink
-import aws.smithy.kotlin.runtime.io.SdkSource
-import aws.smithy.kotlin.runtime.serde.Codec
-import aws.smithy.kotlin.runtime.serde.Deserializer
-import aws.smithy.kotlin.runtime.serde.Serializer
+import aws.smithy.kotlin.runtime.io.SdkBufferedSink
+import aws.smithy.kotlin.runtime.io.SdkBufferedSource
+import aws.smithy.kotlin.runtime.io.buffer
 import aws.smithy.kotlin.runtime.serde.SmithyTimestampFormat
+import aws.smithy.kotlin.runtime.serde.codecs.Codec
+import aws.smithy.kotlin.runtime.serde.codecs.Decoder
+import aws.smithy.kotlin.runtime.serde.codecs.Encoder
 
 public class JsonCodec private constructor(builder: Builder) : Codec {
     public companion object {
@@ -26,11 +23,9 @@ public class JsonCodec private constructor(builder: Builder) : Codec {
         public var useJsonName: Boolean = true
     }
 
-    override fun createDeserializer(source: SdkSource): Deserializer {
+    override fun createDecoder(source: SdkBufferedSource): Decoder {
         TODO("Not yet implemented")
     }
 
-    override fun createSerializer(sink: SdkSink): Serializer {
-        TODO("Not yet implemented")
-    }
+    override fun createEncoder(sink: SdkBufferedSink): Encoder = JsonEncoder(sink.buffer())
 }

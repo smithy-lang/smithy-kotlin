@@ -292,17 +292,39 @@ object RuntimeTypes {
         val parseBigInteger = symbol("parseBigInteger")
         val parseBigDecimal = symbol("parseBigDecimal")
 
-        val Schema = symbol("Schema")
-        val ScalarSchema = symbol("ScalarSchema")
-        val MemberSchema = symbol("MemberSchema")
-        val StructureSchema = symbol("StructureSchema")
-        val ListSchema = symbol("ListSchema")
-        val MapSchema = symbol("MapSchema")
-        val OperationSchema = symbol("OperationSchema")
-        val ServiceSchema = symbol("ServiceSchema")
         val ShapeId = symbol("ShapeId")
         val ShapeType = symbol("ShapeType")
         val Trait = symbol("Trait")
+
+        object Schemas : RuntimeTypePackage(KotlinDependency.SERDE, "schemas") {
+            val BigDecimalSchema = symbol("BigDecimalSchema")
+            val BigIntegerSchema = symbol("BigIntegerSchema")
+            val BlobSchema = symbol("BlobSchema")
+            val BlobSchemaInline = symbol("BlobSchema.Inline") { objectRef = BlobSchema }
+            val BlobSchemaStreaming = symbol("BlobSchema.Streaming") { objectRef = BlobSchema }
+            val BooleanSchema = symbol("BooleanSchema")
+            val ByteSchema = symbol("ByteSchema")
+            val DocumentSchema = symbol("DocumentSchema")
+            val DoubleSchema = symbol("DoubleSchema")
+            val FloatSchema = symbol("FloatSchema")
+            val IntegerSchema = symbol("IntegerSchema")
+            val ListSchema = symbol("ListSchema")
+            val LongSchema = symbol("LongSchema")
+            val MapSchema = symbol("MapSchema")
+            val MemberSchema = symbol("MemberSchema")
+            val OperationSchema = symbol("OperationSchema")
+            val ServiceSchema = symbol("ServiceSchema")
+            val ShortSchema = symbol("ShortSchema")
+            val StringSchema = symbol("StringSchema")
+            val StructureMemberAccess = symbol("StructureMemberAccess")
+            val StructureSchema = symbol("StructureSchema")
+            val TimestampSchema = symbol("TimestampSchema")
+            val UnionMemberAccess = symbol("UnionMemberAccess")
+            val UnionSchema = symbol("UnionSchema")
+            val asEnum = symbol("asEnum")
+            val asNullable = symbol("asNullable")
+            val property = symbol("property")
+        }
 
         object SerdeJson : RuntimeTypePackage(KotlinDependency.SERDE_JSON) {
             val JsonSerialName = symbol("JsonSerialName")

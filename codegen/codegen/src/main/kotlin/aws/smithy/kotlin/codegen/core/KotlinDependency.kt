@@ -4,6 +4,7 @@
  */
 package aws.smithy.kotlin.codegen.core
 
+import aws.smithy.kotlin.codegen.model.SymbolBuilder
 import aws.smithy.kotlin.codegen.model.buildSymbol
 import aws.smithy.kotlin.codegen.model.namespace
 import software.amazon.smithy.codegen.core.CodegenException
@@ -168,10 +169,12 @@ abstract class RuntimeTypePackage(
         subpackage: String = defaultSubpackage,
         isExtension: Boolean = false,
         nullable: Boolean = true,
+        builderBlock: SymbolBuilder.() -> Unit = {},
     ): Symbol = buildSymbol {
         this.name = name
         namespace(dependency, subpackage)
         this.isExtension = isExtension
         this.nullable = nullable
+        builderBlock()
     }
 }
