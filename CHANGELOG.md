@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.6.7] - 03/24/2026
+
+## [1.6.6] - 03/13/2026
+
+### Fixes
+* Support event stream header name lengths up to 255
+
 ## [1.6.5] - 02/25/2026
 
 ### Features
