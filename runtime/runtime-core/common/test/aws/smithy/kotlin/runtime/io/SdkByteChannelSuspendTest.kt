@@ -7,14 +7,11 @@ package aws.smithy.kotlin.runtime.io
 
 import aws.smithy.kotlin.runtime.testing.ManualDispatchTestBase
 import io.kotest.matchers.string.shouldContain
-import kotlinx.coroutines.*
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.runTest
-import kotlin.test.AfterTest
-import kotlin.test.Test
-import kotlin.test.assertEquals
-import kotlin.test.assertFailsWith
-import kotlin.test.assertFalse
-import kotlin.test.assertTrue
+import kotlinx.coroutines.yield
+import kotlin.test.*
 
 class SdkByteChannelSuspendTest : ManualDispatchTestBase() {
     private val ch = SdkByteChannel()
@@ -153,7 +150,7 @@ class SdkByteChannelSuspendTest : ManualDispatchTestBase() {
     }
 
     @Test
-    fun testReadToEmptyFromFailedChannel() = runTest {
+    fun testReadToEmptyFromCanceledChannel() = runTest {
         expect(1)
         ch.cancel(TestException())
         val sink = SdkBuffer()
@@ -175,7 +172,7 @@ class SdkByteChannelSuspendTest : ManualDispatchTestBase() {
     }
 
     @Test
-    fun testReadFromFailedChannel() = runTest {
+    fun testReadFromCanceledChannel() = runTest {
         expect(1)
         ch.cancel(TestException())
         assertFailsWith<TestException> {
@@ -214,7 +211,7 @@ class SdkByteChannelSuspendTest : ManualDispatchTestBase() {
     }
 
     @Test
-    fun testReadFullyFromFailedChannel() = runTest {
+    fun testReadFullyFromCanceledChannel() = runTest {
         expect(1)
         ch.cancel(TestException())
         assertFailsWith<TestException> {
@@ -341,7 +338,7 @@ class SdkByteChannelSuspendTest : ManualDispatchTestBase() {
     }
 
     @Test
-    fun testResumeReadFromFailedChannel() = runTest {
+    fun testResumeReadFromCanceledChannel() = runTest {
         expect(1)
 
         launch {
