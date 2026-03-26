@@ -95,7 +95,7 @@ class SdkByteChannelStressTest {
     }
 
     @Test
-    fun testReadAllFromFailedChannel(): Unit = runBlocking {
+    fun testReadAllFromCanceledChannel(): Unit = runBlocking {
         val ch = SdkByteChannel(true)
         ch.cancel(TestException())
         assertFailsWith<TestException> {
