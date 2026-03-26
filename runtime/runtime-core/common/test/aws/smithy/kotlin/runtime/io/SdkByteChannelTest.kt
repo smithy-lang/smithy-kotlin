@@ -154,7 +154,7 @@ class SdkByteChannelTest {
     }
 
     @Test
-    fun testReadFullyFromFailedChannel() = runTest {
+    fun testReadFullyFromCanceledChannel() = runTest {
         // ensure that we attempt reading such that failures are propagate to caller
         val chan = SdkByteChannel(true)
 
@@ -166,7 +166,7 @@ class SdkByteChannelTest {
     }
 
     @Test
-    fun testReadRemainingFromFailedChannel() = runTest {
+    fun testReadRemainingFromCanceledChannel() = runTest {
         // ensure that we attempt reading such that failures are propagate to caller
         val chan = SdkByteChannel(true)
 
