@@ -18,7 +18,7 @@ micrometer-version = "1.16.1"
 binary-compatibility-validator-version = "0.18.1"
 kotlin-multiplatform-bignum-version = "0.3.10"
 kotlinx-datetime-version = "0.7.1"
-publish-plugin-version = "2.0.0"
+publish-plugin-version = "2.1.1"
 smithy-gradle-plugin-version = "1.3.0"
 
 # codegen
