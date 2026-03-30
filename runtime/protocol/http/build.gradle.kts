@@ -12,8 +12,8 @@ kotlin {
     sourceSets {
         commonMain {
             dependencies {
-                // exposes: io/ByteStream
-                api(project(":runtime:runtime-core"))
+                api(project(":runtime:runtime-core")) // For ByteStream and other IO APIs
+                api(project(":runtime:serde")) // For Encoder/Decoder
                 implementation(project(":runtime:observability:telemetry-api"))
             }
         }

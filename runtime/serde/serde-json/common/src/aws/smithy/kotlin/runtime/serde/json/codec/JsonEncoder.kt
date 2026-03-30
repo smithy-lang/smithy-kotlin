@@ -28,9 +28,9 @@ public class JsonEncoder internal constructor(
     private var encodeCount = 0
 
     private fun increment() {
-        check(state == EncoderState.VALUE && encodeCount > 0) { "Value encoders must only encode a single value!" }
+        check(encodeCount == 0 || state != EncoderState.VALUE) { "Value encoders must only encode a single value!" }
 
-        if (encodeCount == 0 && state.addDelimiters) {
+        if (encodeCount > 0 && state.addDelimiters) {
             writer.write(",")
             writer.newline()
         }

@@ -11,6 +11,7 @@ import aws.smithy.kotlin.codegen.utils.toPascalCase
 import software.amazon.smithy.aws.traits.ServiceTrait
 import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.model.Model
+import software.amazon.smithy.model.knowledge.TopDownIndex
 import software.amazon.smithy.model.node.*
 import software.amazon.smithy.model.shapes.*
 import software.amazon.smithy.model.traits.StreamingTrait
@@ -165,8 +166,8 @@ class SchemaGenerator(val ctx: RenderingContext<ServiceShape>) {
     private fun KotlinWriter.writeServiceInline(shape: ServiceShape) {
         writeSchemaInline(shape) {
             writeInline("operations = ")
-            withListOf(shape.operations) {
-                write("#L,", it.asShape.schemaName)
+            withListOf(serviceOperations(shape, ctx.model)) {
+                write("#L,", it.schemaName)
             }
 
             writeInline("errors = ")
@@ -340,6 +341,11 @@ private fun schemaName(shape: Shape, service: ServiceShape): String {
     return "$baseName${member}Schema"
 }
 
+private fun serviceOperations(service: ServiceShape, model: Model): List<OperationShape> = TopDownIndex
+    .of(model)
+    .getContainedOperations(service)
+    .toList()
+
 fun KotlinDelegator.useSchemaWriter(shape: Shape, block: (KotlinWriter) -> Unit) {
     val service = ctx.model.expectShape<ServiceShape>(ctx.settings.service)
     val schemaName = schemaName(shape, service)
@@ -361,7 +367,7 @@ private class ShapeMap private constructor(
                 is MapShape -> listOf(shape.key, shape.value)
                 is MemberShape -> listOf(shape.target.asShape())
                 is OperationShape -> listOf(shape.inputShape.asShape(), shape.outputShape.asShape())
-                is ServiceShape -> (shape.operations + shape.errorsSet).map { it.asShape() }
+                is ServiceShape -> serviceOperations(shape, model) + shape.errorsSet.map { it.asShape() }
                 is StructureShape -> shape.members().toList()
                 is UnionShape -> shape.members().toList()
                 else -> listOf()
@@ -391,4 +397,5 @@ private class ShapeMap private constructor(
             return ShapeMap(orderedDependencies, recursiveMembers)
         }
     }
+
 }
