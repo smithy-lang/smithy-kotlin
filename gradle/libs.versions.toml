@@ -25,7 +25,7 @@ smithy-gradle-plugin-version = "1.4.0"
 smithy-version = "1.68.0"
 
 # testing
-junit-version = "5.14.1"
+junit-version = "6.0.3"
 kotest-version = "5.9.1"
 kotlin-compile-testing-version = "0.12.1"
 kotlinx-benchmark-version = "0.4.16"
