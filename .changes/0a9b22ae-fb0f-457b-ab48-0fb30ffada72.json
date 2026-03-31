@@ -1,5 +1,0 @@
-{
-    "id": "0a9b22ae-fb0f-457b-ab48-0fb30ffada72",
-    "type": "bugfix",
-    "description": "Sleep outside of lock in adaptive rate limiter"
-}

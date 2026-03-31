@@ -1,5 +1,0 @@
-{
-    "id": "4a2c43d2-564e-45ee-a102-402b2af11082",
-    "type": "bugfix",
-    "description": "Fix code generation of negative default values for doubles"
-}
