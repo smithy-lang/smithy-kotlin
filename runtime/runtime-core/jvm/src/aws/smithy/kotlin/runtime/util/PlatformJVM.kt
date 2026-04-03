@@ -49,6 +49,32 @@ internal actual object SystemDefaultProvider : PlatformProvider {
     }
 
     actual override fun fileExists(path: String): Boolean = File(path).exists()
+    actual override fun write(
+        path: String,
+        data: ByteArray,
+        writeType: WriteType,
+        mustExist: Boolean,
+    ) {
+        when (writeType) {
+            is WriteType.OFFSET -> {
+                // TODO: Will other offsets mess this up?
+                // TODO: Will probably need a mutex when writing if so.....
+                java.io.RandomAccessFile(path, "rw").use {
+                    it.seek(writeType.offset)
+                    it.write(data)
+                }
+            }
+            is WriteType.APPEND -> {
+                TODO("Not yet implemented")
+
+            }
+            is WriteType.OVERWRITE -> {
+                TODO("Not yet implemented")
+
+            }
+        }
+
+    }
 
     public suspend fun readFileOrNull(path: Path): ByteArray? = readFileOrNull(path.toAbsolutePath().toString())
     public suspend fun readFileOrNull(file: File): ByteArray? = readFileOrNull(file.absolutePath)

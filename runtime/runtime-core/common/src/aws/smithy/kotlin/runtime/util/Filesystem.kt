@@ -5,6 +5,12 @@
 
 package aws.smithy.kotlin.runtime.util
 
+import kotlinx.io.IOException
+import kotlinx.io.files.FileNotFoundException
+import kotlinx.io.files.FileSystem
+import kotlinx.io.files.Path
+import kotlinx.io.files.SystemFileSystem
+
 /**
  * Abstraction over filesystem
  */
@@ -37,12 +43,78 @@ public interface Filesystem {
      */
     public fun fileExists(path: String): Boolean
 
+    /**
+     * TODO: KDocs
+     */
+    public fun write(path: String, data: ByteArray, writeType: WriteType, mustExist: Boolean = false)
+    // TODO: Expect implementations
+
+    /**
+     * TODO: KDocs
+     */
+    public fun atomicMove(source: String, destination: String, mustExist: Boolean = true, overwrite: Boolean = false): Unit {
+        val sourcePath = Path(source)
+        val destinationPath = Path(destination)
+
+        if (!SystemFileSystem.exists(sourcePath) && mustExist) {
+            throw FileNotFoundException("$sourcePath does not exist and mustExist is set to true")
+        }
+
+        if (SystemFileSystem.exists(destinationPath) && !overwrite) {
+            // TODO: Is this right?
+            throw IOException("$destinationPath already exists and overwrite is set to false")
+        }
+
+        SystemFileSystem.atomicMove(sourcePath, destinationPath)
+    }
+
+    /**
+     * TODO: KDocs
+     */
+    public fun delete(path: String, mustExist: Boolean = true): Unit =
+        SystemFileSystem.delete(Path(path), mustExist)
+
+    /**
+     * TODO: KDocs
+     */
+    public fun list(path: String, mustExist: Boolean = true): Collection<String> {
+        val path = Path(path)
+        if (!SystemFileSystem.exists(path) && mustExist) {
+            throw FileNotFoundException("$path does not exist and mustExist is set to true")
+        }
+        return SystemFileSystem.list(path).map { it.name }
+    }
+
+    /**
+     * TODO: KDocs
+     */
+    public fun createDir(path: String, mustCreate: Boolean = false): Unit =
+        SystemFileSystem.createDirectories(Path(path), mustCreate)
+
+    /**
+     * TODO: KDocs
+     */
+    public fun size(path: String, mustExist: Boolean = true): Long {
+        val path = Path(path)
+        if (!SystemFileSystem.exists(path) && mustExist) {
+            throw FileNotFoundException("$path does not exist and mustExist is set to true")
+        }
+
+        return SystemFileSystem.metadataOrNull(path)?.size ?: throw IOException("Unable to find size for $path, found null")
+    }
+
     public companion object {
         /**
          * Construct a fake filesystem from a mapping of paths to contents
          */
         public fun fromMap(data: Map<String, ByteArray>, filePathSeparator: String = "/"): Filesystem = MapFilesystem(data.toMutableMap(), filePathSeparator)
     }
+}
+
+public sealed class WriteType {
+    public object APPEND : WriteType()
+    public object OVERWRITE : WriteType()
+    public data class OFFSET(public val offset: Long) : WriteType()
 }
 
 internal class MapFilesystem(
