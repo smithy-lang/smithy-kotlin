@@ -16,10 +16,12 @@ import aws.smithy.kotlin.runtime.http.request.HttpRequest
 import aws.smithy.kotlin.runtime.http.response.HttpResponse
 import aws.smithy.kotlin.runtime.http.response.header
 import aws.smithy.kotlin.runtime.telemetry.logging.logger
+import aws.smithy.kotlin.runtime.time.Clock
 import aws.smithy.kotlin.runtime.time.Instant
 import aws.smithy.kotlin.runtime.time.ParseException
 import aws.smithy.kotlin.runtime.time.until
-import kotlinx.atomicfu.*
+import kotlinx.atomicfu.AtomicRef
+import kotlinx.atomicfu.atomic
 import kotlin.coroutines.coroutineContext
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.minutes
@@ -27,7 +29,12 @@ import kotlin.time.Duration.Companion.minutes
 /**
  * An interceptor used to detect clock skew (difference between client and server clocks) and apply a correction.
  */
-public class ClockSkewInterceptor : HttpInterceptor {
+public class ClockSkewInterceptor(private val clock: Clock) : HttpInterceptor {
+    /**
+     * Initialize a new clock skew interceptor.
+     */
+    public constructor() : this(Clock.System)
+
     public companion object {
         /**
          * How much must the clock be skewed before attempting correction
@@ -73,7 +80,7 @@ public class ClockSkewInterceptor : HttpInterceptor {
             context.executionContext[HttpOperationContext.ClockSkew] = skew
         }
 
-        context.executionContext[HttpOperationContext.ClockSkewApproximateSigningTime] = Instant.now()
+        context.executionContext[HttpOperationContext.ClockSkewApproximateSigningTime] = clock.now()
 
         return context.protocolRequest
     }
