@@ -169,9 +169,23 @@ public interface Filesystem {
     }
 }
 
+/**
+ * Strategy for writing data to a file.
+ */
 public sealed class WriteType {
+    /**
+     * Append data to the end of the file.
+     */
     public object APPEND : WriteType()
+
+    /**
+     * Overwrite the file contents, truncating any existing data.
+     */
     public object OVERWRITE : WriteType()
+
+    /**
+     * Write data at a specific byte [offset] within the file.
+     */
     public data class OFFSET(public val offset: Long) : WriteType()
 }
 
