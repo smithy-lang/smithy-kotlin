@@ -86,7 +86,7 @@ class SdkStreamResponseHandlerTest {
     }
 
     @Test
-    fun testWaitFailedResponse() = runTest {
+    fun testWaitAbortedResponse() = runTest {
         val handler = SdkStreamResponseHandler(mockConn, coroutineContext)
         val stream = MockHttpStream(200)
         launch {

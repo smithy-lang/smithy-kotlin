@@ -99,7 +99,7 @@ class CachedCredentialsProviderTest {
     }
 
     @Test
-    fun testLoadFailed() = runTest {
+    fun testProviderException() = runTest {
         val source = object : CredentialsProvider {
             private var count = 0
             override suspend fun resolve(attributes: Attributes): Credentials {
