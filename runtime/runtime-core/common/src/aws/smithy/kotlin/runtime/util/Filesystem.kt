@@ -15,7 +15,6 @@ import okio.buffer
 import okio.use
 import okio.FileSystem as OkioFileSystem
 
-// TODO: Deprecate old APIs
 /**
  * Abstraction over filesystem
  */
@@ -33,6 +32,8 @@ public interface Filesystem {
      * @param path fully qualified path encoded specifically to the target platform's filesystem.
      * @return contents of file or null if error (file does not exist, etc.)
      */
+    // TODO: Deprecate
+    // @Deprecated("Use read() instead", replaceWith = ReplaceWith("read(path, readAll = true)"))
     public suspend fun readFileOrNull(path: String): ByteArray?
 
     /**
@@ -40,12 +41,16 @@ public interface Filesystem {
      * @param path fully qualified path encoded specifically to the target platform's filesystem
      * @param data the file contents to write to disk
      */
+    // TODO: Deprecate
+    // @Deprecated("Use write() instead", replaceWith = ReplaceWith("write(path, data, WriteType.OVERWRITE)"))
     public suspend fun writeFile(path: String, data: ByteArray)
 
     /**
      * Check if a file exists at the [path].
      * @param path fully qualified path encoded specifically to the target platform's filesystem
      */
+    // TODO: Deprecate
+    // @Deprecated("Use kotlinx.io.files.SystemFileSystem.exists(Path(path)) instead")
     public fun fileExists(path: String): Boolean
 
     /**
