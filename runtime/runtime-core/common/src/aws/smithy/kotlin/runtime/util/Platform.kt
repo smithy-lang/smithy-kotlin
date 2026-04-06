@@ -43,10 +43,6 @@ internal expect object SystemDefaultProvider : PlatformProvider {
         writeType: WriteType,
         mustExist: Boolean,
     )
-    override fun delete(path: String, mustExist: Boolean)
-    override fun list(path: String, mustExist: Boolean): Collection<String>
-    override fun createDir(path: String, mustCreate: Boolean): Boolean
-    override fun size(path: String, mustExist: Boolean): Long
     override fun getAllEnvVars(): Map<String, String>
     override fun getAllProperties(): Map<String, String>
     override fun getProperty(key: String): String?

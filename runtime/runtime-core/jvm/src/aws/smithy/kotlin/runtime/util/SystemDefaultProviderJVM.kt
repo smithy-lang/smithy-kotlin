@@ -9,6 +9,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.io.File
 import java.io.IOException
+import java.io.RandomAccessFile
 import java.nio.file.Path
 import java.util.*
 
@@ -55,25 +56,18 @@ internal actual object SystemDefaultProvider : PlatformProvider {
         writeType: WriteType,
         mustExist: Boolean,
     ) {
+        val file = File(path)
+        if (!file.exists() && mustExist) throw IOException("$path does not exist and mustExist is set to true")
+
         when (writeType) {
-            is WriteType.OFFSET -> {
-                // TODO: Will other offsets mess this up?
-                // TODO: Will probably need a mutex when writing if so.....
-                java.io.RandomAccessFile(path, "rw").use {
+            is WriteType.OFFSET ->
+                RandomAccessFile(path, "rw").use {
                     it.seek(writeType.offset)
                     it.write(data)
                 }
-            }
-            is WriteType.APPEND -> {
-                TODO("Not yet implemented")
-
-            }
-            is WriteType.OVERWRITE -> {
-                TODO("Not yet implemented")
-
-            }
+            is WriteType.APPEND -> file.appendBytes(data)
+            is WriteType.OVERWRITE -> file.writeBytes(data)
         }
-
     }
 
     public suspend fun readFileOrNull(path: Path): ByteArray? = readFileOrNull(path.toAbsolutePath().toString())

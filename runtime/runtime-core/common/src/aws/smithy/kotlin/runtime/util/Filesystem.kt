@@ -9,12 +9,13 @@ import kotlinx.io.IOException
 import kotlinx.io.files.FileNotFoundException
 import kotlinx.io.files.Path
 import kotlinx.io.files.SystemFileSystem
-import okio.FileSystem as OkioFileSystem
 import okio.Path.Companion.toPath
 import okio.SYSTEM
 import okio.buffer
 import okio.use
+import okio.FileSystem as OkioFileSystem
 
+// TODO: Deprecate old APIs
 /**
  * Abstraction over filesystem
  */
@@ -56,7 +57,7 @@ public interface Filesystem {
     /**
      * TODO: KDocs
      */
-    public fun atomicMove(source: String, destination: String, mustExist: Boolean = true, overwrite: Boolean = false): Unit {
+    public fun atomicMove(source: String, destination: String, mustExist: Boolean = true, overwrite: Boolean = false) {
         val sourcePath = Path(source)
         val destinationPath = Path(destination)
 
@@ -75,8 +76,7 @@ public interface Filesystem {
     /**
      * TODO: KDocs
      */
-    public fun delete(path: String, mustExist: Boolean = true): Unit =
-        SystemFileSystem.delete(Path(path), mustExist)
+    public fun delete(path: String, mustExist: Boolean = true): Unit = SystemFileSystem.delete(Path(path), mustExist)
 
     /**
      * TODO: KDocs
@@ -92,8 +92,7 @@ public interface Filesystem {
     /**
      * TODO: KDocs
      */
-    public fun createDir(path: String, mustCreate: Boolean = false): Unit =
-        SystemFileSystem.createDirectories(Path(path), mustCreate)
+    public fun createDir(path: String, mustCreate: Boolean = false): Unit = SystemFileSystem.createDirectories(Path(path), mustCreate)
 
     /**
      * TODO: KDocs
@@ -110,7 +109,7 @@ public interface Filesystem {
     /**
      * TODO: KDocs
      */
-    public fun read(path: String, amount: Long, offset: Long = 0, readAll: Boolean = false, mustExist: Boolean = true): ByteArray {
+    public fun read(path: String, amount: Long = 0, offset: Long = 0, readAll: Boolean = false, mustExist: Boolean = true): ByteArray {
         if (!SystemFileSystem.exists(Path(path)) && mustExist) {
             throw FileNotFoundException("$path does not exist and mustExist is set to true")
         }
@@ -149,4 +148,12 @@ internal class MapFilesystem(
         memFs[path] = data
     }
     override fun fileExists(path: String): Boolean = memFs[path] != null
+    override fun write(
+        path: String,
+        data: ByteArray,
+        writeType: WriteType,
+        mustExist: Boolean,
+    ) {
+        TODO("Not yet implemented")
+    }
 }
