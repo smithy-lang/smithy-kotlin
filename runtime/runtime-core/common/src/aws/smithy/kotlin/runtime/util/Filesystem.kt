@@ -49,13 +49,23 @@ public interface Filesystem {
     public fun fileExists(path: String): Boolean
 
     /**
-     * TODO: KDocs
+     * Write [data] to a file at [path] using the specified [writeType] strategy.
+     *
+     * @param path fully qualified path encoded specifically to the target platform's filesystem
+     * @param data the bytes to write
+     * @param writeType the write strategy: [WriteType.OVERWRITE] to replace file contents,
+     * [WriteType.APPEND] to add to the end, or [WriteType.OFFSET] to write at a specific byte position
+     * @param mustExist if true, throws [aws.smithy.kotlin.runtime.io.IOException] when the file does not exist
      */
     public fun write(path: String, data: ByteArray, writeType: WriteType, mustExist: Boolean = false)
-    // TODO: Expect implementations
 
     /**
-     * TODO: KDocs
+     * Atomically move a file from [source] to [destination].
+     *
+     * @param source fully qualified path of the file to move
+     * @param destination fully qualified path of the target location
+     * @param mustExist if true, throws [FileNotFoundException] when [source] does not exist
+     * @param overwrite if false, throws [IOException] when [destination] already exists
      */
     public fun atomicMove(source: String, destination: String, mustExist: Boolean = true, overwrite: Boolean = false) {
         val sourcePath = Path(source)
@@ -66,7 +76,6 @@ public interface Filesystem {
         }
 
         if (SystemFileSystem.exists(destinationPath) && !overwrite) {
-            // TODO: Is this right?
             throw IOException("$destinationPath already exists and overwrite is set to false")
         }
 
@@ -74,12 +83,19 @@ public interface Filesystem {
     }
 
     /**
-     * TODO: KDocs
+     * Delete a file at [path].
+     *
+     * @param path fully qualified path of the file to delete
+     * @param mustExist if true, throws when the file does not exist
      */
     public fun delete(path: String, mustExist: Boolean = true): Unit = SystemFileSystem.delete(Path(path), mustExist)
 
     /**
-     * TODO: KDocs
+     * List the names of files and directories within the directory at [path].
+     *
+     * @param path fully qualified path of the directory to list
+     * @param mustExist if true, throws [FileNotFoundException] when [path] does not exist
+     * @return collection of entry names in the directory
      */
     public fun list(path: String, mustExist: Boolean = true): Collection<String> {
         val path = Path(path)
@@ -90,12 +106,20 @@ public interface Filesystem {
     }
 
     /**
-     * TODO: KDocs
+     * Create a directory (and any missing parent directories) at [path].
+     *
+     * @param path fully qualified path of the directory to create
+     * @param mustCreate if true, throws when the directory already exists
      */
     public fun createDir(path: String, mustCreate: Boolean = false): Unit = SystemFileSystem.createDirectories(Path(path), mustCreate)
 
     /**
-     * TODO: KDocs
+     * Get the size of a file at [path] in bytes.
+     *
+     * @param path fully qualified path of the file
+     * @param mustExist if true, throws [FileNotFoundException] when [path] does not exist
+     * @return the file size in bytes
+     * @throws [IOException] if the size cannot be determined
      */
     public fun size(path: String, mustExist: Boolean = true): Long {
         val path = Path(path)
@@ -107,7 +131,14 @@ public interface Filesystem {
     }
 
     /**
-     * TODO: KDocs
+     * Read bytes from a file at [path].
+     *
+     * @param path fully qualified path of the file to read
+     * @param amount number of bytes to read (ignored when [readAll] is true)
+     * @param offset byte offset to start reading from (ignored when [readAll] is true)
+     * @param readAll if true, reads the entire file contents
+     * @param mustExist if true, throws [FileNotFoundException] when [path] does not exist
+     * @return the bytes read from the file
      */
     public fun read(path: String, amount: Long = 0, offset: Long = 0, readAll: Boolean = false, mustExist: Boolean = true): ByteArray {
         if (!SystemFileSystem.exists(Path(path)) && mustExist) {
@@ -154,6 +185,19 @@ internal class MapFilesystem(
         writeType: WriteType,
         mustExist: Boolean,
     ) {
-        TODO("Not yet implemented")
+        if (memFs[path] == null && mustExist) {
+            throw FileNotFoundException("$path does not exist and mustExist is set to true")
+        }
+        when (writeType) {
+            is WriteType.OFFSET -> {
+                val existing = memFs[path] ?: ByteArray(0)
+                val end = (writeType.offset.toInt() + data.size)
+                val result = existing.copyOf(newSize = maxOf(existing.size, end))
+                data.copyInto(result, destinationOffset = writeType.offset.toInt())
+                memFs[path] = result
+            }
+            is WriteType.APPEND -> memFs[path] = memFs[path]?.let { it + data } ?: data
+            is WriteType.OVERWRITE -> memFs[path] = data
+        }
     }
 }
