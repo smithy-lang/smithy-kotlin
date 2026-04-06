@@ -7,9 +7,13 @@ package aws.smithy.kotlin.runtime.util
 
 import kotlinx.io.IOException
 import kotlinx.io.files.FileNotFoundException
-import kotlinx.io.files.FileSystem
 import kotlinx.io.files.Path
 import kotlinx.io.files.SystemFileSystem
+import okio.FileSystem as OkioFileSystem
+import okio.Path.Companion.toPath
+import okio.SYSTEM
+import okio.buffer
+import okio.use
 
 /**
  * Abstraction over filesystem
@@ -101,6 +105,25 @@ public interface Filesystem {
         }
 
         return SystemFileSystem.metadataOrNull(path)?.size ?: throw IOException("Unable to find size for $path, found null")
+    }
+
+    /**
+     * TODO: KDocs
+     */
+    public fun read(path: String, amount: Long, offset: Long = 0, readAll: Boolean = false, mustExist: Boolean = true): ByteArray {
+        if (!SystemFileSystem.exists(Path(path)) && mustExist) {
+            throw FileNotFoundException("$path does not exist and mustExist is set to true")
+        }
+
+        val path = path.toPath()
+        return OkioFileSystem.SYSTEM.source(path).buffer().use {
+            if (readAll) {
+                it.readByteArray()
+            } else {
+                it.skip(offset)
+                it.readByteArray(amount)
+            }
+        }
     }
 
     public companion object {
