@@ -5,12 +5,13 @@
 package aws.smithy.kotlin.dokka
 
 import org.jsoup.Jsoup
-import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.TestInstance
+import aws.smithy.kotlin.runtime.testing.TestInstance
+import aws.smithy.kotlin.runtime.testing.TestLifecycle
 import java.io.File
+import kotlin.test.Test
 import kotlin.test.assertTrue
 
-@TestInstance(TestInstance.Lifecycle.PER_CLASS)
+@TestInstance(TestLifecycle.PER_CLASS)
 class DokkaSmithyTest {
     @Test
     fun testLoadScripts() {

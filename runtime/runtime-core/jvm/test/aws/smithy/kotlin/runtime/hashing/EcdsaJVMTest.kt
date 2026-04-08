@@ -4,14 +4,14 @@
  */
 package aws.smithy.kotlin.runtime.hashing
 
-import org.junit.jupiter.api.Assertions.assertFalse
-import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.condition.EnabledForJreRange
 import org.junit.jupiter.api.condition.JRE
 import java.security.*
 import java.security.interfaces.*
 import java.security.spec.*
 import kotlin.test.Test
+import kotlin.test.assertFalse
+import kotlin.test.assertTrue
 
 class EcdsaJVMTest {
     // Helper function to generate valid test key

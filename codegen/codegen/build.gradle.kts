@@ -38,6 +38,7 @@ dependencies {
     testImplementation(libs.kotlin.test)
     testImplementation(libs.kotlin.test.junit5)
     testImplementation(project(":codegen:codegen-testutils"))
+    testImplementation(project(":runtime:testing"))
 }
 
 val generateSdkRuntimeVersion by tasks.registering {

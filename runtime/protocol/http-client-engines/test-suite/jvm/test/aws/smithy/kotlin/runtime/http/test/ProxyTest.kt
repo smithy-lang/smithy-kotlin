@@ -17,14 +17,15 @@ import aws.smithy.kotlin.runtime.http.test.util.AbstractEngineTest
 import aws.smithy.kotlin.runtime.http.test.util.engineConfig
 import aws.smithy.kotlin.runtime.http.test.util.test
 import aws.smithy.kotlin.runtime.net.url.Url
-import org.junit.jupiter.api.AfterAll
-import org.junit.jupiter.api.BeforeAll
-import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.TestInstance
+import aws.smithy.kotlin.runtime.testing.AfterAll
+import aws.smithy.kotlin.runtime.testing.BeforeAll
+import aws.smithy.kotlin.runtime.testing.TestInstance
+import aws.smithy.kotlin.runtime.testing.TestLifecycle
 import org.junit.jupiter.api.condition.EnabledIfSystemProperty
+import kotlin.test.Test
 import kotlin.test.assertEquals
 
-@TestInstance(TestInstance.Lifecycle.PER_CLASS) // enables non-static @BeforeAll/@AfterAll methods
+@TestInstance(TestLifecycle.PER_CLASS) // enables non-static @BeforeAll/@AfterAll methods
 @EnabledIfSystemProperty(named = "aws.test.http.enableProxyTests", matches = "true")
 class ProxyTest : AbstractEngineTest() {
     private lateinit var mitmProxy: MitmContainer
@@ -54,7 +55,7 @@ class ProxyTest : AbstractEngineTest() {
     }
 }
 
-@TestInstance(TestInstance.Lifecycle.PER_CLASS) // enables non-static @BeforeAll/@AfterAll methods
+@TestInstance(TestLifecycle.PER_CLASS) // enables non-static @BeforeAll/@AfterAll methods
 @EnabledIfSystemProperty(named = "aws.test.http.enableProxyTests", matches = "true")
 class ProxyAuthTest : AbstractEngineTest() {
     private lateinit var mitmProxy: MitmContainer
