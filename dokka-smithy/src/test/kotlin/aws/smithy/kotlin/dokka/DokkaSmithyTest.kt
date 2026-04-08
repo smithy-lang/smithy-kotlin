@@ -4,9 +4,9 @@
  */
 package aws.smithy.kotlin.dokka
 
-import org.jsoup.Jsoup
 import aws.smithy.kotlin.runtime.testing.TestInstance
 import aws.smithy.kotlin.runtime.testing.TestLifecycle
+import org.jsoup.Jsoup
 import java.io.File
 import kotlin.test.Test
 import kotlin.test.assertTrue
