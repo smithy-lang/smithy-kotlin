@@ -24,13 +24,13 @@ import aws.smithy.kotlin.runtime.httptest.TestEngine
 import aws.smithy.kotlin.runtime.identity.asIdentityProviderConfig
 import aws.smithy.kotlin.runtime.net.url.Url
 import aws.smithy.kotlin.runtime.operation.ExecutionContext
+import aws.smithy.kotlin.runtime.testing.parameterized
 import aws.smithy.kotlin.runtime.time.Instant
 import io.ktor.http.cio.*
 import io.ktor.utils.io.*
 import kotlinx.coroutines.runBlocking
 import kotlinx.io.readByteArray
 import kotlinx.serialization.json.*
-import aws.smithy.kotlin.runtime.testing.parameterized
 import java.nio.file.FileSystems
 import java.nio.file.Files
 import java.nio.file.Path

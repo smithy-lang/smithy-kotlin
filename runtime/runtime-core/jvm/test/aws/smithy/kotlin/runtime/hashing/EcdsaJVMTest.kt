@@ -99,8 +99,8 @@ class EcdsaJVMTest {
         assertTrue(verifier.verify(signature))
     }
 
-    @Test
     // SHA256withECDSAinP1363Format algorithm was introduced in Java 9, skip on Java 8
+    @Test
     fun testVerifyRawSignature() {
         if (runCatching { Signature.getInstance("SHA256withECDSAinP1363Format") }.isFailure) return
 

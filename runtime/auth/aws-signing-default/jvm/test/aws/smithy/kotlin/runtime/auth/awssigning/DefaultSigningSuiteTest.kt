@@ -4,8 +4,8 @@
  */
 package aws.smithy.kotlin.runtime.auth.awssigning
 
-import aws.smithy.kotlin.runtime.auth.awssigning.tests.Sigv4TestSuiteTest
 import aws.smithy.kotlin.runtime.auth.awssigning.tests.SigningSuiteTestBase
+import aws.smithy.kotlin.runtime.auth.awssigning.tests.Sigv4TestSuiteTest
 import aws.smithy.kotlin.runtime.http.request.HttpRequest
 import aws.smithy.kotlin.runtime.testing.parameterized
 import kotlinx.coroutines.runBlocking
@@ -15,8 +15,7 @@ import kotlin.test.assertEquals
 class DefaultSigningSuiteTest : SigningSuiteTestBase() {
     override val signer: AwsSigner = DefaultAwsSigner
 
-    private suspend fun canonicalRequest(request: HttpRequest, config: AwsSigningConfig): String =
-        Canonicalizer.Default.canonicalRequest(request, config).requestString
+    private suspend fun canonicalRequest(request: HttpRequest, config: AwsSigningConfig): String = Canonicalizer.Default.canonicalRequest(request, config).requestString
 
     private suspend fun signature(request: HttpRequest, config: AwsSigningConfig): String {
         val canonical = Canonicalizer.Default.canonicalRequest(request, config)
