@@ -102,7 +102,7 @@ class EcdsaJVMTest {
     // SHA256withECDSAinP1363Format algorithm was introduced in Java 9, skip on Java 8
     @Test
     fun testVerifyRawSignature() {
-        if (runCatching { Signature.getInstance("SHA256withECDSAinP1363Format") }.isFailure) return
+        val verifier = runCatching { Signature.getInstance("SHA256withECDSAinP1363Format") }.getOrElse { return }
 
         val keyGen = KeyPairGenerator.getInstance("EC")
         keyGen.initialize(ECGenParameterSpec("secp256r1"))
@@ -113,7 +113,6 @@ class EcdsaJVMTest {
         val message = "Hello, World!".toByteArray()
         val signature = ecdsaSecp256r1Rs(privateKey, message)
 
-        val verifier = Signature.getInstance("SHA256withECDSAinP1363Format")
         verifier.initVerify(publicKey)
         verifier.update(message)
 
