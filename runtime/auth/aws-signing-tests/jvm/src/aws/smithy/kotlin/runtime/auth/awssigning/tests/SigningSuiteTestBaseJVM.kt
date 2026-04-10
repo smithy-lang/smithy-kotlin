@@ -30,10 +30,7 @@ import io.ktor.utils.io.*
 import kotlinx.coroutines.runBlocking
 import kotlinx.io.readByteArray
 import kotlinx.serialization.json.*
-import org.junit.jupiter.api.Assumptions.assumeTrue
-import org.junit.jupiter.api.TestInstance
-import org.junit.jupiter.params.ParameterizedTest
-import org.junit.jupiter.params.provider.MethodSource
+import aws.smithy.kotlin.runtime.testing.parameterized
 import java.nio.file.FileSystems
 import java.nio.file.Files
 import java.nio.file.Path
@@ -85,11 +82,8 @@ private val AwsSignatureType.fileNamePart: String
         else -> error("Unsupported signature type $this for test suite")
     }
 
-public typealias SigningStateProvider = suspend (HttpRequest, AwsSigningConfig) -> String
-
 // FIXME - move to common test (will require ability to access test resources in a KMP compatible way)
 
-@TestInstance(TestInstance.Lifecycle.PER_CLASS) // necessary so arg factory methods can handle disabledTests
 public actual abstract class SigningSuiteTestBase : HasSigner {
     private val testDirPaths: List<Path> by lazy {
         Files
@@ -134,15 +128,8 @@ public actual abstract class SigningSuiteTestBase : HasSigner {
         )
     }
 
-    @ParameterizedTest(name = "header middleware test {0} (#{index})")
-    @MethodSource("headerTestArgs")
-    public fun testSigv4TestSuiteHeaders(test: Sigv4TestSuiteTest) {
-        testSigv4Middleware(test)
-    }
-
-    @ParameterizedTest(name = "query param middleware test {0} (#{index})")
-    @MethodSource("queryTestArgs")
-    public fun testSigv4TestSuiteQuery(test: Sigv4TestSuiteTest) {
+    @Test
+    public fun testSigv4TestSuite() = parameterized(headerTestArgs() + queryTestArgs()) { test ->
         testSigv4Middleware(test)
     }
 
@@ -174,69 +161,6 @@ public actual abstract class SigningSuiteTestBase : HasSigner {
             println("failed to get a signed request for ${test.path}: $ex")
             throw ex
         }
-    }
-
-    @ParameterizedTest(name = "header canonical request test {0} (#{index})")
-    @MethodSource("headerTestArgs")
-    public fun testCanonicalRequestHeaders(test: Sigv4TestSuiteTest) {
-        testCanonicalRequest(test)
-    }
-
-    @ParameterizedTest(name = "query param canonical request test {0} (#{index})")
-    @MethodSource("queryTestArgs")
-    public fun testCanonicalRequestQuery(test: Sigv4TestSuiteTest) {
-        testCanonicalRequest(test)
-    }
-
-    public open val canonicalRequestProvider: SigningStateProvider? = null
-
-    private fun testCanonicalRequest(test: Sigv4TestSuiteTest) = runBlocking {
-        assumeTrue(canonicalRequestProvider != null)
-        val expected = test.canonicalRequest
-        val actual = canonicalRequestProvider!!(test.request.build(), test.config)
-        assertEquals(expected, actual)
-    }
-
-    @ParameterizedTest(name = "header signature test {0} (#{index})")
-    @MethodSource("headerTestArgs")
-    public fun testSignatureHeaders(test: Sigv4TestSuiteTest) {
-        testSignature(test)
-    }
-
-    @ParameterizedTest(name = "query param signature test {0} (#{index})")
-    @MethodSource("queryTestArgs")
-    public fun testSignatureQuery(test: Sigv4TestSuiteTest) {
-        testSignature(test)
-    }
-
-    public open val signatureProvider: SigningStateProvider? = null
-
-    private fun testSignature(test: Sigv4TestSuiteTest) = runBlocking {
-        assumeTrue(signatureProvider != null)
-        val expected = test.signature
-        val actual = signatureProvider!!(test.request.build(), test.config)
-        assertEquals(expected, actual)
-    }
-
-    @ParameterizedTest(name = "header string to sign test {0} (#{index})")
-    @MethodSource("headerTestArgs")
-    public fun testStringToSignHeaders(test: Sigv4TestSuiteTest) {
-        testStringToSign(test)
-    }
-
-    @ParameterizedTest(name = "query param string to sign test {0} (#{index})")
-    @MethodSource("queryTestArgs")
-    public fun testStringToSignQuery(test: Sigv4TestSuiteTest) {
-        testStringToSign(test)
-    }
-
-    public open val stringToSignProvider: SigningStateProvider? = null
-
-    private fun testStringToSign(test: Sigv4TestSuiteTest) = runBlocking {
-        assumeTrue(stringToSignProvider != null)
-        val expected = test.stringToSign
-        val actual = stringToSignProvider!!(test.request.build(), test.config)
-        assertEquals(expected, actual)
     }
 
     /**
