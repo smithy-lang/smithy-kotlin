@@ -32,14 +32,16 @@ public enum class TempDirCleanupMode {
  * Example:
  * ```
  * @Test
- * fun testSomething() = withTempDir { dir ->
- *     val file = Path(dir, "test.txt")
- *     // ...
+ * fun testSomething() = runTest {
+ *     withTempDir { dir ->
+ *         val file = Path(dir, "test.txt")
+ *         // ...
+ *     }
  * }
  * ```
  */
 @OptIn(InternalApi::class)
-public fun <T> withTempDir(cleanup: TempDirCleanupMode = TempDirCleanupMode.ON_SUCCESS, block: (dir: Path) -> T): T {
+public suspend fun <T> withTempDir(cleanup: TempDirCleanupMode = TempDirCleanupMode.ON_SUCCESS, block: suspend (dir: Path) -> T): T {
     val dir = Path(SystemTemporaryDirectory, "test-${Uuid.random()}")
     SystemFileSystem.createDirectories(dir)
     try {
