@@ -23,7 +23,7 @@ buildscript {
         https://github.com/Kotlin/dokka/issues/3472#issuecomment-1929712374
         https://github.com/Kotlin/dokka/issues/3194#issuecomment-1929382630
          */
-        classpath(enforcedPlatform("com.fasterxml.jackson:jackson-bom:2.21.1"))
+        classpath(enforcedPlatform("com.fasterxml.jackson:jackson-bom:2.21.2"))
     }
 
     configurations.classpath {
@@ -34,7 +34,7 @@ buildscript {
 
             FIXME: Figure out what broke our buildscript classpath, this is a temporary fix
              */
-            force("com.squareup.okhttp3:okhttp-coroutines:5.0.0-alpha.14")
+            force("com.squareup.okhttp3:okhttp-coroutines:5.3.2")
         }
     }
 }
