@@ -4,14 +4,11 @@
  */
 package aws.smithy.kotlin.dokka
 
-import aws.smithy.kotlin.runtime.testing.TestInstance
-import aws.smithy.kotlin.runtime.testing.TestLifecycle
 import org.jsoup.Jsoup
 import java.io.File
 import kotlin.test.Test
 import kotlin.test.assertTrue
 
-@TestInstance(TestLifecycle.PER_CLASS)
 class DokkaSmithyTest {
     @Test
     fun testLoadScripts() {
