@@ -4,8 +4,6 @@
  */
 package aws.smithy.kotlin.runtime.hashing
 
-import org.junit.jupiter.api.condition.EnabledForJreRange
-import org.junit.jupiter.api.condition.JRE
 import java.security.*
 import java.security.interfaces.*
 import java.security.spec.*
@@ -102,9 +100,10 @@ class EcdsaJVMTest {
     }
 
     @Test
-    // SHA256withECDSAinP1363Format algorithm was introduced in Java 11, skip on Java 8
-    @EnabledForJreRange(min = JRE.JAVA_11)
+    // SHA256withECDSAinP1363Format algorithm was introduced in Java 9, skip on Java 8
     fun testVerifyRawSignature() {
+        if (runCatching { Signature.getInstance("SHA256withECDSAinP1363Format") }.isFailure) return
+
         val keyGen = KeyPairGenerator.getInstance("EC")
         keyGen.initialize(ECGenParameterSpec("secp256r1"))
         val keyPair = keyGen.generateKeyPair()
