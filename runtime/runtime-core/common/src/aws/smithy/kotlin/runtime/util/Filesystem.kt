@@ -5,7 +5,7 @@
 
 package aws.smithy.kotlin.runtime.util
 
-import kotlinx.io.IOException
+import aws.smithy.kotlin.runtime.io.IOException
 import kotlinx.io.files.FileNotFoundException
 import kotlinx.io.files.Path
 import kotlinx.io.files.SystemFileSystem
@@ -70,7 +70,7 @@ public interface Filesystem {
      * @param source fully qualified path of the file to move
      * @param destination fully qualified path of the target location
      * @param mustExist if true, throws [FileNotFoundException] when [source] does not exist
-     * @param overwrite if false, throws [IOException] when [destination] already exists
+     * @param overwrite if false, throws [aws.smithy.kotlin.runtime.io.IOException] when [destination] already exists
      */
     public fun atomicMove(source: String, destination: String, mustExist: Boolean = true, overwrite: Boolean = false) {
         val sourcePath = Path(source)
@@ -124,7 +124,7 @@ public interface Filesystem {
      * @param path fully qualified path of the file
      * @param mustExist if true, throws [FileNotFoundException] when [path] does not exist
      * @return the file size in bytes
-     * @throws [IOException] if the size cannot be determined
+     * @throws [aws.smithy.kotlin.runtime.io.IOException] if the size cannot be determined
      */
     public fun size(path: String, mustExist: Boolean = true): Long {
         val path = Path(path)
