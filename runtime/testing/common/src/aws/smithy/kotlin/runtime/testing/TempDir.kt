@@ -16,8 +16,10 @@ import kotlinx.io.files.SystemTemporaryDirectory
 public enum class TempDirCleanupMode {
     /** Always delete the directory after the block completes, regardless of success or failure. */
     ALWAYS,
+
     /** Only delete the directory if the block completes successfully. On failure, preserve for debugging. */
     ON_SUCCESS,
+
     /** Never delete the directory. */
     NEVER,
 }
