@@ -10,7 +10,7 @@ kotlin {
         commonMain {
             dependencies {
                 implementation(libs.kotlin.test)
-                implementation(libs.kotlinx.io.core)
+                api(libs.kotlinx.io.core)
                 implementation(project(":runtime:runtime-core")) // for Uuid
             }
         }
