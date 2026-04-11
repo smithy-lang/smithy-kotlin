@@ -17,6 +17,7 @@ kotlin {
         commonTest {
             dependencies {
                 implementation(project(":runtime:auth:aws-signing-tests"))
+                implementation(project(":runtime:testing"))
                 implementation(libs.kotlinx.coroutines.test)
                 implementation(libs.kotlinx.serialization.json)
             }

@@ -129,9 +129,6 @@ subprojects {
     }
 
     tasks.withType<AbstractTestTask> {
-        if (this is Test) {
-            useJUnitPlatform()
-        }
 
         testLogging {
             events("passed", "skipped", "failed", "standardOut", "standardError")
