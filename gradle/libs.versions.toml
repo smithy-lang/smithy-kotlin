@@ -18,6 +18,7 @@ micrometer-version = "1.16.4"
 binary-compatibility-validator-version = "0.18.1"
 kotlin-multiplatform-bignum-version = "0.3.10"
 kotlinx-datetime-version = "0.7.1"
+kotlinx-io-version = "0.9.0"
 publish-plugin-version = "2.1.1"
 smithy-gradle-plugin-version = "1.4.0"
 
@@ -65,6 +66,7 @@ slf4j-simple = { module = "org.slf4j:slf4j-simple", version.ref = "slf4j-version
 crt-kotlin = { module = "aws.sdk.kotlin.crt:aws-crt-kotlin", version.ref = "crt-kotlin-version" }
 micrometer-core = { module = "io.micrometer:micrometer-core", version.ref = "micrometer-version" }
 kotlinx-datetime = { module = "org.jetbrains.kotlinx:kotlinx-datetime", version.ref = "kotlinx-datetime-version" }
+kotlinx-io-core = { module = "org.jetbrains.kotlinx:kotlinx-io-core", version.ref = "kotlinx-io-version" }
 
 smithy-codegen-core = { module = "software.amazon.smithy:smithy-codegen-core", version.ref = "smithy-version" }
 smithy-cli = { module = "software.amazon.smithy:smithy-cli", version.ref = "smithy-version" }

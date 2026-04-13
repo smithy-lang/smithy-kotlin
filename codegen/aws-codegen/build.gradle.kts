@@ -27,8 +27,6 @@ dependencies {
     api(libs.smithy.protocol.traits)
     implementation(libs.smithy.aws.endpoints)
 
-    testImplementation(libs.junit.jupiter)
-    testImplementation(libs.junit.jupiter.params)
     testImplementation(libs.kotest.assertions.core.jvm)
     testImplementation(libs.kotlin.test.junit5)
     testImplementation(project(":codegen:codegen-testutils"))

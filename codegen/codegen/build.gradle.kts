@@ -33,11 +33,11 @@ dependencies {
     implementation(libs.jsoup)
 
     // Test dependencies
-    testImplementation(libs.junit.jupiter)
     testImplementation(libs.kotest.assertions.core.jvm)
     testImplementation(libs.kotlin.test)
     testImplementation(libs.kotlin.test.junit5)
     testImplementation(project(":codegen:codegen-testutils"))
+    testImplementation(project(":runtime:testing"))
 }
 
 val generateSdkRuntimeVersion by tasks.registering {
