@@ -26,7 +26,6 @@ dependencies {
     api(project(":codegen:codegen"))
 
     // Test dependencies
-    implementation(libs.junit.jupiter)
     implementation(libs.kotest.assertions.core.jvm)
     implementation(libs.kotlin.test)
     implementation(libs.kotlin.test.junit5)
