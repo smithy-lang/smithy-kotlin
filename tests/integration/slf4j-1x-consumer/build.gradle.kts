@@ -25,7 +25,6 @@ dependencies {
         }
     }
 
-    testImplementation(libs.junit.jupiter)
     testImplementation(libs.kotlin.test)
     testImplementation(libs.kotlin.test.junit5)
 }
