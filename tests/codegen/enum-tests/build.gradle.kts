@@ -4,7 +4,6 @@
  */
 import aws.sdk.kotlin.gradle.codegen.smithyKotlinProjectionSrcDir
 import aws.sdk.kotlin.gradle.publishing.skipPublishing
-
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
