@@ -1,0 +1,138 @@
+public abstract interface class smithy/kotlin/enums/EnumTestClient : aws/smithy/kotlin/runtime/client/SdkClient {
+	public abstract fun doSomething (Lsmithy/kotlin/enums/model/DoSomethingRequest;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public static synthetic fun doSomething$default (Lsmithy/kotlin/enums/EnumTestClient;Lsmithy/kotlin/enums/model/DoSomethingRequest;Lkotlin/coroutines/Continuation;ILjava/lang/Object;)Ljava/lang/Object;
+	public abstract fun getConfig ()Lsmithy/kotlin/enums/EnumTestClient$Config;
+}
+
+public final class smithy/kotlin/enums/EnumTestClient$Config : aws/smithy/kotlin/runtime/client/RetryClientConfig, aws/smithy/kotlin/runtime/client/RetryStrategyClientConfig, aws/smithy/kotlin/runtime/client/SdkClientConfig, aws/smithy/kotlin/runtime/http/config/TimeoutConfig, aws/smithy/kotlin/runtime/telemetry/TelemetryConfig {
+	public static final field Companion Lsmithy/kotlin/enums/EnumTestClient$Config$Companion;
+	public synthetic fun <init> (Lsmithy/kotlin/enums/EnumTestClient$Config$Builder;Lkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun getAttemptTimeout-FghU774 ()Lkotlin/time/Duration;
+	public fun getCallTimeout-FghU774 ()Lkotlin/time/Duration;
+	public fun getClientName ()Ljava/lang/String;
+	public fun getLogMode ()Laws/smithy/kotlin/runtime/client/LogMode;
+	public fun getRetryPolicy ()Laws/smithy/kotlin/runtime/retries/policy/RetryPolicy;
+	public fun getRetryStrategy ()Laws/smithy/kotlin/runtime/retries/RetryStrategy;
+	public fun getTelemetryProvider ()Laws/smithy/kotlin/runtime/telemetry/TelemetryProvider;
+	public final fun toBuilder ()Lsmithy/kotlin/enums/EnumTestClient$Config$Builder;
+}
+
+public final class smithy/kotlin/enums/EnumTestClient$Config$Builder : aws/smithy/kotlin/runtime/client/RetryClientConfig$Builder, aws/smithy/kotlin/runtime/client/RetryStrategyClientConfig$Builder, aws/smithy/kotlin/runtime/client/SdkClientConfig$Builder, aws/smithy/kotlin/runtime/http/config/TimeoutConfig$Builder, aws/smithy/kotlin/runtime/telemetry/TelemetryConfig$Builder {
+	public fun <init> ()V
+	public synthetic fun build ()Ljava/lang/Object;
+	public fun build ()Lsmithy/kotlin/enums/EnumTestClient$Config;
+	public fun buildRetryStrategyClientConfig ()Laws/smithy/kotlin/runtime/client/RetryStrategyClientConfig;
+	public fun getAttemptTimeout-FghU774 ()Lkotlin/time/Duration;
+	public fun getCallTimeout-FghU774 ()Lkotlin/time/Duration;
+	public fun getClientName ()Ljava/lang/String;
+	public fun getLogMode ()Laws/smithy/kotlin/runtime/client/LogMode;
+	public fun getRetryPolicy ()Laws/smithy/kotlin/runtime/retries/policy/RetryPolicy;
+	public fun getRetryStrategy ()Laws/smithy/kotlin/runtime/retries/RetryStrategy;
+	public fun getTelemetryProvider ()Laws/smithy/kotlin/runtime/telemetry/TelemetryProvider;
+	public fun retryStrategy (Laws/smithy/kotlin/runtime/util/DslFactory;Lkotlin/jvm/functions/Function1;)V
+	public fun retryStrategy (Lkotlin/jvm/functions/Function1;)V
+	public fun setAttemptTimeout-BwNAW2A (Lkotlin/time/Duration;)V
+	public fun setCallTimeout-BwNAW2A (Lkotlin/time/Duration;)V
+	public fun setClientName (Ljava/lang/String;)V
+	public fun setLogMode (Laws/smithy/kotlin/runtime/client/LogMode;)V
+	public fun setRetryPolicy (Laws/smithy/kotlin/runtime/retries/policy/RetryPolicy;)V
+	public fun setRetryStrategy (Laws/smithy/kotlin/runtime/retries/RetryStrategy;)V
+	public fun setTelemetryProvider (Laws/smithy/kotlin/runtime/telemetry/TelemetryProvider;)V
+}
+
+public final class smithy/kotlin/enums/EnumTestClient$Config$Companion {
+	public final fun invoke (Lkotlin/jvm/functions/Function1;)Lsmithy/kotlin/enums/EnumTestClient$Config;
+}
+
+public final class smithy/kotlin/enums/EnumTestClient$DefaultImpls {
+	public static synthetic fun doSomething$default (Lsmithy/kotlin/enums/EnumTestClient;Lsmithy/kotlin/enums/model/DoSomethingRequest;Lkotlin/coroutines/Continuation;ILjava/lang/Object;)Ljava/lang/Object;
+}
+
+public final class smithy/kotlin/enums/EnumTestClientKt {
+	public static final field SdkVersion Ljava/lang/String;
+	public static final field ServiceApiVersion Ljava/lang/String;
+	public static final field ServiceId Ljava/lang/String;
+	public static final fun doSomething (Lsmithy/kotlin/enums/EnumTestClient;Lkotlin/jvm/functions/Function1;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+}
+
+public abstract class smithy/kotlin/enums/model/ContentSource {
+	public static final field Companion Lsmithy/kotlin/enums/model/ContentSource$Companion;
+	public abstract fun getValue ()Ljava/lang/String;
+}
+
+public final class smithy/kotlin/enums/model/ContentSource$Companion {
+	public final fun fromValue (Ljava/lang/String;)Lsmithy/kotlin/enums/model/ContentSource;
+	public final fun values ()Ljava/util/List;
+}
+
+public final class smithy/kotlin/enums/model/ContentSource$Input : smithy/kotlin/enums/model/ContentSource {
+	public static final field INSTANCE Lsmithy/kotlin/enums/model/ContentSource$Input;
+	public fun getValue ()Ljava/lang/String;
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class smithy/kotlin/enums/model/ContentSource$Output : smithy/kotlin/enums/model/ContentSource {
+	public static final field INSTANCE Lsmithy/kotlin/enums/model/ContentSource$Output;
+	public fun getValue ()Ljava/lang/String;
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class smithy/kotlin/enums/model/ContentSource$SdkUnknown : smithy/kotlin/enums/model/ContentSource {
+	public fun <init> (Ljava/lang/String;)V
+	public final fun component1 ()Ljava/lang/String;
+	public final fun copy (Ljava/lang/String;)Lsmithy/kotlin/enums/model/ContentSource$SdkUnknown;
+	public static synthetic fun copy$default (Lsmithy/kotlin/enums/model/ContentSource$SdkUnknown;Ljava/lang/String;ILjava/lang/Object;)Lsmithy/kotlin/enums/model/ContentSource$SdkUnknown;
+	public fun equals (Ljava/lang/Object;)Z
+	public fun getValue ()Ljava/lang/String;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class smithy/kotlin/enums/model/DoSomethingRequest {
+	public static final field Companion Lsmithy/kotlin/enums/model/DoSomethingRequest$Companion;
+	public synthetic fun <init> (Lsmithy/kotlin/enums/model/DoSomethingRequest$Builder;Lkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun copy (Lkotlin/jvm/functions/Function1;)Lsmithy/kotlin/enums/model/DoSomethingRequest;
+	public static synthetic fun copy$default (Lsmithy/kotlin/enums/model/DoSomethingRequest;Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)Lsmithy/kotlin/enums/model/DoSomethingRequest;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getSource ()Lsmithy/kotlin/enums/model/ContentSource;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class smithy/kotlin/enums/model/DoSomethingRequest$Builder {
+	public fun <init> ()V
+	public fun <init> (Lsmithy/kotlin/enums/model/DoSomethingRequest;)V
+	public final fun build ()Lsmithy/kotlin/enums/model/DoSomethingRequest;
+	public final fun getSource ()Lsmithy/kotlin/enums/model/ContentSource;
+	public final fun setSource (Lsmithy/kotlin/enums/model/ContentSource;)V
+}
+
+public final class smithy/kotlin/enums/model/DoSomethingRequest$Companion {
+	public final fun invoke (Lkotlin/jvm/functions/Function1;)Lsmithy/kotlin/enums/model/DoSomethingRequest;
+}
+
+public final class smithy/kotlin/enums/model/DoSomethingResponse {
+	public static final field Companion Lsmithy/kotlin/enums/model/DoSomethingResponse$Companion;
+	public synthetic fun <init> (Lsmithy/kotlin/enums/model/DoSomethingResponse$Builder;Lkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun equals (Ljava/lang/Object;)Z
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class smithy/kotlin/enums/model/DoSomethingResponse$Builder {
+	public fun <init> ()V
+	public fun <init> (Lsmithy/kotlin/enums/model/DoSomethingResponse;)V
+	public final fun build ()Lsmithy/kotlin/enums/model/DoSomethingResponse;
+}
+
+public final class smithy/kotlin/enums/model/DoSomethingResponse$Companion {
+	public final fun invoke (Lkotlin/jvm/functions/Function1;)Lsmithy/kotlin/enums/model/DoSomethingResponse;
+}
+
+public class smithy/kotlin/enums/model/EnumTestException : aws/smithy/kotlin/runtime/ServiceException {
+	public fun <init> ()V
+	public fun <init> (Ljava/lang/String;)V
+	public fun <init> (Ljava/lang/String;Ljava/lang/Throwable;)V
+	public fun <init> (Ljava/lang/Throwable;)V
+}
+
