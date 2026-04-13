@@ -21,66 +21,73 @@ import aws.smithy.kotlin.runtime.testing.AfterAll
 import aws.smithy.kotlin.runtime.testing.BeforeAll
 import aws.smithy.kotlin.runtime.testing.TestInstance
 import aws.smithy.kotlin.runtime.testing.TestLifecycle
-import org.junit.jupiter.api.condition.EnabledIfSystemProperty
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
+private fun proxyTestsEnabled() = System.getProperty("aws.test.http.enableProxyTests") == "true"
+
 @TestInstance(TestLifecycle.PER_CLASS) // enables non-static @BeforeAll/@AfterAll methods
-@EnabledIfSystemProperty(named = "aws.test.http.enableProxyTests", matches = "true")
 class ProxyTest : AbstractEngineTest() {
-    private lateinit var mitmProxy: MitmContainer
+    private var mitmProxy: MitmContainer? = null
 
     @BeforeAll
     fun setUp() {
+        if (!proxyTestsEnabled()) return
         mitmProxy = MitmContainer("--set", "fakeupstream=aws.amazon.com")
     }
 
     @AfterAll
     fun cleanUp() {
-        mitmProxy.close()
+        mitmProxy?.close()
     }
 
     @Test
-    fun testHttpProxy() = testEngines {
-        engineConfig {
-            val hostPort = mitmProxy.hostPort
-            proxySelector = ProxySelector {
-                ProxyConfig.Http("http://127.0.0.1:$hostPort")
+    fun testHttpProxy() {
+        val proxy = mitmProxy ?: return
+        testEngines {
+            engineConfig {
+                val hostPort = proxy.hostPort
+                proxySelector = ProxySelector {
+                    ProxyConfig.Http("http://127.0.0.1:$hostPort")
+                }
             }
-        }
 
-        test { _, client ->
-            testProxyResponse(client)
+            test { _, client ->
+                testProxyResponse(client)
+            }
         }
     }
 }
 
 @TestInstance(TestLifecycle.PER_CLASS) // enables non-static @BeforeAll/@AfterAll methods
-@EnabledIfSystemProperty(named = "aws.test.http.enableProxyTests", matches = "true")
 class ProxyAuthTest : AbstractEngineTest() {
-    private lateinit var mitmProxy: MitmContainer
+    private var mitmProxy: MitmContainer? = null
 
     @BeforeAll
     fun setUp() {
+        if (!proxyTestsEnabled()) return
         mitmProxy = MitmContainer("--proxyauth", "testuser:testpass", "--set", "fakeupstream=aws.amazon.com")
     }
 
     @AfterAll
     fun cleanUp() {
-        mitmProxy.close()
+        mitmProxy?.close()
     }
 
     @Test
-    fun testHttpProxyAuth() = testEngines {
-        engineConfig {
-            val hostPort = mitmProxy.hostPort
-            proxySelector = ProxySelector {
-                ProxyConfig.Http("http://testuser:testpass@127.0.0.1:$hostPort")
+    fun testHttpProxyAuth() {
+        val proxy = mitmProxy ?: return
+        testEngines {
+            engineConfig {
+                val hostPort = proxy.hostPort
+                proxySelector = ProxySelector {
+                    ProxyConfig.Http("http://testuser:testpass@127.0.0.1:$hostPort")
+                }
             }
-        }
 
-        test { _, client ->
-            testProxyResponse(client)
+            test { _, client ->
+                testProxyResponse(client)
+            }
         }
     }
 }
