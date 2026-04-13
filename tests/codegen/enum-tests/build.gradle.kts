@@ -5,6 +5,8 @@
 import aws.sdk.kotlin.gradle.codegen.smithyKotlinProjectionSrcDir
 import aws.sdk.kotlin.gradle.publishing.skipPublishing
 
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+
 plugins {
     kotlin("multiplatform")
     alias(libs.plugins.aws.kotlin.repo.tools.smithybuild)
@@ -69,4 +71,8 @@ kotlin {
 
 tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
     dependsOn(tasks.generateSmithyProjections)
+    compilerOptions {
+        jvmTarget.set(JvmTarget.JVM_1_8)
+        freeCompilerArgs.add("-Xjdk-release=1.8")
+    }
 }
