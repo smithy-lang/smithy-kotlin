@@ -23,6 +23,7 @@ dependencies {
     testImplementation(libs.jsoup)
     testImplementation(libs.kotest.assertions.core.jvm)
     testImplementation(libs.kotlin.test.junit5)
+    testImplementation(project(":runtime:testing"))
 }
 
 tasks.test {
