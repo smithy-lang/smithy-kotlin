@@ -21,6 +21,8 @@ import software.amazon.smithy.model.SourceLocation
 import software.amazon.smithy.rulesengine.language.EndpointRuleSet
 import software.amazon.smithy.rulesengine.language.syntax.Identifier
 import software.amazon.smithy.rulesengine.language.syntax.ToExpression
+import software.amazon.smithy.rulesengine.language.evaluation.type.BooleanType
+import software.amazon.smithy.rulesengine.language.evaluation.type.OptionalType
 import software.amazon.smithy.rulesengine.language.syntax.expressions.*
 import software.amazon.smithy.rulesengine.language.syntax.expressions.functions.*
 import software.amazon.smithy.rulesengine.language.syntax.expressions.literal.Literal
@@ -73,6 +75,12 @@ class DefaultEndpointProviderGenerator(
             name = "Default${prefix}EndpointProvider"
             namespace = "${settings.pkg.name}.endpoints"
         }
+    }
+
+    init {
+        // Type-check the rule set to populate type information on all expressions.
+        // This enables type-based truthiness checks during condition codegen.
+        rules.typeCheck()
     }
 
     private val endpointCustomizations = ctx.integrations.mapNotNull { it.customizeEndpointResolution(ctx) }
@@ -156,9 +164,7 @@ class DefaultEndpointProviderGenerator(
                 writer.openBlock("if (")
                 expressions.forEachIndexed { index, it ->
                     renderExpression(it.function)
-                    if (!it.function.isBooleanFunction()) { // these are meant to be evaluated on "truthiness" (i.e. is the result non-null)
-                        writeInline(" != null")
-                    }
+                    it.function.renderTruthinessCheck(writer)
                     write(if (index == expressions.lastIndex) "" else " &&")
                 }
                 writer.closeAndOpenBlock(") {")
@@ -418,16 +424,33 @@ private fun isSet(expression: Expression) = IsSet
     .getDefinition()
     .createFunction(FunctionNode.ofExpressions(IsSet.ID, ToExpression { expression }))
 
-private fun Expression.isBooleanFunction(): Boolean {
-    if (this !is LibraryFunction) {
-        return true
+/**
+ * Returns true if this expression generates nullable Kotlin code despite potentially having a non-optional Smithy type.
+ * This occurs when the visitor uses null-safe access patterns (e.g., `?.` chains) that introduce nullability
+ * not reflected in the Smithy type system.
+ */
+private fun Expression.generatesNullableKotlin(): Boolean = this is GetAttr
+
+/**
+ * Appends the correct truthiness check suffix for a condition expression per the Smithy spec:
+ * "If a condition returns None or False, the condition does not match."
+ *
+ * - optional or nullable boolean → `== true`  (rejects both null and false)
+ * - optional or nullable non-boolean → `!= null` (rejects null)
+ * - non-nullable boolean (e.g. booleanEquals) → (no suffix; already a valid Kotlin Boolean)
+ */
+private fun Expression.renderTruthinessCheck(writer: KotlinWriter) {
+    val exprType = runCatching { type() }.getOrNull()
+    val isNullable = exprType is OptionalType || generatesNullableKotlin()
+    val isBooleanInner = when {
+        exprType is OptionalType -> exprType.inner() is BooleanType
+        else -> exprType is BooleanType
     }
 
-    return name !in setOf(
-        "parseUrl",
-        "substring",
-        "uriEncode",
-        "aws.parseArn",
-        "aws.partition",
-    )
+    when {
+        isNullable && isBooleanInner -> writer.writeInline(" == true")
+        isNullable -> writer.writeInline(" != null")
+        // Non-nullable boolean — use as-is
+        else -> Unit
+    }
 }
