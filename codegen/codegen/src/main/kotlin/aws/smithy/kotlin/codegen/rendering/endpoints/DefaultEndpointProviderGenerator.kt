@@ -77,12 +77,6 @@ class DefaultEndpointProviderGenerator(
         }
     }
 
-    init {
-        // Type-check the rule set to populate type information on all expressions.
-        // This enables type-based truthiness checks during condition codegen.
-        rules.typeCheck()
-    }
-
     private val endpointCustomizations = ctx.integrations.mapNotNull { it.customizeEndpointResolution(ctx) }
 
     private val externalFunctions = endpointCustomizations
