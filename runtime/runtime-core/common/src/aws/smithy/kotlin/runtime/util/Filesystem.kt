@@ -10,10 +10,9 @@ import kotlinx.io.files.FileNotFoundException
 import kotlinx.io.files.Path
 import kotlinx.io.files.SystemFileSystem
 import okio.Path.Companion.toPath
-import okio.SYSTEM
 import okio.buffer
 import okio.use
-import okio.FileSystem as OkioFileSystem
+import okio.FileSystem
 
 /**
  * Abstraction over filesystem
@@ -50,7 +49,7 @@ public interface Filesystem {
      * @param path fully qualified path encoded specifically to the target platform's filesystem
      */
     // TODO: Deprecate
-    // @Deprecated("Use kotlinx.io.files.SystemFileSystem.exists(Path(path)) instead")
+    // @Deprecated("Use exists() instead", replaceWith = ReplaceWith("exists(path)"))
     public fun fileExists(path: String): Boolean
 
     /**
@@ -73,18 +72,15 @@ public interface Filesystem {
      * @param overwrite if false, throws [aws.smithy.kotlin.runtime.io.IOException] when [destination] already exists
      */
     public fun atomicMove(source: String, destination: String, mustExist: Boolean = true, overwrite: Boolean = false) {
-        val sourcePath = Path(source)
-        val destinationPath = Path(destination)
-
-        if (!SystemFileSystem.exists(sourcePath) && mustExist) {
-            throw FileNotFoundException("$sourcePath does not exist and mustExist is set to true")
+        if (!exists(source) && mustExist) {
+            throw FileNotFoundException("$source does not exist and mustExist is set to true")
         }
 
-        if (SystemFileSystem.exists(destinationPath) && !overwrite) {
-            throw IOException("$destinationPath already exists and overwrite is set to false")
+        if (exists(destination) && !overwrite) {
+            throw IOException("$destination already exists and overwrite is set to false")
         }
 
-        SystemFileSystem.atomicMove(sourcePath, destinationPath)
+        SystemFileSystem.atomicMove(Path(source), Path(destination))
     }
 
     /**
@@ -103,11 +99,10 @@ public interface Filesystem {
      * @return collection of entry names in the directory
      */
     public fun list(path: String, mustExist: Boolean = true): Collection<String> {
-        val path = Path(path)
-        if (!SystemFileSystem.exists(path) && mustExist) {
+        if (!exists(path) && mustExist) {
             throw FileNotFoundException("$path does not exist and mustExist is set to true")
         }
-        return SystemFileSystem.list(path).map { it.name }
+        return SystemFileSystem.list(Path(path)).map { it.name }
     }
 
     /**
@@ -127,12 +122,11 @@ public interface Filesystem {
      * @throws [aws.smithy.kotlin.runtime.io.IOException] if the size cannot be determined
      */
     public fun size(path: String, mustExist: Boolean = true): Long {
-        val path = Path(path)
-        if (!SystemFileSystem.exists(path) && mustExist) {
+        if (!exists(path) && mustExist) {
             throw FileNotFoundException("$path does not exist and mustExist is set to true")
         }
 
-        return SystemFileSystem.metadataOrNull(path)?.size ?: throw IOException("Unable to find size for $path, found null")
+        return SystemFileSystem.metadataOrNull(Path(path))?.size ?: throw IOException("Unable to find size for $path, found null")
     }
 
     /**
@@ -146,12 +140,12 @@ public interface Filesystem {
      * @return the bytes read from the file
      */
     public fun read(path: String, amount: Long = 0, offset: Long = 0, readAll: Boolean = false, mustExist: Boolean = true): ByteArray {
-        if (!SystemFileSystem.exists(Path(path)) && mustExist) {
+        if (!exists(path) && mustExist) {
             throw FileNotFoundException("$path does not exist and mustExist is set to true")
         }
 
         val path = path.toPath()
-        return OkioFileSystem.SYSTEM.source(path).buffer().use {
+        return FileSystem.SYSTEM.source(path).buffer().use {
             if (readAll) {
                 it.readByteArray()
             } else {
@@ -160,6 +154,14 @@ public interface Filesystem {
             }
         }
     }
+
+    /**
+     * Check if a file or directory exists at [path].
+     *
+     * @param path fully qualified path
+     * @return true if a file or directory exists at [path], false otherwise
+     */
+    public fun exists(path: String): Boolean = SystemFileSystem.exists(Path(path))
 
     public companion object {
         /**
