@@ -14,18 +14,8 @@ import software.amazon.smithy.model.node.Node
 import software.amazon.smithy.rulesengine.language.EndpointRuleSet
 import kotlin.test.*
 
-/**
- * Tests for getAttr used in conditions — verifies that getAttr returning boolean/string
- * values generates correct truthiness checks per the Smithy spec:
- * "If a condition returns None or False, the condition does not match."
- */
 class GetAttrConditionTest {
 
-    /**
-     * Case 1: getAttr returning a boolean (isIp) used as a standalone condition (no assign, no booleanEquals wrapper).
-     * Previously broken — generated bare `url?.isIp` which is Boolean? in Kotlin.
-     * Now generates `url?.isIp == true` which correctly rejects both null and false.
-     */
     @Test
     fun testGetAttrBooleanStandaloneCondition() {
         val rules = createTestRuleSet(
@@ -91,9 +81,6 @@ class GetAttrConditionTest {
         println(generated)
     }
 
-    /**
-     * Case 2: getAttr returning a boolean wrapped in booleanEquals (the current workaround).
-     */
     @Test
     fun testGetAttrBooleanWithBooleanEquals() {
         val rules = createTestRuleSet(
@@ -165,9 +152,6 @@ class GetAttrConditionTest {
         println(generated)
     }
 
-    /**
-     * Case 3: getAttr returning a string used with assign (should continue working).
-     */
     @Test
     fun testGetAttrStringWithAssign() {
         val rules = createTestRuleSet(
@@ -234,9 +218,6 @@ class GetAttrConditionTest {
         println(generated)
     }
 
-    /**
-     * Case 4: Multiple conditions mixing getAttr boolean standalone with other conditions.
-     */
     @Test
     fun testGetAttrBooleanMixedConditions() {
         val rules = createTestRuleSet(

@@ -425,20 +425,10 @@ private fun isSet(expression: Expression) = IsSet
     .createFunction(FunctionNode.ofExpressions(IsSet.ID, ToExpression { expression }))
 
 /**
- * Returns true if this expression generates nullable Kotlin code despite potentially having a non-optional Smithy type.
- * This occurs when the visitor uses null-safe access patterns (e.g., `?.` chains) that introduce nullability
- * not reflected in the Smithy type system.
+ * Returns true if this expression generates nullable Kotlin code regardless of Smithy type.
  */
 private fun Expression.generatesNullableKotlin(): Boolean = this is GetAttr
 
-/**
- * Appends the correct truthiness check suffix for a condition expression per the Smithy spec:
- * "If a condition returns None or False, the condition does not match."
- *
- * - optional or nullable boolean → `== true`  (rejects both null and false)
- * - optional or nullable non-boolean → `!= null` (rejects null)
- * - non-nullable boolean (e.g. booleanEquals) → (no suffix; already a valid Kotlin Boolean)
- */
 private fun Expression.renderTruthinessCheck(writer: KotlinWriter) {
     val exprType = runCatching { type() }.getOrNull()
     val isNullable = exprType is OptionalType || generatesNullableKotlin()
