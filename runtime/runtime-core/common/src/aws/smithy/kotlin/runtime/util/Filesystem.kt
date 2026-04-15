@@ -9,7 +9,7 @@ import aws.smithy.kotlin.runtime.io.IOException
 import kotlinx.io.files.FileNotFoundException
 import kotlinx.io.files.Path
 import kotlinx.io.files.SystemFileSystem
-import okio.FileSystem
+import okio.FileSystem.Companion.SYSTEM
 import okio.Path.Companion.toPath
 import okio.buffer
 import okio.use
@@ -145,7 +145,7 @@ public interface Filesystem {
         }
 
         val path = path.toPath()
-        return FileSystem.SYSTEM.source(path).buffer().use {
+        return SYSTEM.source(path).buffer().use {
             if (readAll) {
                 it.readByteArray()
             } else {
@@ -175,7 +175,7 @@ public interface Filesystem {
         }
 
         val path = path.toPath()
-        return FileSystem.SYSTEM.source(path).buffer().use {
+        return SYSTEM.source(path).buffer().use {
             if (readAll) {
                 it.readByteArray()
             } else {
