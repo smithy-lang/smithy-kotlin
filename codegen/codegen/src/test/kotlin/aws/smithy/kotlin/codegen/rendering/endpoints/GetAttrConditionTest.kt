@@ -78,7 +78,6 @@ class GetAttrConditionTest {
             ) {
         """.formatForTest(indent = "            ")
         generated.shouldContainOnlyOnceWithDiff(expected)
-        println(generated)
     }
 
     @Test
@@ -149,7 +148,6 @@ class GetAttrConditionTest {
             ) {
         """.formatForTest(indent = "            ")
         generated.shouldContainOnlyOnceWithDiff(expected)
-        println(generated)
     }
 
     @Test
@@ -215,7 +213,6 @@ class GetAttrConditionTest {
             ) {
         """.formatForTest(indent = "            ")
         generated.shouldContainOnlyOnceWithDiff(expected)
-        println(generated)
     }
 
     @Test
@@ -291,7 +288,6 @@ class GetAttrConditionTest {
             ) {
         """.formatForTest(indent = "            ")
         generated.shouldContainOnlyOnceWithDiff(expected)
-        println(generated)
     }
 
     private fun renderRules(rules: EndpointRuleSet): String {
