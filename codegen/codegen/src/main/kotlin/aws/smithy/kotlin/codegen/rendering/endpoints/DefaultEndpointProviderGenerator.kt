@@ -19,10 +19,10 @@ import software.amazon.smithy.codegen.core.CodegenException
 import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.model.SourceLocation
 import software.amazon.smithy.rulesengine.language.EndpointRuleSet
-import software.amazon.smithy.rulesengine.language.syntax.Identifier
-import software.amazon.smithy.rulesengine.language.syntax.ToExpression
 import software.amazon.smithy.rulesengine.language.evaluation.type.BooleanType
 import software.amazon.smithy.rulesengine.language.evaluation.type.OptionalType
+import software.amazon.smithy.rulesengine.language.syntax.Identifier
+import software.amazon.smithy.rulesengine.language.syntax.ToExpression
 import software.amazon.smithy.rulesengine.language.syntax.expressions.*
 import software.amazon.smithy.rulesengine.language.syntax.expressions.functions.*
 import software.amazon.smithy.rulesengine.language.syntax.expressions.literal.Literal
