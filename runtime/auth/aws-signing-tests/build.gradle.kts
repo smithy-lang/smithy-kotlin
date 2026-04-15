@@ -27,7 +27,7 @@ kotlin {
                 implementation(project(":runtime:testing"))
                 implementation(libs.ktor.http.cio)
                 implementation(libs.ktor.utils)
-                implementation(libs.kotlin.test)
+                implementation(libs.kotlin.test.junit5)
                 implementation(libs.kotlinx.serialization.json)
             }
         }
