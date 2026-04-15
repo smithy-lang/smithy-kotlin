@@ -17,7 +17,7 @@ kotlin {
         jvmMain {
             dependencies {
                 api(libs.junit.jupiter)
-                implementation(libs.kotlin.test)
+                implementation(libs.kotlin.test.junit5)
                 api(libs.kotlinx.coroutines.test)
             }
         }

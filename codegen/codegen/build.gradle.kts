@@ -35,7 +35,6 @@ dependencies {
     // Test dependencies
     testImplementation(libs.kotest.assertions.core.jvm)
     testImplementation(libs.kotlin.test)
-    testImplementation(libs.kotlin.test.junit5)
     testImplementation(project(":codegen:codegen-testutils"))
     testImplementation(project(":runtime:testing"))
 }

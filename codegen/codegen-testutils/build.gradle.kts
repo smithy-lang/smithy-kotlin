@@ -28,7 +28,6 @@ dependencies {
     // Test dependencies
     implementation(libs.kotest.assertions.core.jvm)
     implementation(libs.kotlin.test)
-    implementation(libs.kotlin.test.junit5)
 }
 
 tasks.withType<KotlinCompile> {

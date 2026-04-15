@@ -22,7 +22,7 @@ dependencies {
 
     testImplementation(libs.jsoup)
     testImplementation(libs.kotest.assertions.core.jvm)
-    testImplementation(libs.kotlin.test.junit5)
+    testImplementation(libs.kotlin.test)
 }
 
 tasks.test {

@@ -28,7 +28,7 @@ dependencies {
     implementation(libs.smithy.aws.endpoints)
 
     testImplementation(libs.kotest.assertions.core.jvm)
-    testImplementation(libs.kotlin.test.junit5)
+    testImplementation(libs.kotlin.test)
     testImplementation(project(":codegen:codegen-testutils"))
 
     testImplementation(libs.slf4j.api)
