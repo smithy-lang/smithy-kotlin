@@ -9,10 +9,10 @@ import aws.smithy.kotlin.runtime.io.IOException
 import kotlinx.io.files.FileNotFoundException
 import kotlinx.io.files.Path
 import kotlinx.io.files.SystemFileSystem
+import okio.FileSystem
 import okio.Path.Companion.toPath
 import okio.buffer
 import okio.use
-import okio.FileSystem
 
 /**
  * Abstraction over filesystem
@@ -136,12 +136,42 @@ public interface Filesystem {
      * @param amount number of bytes to read (ignored when [readAll] is true)
      * @param offset byte offset to start reading from (ignored when [readAll] is true)
      * @param readAll if true, reads the entire file contents
-     * @param mustExist if true, throws [FileNotFoundException] when [path] does not exist
      * @return the bytes read from the file
+     * @throws FileNotFoundException if the file does not exist
      */
-    public fun read(path: String, amount: Long = 0, offset: Long = 0, readAll: Boolean = false, mustExist: Boolean = true): ByteArray {
-        if (!exists(path) && mustExist) {
-            throw FileNotFoundException("$path does not exist and mustExist is set to true")
+    public fun read(path: String, amount: Long = 0, offset: Long = 0, readAll: Boolean = false): ByteArray {
+        if (!exists(path)) {
+            throw FileNotFoundException("$path does not exist")
+        }
+
+        val path = path.toPath()
+        return FileSystem.SYSTEM.source(path).buffer().use {
+            if (readAll) {
+                it.readByteArray()
+            } else {
+                it.skip(offset)
+                it.readByteArray(amount)
+            }
+        }
+    }
+
+    /**
+     * Read bytes from a file at [path], returning null if the file does not exist and [mustExist] is false.
+     *
+     * @param path fully qualified path of the file to read
+     * @param amount number of bytes to read (ignored when [readAll] is true)
+     * @param offset byte offset to start reading from (ignored when [readAll] is true)
+     * @param readAll if true, reads the entire file contents
+     * @param mustExist if true, throws [FileNotFoundException] when [path] does not exist; if false, returns null
+     * @return the bytes read from the file, or null if the file does not exist and [mustExist] is false
+     */
+    public fun readOrNull(path: String, amount: Long = 0, offset: Long = 0, readAll: Boolean = false, mustExist: Boolean = true): ByteArray? {
+        if (!exists(path)) {
+            if (mustExist) {
+                throw FileNotFoundException("$path does not exist and mustExist is set to true")
+            } else {
+                return null
+            }
         }
 
         val path = path.toPath()
