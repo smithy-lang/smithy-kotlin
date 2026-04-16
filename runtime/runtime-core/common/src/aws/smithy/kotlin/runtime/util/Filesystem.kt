@@ -12,7 +12,7 @@ import kotlinx.io.files.SystemFileSystem
 import okio.Path.Companion.toPath
 import okio.buffer
 import okio.use
-import okio.FileSystem.Companion.SYSTEM as OkioSystem
+import okio.FileSystem as OkioFileSystem
 
 /**
  * Abstraction over filesystem
@@ -145,7 +145,7 @@ public interface Filesystem {
         }
 
         val path = path.toPath()
-        return OkioSystem.source(path).buffer().use {
+        return OkioFileSystem.SYSTEM.source(path).buffer().use {
             if (readAll) {
                 it.readByteArray()
             } else {
@@ -175,7 +175,7 @@ public interface Filesystem {
         }
 
         val path = path.toPath()
-        return OkioSystem.source(path).buffer().use {
+        return OkioFileSystem.SYSTEM.source(path).buffer().use {
             if (readAll) {
                 it.readByteArray()
             } else {
