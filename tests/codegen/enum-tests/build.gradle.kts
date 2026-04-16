@@ -5,9 +5,10 @@
 import aws.sdk.kotlin.gradle.codegen.smithyKotlinProjectionSrcDir
 import aws.sdk.kotlin.gradle.publishing.skipPublishing
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+import java.time.Duration
 
 plugins {
-    kotlin("multiplatform")
+    id(libs.plugins.kotlin.jvm.get().pluginId)
     alias(libs.plugins.aws.kotlin.repo.tools.smithybuild)
 }
 
@@ -24,54 +25,49 @@ tasks.generateSmithyProjections {
     smithyBuildConfigs.set(files("smithy-build.json"))
 }
 
+tasks.kotlinSourcesJar {
+    dependsOn(tasks.generateSmithyProjections)
+}
+
 val optinAnnotations = listOf("kotlin.RequiresOptIn", "aws.smithy.kotlin.runtime.InternalApi")
+kotlin.sourceSets.all {
+    optinAnnotations.forEach { languageSettings.optIn(it) }
+}
 
-kotlin {
-    jvm {
-        testRuns["test"].executionTask.configure {
-            testLogging {
-                events("passed", "skipped", "failed")
-                showStandardStreams = true
-            }
-        }
-    }
+val projections = listOf(
+    "enum-tests",
+)
 
-    sourceSets {
-        all {
-            optinAnnotations.forEach { languageSettings.optIn(it) }
-        }
-
-        commonMain {
-            dependencies {
-                implementation(libs.kotlinx.coroutines.core)
-                implementation(project(":runtime:runtime-core"))
-                implementation(project(":runtime:smithy-client"))
-                implementation(project(":runtime:protocol:http-client"))
-                implementation(project(":runtime:observability:telemetry-api"))
-                implementation(project(":runtime:observability:telemetry-defaults"))
-            }
-        }
-
-        commonTest {
-            dependencies {
-                implementation(kotlin("test"))
-                implementation(libs.kotlinx.coroutines.test)
-            }
-        }
-
-        jvmMain {
-            kotlin.srcDir(smithyBuild.smithyKotlinProjectionSrcDir("enum-tests"))
-            dependencies {
-                compileOnly(project(":codegen:codegen"))
-            }
-        }
+kotlin.sourceSets.getByName("main") {
+    projections.forEach { projectionName ->
+        kotlin.srcDir(smithyBuild.smithyKotlinProjectionSrcDir(projectionName))
     }
 }
 
 tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
     dependsOn(tasks.generateSmithyProjections)
-    compilerOptions {
-        jvmTarget.set(JvmTarget.JVM_1_8)
-        freeCompilerArgs.add("-Xjdk-release=1.8")
+}
+
+tasks.test {
+    useJUnitPlatform()
+    timeout.set(Duration.ofSeconds(30))
+    testLogging {
+        events("passed", "skipped", "failed")
+        showStandardStreams = true
     }
+    systemProperty("junit.jupiter.execution.parallel.enabled", "true")
+    systemProperty("junit.jupiter.execution.parallel.mode.default", "concurrent")
+}
+
+dependencies {
+    compileOnly(project(":codegen:codegen"))
+
+    implementation(libs.kotlinx.coroutines.core)
+    implementation(project(":runtime:runtime-core"))
+    implementation(project(":runtime:smithy-client"))
+    implementation(project(":runtime:protocol:http-client"))
+    implementation(project(":runtime:observability:telemetry-api"))
+    implementation(project(":runtime:observability:telemetry-defaults"))
+
+    testImplementation(libs.kotlin.test.junit5)
 }
