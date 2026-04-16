@@ -10,10 +10,10 @@ import kotlinx.io.files.FileNotFoundException
 import kotlinx.io.files.Path
 import kotlinx.io.files.SystemFileSystem
 import okio.Path.Companion.toPath
+import okio.SYSTEM
 import okio.buffer
 import okio.use
 import okio.FileSystem as OkioFileSystem
-import okio.SYSTEM
 
 /**
  * Abstraction over filesystem
