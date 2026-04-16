@@ -1,0 +1,469 @@
+{
+  "version": "2",
+  "versionSet": "live",
+  "bindleId": "amzn1.bindle.resource.y7uccncptf3yd7zlxcia",
+  "packages": [
+    {
+      "name": "AwsSmithyAwsKotlinCodegen",
+      "version": "1.x",
+      "branch": "mainline",
+      "description": "Smithy codegen support for AWS protocols",
+      "preCommitCommands": [
+        "git lfs track \"*.jar\""
+      ],
+      "commitMessage": "Automated import of Maven package(s) aws.smithy.kotlin:aws-codegen:1.6.10",
+      "filter": {
+        "root": "AwsSmithyKotlin/AwsSmithyAwsKotlinCodegen",
+        "excludes": []
+      }
+    },
+    {
+      "name": "AwsSmithyKotlinAwsCredentials",
+      "version": "1.0.x",
+      "branch": "mainline",
+      "description": "Types for AWS credentials",
+      "preCommitCommands": [
+        "git lfs track \"*.jar\""
+      ],
+      "commitMessage": "Automated import of Maven package(s) aws.smithy.kotlin:aws-credentials-jvm:1.6.10",
+      "filter": {
+        "root": "AwsSmithyKotlin/AwsSmithyKotlinAwsCredentials",
+        "excludes": []
+      }
+    },
+    {
+      "name": "AwsSmithyKotlinAwsEventStream",
+      "version": "1.0.x",
+      "branch": "mainline",
+      "description": "Support for the vnd.amazon.event-stream content type",
+      "preCommitCommands": [
+        "git lfs track \"*.jar\""
+      ],
+      "commitMessage": "Automated import of Maven package(s) aws.smithy.kotlin:aws-event-stream-jvm:1.6.10",
+      "filter": {
+        "root": "AwsSmithyKotlin/AwsSmithyKotlinAwsEventStream",
+        "excludes": []
+      }
+    },
+    {
+      "name": "AwsSmithyKotlinAwsJsonProtocols",
+      "version": "1.0.x",
+      "branch": "mainline",
+      "description": "Support for the JSON suite of AWS protocols",
+      "preCommitCommands": [
+        "git lfs track \"*.jar\""
+      ],
+      "commitMessage": "Automated import of Maven package(s) aws.smithy.kotlin:aws-json-protocols-jvm:1.6.10",
+      "filter": {
+        "root": "AwsSmithyKotlin/AwsSmithyKotlinAwsJsonProtocols",
+        "excludes": []
+      }
+    },
+    {
+      "name": "AwsSmithyKotlinAwsProtocolCore",
+      "version": "1.0.x",
+      "branch": "mainline",
+      "description": "Common AWS protocol support",
+      "preCommitCommands": [
+        "git lfs track \"*.jar\""
+      ],
+      "commitMessage": "Automated import of Maven package(s) aws.smithy.kotlin:aws-protocol-core-jvm:1.6.10",
+      "filter": {
+        "root": "AwsSmithyKotlin/AwsSmithyKotlinAwsProtocolCore",
+        "excludes": []
+      }
+    },
+    {
+      "name": "AwsSmithyKotlinAwsSigningCommon",
+      "version": "1.0.x",
+      "branch": "mainline",
+      "description": "Common types for AWS signing",
+      "preCommitCommands": [
+        "git lfs track \"*.jar\""
+      ],
+      "commitMessage": "Automated import of Maven package(s) aws.smithy.kotlin:aws-signing-common-jvm:1.6.10",
+      "filter": {
+        "root": "AwsSmithyKotlin/AwsSmithyKotlinAwsSigningCommon",
+        "excludes": []
+      }
+    },
+    {
+      "name": "AwsSmithyKotlinAwsSigningCrt",
+      "version": "1.0.x",
+      "branch": "mainline",
+      "description": "AWS Signer backed by CRT",
+      "preCommitCommands": [
+        "git lfs track \"*.jar\""
+      ],
+      "commitMessage": "Automated import of Maven package(s) aws.smithy.kotlin:aws-signing-crt-jvm:1.6.10",
+      "filter": {
+        "root": "AwsSmithyKotlin/AwsSmithyKotlinAwsSigningCrt",
+        "excludes": []
+      }
+    },
+    {
+      "name": "AwsSmithyKotlinAwsSigningDefault",
+      "version": "1.0.x",
+      "branch": "mainline",
+      "description": "AWS Signer default implementation",
+      "preCommitCommands": [
+        "git lfs track \"*.jar\""
+      ],
+      "commitMessage": "Automated import of Maven package(s) aws.smithy.kotlin:aws-signing-default-jvm:1.6.10",
+      "filter": {
+        "root": "AwsSmithyKotlin/AwsSmithyKotlinAwsSigningDefault",
+        "excludes": []
+      }
+    },
+    {
+      "name": "AwsSmithyKotlinAwsXmlProtocols",
+      "version": "1.0.x",
+      "branch": "mainline",
+      "description": "Support for the XML suite of AWS protocols",
+      "preCommitCommands": [
+        "git lfs track \"*.jar\""
+      ],
+      "commitMessage": "Automated import of Maven package(s) aws.smithy.kotlin:aws-xml-protocols-jvm:1.6.10",
+      "filter": {
+        "root": "AwsSmithyKotlin/AwsSmithyKotlinAwsXmlProtocols",
+        "excludes": []
+      }
+    },
+    {
+      "name": "AwsSmithyKotlinCodegen",
+      "version": "1.x",
+      "branch": "mainline",
+      "description": "Generates Kotlin code from Smithy models",
+      "preCommitCommands": [
+        "git lfs track \"*.jar\""
+      ],
+      "commitMessage": "Automated import of Maven package(s) aws.smithy.kotlin:codegen:1.6.10",
+      "filter": {
+        "root": "AwsSmithyKotlin/AwsSmithyKotlinCodegen",
+        "excludes": []
+      }
+    },
+    {
+      "name": "AwsSmithyKotlinCrtUtil",
+      "version": "1.0.x",
+      "branch": "mainline",
+      "description": "Utilities for working with AWS CRT Kotlin",
+      "preCommitCommands": [
+        "git lfs track \"*.jar\""
+      ],
+      "commitMessage": "Automated import of Maven package(s) aws.smithy.kotlin:crt-util-jvm:1.6.10",
+      "filter": {
+        "root": "AwsSmithyKotlin/AwsSmithyKotlinCrtUtil",
+        "excludes": []
+      }
+    },
+    {
+      "name": "AwsSmithyKotlinHttp",
+      "version": "1.0.x",
+      "branch": "mainline",
+      "description": "HTTP core for Smithy clients and services generated by smithy-kotlin",
+      "preCommitCommands": [
+        "git lfs track \"*.jar\""
+      ],
+      "commitMessage": "Automated import of Maven package(s) aws.smithy.kotlin:http-jvm:1.6.10",
+      "filter": {
+        "root": "AwsSmithyKotlin/AwsSmithyKotlinHttp",
+        "excludes": []
+      }
+    },
+    {
+      "name": "AwsSmithyKotlinHttpAuth",
+      "version": "1.0.x",
+      "branch": "mainline",
+      "description": "HTTP auth support",
+      "preCommitCommands": [
+        "git lfs track \"*.jar\""
+      ],
+      "commitMessage": "Automated import of Maven package(s) aws.smithy.kotlin:http-auth-jvm:1.6.10",
+      "filter": {
+        "root": "AwsSmithyKotlin/AwsSmithyKotlinHttpAuth",
+        "excludes": []
+      }
+    },
+    {
+      "name": "AwsSmithyKotlinHttpAuthApi",
+      "version": "1.0.x",
+      "branch": "mainline",
+      "description": "HTTP auth interfaces",
+      "preCommitCommands": [
+        "git lfs track \"*.jar\""
+      ],
+      "commitMessage": "Automated import of Maven package(s) aws.smithy.kotlin:http-auth-api-jvm:1.6.10",
+      "filter": {
+        "root": "AwsSmithyKotlin/AwsSmithyKotlinHttpAuthApi",
+        "excludes": []
+      }
+    },
+    {
+      "name": "AwsSmithyKotlinHttpAuthAws",
+      "version": "1.0.x",
+      "branch": "mainline",
+      "description": "AWS-related HTTP Auth APIs",
+      "preCommitCommands": [
+        "git lfs track \"*.jar\""
+      ],
+      "commitMessage": "Automated import of Maven package(s) aws.smithy.kotlin:http-auth-aws-jvm:1.6.10",
+      "filter": {
+        "root": "AwsSmithyKotlin/AwsSmithyKotlinHttpAuthAws",
+        "excludes": []
+      }
+    },
+    {
+      "name": "AwsSmithyKotlinHttpClient",
+      "version": "1.0.x",
+      "branch": "mainline",
+      "description": "HTTP client abstractions",
+      "preCommitCommands": [
+        "git lfs track \"*.jar\""
+      ],
+      "commitMessage": "Automated import of Maven package(s) aws.smithy.kotlin:http-client-jvm:1.6.10",
+      "filter": {
+        "root": "AwsSmithyKotlin/AwsSmithyKotlinHttpClient",
+        "excludes": []
+      }
+    },
+    {
+      "name": "AwsSmithyKotlinHttpClientEngineCrt",
+      "version": "1.0.x",
+      "branch": "mainline",
+      "description": "HTTP client engine backed by CRT",
+      "preCommitCommands": [
+        "git lfs track \"*.jar\""
+      ],
+      "commitMessage": "Automated import of Maven package(s) aws.smithy.kotlin:http-client-engine-crt-jvm:1.6.10",
+      "filter": {
+        "root": "AwsSmithyKotlin/AwsSmithyKotlinHttpClientEngineCrt",
+        "excludes": []
+      }
+    },
+    {
+      "name": "AwsSmithyKotlinHttpClientEngineDefault",
+      "version": "1.0.x",
+      "branch": "mainline",
+      "description": "Default HTTP Client Engine for Smithy services generated by smithy-kotlin",
+      "preCommitCommands": [
+        "git lfs track \"*.jar\""
+      ],
+      "commitMessage": "Automated import of Maven package(s) aws.smithy.kotlin:http-client-engine-default-jvm:1.6.10",
+      "filter": {
+        "root": "AwsSmithyKotlin/AwsSmithyKotlinHttpClientEngineDefault",
+        "excludes": []
+      }
+    },
+    {
+      "name": "AwsSmithyKotlinHttpClientEngineOkhttp",
+      "version": "1.0.x",
+      "branch": "mainline",
+      "description": "OkHttp Client Engine for Smithy services generated by smithy-kotlin",
+      "preCommitCommands": [
+        "git lfs track \"*.jar\""
+      ],
+      "commitMessage": "Automated import of Maven package(s) aws.smithy.kotlin:http-client-engine-okhttp-jvm:1.6.10",
+      "filter": {
+        "root": "AwsSmithyKotlin/AwsSmithyKotlinHttpClientEngineOkhttp",
+        "excludes": []
+      }
+    },
+    {
+      "name": "AwsSmithyKotlinHttpClientEngineOkhttp4",
+      "version": "1.0.x",
+      "branch": "mainline",
+      "description": "OkHttp 4.x Client Engine for Smithy services generated by smithy-kotlin",
+      "preCommitCommands": [
+        "git lfs track \"*.jar\""
+      ],
+      "commitMessage": "Automated import of Maven package(s) aws.smithy.kotlin:http-client-engine-okhttp4-jvm:1.6.10",
+      "filter": {
+        "root": "AwsSmithyKotlin/AwsSmithyKotlinHttpClientEngineOkhttp4",
+        "excludes": []
+      }
+    },
+    {
+      "name": "AwsSmithyKotlinIdentityApi",
+      "version": "1.0.x",
+      "branch": "mainline",
+      "description": "Identity APIs",
+      "preCommitCommands": [
+        "git lfs track \"*.jar\""
+      ],
+      "commitMessage": "Automated import of Maven package(s) aws.smithy.kotlin:identity-api-jvm:1.6.10",
+      "filter": {
+        "root": "AwsSmithyKotlin/AwsSmithyKotlinIdentityApi",
+        "excludes": []
+      }
+    },
+    {
+      "name": "AwsSmithyKotlinLoggingSlf4j2",
+      "version": "1.0.x",
+      "branch": "mainline",
+      "description": "Logging provider based on SLF4J",
+      "preCommitCommands": [
+        "git lfs track \"*.jar\""
+      ],
+      "commitMessage": "Automated import of Maven package(s) aws.smithy.kotlin:logging-slf4j2-jvm:1.6.10",
+      "filter": {
+        "root": "AwsSmithyKotlin/AwsSmithyKotlinLoggingSlf4j2",
+        "excludes": []
+      }
+    },
+    {
+      "name": "AwsSmithyKotlinRuntimeCore",
+      "version": "1.0.x",
+      "branch": "mainline",
+      "description": "Core runtime for Smithy clients and services generated by smithy-kotlin",
+      "preCommitCommands": [
+        "git lfs track \"*.jar\""
+      ],
+      "commitMessage": "Automated import of Maven package(s) aws.smithy.kotlin:runtime-core-jvm:1.6.10",
+      "filter": {
+        "root": "AwsSmithyKotlin/AwsSmithyKotlinRuntimeCore",
+        "excludes": []
+      }
+    },
+    {
+      "name": "AwsSmithyKotlinSerde",
+      "version": "1.0.x",
+      "branch": "mainline",
+      "description": "Serialization and deserialization for Smithy services generated by smithy-kotlin",
+      "preCommitCommands": [
+        "git lfs track \"*.jar\""
+      ],
+      "commitMessage": "Automated import of Maven package(s) aws.smithy.kotlin:serde-jvm:1.6.10",
+      "filter": {
+        "root": "AwsSmithyKotlin/AwsSmithyKotlinSerde",
+        "excludes": []
+      }
+    },
+    {
+      "name": "AwsSmithyKotlinSerdeCbor",
+      "version": "1.0.x",
+      "branch": "mainline",
+      "description": "CBOR serialization and deserialization for Smithy services generated by smithy-kotlin",
+      "preCommitCommands": [
+        "git lfs track \"*.jar\""
+      ],
+      "commitMessage": "Automated import of Maven package(s) aws.smithy.kotlin:serde-cbor-jvm:1.6.10",
+      "filter": {
+        "root": "AwsSmithyKotlin/AwsSmithyKotlinSerdeCbor",
+        "excludes": []
+      }
+    },
+    {
+      "name": "AwsSmithyKotlinSerdeFormUrl",
+      "version": "1.0.x",
+      "branch": "mainline",
+      "description": "x-www-form-urlencoding serialization for Smithy services generated by smithy-kotlin",
+      "preCommitCommands": [
+        "git lfs track \"*.jar\""
+      ],
+      "commitMessage": "Automated import of Maven package(s) aws.smithy.kotlin:serde-form-url-jvm:1.6.10",
+      "filter": {
+        "root": "AwsSmithyKotlin/AwsSmithyKotlinSerdeFormUrl",
+        "excludes": []
+      }
+    },
+    {
+      "name": "AwsSmithyKotlinSerdeJson",
+      "version": "1.0.x",
+      "branch": "mainline",
+      "description": "JSON serialization and deserialization for Smithy services generated by smithy-kotlin",
+      "preCommitCommands": [
+        "git lfs track \"*.jar\""
+      ],
+      "commitMessage": "Automated import of Maven package(s) aws.smithy.kotlin:serde-json-jvm:1.6.10",
+      "filter": {
+        "root": "AwsSmithyKotlin/AwsSmithyKotlinSerdeJson",
+        "excludes": []
+      }
+    },
+    {
+      "name": "AwsSmithyKotlinSerdeXml",
+      "version": "1.0.x",
+      "branch": "mainline",
+      "description": "XML serialization and deserialization for Smithy services generated by smithy-kotlin",
+      "preCommitCommands": [
+        "git lfs track \"*.jar\""
+      ],
+      "commitMessage": "Automated import of Maven package(s) aws.smithy.kotlin:serde-xml-jvm:1.6.10",
+      "filter": {
+        "root": "AwsSmithyKotlin/AwsSmithyKotlinSerdeXml",
+        "excludes": []
+      }
+    },
+    {
+      "name": "AwsSmithyKotlinSmithyClient",
+      "version": "1.0.x",
+      "branch": "mainline",
+      "description": "Client runtime for Smithy services generated by smithy-kotlin",
+      "preCommitCommands": [
+        "git lfs track \"*.jar\""
+      ],
+      "commitMessage": "Automated import of Maven package(s) aws.smithy.kotlin:smithy-client-jvm:1.6.10",
+      "filter": {
+        "root": "AwsSmithyKotlin/AwsSmithyKotlinSmithyClient",
+        "excludes": []
+      }
+    },
+    {
+      "name": "AwsSmithyKotlinSmithyRpcv2Protocols",
+      "version": "1.0.x",
+      "branch": "mainline",
+      "description": "Support for the RPC v2 suite of Smithy protocols",
+      "preCommitCommands": [
+        "git lfs track \"*.jar\""
+      ],
+      "commitMessage": "Automated import of Maven package(s) aws.smithy.kotlin:smithy-rpcv2-protocols-jvm:1.6.10",
+      "filter": {
+        "root": "AwsSmithyKotlin/AwsSmithyKotlinSmithyRpcv2Protocols",
+        "excludes": []
+      }
+    },
+    {
+      "name": "AwsSmithyKotlinTelemetryApi",
+      "version": "1.0.x",
+      "branch": "mainline",
+      "description": "API for telemetry data",
+      "preCommitCommands": [
+        "git lfs track \"*.jar\""
+      ],
+      "commitMessage": "Automated import of Maven package(s) aws.smithy.kotlin:telemetry-api-jvm:1.6.10",
+      "filter": {
+        "root": "AwsSmithyKotlin/AwsSmithyKotlinTelemetryApi",
+        "excludes": []
+      }
+    },
+    {
+      "name": "AwsSmithyKotlinTelemetryDefaults",
+      "version": "1.0.x",
+      "branch": "mainline",
+      "description": "Default telemetry provider",
+      "preCommitCommands": [
+        "git lfs track \"*.jar\""
+      ],
+      "commitMessage": "Automated import of Maven package(s) aws.smithy.kotlin:telemetry-defaults-jvm:1.6.10",
+      "filter": {
+        "root": "AwsSmithyKotlin/AwsSmithyKotlinTelemetryDefaults",
+        "excludes": []
+      }
+    },
+    {
+      "name": "AwsSmithyKotlinTelemetryProviderOtel",
+      "version": "1.0.x",
+      "branch": "mainline",
+      "description": "Telemetry provider based on OpenTelemetry",
+      "preCommitCommands": [
+        "git lfs track \"*.jar\""
+      ],
+      "commitMessage": "Automated import of Maven package(s) aws.smithy.kotlin:telemetry-provider-otel-jvm:1.6.10",
+      "filter": {
+        "root": "AwsSmithyKotlin/AwsSmithyKotlinTelemetryProviderOtel",
+        "excludes": []
+      }
+    }
+  ]
+}

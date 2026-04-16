@@ -1,0 +1,44 @@
+# -*-perl-*-
+
+package.AwsSmithyAwsKotlinCodegen = {
+    interfaces = (1.x);
+
+    third-party-configuration = {
+        thirdPartyName    = "aws.smithy.kotlin:aws-codegen";
+        thirdPartyVersion = "1.6.10";
+        licenseType       = (Apache-2.0);
+        licenseFile       = (https://www.apache.org/licenses/LICENSE-2.0.txt);
+        repository        = maven;
+        downloadType      = binaries;
+    };
+
+    build-system = copysrc;
+
+    build-tools = {
+        1.x = {
+            CopySrcBuild = 1.0;
+        };
+    };
+
+    dependencies = {
+        1.x = {
+            AwsSmithyKotlinCodegen                                        = 1.x;
+            Maven-software-amazon-smithy_smithy-aws-traits                = 1.x;
+            Maven-software-amazon-smithy_smithy-aws-iam-traits            = 1.x;
+            Maven-software-amazon-smithy_smithy-aws-cloudformation-traits = 1.x;
+            Maven-software-amazon-smithy_smithy-protocol-test-traits      = 1.x;
+            Maven-software-amazon-smithy_smithy-protocol-traits           = 1.x;
+            KotlinStdlib                                                  = 2.x;
+        };
+    };
+
+    runtime-dependencies = {
+        1.x = {
+            Maven-software-amazon-smithy_smithy-aws-endpoints = 1.x;
+        };
+    };
+
+    targets = {
+        aws-codegen = { type = javalibrary; };
+    };
+};

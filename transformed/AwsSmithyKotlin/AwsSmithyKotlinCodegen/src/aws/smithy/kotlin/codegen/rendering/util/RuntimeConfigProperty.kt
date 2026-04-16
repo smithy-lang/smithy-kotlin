@@ -1,0 +1,226 @@
+/*
+ * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
+package aws.smithy.kotlin.codegen.rendering.util
+
+import aws.smithy.kotlin.codegen.core.RuntimeTypes
+import aws.smithy.kotlin.codegen.lang.KotlinTypes
+import aws.smithy.kotlin.codegen.model.asNullable
+import aws.smithy.kotlin.codegen.model.buildSymbol
+import software.amazon.smithy.codegen.core.CodegenException
+import software.amazon.smithy.codegen.core.Symbol
+import software.amazon.smithy.codegen.core.SymbolReference
+
+/**
+ * Common client runtime related config properties
+ */
+@Suppress("ktlint:standard:property-naming")
+object RuntimeConfigProperty {
+    val ClientName = ConfigProperty {
+        name = "clientName"
+        symbol = KotlinTypes.String
+        baseClass = RuntimeTypes.SmithyClient.SdkClientConfig
+        builderBaseClass = RuntimeTypes.SmithyClient.SdkClientConfig.nestedGenericBuilder
+        documentation = """
+            A reader-friendly name for the client.
+        """.trimIndent()
+        propertyType = ConfigPropertyType.Custom(
+            render = { prop, writer ->
+                writer.write("override val #1L: String = builder.#1L", prop.propertyName)
+            },
+            renderBuilder = { prop, writer ->
+                val serviceName = writer.getContext("service.name")?.toString()
+                    ?: throw CodegenException("The service.name context must be set for client config generation")
+
+                prop.documentation?.let { writer.dokka(it) }
+                writer.write("override var #L: String = #S", prop.propertyName, serviceName)
+                writer.write("")
+            },
+        )
+        order = -100
+    }
+
+    val HttpClient = ConfigProperty {
+        name = "httpClient"
+        symbol = RuntimeTypes.HttpClient.Engine.HttpClientEngine
+
+        baseClass = RuntimeTypes.HttpClient.Config.HttpEngineConfig
+        baseClassDelegate = Delegate(null, "builder.buildHttpEngineConfig()")
+
+        builderBaseClass = RuntimeTypes.HttpClient.Config.HttpEngineConfig.nestedBuilder
+        builderBaseClassDelegate = Delegate(
+            RuntimeTypes.HttpClientEngines.Default.HttpEngineConfigImpl,
+            "HttpEngineConfigImpl.BuilderImpl()",
+        )
+
+        propertyType = ConfigPropertyType.DoNotRender
+    }
+
+    val IdempotencyTokenProvider = ConfigProperty {
+        symbol = RuntimeTypes.SmithyClient.IdempotencyTokenProvider
+
+        baseClass = RuntimeTypes.SmithyClient.IdempotencyTokenConfig
+        useNestedBuilderBaseClass()
+
+        propertyType = ConfigPropertyType.RequiredWithDefault("${symbol!!.name}.Default")
+
+        documentation = """
+        Override the default idempotency token generator. SDK clients will generate tokens for members
+        that represent idempotent tokens when not explicitly set by the caller using this generator.
+        """.trimIndent()
+    }
+
+    val RetryPolicy = ConfigProperty {
+        symbol = buildSymbol {
+            name = "RetryPolicy<Any?>"
+            reference(RuntimeTypes.Core.Retries.Policy.RetryPolicy, SymbolReference.ContextOption.USE)
+        }
+        name = "retryPolicy"
+        documentation = """
+            The policy to use for evaluating operation results and determining whether/how to retry.
+        """.trimIndent()
+
+        propertyType = ConfigPropertyType.RequiredWithDefault("StandardRetryPolicy.Default")
+        baseClass = RuntimeTypes.SmithyClient.RetryClientConfig
+        builderBaseClass = RuntimeTypes.SmithyClient.RetryClientConfig.nestedBuilder
+
+        additionalImports = listOf(RuntimeTypes.Core.Retries.Policy.StandardRetryPolicy)
+    }
+
+    val RetryStrategy = ConfigProperty {
+        name = "retryStrategy"
+        symbol = RuntimeTypes.Core.Retries.RetryStrategy
+        documentation = """
+            The [RetryStrategy] implementation to use for service calls. All API calls will be wrapped by the strategy.
+        """.trimIndent()
+
+        baseClass = RuntimeTypes.SmithyClient.RetryStrategyClientConfig
+        baseClassDelegate = Delegate(null, "builder.buildRetryStrategyClientConfig()")
+
+        builderBaseClass = RuntimeTypes.SmithyClient.RetryStrategyClientConfig.nestedBuilder
+        builderBaseClassDelegate = Delegate(
+            RuntimeTypes.SmithyClient.RetryStrategyClientConfigImpl,
+            "RetryStrategyClientConfigImpl.BuilderImpl()",
+        )
+
+        propertyType = ConfigPropertyType.DoNotRender
+    }
+
+    val LogMode = ConfigProperty {
+        symbol = buildSymbol {
+            name = RuntimeTypes.SmithyClient.LogMode.name
+            namespace = RuntimeTypes.SmithyClient.LogMode.namespace
+        }
+        propertyType = ConfigPropertyType.RequiredWithDefault("LogMode.Default")
+
+        baseClass = RuntimeTypes.SmithyClient.SdkClientConfig
+        builderBaseClass = RuntimeTypes.SmithyClient.SdkClientConfig.nestedGenericBuilder
+
+        documentation = """
+        Configure events that will be logged. By default clients will not output
+        raw requests or responses. Use this setting to opt-in to additional debug logging.
+
+        This can be used to configure logging of requests, responses, retries, etc of SDK clients.
+
+        **NOTE**: Logging of raw requests or responses may leak sensitive information! It may also have
+        performance considerations when dumping the request/response body. This is primarily a tool for
+        debug purposes.
+        """.trimIndent()
+    }
+
+    var TelemetryProvider = ConfigProperty {
+        symbol = RuntimeTypes.Observability.TelemetryApi.TelemetryProvider
+        baseClass = RuntimeTypes.Observability.TelemetryApi.TelemetryConfig
+        useNestedBuilderBaseClass()
+        additionalImports = listOf(RuntimeTypes.Observability.TelemetryDefaults.Global)
+
+        documentation = """
+            The telemetry provider used to instrument the SDK operations with. By default, the global telemetry
+            provider will be used.
+        """.trimIndent()
+
+        propertyType = ConfigPropertyType.RequiredWithDefault("TelemetryProvider.Global")
+    }
+
+    val HttpInterceptors = ConfigProperty {
+        name = "interceptors"
+        val defaultValue = "${KotlinTypes.Collections.mutableListOf.fullName}()"
+        val target = RuntimeTypes.HttpClient.Interceptors.HttpInterceptor
+        symbol = KotlinTypes.Collections.list(target, isNullable = false)
+        builderSymbol = KotlinTypes.Collections.mutableList(target, isNullable = false, default = defaultValue)
+        toBuilderExpression = ".toMutableList()"
+
+        baseClass = RuntimeTypes.HttpClient.Config.HttpClientConfig
+        useNestedBuilderBaseClass()
+
+        documentation = """
+            Add an [aws.smithy.kotlin.runtime.client.Interceptor] that will have access to read and modify
+            the request and response objects as they are processed by the SDK.
+            Interceptors added using this method are executed in the order they are configured and are always 
+            later than any added automatically by the SDK.
+        """.trimIndent()
+    }
+
+    val AuthSchemes = ConfigProperty {
+        name = "authSchemes"
+        symbol = KotlinTypes.Collections.list(RuntimeTypes.Auth.HttpAuth.AuthScheme, default = "emptyList()")
+        baseClass = RuntimeTypes.Auth.HttpAuth.HttpAuthConfig
+        useNestedBuilderBaseClass()
+        documentation = """
+            Register new or override default [AuthScheme]s configured for this client. By default, the set
+            of auth schemes configured comes from the service model. An auth scheme configured explicitly takes
+            precedence over the defaults and can be used to customize identity resolution and signing for specific
+            authentication schemes.
+        """.trimIndent()
+    }
+
+    val AuthSchemePreference = ConfigProperty {
+        name = "authSchemePreference"
+        symbol = KotlinTypes.Collections.list(RuntimeTypes.Auth.Identity.AuthSchemeId, isNullable = true)
+        baseClass = RuntimeTypes.Auth.HttpAuth.HttpAuthConfig
+        useNestedBuilderBaseClass()
+
+        documentation = """
+            The ordered preference of [AuthScheme] that this client will use. 
+        """.trimIndent()
+    }
+
+    val AttemptTimeout = ConfigProperty {
+        name = "attemptTimeout"
+        symbol = KotlinTypes.Time.Duration.asNullable()
+        baseClass = RuntimeTypes.HttpClient.Config.TimeoutConfig
+        useNestedBuilderBaseClass()
+
+        documentation = """
+            The maximum amount of time to wait for any single attempt of a request within the retry loop. By default,
+            the value is `null` indicating no timeout is enforced. Attempt timeouts may be retried if allowed by the
+            current retry policy and retry capacity.
+        """.trimIndent()
+    }
+
+    val CallTimeout = ConfigProperty {
+        name = "callTimeout"
+        symbol = KotlinTypes.Time.Duration.asNullable()
+        baseClass = RuntimeTypes.HttpClient.Config.TimeoutConfig
+        useNestedBuilderBaseClass()
+
+        documentation = """
+            The maximum amount of time to wait for completion of a call, including any retries after the first attempt.
+            By default, the value is `null` indicating no timeout is enforced. Call timeouts are not retried.
+        """.trimIndent()
+    }
+}
+
+internal val Symbol.nestedBuilder: Symbol
+    get() = buildSymbol {
+        name = "${this@nestedBuilder.name}.Builder"
+        namespace = this@nestedBuilder.namespace
+    }
+
+private val Symbol.nestedGenericBuilder: Symbol
+    get() = buildSymbol {
+        name = "${this@nestedGenericBuilder.name}.Builder<Config>"
+        namespace = this@nestedGenericBuilder.namespace
+    }

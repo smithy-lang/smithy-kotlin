@@ -1,0 +1,4 @@
+aws.smithy.kotlin.codegen.aws.SdkProtocolGeneratorSupplier
+aws.smithy.kotlin.codegen.aws.customization.RegionSupport
+aws.smithy.kotlin.codegen.aws.customization.AwsQueryCompatibleErrorDeserialization
+aws.smithy.kotlin.codegen.aws.middleware.ClockSkew

@@ -1,0 +1,50 @@
+# -*-perl-*-
+
+package.AwsSmithyKotlinAwsJsonProtocols = {
+    interfaces = (1.0.x);
+
+    third-party-configuration = {
+        thirdPartyName    = "aws.smithy.kotlin:aws-json-protocols-jvm";
+        thirdPartyVersion = "1.6.10";
+        licenseType       = (Apache-2.0);
+        licenseFile       = (https://www.apache.org/licenses/LICENSE-2.0.txt);
+        repository        = maven;
+        downloadType      = binaries;
+    };
+
+    build-system = copysrc;
+
+    build-tools = {
+        1.0.x = {
+            CopySrcBuild = 1.0;
+        };
+    };
+
+    dependencies = {
+        1.0.x = {
+            AwsSmithyKotlinSmithyClient = 1.0.x;
+            AwsSmithyKotlinHttpClient   = 1.0.x;
+            AwsSmithyKotlinRuntimeCore  = 1.0.x;
+            KotlinStdlib                = 2.x;
+        };
+    };
+
+    runtime-dependencies = {
+        1.0.x = {
+            KotlinxCoroutinesCoreJvm       = 1.x;
+            AwsSmithyKotlinAwsProtocolCore = 1.0.x;
+            AwsSmithyKotlinSerde           = 1.0.x;
+            AwsSmithyKotlinSerdeJson       = 1.0.x;
+        };
+    };
+
+    resolves-conflict-dependencies = {
+        1.0.x = {
+            KotlinxCoroutinesCoreJvm = 1.x;
+        };
+    };
+
+    targets = {
+        aws-json-protocols-jvm = { type = javalibrary; };
+    };
+};
