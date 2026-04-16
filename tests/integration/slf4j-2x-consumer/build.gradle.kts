@@ -16,7 +16,6 @@ dependencies {
     implementation(project(":runtime:observability:logging-slf4j2"))
     implementation(libs.slf4j.simple)
     testImplementation(libs.kotlin.test)
-    testImplementation(libs.kotlin.test.junit5)
 }
 
 tasks.withType<KotlinCompile> {
