@@ -6,11 +6,9 @@ package smithy.kotlin.enums
 
 import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.Timeout
 import org.junit.jupiter.api.parallel.Execution
 import org.junit.jupiter.api.parallel.ExecutionMode
 import smithy.kotlin.enums.model.ContentSource
-import java.util.concurrent.TimeUnit
 
 /**
  * Regression test for https://github.com/aws/aws-sdk-kotlin/issues/1856
