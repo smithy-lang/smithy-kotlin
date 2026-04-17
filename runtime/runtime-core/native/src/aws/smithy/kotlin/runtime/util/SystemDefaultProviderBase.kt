@@ -55,9 +55,15 @@ public abstract class SystemDefaultProviderBase : PlatformProvider {
 
     override fun fileExists(path: String): Boolean = access(path, F_OK) == 0
 
-    override fun write(path: String, data: ByteArray, writeType: WriteType, mustExist: Boolean) {
+    override fun write(path: String, data: ByteArray, writeType: WriteType, mustExist: Boolean, permissions: String?) {
         val exists = SystemFileSystem.exists(Path(path))
         if (mustExist && !exists) throw IOException("$path does not exist and mustExist is set to true")
+
+        if (!exists && permissions != null && osInfo().family != OsFamily.Windows) {
+            val fd = open(path, O_CREAT or O_WRONLY, permissions.toInt(8))
+            if (fd == -1) throw IOException("Cannot create file: $path")
+            close(fd)
+        }
 
         val mode = when (writeType) {
             is WriteType.OFFSET -> if (exists) "r+b" else "wb"

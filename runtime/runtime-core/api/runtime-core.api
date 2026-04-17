@@ -2433,8 +2433,8 @@ public abstract interface class aws/smithy/kotlin/runtime/util/Filesystem {
 	public static synthetic fun readOrNull$default (Laws/smithy/kotlin/runtime/util/Filesystem;Ljava/lang/String;JJZZILjava/lang/Object;)[B
 	public fun size (Ljava/lang/String;Z)J
 	public static synthetic fun size$default (Laws/smithy/kotlin/runtime/util/Filesystem;Ljava/lang/String;ZILjava/lang/Object;)J
-	public abstract fun write (Ljava/lang/String;[BLaws/smithy/kotlin/runtime/util/WriteType;Z)V
-	public static synthetic fun write$default (Laws/smithy/kotlin/runtime/util/Filesystem;Ljava/lang/String;[BLaws/smithy/kotlin/runtime/util/WriteType;ZILjava/lang/Object;)V
+	public abstract fun write (Ljava/lang/String;[BLaws/smithy/kotlin/runtime/util/WriteType;ZLjava/lang/String;)V
+	public static synthetic fun write$default (Laws/smithy/kotlin/runtime/util/Filesystem;Ljava/lang/String;[BLaws/smithy/kotlin/runtime/util/WriteType;ZLjava/lang/String;ILjava/lang/Object;)V
 	public abstract fun writeFile (Ljava/lang/String;[BLkotlin/coroutines/Continuation;)Ljava/lang/Object;
 }
 
@@ -2459,7 +2459,7 @@ public final class aws/smithy/kotlin/runtime/util/Filesystem$DefaultImpls {
 	public static synthetic fun readOrNull$default (Laws/smithy/kotlin/runtime/util/Filesystem;Ljava/lang/String;JJZZILjava/lang/Object;)[B
 	public static fun size (Laws/smithy/kotlin/runtime/util/Filesystem;Ljava/lang/String;Z)J
 	public static synthetic fun size$default (Laws/smithy/kotlin/runtime/util/Filesystem;Ljava/lang/String;ZILjava/lang/Object;)J
-	public static synthetic fun write$default (Laws/smithy/kotlin/runtime/util/Filesystem;Ljava/lang/String;[BLaws/smithy/kotlin/runtime/util/WriteType;ZILjava/lang/Object;)V
+	public static synthetic fun write$default (Laws/smithy/kotlin/runtime/util/Filesystem;Ljava/lang/String;[BLaws/smithy/kotlin/runtime/util/WriteType;ZLjava/lang/String;ILjava/lang/Object;)V
 }
 
 public final class aws/smithy/kotlin/runtime/util/FlowUtilKt {
@@ -2588,7 +2588,7 @@ public final class aws/smithy/kotlin/runtime/util/TestPlatformProvider : aws/smi
 	public fun readFileOrNull (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun readOrNull (Ljava/lang/String;JJZZ)[B
 	public fun size (Ljava/lang/String;Z)J
-	public fun write (Ljava/lang/String;[BLaws/smithy/kotlin/runtime/util/WriteType;Z)V
+	public fun write (Ljava/lang/String;[BLaws/smithy/kotlin/runtime/util/WriteType;ZLjava/lang/String;)V
 	public fun writeFile (Ljava/lang/String;[BLkotlin/coroutines/Continuation;)Ljava/lang/Object;
 }
 

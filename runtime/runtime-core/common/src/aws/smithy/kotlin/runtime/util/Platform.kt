@@ -42,6 +42,7 @@ internal expect object SystemDefaultProvider : PlatformProvider {
         data: ByteArray,
         writeType: WriteType,
         mustExist: Boolean,
+        permissions: String?,
     )
     override fun getAllEnvVars(): Map<String, String>
     override fun getAllProperties(): Map<String, String>

@@ -61,8 +61,11 @@ public interface Filesystem {
      * @param writeType the write strategy: [WriteType.OVERWRITE] to replace file contents,
      * [WriteType.APPEND] to add to the end, or [WriteType.OFFSET] to write at a specific byte position
      * @param mustExist if true, throws [aws.smithy.kotlin.runtime.io.IOException] when the file does not exist
+     * @param permissions optional POSIX file permissions as an octal string to apply when the file is created
+     * (e.g., `"600"` for owner read/write only). Ignored if the file already exists or the platform does not
+     * support POSIX permissions (e.g., Windows).
      */
-    public fun write(path: String, data: ByteArray, writeType: WriteType, mustExist: Boolean = false)
+    public fun write(path: String, data: ByteArray, writeType: WriteType, mustExist: Boolean = false, permissions: String? = null)
 
     /**
      * Atomically move a file from [source] to [destination].
@@ -236,6 +239,7 @@ internal class MapFilesystem(
         data: ByteArray,
         writeType: WriteType,
         mustExist: Boolean,
+        permissions: String?,
     ) {
         if (memFs[path] == null && mustExist) {
             throw FileNotFoundException("$path does not exist and mustExist is set to true")
