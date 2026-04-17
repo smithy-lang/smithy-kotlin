@@ -1,5 +1,0 @@
-{
-  "id": "da43750f-4fc7-4e4c-ab0f-a4b1d22a9982",
-  "type": "bugfix",
-  "description": "Fix codegen for `getAttr` returning boolean in endpoint rule conditions"
-}

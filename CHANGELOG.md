@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.6.11] - 04/17/2026
+
+### Fixes
+* Fix codegen for `getAttr` returning boolean in endpoint rule conditions
+
 ## [1.6.10] - 04/13/2026
 
 ## [1.6.9] - 03/31/2026
