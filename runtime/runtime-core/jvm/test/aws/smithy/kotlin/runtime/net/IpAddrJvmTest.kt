@@ -5,8 +5,8 @@
 
 package aws.smithy.kotlin.runtime.net
 
-import org.junit.jupiter.api.Test
 import java.net.InetAddress
+import kotlin.test.Test
 import kotlin.test.assertEquals
 
 class IpAddrJvmTest {

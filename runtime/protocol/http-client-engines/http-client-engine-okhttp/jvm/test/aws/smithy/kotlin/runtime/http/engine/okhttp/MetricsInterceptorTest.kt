@@ -9,31 +9,42 @@ import aws.smithy.kotlin.runtime.collections.emptyAttributes
 import aws.smithy.kotlin.runtime.http.engine.internal.HttpClientMetrics
 import aws.smithy.kotlin.runtime.operation.ExecutionContext
 import aws.smithy.kotlin.runtime.telemetry.otel.OpenTelemetryProvider
+import io.opentelemetry.api.OpenTelemetry
 import io.opentelemetry.api.common.AttributeKey
+import io.opentelemetry.sdk.OpenTelemetrySdk
+import io.opentelemetry.sdk.metrics.SdkMeterProvider
 import io.opentelemetry.sdk.metrics.data.MetricData
-import io.opentelemetry.sdk.testing.junit5.OpenTelemetryExtension
+import io.opentelemetry.sdk.metrics.internal.SdkMeterProviderUtil
+import io.opentelemetry.sdk.testing.exporter.InMemoryMetricReader
 import okhttp3.*
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.RequestBody.Companion.toRequestBody
 import okhttp3.ResponseBody.Companion.toResponseBody
 import okio.blackholeSink
 import okio.buffer
-import org.junit.jupiter.api.extension.RegisterExtension
 import kotlin.coroutines.EmptyCoroutineContext
+import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.fail
 
 @OptIn(ExperimentalApi::class)
 class MetricsInterceptorTest {
-    companion object {
-        @JvmField
-        @RegisterExtension
-        val otelTesting = OpenTelemetryExtension.create()
-    }
-
-    private val provider = OpenTelemetryProvider(otelTesting.openTelemetry)
+    private val metricReader = InMemoryMetricReader.create()
+    private val sdkMeterProvider = SdkMeterProvider.builder()
+        .registerMetricReader(metricReader)
+        .build()
+    private val otel: OpenTelemetry = OpenTelemetrySdk.builder()
+        .setMeterProvider(sdkMeterProvider)
+        .build()
+    private val provider = OpenTelemetryProvider(otel)
     private val meter = provider.meterProvider.getOrCreateMeter("test")
+    private val metrics: List<MetricData> get() = metricReader.collectAllMetrics().toList()
+
+    @BeforeTest
+    fun resetMetrics() {
+        SdkMeterProviderUtil.resetForTest(sdkMeterProvider)
+    }
 
     @Test
     fun testInstrumentedSource() {
@@ -50,7 +61,7 @@ class MetricsInterceptorTest {
 
         assertEquals(data.length.toLong(), sink.size)
 
-        val counted = otelTesting.metrics.first().longCounterSum()
+        val counted = metrics.first().longCounterSum()
         assertEquals(data.length.toLong(), counted)
     }
 
@@ -70,7 +81,7 @@ class MetricsInterceptorTest {
 
         assertEquals(data.length.toLong(), sink.size)
 
-        val counted = otelTesting.metrics.first().longCounterSum()
+        val counted = metrics.first().longCounterSum()
         assertEquals(data.length.toLong(), counted)
     }
 
@@ -109,10 +120,10 @@ class MetricsInterceptorTest {
         val actualRespData = resp.body.source().readByteArray().decodeToString()
         assertEquals(respData, actualRespData)
 
-        val actualBytesSent = otelTesting.metrics
+        val actualBytesSent = this.metrics
             .find { it.name == "smithy.client.http.bytes_sent" } ?: fail("expected bytes_sent")
 
-        val actualBytesReceived = otelTesting.metrics
+        val actualBytesReceived = this.metrics
             .find { it.name == "smithy.client.http.bytes_received" } ?: fail("expected bytes_received")
 
         assertEquals(reqData.length.toLong(), actualBytesSent.longCounterSum())

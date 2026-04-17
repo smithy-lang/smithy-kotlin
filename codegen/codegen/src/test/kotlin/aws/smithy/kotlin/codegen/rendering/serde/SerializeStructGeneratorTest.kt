@@ -12,9 +12,7 @@ import aws.smithy.kotlin.codegen.test.prependNamespaceAndService
 import aws.smithy.kotlin.codegen.test.shouldContainOnlyOnceWithDiff
 import aws.smithy.kotlin.codegen.test.stripCodegenPrefix
 import aws.smithy.kotlin.codegen.test.toSmithyModel
-import org.junit.jupiter.params.ParameterizedTest
-import org.junit.jupiter.params.provider.CsvSource
-import org.junit.jupiter.params.provider.ValueSource
+import aws.smithy.kotlin.runtime.testing.parameterized
 import software.amazon.smithy.model.knowledge.NullableIndex
 import kotlin.test.Test
 
@@ -29,9 +27,10 @@ class SerializeStructGeneratorTest {
         operations = listOf("Foo"),
     ).trimIndent()
 
-    @ParameterizedTest
-    @ValueSource(strings = ["String", "Boolean", "Byte", "Short", "Integer", "Long", "Float", "Double", "BigInteger", "BigDecimal"])
-    fun `it serializes a structure with a simple fields`(memberType: String) {
+    @Test
+    fun `it serializes a structure with a simple fields`() = parameterized(
+        listOf("String", "Boolean", "Byte", "Short", "Integer", "Long", "Float", "Double", "BigInteger", "BigDecimal"),
+    ) { memberType ->
         val model = (
             modelPrefix + """            
             structure FooRequest { 
@@ -51,18 +50,19 @@ class SerializeStructGeneratorTest {
         actual.shouldContainOnlyOnceWithDiff(expected)
     }
 
-    @ParameterizedTest
-    @CsvSource(
-        "String, \"foo\", \"foo\"",
-        "Boolean, false, false",
-        "Byte, 0, 0.toByte()",
-        "Short, 0, 0.toShort()",
-        "Integer, 2, 2",
-        "Long, 3, 3L",
-        "Float, 0, 0f",
-        "Double, 0, 0.0",
-    )
-    fun `it serializes default values only when different mode`(memberType: String, modelDefault: String, defaultValue: String) {
+    @Test
+    fun `it serializes default values only when different mode`() = parameterized(
+        listOf(
+            Triple("String", "\"foo\"", "\"foo\""),
+            Triple("Boolean", "false", "false"),
+            Triple("Byte", "0", "0.toByte()"),
+            Triple("Short", "0", "0.toShort()"),
+            Triple("Integer", "2", "2"),
+            Triple("Long", "3", "3L"),
+            Triple("Float", "0", "0f"),
+            Triple("Double", "0", "0.0"),
+        ),
+    ) { (memberType, modelDefault, defaultValue) ->
         val model = (
             modelPrefix + """            
             structure FooRequest { 
@@ -83,18 +83,19 @@ class SerializeStructGeneratorTest {
         actual.shouldContainOnlyOnceWithDiff(expected)
     }
 
-    @ParameterizedTest
-    @CsvSource(
-        "String, \"foo\"",
-        "Boolean, false",
-        "Byte, 0",
-        "Short, 0",
-        "Integer, 2",
-        "Long, 3",
-        "Float, 0",
-        "Double, 0",
-    )
-    fun `it always serializes default values using always mode`(memberType: String, modelDefault: String) {
+    @Test
+    fun `it always serializes default values using always mode`() = parameterized(
+        listOf(
+            "String" to "\"foo\"",
+            "Boolean" to "false",
+            "Byte" to "0",
+            "Short" to "0",
+            "Integer" to "2",
+            "Long" to "3",
+            "Float" to "0",
+            "Double" to "0",
+        ),
+    ) { (memberType, modelDefault) ->
         val model = (
             modelPrefix + """            
             structure FooRequest { 
@@ -115,18 +116,19 @@ class SerializeStructGeneratorTest {
         actual.shouldContainOnlyOnceWithDiff(expected)
     }
 
-    @ParameterizedTest
-    @CsvSource(
-        "String, \"foo\"",
-        "Boolean, false",
-        "Byte, 0",
-        "Short, 0",
-        "Integer, 2",
-        "Long, 3",
-        "Float, 0",
-        "Double, 0",
-    )
-    fun `it always serializes required default values`(memberType: String, modelDefault: String) {
+    @Test
+    fun `it always serializes required default values`() = parameterized(
+        listOf(
+            "String" to "\"foo\"",
+            "Boolean" to "false",
+            "Byte" to "0",
+            "Short" to "0",
+            "Integer" to "2",
+            "Long" to "3",
+            "Float" to "0",
+            "Double" to "0",
+        ),
+    ) { (memberType, modelDefault) ->
         val model = (
             modelPrefix + """            
             structure FooRequest { 
@@ -147,9 +149,10 @@ class SerializeStructGeneratorTest {
         actual.shouldContainOnlyOnceWithDiff(expected)
     }
 
-    @ParameterizedTest
-    @ValueSource(strings = ["String", "Boolean", "Byte", "Short", "Integer", "Long", "Float", "Double", "BigInteger", "BigDecimal"])
-    fun `it serializes a structure with simple required fields`(memberType: String) {
+    @Test
+    fun `it serializes a structure with simple required fields`() = parameterized(
+        listOf("String", "Boolean", "Byte", "Short", "Integer", "Long", "Float", "Double", "BigInteger", "BigDecimal"),
+    ) { memberType ->
         val model = (
             modelPrefix + """            
             structure FooRequest { 
@@ -170,13 +173,14 @@ class SerializeStructGeneratorTest {
         actual.shouldContainOnlyOnceWithDiff(expected)
     }
 
-    @ParameterizedTest(name = "{index} ==> ''{0}''")
-    @CsvSource(
-        "EPOCH_SECONDS, epoch-seconds",
-        "ISO_8601, date-time",
-        "RFC_5322, http-date",
-    )
-    fun `it serializes a structure with timestamp field`(runtimeEnum: String, tsFormatTrait: String) {
+    @Test
+    fun `it serializes a structure with timestamp field`() = parameterized(
+        listOf(
+            "EPOCH_SECONDS" to "epoch-seconds",
+            "ISO_8601" to "date-time",
+            "RFC_5322" to "http-date",
+        ),
+    ) { (runtimeEnum, tsFormatTrait) ->
         val model = (
             modelPrefix + """            
             structure FooRequest { 

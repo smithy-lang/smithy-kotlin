@@ -112,10 +112,10 @@ public sealed class Baz {
          */
         public fun values(): kotlin.collections.List<test.model.Baz> = values
 
-        private val values: kotlin.collections.List<test.model.Baz> = listOf(
+        private val values: kotlin.collections.List<test.model.Baz> by lazy { listOf(
             Bar,
             Foo,
-        )
+        ) }
     }
 }
 """
@@ -196,10 +196,10 @@ public sealed class Baz {
          */
         public fun values(): kotlin.collections.List<test.model.Baz> = values
 
-        private val values: kotlin.collections.List<test.model.Baz> = listOf(
+        private val values: kotlin.collections.List<test.model.Baz> by lazy { listOf(
             T2Micro,
             T2Nano,
-        )
+        ) }
     }
 }
 """
@@ -273,11 +273,11 @@ public sealed class Baz {
          */
         public fun values(): kotlin.collections.List<test.model.Baz> = values
 
-        private val values: kotlin.collections.List<test.model.Baz> = listOf(
+        private val values: kotlin.collections.List<test.model.Baz> by lazy { listOf(
             T2Micro,
             T2Nano,
             X9Omega,
-        )
+        ) }
     }
 }
 """
