@@ -13,6 +13,7 @@
     "aws.sdk.kotlin.crt:aws-crt-kotlin:0.12.*": "AwsCrtKotlin-0.12.x",
     "com.squareup.okhttp3:okhttp:4.*": "OkHttp3-4.x",
     "org.jetbrains.kotlinx:kotlinx-datetime-jvm:0.*": "KotlinxDatetimeJvm-0.x",
+    "org.jetbrains.kotlinx:kotlinx-io-core-jvm:0.*": "Maven-org-jetbrains-kotlinx_kotlinx-io-core-jvm-0.x",
 
     "software.amazon.smithy:smithy-aws-traits:1.*": "Maven-software-amazon-smithy_smithy-aws-traits-1.x",
     "software.amazon.smithy:smithy-aws-iam-traits:1.*": "Maven-software-amazon-smithy_smithy-aws-iam-traits-1.x",
