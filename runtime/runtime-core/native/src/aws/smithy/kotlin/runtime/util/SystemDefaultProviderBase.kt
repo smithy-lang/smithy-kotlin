@@ -74,7 +74,9 @@ public abstract class SystemDefaultProviderBase : PlatformProvider {
         val file = fopen(path, mode) ?: throw IOException("Cannot open file for writing: $path")
         try {
             if (writeType is WriteType.OFFSET) {
-                fseek(file, writeType.offset, SEEK_SET)
+                // Handles offset being int or long depending on platform with convert
+                @OptIn(UnsafeNumber::class)
+                fseek(file, writeType.offset.convert(), SEEK_SET)
             }
             val wc = fwrite(data.refTo(0), 1uL, data.size.toULong(), file)
             if (wc != data.size.toULong()) {
