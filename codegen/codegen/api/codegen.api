@@ -714,6 +714,7 @@ public final class aws/smithy/kotlin/codegen/core/RuntimeTypes$Core$Net$Url : aw
 
 public final class aws/smithy/kotlin/codegen/core/RuntimeTypes$Core$Retries : aws/smithy/kotlin/codegen/core/RuntimeTypePackage {
 	public static final field INSTANCE Laws/smithy/kotlin/codegen/core/RuntimeTypes$Core$Retries;
+	public final fun getLegacyRetryStrategy ()Lsoftware/amazon/smithy/codegen/core/Symbol;
 	public final fun getOutcome ()Lsoftware/amazon/smithy/codegen/core/Symbol;
 	public final fun getRetryStrategy ()Lsoftware/amazon/smithy/codegen/core/Symbol;
 	public final fun getStandardRetryStrategy ()Lsoftware/amazon/smithy/codegen/core/Symbol;
