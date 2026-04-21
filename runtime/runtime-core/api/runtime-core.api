@@ -129,6 +129,7 @@ public final class aws/smithy/kotlin/runtime/businessmetrics/SmithyBusinessMetri
 	public static final field PROTOCOL_RPC_V2_CBOR Laws/smithy/kotlin/runtime/businessmetrics/SmithyBusinessMetric;
 	public static final field RESOLVED_ACCOUNT_ID Laws/smithy/kotlin/runtime/businessmetrics/SmithyBusinessMetric;
 	public static final field RETRY_MODE_ADAPTIVE Laws/smithy/kotlin/runtime/businessmetrics/SmithyBusinessMetric;
+	public static final field RETRY_MODE_LEGACY Laws/smithy/kotlin/runtime/businessmetrics/SmithyBusinessMetric;
 	public static final field RETRY_MODE_STANDARD Laws/smithy/kotlin/runtime/businessmetrics/SmithyBusinessMetric;
 	public static final field SERVICE_ENDPOINT_OVERRIDE Laws/smithy/kotlin/runtime/businessmetrics/SmithyBusinessMetric;
 	public static final field SIGV4A_SIGNING Laws/smithy/kotlin/runtime/businessmetrics/SmithyBusinessMetric;
@@ -1768,6 +1769,52 @@ public final class aws/smithy/kotlin/runtime/retries/AdaptiveRetryStrategy$Confi
 
 public final class aws/smithy/kotlin/runtime/retries/AdaptiveRetryStrategy$Config$Companion {
 	public final fun getDefault ()Laws/smithy/kotlin/runtime/retries/AdaptiveRetryStrategy$Config;
+}
+
+public class aws/smithy/kotlin/runtime/retries/LegacyRetryStrategy : aws/smithy/kotlin/runtime/retries/RetryStrategy {
+	public static final field Companion Laws/smithy/kotlin/runtime/retries/LegacyRetryStrategy$Companion;
+	public fun <init> ()V
+	public fun <init> (Laws/smithy/kotlin/runtime/retries/LegacyRetryStrategy$Config;)V
+	public synthetic fun <init> (Laws/smithy/kotlin/runtime/retries/LegacyRetryStrategy$Config;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	protected fun afterTry (ILjava/lang/Object;Laws/smithy/kotlin/runtime/retries/policy/RetryDirective;Laws/smithy/kotlin/runtime/retries/policy/RetryPolicy;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	protected fun beforeInitialTry (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	protected fun beforeRetry (ILjava/lang/Object;Laws/smithy/kotlin/runtime/retries/policy/RetryDirective;Laws/smithy/kotlin/runtime/retries/policy/RetryPolicy;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun getConfig ()Laws/smithy/kotlin/runtime/retries/LegacyRetryStrategy$Config;
+	public synthetic fun getConfig ()Laws/smithy/kotlin/runtime/retries/RetryStrategy$Config;
+	public fun retry (Laws/smithy/kotlin/runtime/retries/policy/RetryPolicy;Lkotlin/jvm/functions/Function1;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+}
+
+public final class aws/smithy/kotlin/runtime/retries/LegacyRetryStrategy$Companion : aws/smithy/kotlin/runtime/util/DslFactory {
+	public fun invoke (Lkotlin/jvm/functions/Function1;)Laws/smithy/kotlin/runtime/retries/LegacyRetryStrategy;
+	public synthetic fun invoke (Lkotlin/jvm/functions/Function1;)Ljava/lang/Object;
+}
+
+public class aws/smithy/kotlin/runtime/retries/LegacyRetryStrategy$Config : aws/smithy/kotlin/runtime/retries/RetryStrategy$Config {
+	public static final field Companion Laws/smithy/kotlin/runtime/retries/LegacyRetryStrategy$Config$Companion;
+	public static final field DEFAULT_MAX_ATTEMPTS I
+	public fun <init> (Laws/smithy/kotlin/runtime/retries/LegacyRetryStrategy$Config$Builder;)V
+	public final fun getDelayProvider ()Laws/smithy/kotlin/runtime/retries/delay/DelayProvider;
+	public fun getMaxAttempts ()I
+	public final fun getTokenBucket ()Laws/smithy/kotlin/runtime/retries/delay/RetryTokenBucket;
+	public fun toBuilderApplicator ()Lkotlin/jvm/functions/Function1;
+}
+
+public class aws/smithy/kotlin/runtime/retries/LegacyRetryStrategy$Config$Builder : aws/smithy/kotlin/runtime/retries/RetryStrategy$Config$Builder {
+	public fun <init> ()V
+	public final fun delayProvider (Laws/smithy/kotlin/runtime/util/DslFactory;Lkotlin/jvm/functions/Function1;)V
+	public final fun delayProvider (Lkotlin/jvm/functions/Function1;)V
+	public final fun getDelayProvider ()Laws/smithy/kotlin/runtime/retries/delay/DelayProvider;
+	public fun getMaxAttempts ()I
+	public final fun getTokenBucket ()Laws/smithy/kotlin/runtime/retries/delay/RetryTokenBucket;
+	public final fun setDelayProvider (Laws/smithy/kotlin/runtime/retries/delay/DelayProvider;)V
+	public fun setMaxAttempts (I)V
+	public final fun setTokenBucket (Laws/smithy/kotlin/runtime/retries/delay/RetryTokenBucket;)V
+	public final fun tokenBucket (Laws/smithy/kotlin/runtime/util/DslFactory;Lkotlin/jvm/functions/Function1;)V
+	public final fun tokenBucket (Lkotlin/jvm/functions/Function1;)V
+}
+
+public final class aws/smithy/kotlin/runtime/retries/LegacyRetryStrategy$Config$Companion {
+	public final fun default ()Laws/smithy/kotlin/runtime/retries/LegacyRetryStrategy$Config;
 }
 
 public abstract class aws/smithy/kotlin/runtime/retries/Outcome {

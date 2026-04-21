@@ -82,6 +82,7 @@ public interface BusinessMetric {
 public enum class SmithyBusinessMetric(public override val identifier: String) : BusinessMetric {
     WAITER("B"), // TODO: Emit this metric
     PAGINATOR("C"), // TODO: Emit this metric
+    RETRY_MODE_LEGACY("D"),
     RETRY_MODE_STANDARD("E"),
     RETRY_MODE_ADAPTIVE("F"),
     GZIP_REQUEST_COMPRESSION("L"),
