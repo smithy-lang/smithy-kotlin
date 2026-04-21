@@ -8,12 +8,12 @@ package aws.smithy.kotlin.runtime.retries
 import kotlinx.coroutines.test.runTest
 import kotlin.test.*
 
-class StandardRetryStrategyTest {
+class LegacyRetryStrategyTest {
     @Test
     fun testInitialSuccess() = runTest {
         val bucket = RecordingTokenBucket()
         val delayer = RecordingDelayer()
-        val retryer = StandardRetryStrategy {
+        val retryer = LegacyRetryStrategy {
             tokenBucket = bucket
             delayProvider = delayer
         }
@@ -30,7 +30,7 @@ class StandardRetryStrategyTest {
     fun testRetryableFailures() = runTest {
         val bucket = RecordingTokenBucket()
         val delayer = RecordingDelayer()
-        val retryer = StandardRetryStrategy {
+        val retryer = LegacyRetryStrategy {
             maxAttempts = 10
             tokenBucket = bucket
             delayProvider = delayer
@@ -60,7 +60,7 @@ class StandardRetryStrategyTest {
     fun testNonretryableFailureFromException() = runTest {
         val bucket = RecordingTokenBucket()
         val delayer = RecordingDelayer()
-        val retryer = StandardRetryStrategy {
+        val retryer = LegacyRetryStrategy {
             tokenBucket = bucket
             delayProvider = delayer
         }
@@ -80,7 +80,7 @@ class StandardRetryStrategyTest {
     fun testNonretryableFailureFromResult() = runTest {
         val bucket = RecordingTokenBucket()
         val delayer = RecordingDelayer()
-        val retryer = StandardRetryStrategy {
+        val retryer = LegacyRetryStrategy {
             tokenBucket = bucket
             delayProvider = delayer
         }
@@ -102,7 +102,7 @@ class StandardRetryStrategyTest {
     fun testTooManyAttemptsFromException() = runTest {
         val bucket = RecordingTokenBucket()
         val delayer = RecordingDelayer()
-        val retryer = StandardRetryStrategy {
+        val retryer = LegacyRetryStrategy {
             tokenBucket = bucket
             delayProvider = delayer
         }
@@ -132,7 +132,7 @@ class StandardRetryStrategyTest {
     fun testTooManyAttemptsFromResult() = runTest {
         val bucket = RecordingTokenBucket()
         val delayer = RecordingDelayer()
-        val retryer = StandardRetryStrategy {
+        val retryer = LegacyRetryStrategy {
             tokenBucket = bucket
             delayProvider = delayer
         }

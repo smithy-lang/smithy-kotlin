@@ -153,6 +153,7 @@ object RuntimeTypes {
             val Outcome = symbol("Outcome")
             val RetryStrategy = symbol("RetryStrategy")
             val StandardRetryStrategy = symbol("StandardRetryStrategy")
+            val LegacyRetryStrategy = symbol("LegacyRetryStrategy")
 
             object Delay : RuntimeTypePackage(KotlinDependency.CORE, "retries.delay") {
                 val InfiniteTokenBucket = symbol("InfiniteTokenBucket")
