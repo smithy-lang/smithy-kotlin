@@ -236,11 +236,85 @@ val newStandardRetryIntegrationTestCases = mapOf(
                   retry_quota: 458
         """.trimIndent(),
 
-    // NOTE: retry-after header tests are exercised separately in RetryMiddlewareTest and
-    // StandardExponentialBackoffWithJitterTest because the YAML-driven integration test runner
-    // operates at the strategy level (no HTTP layer). The test cases below are placeholders
-    // documenting the SEP requirements; the actual header parsing + clamping is verified in
-    // those dedicated test classes.
+    "Honor x-amz-retry-after header" to // language=YAML
+        """
+            given:
+              exponential_base: 1
+            responses:
+              - response:
+                  status_code: 500
+                  headers:
+                    x-amz-retry-after: "1500"
+                expected:
+                  outcome: retry_request
+                  retry_quota: 486
+                  delay: 1.5
+              - response:
+                  status_code: 200
+                expected:
+                  outcome: success
+                  retry_quota: 500
+        """.trimIndent(),
+
+    "x-amz-retry-after minimum is exponential backoff duration" to // language=YAML
+        """
+            given:
+              exponential_base: 1
+            responses:
+              - response:
+                  status_code: 500
+                  headers:
+                    x-amz-retry-after: "0"
+                expected:
+                  outcome: retry_request
+                  retry_quota: 486
+                  delay: 0.05
+              - response:
+                  status_code: 200
+                expected:
+                  outcome: success
+                  retry_quota: 500
+        """.trimIndent(),
+
+    "x-amz-retry-after maximum is 5+exponential backoff duration" to // language=YAML
+        """
+            given:
+              exponential_base: 1
+            responses:
+              - response:
+                  status_code: 500
+                  headers:
+                    x-amz-retry-after: "10000"
+                expected:
+                  outcome: retry_request
+                  retry_quota: 486
+                  delay: 5.05
+              - response:
+                  status_code: 200
+                expected:
+                  outcome: success
+                  retry_quota: 500
+        """.trimIndent(),
+
+    "Invalid x-amz-retry-after falls back to exponential backoff" to // language=YAML
+        """
+            given:
+              exponential_base: 1
+            responses:
+              - response:
+                  status_code: 500
+                  headers:
+                    x-amz-retry-after: "invalid"
+                expected:
+                  outcome: retry_request
+                  retry_quota: 486
+                  delay: 0.05
+              - response:
+                  status_code: 200
+                expected:
+                  outcome: success
+                  retry_quota: 500
+        """.trimIndent(),
 
     // NOTE: Long-polling backoff test case ("Long-Polling Backoff When Token Bucket Empty")
     // is not yet implemented — long-polling support is deferred.
@@ -265,6 +339,7 @@ data class NewStandardResponseAndExpectation(val response: NewStandardResponse, 
 data class NewStandardResponse(
     @SerialName("status_code") val statusCode: Int,
     @SerialName("error_code") val errorCode: String? = null,
+    val headers: Map<String, String>? = null,
 )
 
 @Serializable
