@@ -128,99 +128,99 @@ class NewStandardRetryIntegrationTest {
 
     /**
      * SEP 2.1: "Retry quota recovery after successful responses"
-     *
-     * Call 1: 500 (quota 30→16) → 502 (quota 16→2) → 200 success (quota 2→16)
-     * Call 2: 500 (quota 16→2) → 200 success (quota 2→16)
+     * Multi-invocation test: responses are split on `success` outcomes, each group is a separate retry() call.
      */
     @OptIn(ExperimentalCoroutinesApi::class)
     @Test
-    fun testRetryQuotaRecoveryAfterSuccess() = runTest {
-        val tokenBucket = sepTokenBucket(30)
-        val retryer = StandardRetryStrategy {
-            maxAttempts = 5
-            this.tokenBucket = tokenBucket
-            delayProvider { jitter = 0.0 }
-        }
-
-        val serverSidePolicy = object : RetryPolicy<Ok> {
-            override fun evaluate(result: Result<Ok>): RetryDirective = when {
-                result.isSuccess -> RetryDirective.TerminateAndSucceed
-                else -> RetryDirective.RetryError(RetryErrorType.ServerSide)
+    fun testMultiInvocationCases() = runTest {
+        val testCases = newStandardRetryMultiInvocationTestCases.deserializeYaml(NewStandardRetryTestCase.serializer())
+        testCases.forEach { (name, tc) ->
+            val tokenBucket = sepTokenBucket(tc.given.initialRetryTokens)
+            val retryer = StandardRetryStrategy {
+                maxAttempts = tc.given.maxAttempts
+                this.tokenBucket = tokenBucket
+                tc.given.service?.let { serviceName = it }
+                delayProvider {
+                    jitter = 0.0
+                    maxBackoff = (tc.given.maxBackoffTime * 1000).toLong().milliseconds
+                }
             }
-        }
 
-        // Call 1: 500 → 502 → 200
-        var attempt = 0
-        retryer.retry(serverSidePolicy) {
-            when (attempt++) {
-                0 -> throw HttpCodeException(500)
-                1 -> throw HttpCodeException(502)
-                else -> Ok
+            // Split responses into invocations at each success boundary
+            val invocations = mutableListOf<List<NewStandardResponseAndExpectation>>()
+            var current = mutableListOf<NewStandardResponseAndExpectation>()
+            for (resp in tc.responses) {
+                current.add(resp)
+                if (resp.expected.outcome == NewStandardTestOutcome.Success) {
+                    invocations.add(current)
+                    current = mutableListOf()
+                }
             }
-        }
-        assertEquals(16, tokenBucket.capacity)
+            if (current.isNotEmpty()) invocations.add(current)
 
-        // Call 2: 500 → 200
-        attempt = 0
-        retryer.retry(serverSidePolicy) {
-            when (attempt++) {
-                0 -> throw HttpCodeException(500)
-                else -> Ok
+            for (invocation in invocations) {
+                val policy = NewSepRetryPolicy(invocation)
+                var index = 0
+                retryer.retry(policy) {
+                    val resp = invocation[index++]
+                    retryer.retryAfterMillis = resp.response.headers
+                        ?.get("x-amz-retry-after")
+                        ?.toLongOrNull()
+                        ?.takeIf { it >= 0 }
+                    resp.response.toResult()
+                }
             }
+
+            assertEquals(
+                tc.responses.last().expected.retryQuota,
+                tokenBucket.capacity,
+                "Final quota mismatch for '$name'",
+            )
         }
-        assertEquals(16, tokenBucket.capacity)
     }
 
     /**
      * SEP 2.1: "Shared multi-threaded scenarios"
-     * Two concurrent retry() calls share the same token bucket.
+     * Each thread list is launched concurrently; all share the same token bucket.
+     * Per SEP: "The exact sequence of thread execution and specific values may vary."
+     * We verify only the final quota.
      */
     @OptIn(ExperimentalCoroutinesApi::class)
     @Test
-    fun testMultiThreadedSharedQuota() = runTest {
-        val tokenBucket = sepTokenBucket(500)
-        val retryer = StandardRetryStrategy {
-            maxAttempts = 5
-            this.tokenBucket = tokenBucket
-            delayProvider { jitter = 0.0 }
-        }
-
-        val serverSidePolicy = object : RetryPolicy<Ok> {
-            override fun evaluate(result: Result<Ok>): RetryDirective = when {
-                result.isSuccess -> RetryDirective.TerminateAndSucceed
-                else -> RetryDirective.RetryError(RetryErrorType.ServerSide)
+    fun testMultiThreadedCases() = runTest {
+        val testCases = newStandardRetryMultiThreadedTestCases.deserializeYaml(NewStandardMultiThreadedTestCase.serializer())
+        testCases.forEach { (name, tc) ->
+            val tokenBucket = sepTokenBucket(tc.given.initialRetryTokens)
+            val retryer = StandardRetryStrategy {
+                maxAttempts = tc.given.maxAttempts
+                this.tokenBucket = tokenBucket
+                tc.given.service?.let { serviceName = it }
+                delayProvider {
+                    jitter = 0.0
+                    maxBackoff = (tc.given.maxBackoffTime * 1000).toLong().milliseconds
+                }
             }
-        }
 
-        coroutineScope {
-            launch {
-                var attempt = 0
-                retryer.retry(serverSidePolicy) {
-                    when (attempt++) {
-                        0, 1 -> throw HttpCodeException(500)
-                        else -> Ok
+            val serverSidePolicy = object : RetryPolicy<Ok> {
+                override fun evaluate(result: Result<Ok>): RetryDirective = when {
+                    result.isSuccess -> RetryDirective.TerminateAndSucceed
+                    else -> RetryDirective.RetryError(RetryErrorType.ServerSide)
+                }
+            }
+
+            coroutineScope {
+                for (threadResponses in tc.threads) {
+                    launch {
+                        var index = 0
+                        retryer.retry(serverSidePolicy) {
+                            threadResponses[index++].response.toResult()
+                        }
                     }
                 }
             }
 
-            launch {
-                var attempt = 0
-                retryer.retry(serverSidePolicy) {
-                    when (attempt++) {
-                        0 -> throw HttpCodeException(500)
-                        else -> Ok
-                    }
-                }
-            }
+            assertEquals(tc.expectedFinalQuota, tokenBucket.capacity, "Final quota mismatch for '$name'")
         }
-
-        // 3 retries × 14 cost = 42 deducted, 3 successes × 14 returned = 42 returned → net 500 - 42 + 42 = 500
-        // But the last success returns the cost of the *last retry token*, so: 500 - 14 - 14 - 14 + 14 + 14 + 14 = 500
-        // Actually: each scheduleRetry deducts, each notifySuccess returns the token's returnSize.
-        // Thread 1: acquireToken(0) → scheduleRetry(14) → scheduleRetry(14) → notifySuccess(+14)
-        // Thread 2: acquireToken(0) → scheduleRetry(14) → notifySuccess(+14)
-        // Net: 500 - 14 - 14 - 14 + 14 + 14 = 486
-        assertEquals(486, tokenBucket.capacity)
     }
 }
 

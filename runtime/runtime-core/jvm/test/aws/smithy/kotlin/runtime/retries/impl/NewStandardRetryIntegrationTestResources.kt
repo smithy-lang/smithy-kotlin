@@ -320,6 +320,81 @@ val newStandardRetryIntegrationTestCases = mapOf(
     // is not yet implemented — long-polling support is deferred.
 )
 
+val newStandardRetryMultiInvocationTestCases = mapOf(
+    "Retry quota recovery after successful responses" to // language=YAML
+        """
+            given:
+              max_attempts: 5
+              initial_retry_tokens: 30
+              exponential_base: 1
+            responses:
+              - response:
+                  status_code: 500
+                expected:
+                  outcome: retry_request
+                  retry_quota: 16
+                  delay: 0.05
+              - response:
+                  status_code: 502
+                expected:
+                  outcome: retry_request
+                  retry_quota: 2
+                  delay: 0.1
+              - response:
+                  status_code: 200
+                expected:
+                  outcome: success
+                  retry_quota: 16
+              - response:
+                  status_code: 500
+                expected:
+                  outcome: retry_request
+                  retry_quota: 2
+                  delay: 0.05
+              - response:
+                  status_code: 200
+                expected:
+                  outcome: success
+                  retry_quota: 16
+        """.trimIndent(),
+)
+
+val newStandardRetryMultiThreadedTestCases = mapOf(
+    "Shared multi-threaded scenarios" to // language=YAML
+        """
+            given:
+              max_attempts: 5
+              exponential_base: 1
+            threads:
+              - - response:
+                    status_code: 500
+                  expected:
+                    outcome: retry_request
+                    retry_quota: 486
+                - response:
+                    status_code: 500
+                  expected:
+                    outcome: retry_request
+                    retry_quota: 472
+                - response:
+                    status_code: 200
+                  expected:
+                    outcome: success
+                    retry_quota: 486
+              - - response:
+                    status_code: 500
+                  expected:
+                    outcome: retry_request
+                    retry_quota: 458
+                - response:
+                    status_code: 200
+                  expected:
+                    outcome: success
+                    retry_quota: 472
+            expected_final_quota: 486
+        """.trimIndent(),
+)
+
 @Serializable
 data class NewStandardRetryTestCase(val given: NewStandardGiven, val responses: List<NewStandardResponseAndExpectation>)
 
@@ -363,3 +438,10 @@ enum class NewStandardTestOutcome {
     @SerialName("success")
     Success,
 }
+
+@Serializable
+data class NewStandardMultiThreadedTestCase(
+    val given: NewStandardGiven,
+    val threads: List<List<NewStandardResponseAndExpectation>>,
+    @SerialName("expected_final_quota") val expectedFinalQuota: Int,
+)
