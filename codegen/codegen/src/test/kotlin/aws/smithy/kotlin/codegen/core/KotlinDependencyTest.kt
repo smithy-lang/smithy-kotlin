@@ -6,6 +6,7 @@
 package aws.smithy.kotlin.codegen.core
 
 import kotlin.test.Test
+import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
@@ -32,5 +33,12 @@ class KotlinDependencyTest {
         invalidVersions.forEach {
             assertFalse(isValidVersion(it))
         }
+    }
+
+    @Test
+    fun testKotlinVersionSynchronization() {
+        val runningVersion = KotlinVersion.CURRENT.toString()
+        val codegenVersion = KOTLIN_COMPILER_VERSION
+        assertEquals(runningVersion, codegenVersion, "`KOTLIN_COMPILER_VERSION` declared in codegen must match the Kotlin version declared in gradle/libs.versions.toml")
     }
 }
