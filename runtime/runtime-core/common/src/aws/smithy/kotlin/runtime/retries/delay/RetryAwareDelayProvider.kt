@@ -13,6 +13,13 @@ import aws.smithy.kotlin.runtime.retries.policy.RetryErrorType
  */
 public interface RetryAwareDelayProvider : DelayProvider {
     /**
+     * Delegates to [backoff] with [RetryErrorType.ServerSide] and no service name or retry-after value.
+     */
+    override suspend fun backoff(attempt: Int) {
+        backoff(attempt, RetryErrorType.ServerSide)
+    }
+
+    /**
      * Delays for an appropriate amount of time after the given attempt number, taking into account the type of error,
      * the service name, and an optional server-specified retry-after duration.
      * @param attempt The ordinal index of the attempt.

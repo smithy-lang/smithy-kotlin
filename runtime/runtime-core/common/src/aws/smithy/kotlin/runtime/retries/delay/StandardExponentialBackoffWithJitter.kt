@@ -44,14 +44,6 @@ public class StandardExponentialBackoffWithJitter(
     private val random = Random.Default
 
     /**
-     * Delays for an appropriate amount of time after the given attempt number using the default (non-throttling)
-     * base delay.
-     */
-    override suspend fun backoff(attempt: Int) {
-        backoff(attempt, RetryErrorType.ServerSide, null)
-    }
-
-    /**
      * Delays for an appropriate amount of time after the given attempt number, selecting the base delay according to
      * the [errorType] and [serviceName]. If [retryAfterMillis] is provided, the delay is clamped per SEP 2.1:
      * `clamp(retryAfterMs, t_i, t_i + 5000)` with no jitter applied to the server-specified value.

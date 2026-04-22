@@ -16,6 +16,8 @@ import aws.smithy.kotlin.runtime.util.DslBuilderProperty
 import aws.smithy.kotlin.runtime.util.DslFactory
 import kotlinx.coroutines.CancellationException
 
+private val DYNAMODB_SERVICES = setOf("dynamodb", "dynamodb streams")
+
 /**
  * Implements a retry strategy utilizing backoff delayer and a token bucket for rate limiting and circuit breaking. Note
  * that the backoff delayer and token bucket work independently of each other. Either can delay retries (and the token
@@ -224,6 +226,11 @@ public open class StandardRetryStrategy(override val config: Config = Config.def
              * The default number of maximum attempts for new config instances
              */
             public const val DEFAULT_MAX_ATTEMPTS: Int = 3
+
+            /**
+             * The default number of maximum attempts for new config instances using DynamoDB services
+             */
+            public const val DEFAULT_DYNAMODB_SERVICES_MAX_ATTEMPTS: Int = 4
         }
 
         /**
@@ -233,7 +240,7 @@ public open class StandardRetryStrategy(override val config: Config = Config.def
 
         override val maxAttempts: Int = when {
             builder.isMaxAttemptsSet -> builder.maxAttempts
-            newRetriesEnabled() && builder.serviceName?.lowercase() in setOf("dynamodb", "dynamodb streams") -> 4
+            newRetriesEnabled() && builder.serviceName?.lowercase() in DYNAMODB_SERVICES -> DEFAULT_DYNAMODB_SERVICES_MAX_ATTEMPTS
             else -> DEFAULT_MAX_ATTEMPTS
         }
 
