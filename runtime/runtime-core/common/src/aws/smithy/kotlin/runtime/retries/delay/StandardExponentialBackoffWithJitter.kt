@@ -20,7 +20,7 @@ import kotlin.time.DurationUnit
 private val DYNAMODB_SERVICES = setOf("dynamodb", "dynamodb streams")
 
 /**
- * An [RetryAwareDelayProvider] that implements SEP 2.1 exponential backoff with jitter. The base delay varies by
+ * A [RetryAwareDelayProvider] that implements the standard exponential backoff with jitter. The base delay varies by
  * error type and service name:
  *
  * - **Throttling** errors use a base delay of **1000 ms**.
@@ -45,8 +45,8 @@ public class StandardExponentialBackoffWithJitter(
 
     /**
      * Delays for an appropriate amount of time after the given attempt number, selecting the base delay according to
-     * the [errorType] and [serviceName]. If [retryAfterMillis] is provided, the delay is clamped per SEP 2.1:
-     * `clamp(retryAfterMs, t_i, t_i + 5000)` with no jitter applied to the server-specified value.
+     * the [errorType] and [serviceName]. If [retryAfterMillis] is provided, the delay is clamped to
+     * `[t_i, t_i + 5000ms]` where `t_i` is the computed exponential backoff. `MAX_BACKOFF` does not apply to this value.
      */
     override suspend fun backoff(
         attempt: Int,
@@ -65,7 +65,7 @@ public class StandardExponentialBackoffWithJitter(
         val jitterProportion = if (config.jitter > 0.0) random.nextDouble(config.jitter) else 0.0
         val tI = capped * (1.0 - jitterProportion)
 
-        // SEP: clamp(retry_after, t_i, t_i + 5s). MAX_BACKOFF does not apply.
+        // Clamp retry-after to [t_i, t_i + 5s]. MAX_BACKOFF does not apply.
         val delayMs = retryAfterMillis?.toDouble()?.coerceIn(tI, tI + 5000.0) ?: tI
 
         delay(delayMs.toLong().milliseconds)

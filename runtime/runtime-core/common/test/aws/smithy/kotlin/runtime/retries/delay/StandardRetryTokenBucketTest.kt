@@ -69,7 +69,7 @@ class StandardRetryTokenBucketTest {
 
     @Test
     fun testRetryCapacityAdjustments() = runTest {
-        // SEP 2.1: only Throttling gets the timeout/throttling cost; everything else pays retryCost
+        // Only Throttling gets the timeout/throttling cost; everything else pays retryCost
         mapOf(
             RetryErrorType.Throttling to DEFAULT_TIMEOUT_RETRY_COST,
             RetryErrorType.Transient to DEFAULT_RETRY_COST,

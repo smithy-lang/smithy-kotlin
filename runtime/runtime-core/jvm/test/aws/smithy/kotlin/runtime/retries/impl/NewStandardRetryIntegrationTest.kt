@@ -20,15 +20,15 @@ import kotlin.test.*
 import kotlin.time.Duration.Companion.milliseconds
 
 /**
- * Integration tests for the SEP 2.1 "new" standard retry behavior.
- * These tests explicitly configure the new retry constants (retryCost=14, timeoutRetryCost=5)
+ * Integration tests for the standard retry strategy behavior.
+ * These tests configure the standard retry constants (retryCost=14, timeoutRetryCost=5)
  * and use [StandardExponentialBackoffWithJitter] (initialDelay=50ms, scaleFactor=2.0).
  */
 class NewStandardRetryIntegrationTest {
-    /** SEP 2.1 retry cost for non-throttling errors. */
+    /** Standard retry cost for non-throttling errors. */
     private val sepRetryCost = 14
 
-    /** SEP 2.1 retry cost for throttling errors. */
+    /** Standard retry cost for throttling errors. */
     private val sepThrottlingRetryCost = 5
 
     private val sysPropKey = "smithy.newRetries2026"
@@ -132,7 +132,7 @@ class NewStandardRetryIntegrationTest {
     }
 
     /**
-     * SEP 2.1: "Retry quota recovery after successful responses"
+     * Retry quota recovery after successful responses.
      * Multi-invocation test: responses are split on `success` outcomes, each group is a separate retry() call.
      */
     @OptIn(ExperimentalCoroutinesApi::class)
@@ -182,9 +182,9 @@ class NewStandardRetryIntegrationTest {
     }
 
     /**
-     * SEP 2.1: "Shared multi-threaded scenarios"
+     * Shared multi-threaded scenarios.
      * Each thread list is launched concurrently; all share the same token bucket.
-     * Per SEP: "The exact sequence of thread execution and specific values may vary."
+     * The exact sequence of thread execution and specific values may vary.
      * We verify only the final quota.
      */
     @OptIn(ExperimentalCoroutinesApi::class)

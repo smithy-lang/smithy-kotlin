@@ -33,8 +33,7 @@ public open class StandardRetryStrategy(override val config: Config = Config.def
 
     /**
      * The server-specified retry-after duration in milliseconds from the `x-amz-retry-after` response header.
-     * Set by the HTTP retry middleware before each retry attempt. The strategy reads and clears this value
-     * when computing backoff.
+     * Set by the HTTP retry middleware after each HTTP call, before the delay provider computes backoff.
      */
     public var retryAfterMillis: Long? = null
 

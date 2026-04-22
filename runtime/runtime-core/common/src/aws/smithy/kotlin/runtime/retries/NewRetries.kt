@@ -12,7 +12,7 @@ private val NEW_RETRIES_SETTING = boolEnvSetting("smithy.newRetries2026", "SMITH
 
 /**
  * Returns `true` when the `SMITHY_NEW_RETRIES_2026` environment variable (or `smithy.newRetries2026` system property)
- * is set to `true`, enabling SEP 2.1 retry behavior. Defaults to `false`.
+ * is set to `true`, enabling the standard retry strategy behavior. Defaults to `false`.
  */
 @InternalApi
 public fun newRetriesEnabled(): Boolean = NEW_RETRIES_SETTING.resolve() ?: false

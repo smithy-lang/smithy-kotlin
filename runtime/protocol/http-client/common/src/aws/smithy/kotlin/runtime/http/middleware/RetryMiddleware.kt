@@ -102,7 +102,7 @@ internal class RetryMiddleware<I, O>(
         val callList = request.context.getOrNull(HttpOperationContext.HttpCallList) ?: emptyList()
         val call = callList.getOrNull(attempt - 1)
 
-        // Parse x-amz-retry-after header (integer milliseconds). Invalid values are ignored per SEP 2.1.
+        // Parse x-amz-retry-after header (integer milliseconds). Invalid values are ignored.
         call?.response?.headers?.get("x-amz-retry-after")?.let { raw ->
             val ms = raw.toLongOrNull()?.takeIf { it >= 0 }
             if (ms != null) {

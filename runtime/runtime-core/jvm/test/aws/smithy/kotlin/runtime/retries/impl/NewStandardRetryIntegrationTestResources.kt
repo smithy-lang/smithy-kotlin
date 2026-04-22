@@ -8,7 +8,7 @@ package aws.smithy.kotlin.runtime.retries.impl
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
-// Test cases sourced from SEP 2.1 "new-retries" Appendix A — Standard Mode.
+// Test cases for the standard retry strategy — Standard Mode.
 val newStandardRetryIntegrationTestCases = mapOf(
     "Retry eventually succeeds" to // language=YAML
         """
