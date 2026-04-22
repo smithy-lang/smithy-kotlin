@@ -235,6 +235,15 @@ val newStandardRetryIntegrationTestCases = mapOf(
                   outcome: max_attempts_exceeded
                   retry_quota: 458
         """.trimIndent(),
+
+    // NOTE: retry-after header tests are exercised separately in RetryMiddlewareTest and
+    // StandardExponentialBackoffWithJitterTest because the YAML-driven integration test runner
+    // operates at the strategy level (no HTTP layer). The test cases below are placeholders
+    // documenting the SEP requirements; the actual header parsing + clamping is verified in
+    // those dedicated test classes.
+
+    // NOTE: Long-polling backoff test case ("Long-Polling Backoff When Token Bucket Empty")
+    // is not yet implemented — long-polling support is deferred.
 )
 
 @Serializable

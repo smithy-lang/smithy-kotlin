@@ -166,6 +166,143 @@ class NewStandardRetryIntegrationTest {
     }
 
     /**
+     * SEP 2.1: "Honor x-amz-retry-after Header"
+     * retry-after: 1500ms → delay = 1.5s (within [50ms, 50ms+5000ms])
+     */
+    @OptIn(ExperimentalCoroutinesApi::class)
+    @Test
+    fun testRetryAfterHonored() = runTest {
+        val tokenBucket = sepTokenBucket()
+        val retryer = StandardRetryStrategy {
+            maxAttempts = 3
+            this.tokenBucket = tokenBucket
+            delayProvider { jitter = 0.0 }
+        }
+
+        val policy = object : RetryPolicy<Ok> {
+            var call = 0
+            override fun evaluate(result: Result<Ok>): RetryDirective = when {
+                result.isSuccess -> RetryDirective.TerminateAndSucceed
+                else -> RetryDirective.RetryError(RetryErrorType.ServerSide)
+            }
+        }
+
+        val startMs = currentTime
+        var attempt = 0
+        retryer.retry(policy) {
+            if (attempt++ == 0) {
+                retryer.retryAfterMillis = 1500L
+                throw HttpCodeException(500)
+            }
+            Ok
+        }
+        assertEquals(1500L, currentTime - startMs)
+        assertEquals(500, tokenBucket.capacity)
+    }
+
+    /**
+     * SEP 2.1: "x-amz-retry-after minimum is exponential backoff duration"
+     * retry-after: 0 → clamped to t_i = 50ms
+     */
+    @OptIn(ExperimentalCoroutinesApi::class)
+    @Test
+    fun testRetryAfterClampedToMinimum() = runTest {
+        val tokenBucket = sepTokenBucket()
+        val retryer = StandardRetryStrategy {
+            maxAttempts = 3
+            this.tokenBucket = tokenBucket
+            delayProvider { jitter = 0.0 }
+        }
+
+        val policy = object : RetryPolicy<Ok> {
+            override fun evaluate(result: Result<Ok>): RetryDirective = when {
+                result.isSuccess -> RetryDirective.TerminateAndSucceed
+                else -> RetryDirective.RetryError(RetryErrorType.ServerSide)
+            }
+        }
+
+        val startMs = currentTime
+        var attempt = 0
+        retryer.retry(policy) {
+            if (attempt++ == 0) {
+                retryer.retryAfterMillis = 0L
+                throw HttpCodeException(500)
+            }
+            Ok
+        }
+        assertEquals(50L, currentTime - startMs)
+        assertEquals(500, tokenBucket.capacity)
+    }
+
+    /**
+     * SEP 2.1: "x-amz-retry-after maximum is 5+exponential backoff duration"
+     * retry-after: 10000 → clamped to t_i + 5000 = 50 + 5000 = 5050ms
+     */
+    @OptIn(ExperimentalCoroutinesApi::class)
+    @Test
+    fun testRetryAfterClampedToMaximum() = runTest {
+        val tokenBucket = sepTokenBucket()
+        val retryer = StandardRetryStrategy {
+            maxAttempts = 3
+            this.tokenBucket = tokenBucket
+            delayProvider { jitter = 0.0 }
+        }
+
+        val policy = object : RetryPolicy<Ok> {
+            override fun evaluate(result: Result<Ok>): RetryDirective = when {
+                result.isSuccess -> RetryDirective.TerminateAndSucceed
+                else -> RetryDirective.RetryError(RetryErrorType.ServerSide)
+            }
+        }
+
+        val startMs = currentTime
+        var attempt = 0
+        retryer.retry(policy) {
+            if (attempt++ == 0) {
+                retryer.retryAfterMillis = 10000L
+                throw HttpCodeException(500)
+            }
+            Ok
+        }
+        assertEquals(5050L, currentTime - startMs)
+        assertEquals(500, tokenBucket.capacity)
+    }
+
+    /**
+     * SEP 2.1: "Invalid x-amz-retry-after Falls Back to Exponential Backoff"
+     * null retryAfterMillis → normal backoff (50ms)
+     */
+    @OptIn(ExperimentalCoroutinesApi::class)
+    @Test
+    fun testRetryAfterNullFallsBack() = runTest {
+        val tokenBucket = sepTokenBucket()
+        val retryer = StandardRetryStrategy {
+            maxAttempts = 3
+            this.tokenBucket = tokenBucket
+            delayProvider { jitter = 0.0 }
+        }
+
+        val policy = object : RetryPolicy<Ok> {
+            override fun evaluate(result: Result<Ok>): RetryDirective = when {
+                result.isSuccess -> RetryDirective.TerminateAndSucceed
+                else -> RetryDirective.RetryError(RetryErrorType.ServerSide)
+            }
+        }
+
+        val startMs = currentTime
+        var attempt = 0
+        retryer.retry(policy) {
+            if (attempt++ == 0) {
+                retryer.retryAfterMillis = null
+                throw HttpCodeException(500)
+            }
+            Ok
+        }
+        assertEquals(50L, currentTime - startMs)
+        assertEquals(500, tokenBucket.capacity)
+    }
+
+    /**
      * SEP 2.1: "Shared multi-threaded scenarios"
      * Two concurrent retry() calls share the same token bucket.
      */

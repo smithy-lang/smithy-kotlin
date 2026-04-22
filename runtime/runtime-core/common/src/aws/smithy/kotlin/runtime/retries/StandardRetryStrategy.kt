@@ -317,6 +317,7 @@ public open class StandardRetryStrategy(override val config: Config = Config.def
                     tokenBucketProperty.dsl(StandardRetryTokenBucket) {
                         retryCost = 14
                         timeoutRetryCost = 5
+                        initialTrySuccessIncrement = 1
                     }
                 }
             }

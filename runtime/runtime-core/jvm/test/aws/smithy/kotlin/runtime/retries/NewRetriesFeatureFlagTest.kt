@@ -50,6 +50,20 @@ class NewRetriesFeatureFlagTest {
     }
 
     @Test
+    fun testFlagOnDynamoDbStreamsMaxAttempts4() {
+        System.setProperty(sysPropKey, "true")
+        val strategy = StandardRetryStrategy { serviceName = "dynamodb streams" }
+        assertEquals(4, strategy.config.maxAttempts)
+    }
+
+    @Test
+    fun testFlagOnDynamoDbStreamsCaseInsensitive() {
+        System.setProperty(sysPropKey, "true")
+        val strategy = StandardRetryStrategy { serviceName = "DynamoDB Streams" }
+        assertEquals(4, strategy.config.maxAttempts)
+    }
+
+    @Test
     fun testFlagOnDynamoDbExplicitMaxAttemptsHonored() {
         System.setProperty(sysPropKey, "true")
         val strategy = StandardRetryStrategy {

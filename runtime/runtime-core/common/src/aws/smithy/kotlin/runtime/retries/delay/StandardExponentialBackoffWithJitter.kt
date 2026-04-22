@@ -73,8 +73,8 @@ public class StandardExponentialBackoffWithJitter(
         val jitterProportion = if (config.jitter > 0.0) random.nextDouble(config.jitter) else 0.0
         val tI = capped * (1.0 - jitterProportion)
 
-        val delayMs = retryAfterMillis?.// SEP: clamp(retry_after, t_i, t_i + 5s). MAX_BACKOFF does not apply.
-        toDouble()?.coerceIn(tI, tI + 5000.0) ?: tI
+        // SEP: clamp(retry_after, t_i, t_i + 5s). MAX_BACKOFF does not apply.
+        val delayMs = retryAfterMillis?.toDouble()?.coerceIn(tI, tI + 5000.0) ?: tI
 
         delay(delayMs.toLong().milliseconds)
     }
