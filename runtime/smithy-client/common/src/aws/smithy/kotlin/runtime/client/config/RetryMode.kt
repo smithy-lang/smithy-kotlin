@@ -12,7 +12,7 @@ import aws.smithy.kotlin.runtime.InternalApi
 @InternalApi
 public enum class RetryMode {
     /**
-     * The legacy retry mode preserves the pre-SEP 2.1 retry behavior.
+     * The legacy retry mode preserves the old retry behavior.
      * With this, the client will use the
      * [LegacyRetryStrategy][aws.smithy.kotlin.runtime.retries.LegacyRetryStrategy].
      */
