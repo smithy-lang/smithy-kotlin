@@ -31,33 +31,42 @@ class NewStandardRetryIntegrationTest {
     /** SEP 2.1 retry cost for throttling errors. */
     private val sepThrottlingRetryCost = 5
 
-    private fun sepTokenBucket(maxCapacity: Int = 500) = StandardRetryTokenBucket {
-        this.maxCapacity = maxCapacity
+    private val sysPropKey = "smithy.newRetries2026"
+
+    @BeforeTest
+    fun setup() {
+        System.setProperty(sysPropKey, "true")
+    }
+
+    @AfterTest
+    fun cleanup() {
+        System.clearProperty(sysPropKey)
+    }
+
+    private fun sepTokenBucket(maxCapacity: Int? = null) = StandardRetryTokenBucket {
+        maxCapacity?.let { this.maxCapacity = it }
         retryCost = sepRetryCost
         timeoutRetryCost = sepThrottlingRetryCost
     }
+
+    private fun buildStrategy(given: NewStandardGiven, tokenBucket: StandardRetryTokenBucket) =
+        StandardRetryStrategy {
+            given.maxAttempts?.let { maxAttempts = it }
+            this.tokenBucket = tokenBucket
+            given.service?.let { serviceName = it }
+            delayProvider {
+                if (given.exponentialBase == 1.0) jitter = 0.0
+                given.maxBackoffTime?.let { maxBackoff = (it * 1000).toLong().milliseconds }
+            }
+        }
 
     @OptIn(ExperimentalCoroutinesApi::class)
     @Test
     fun testIntegrationCases() = runTest {
         val testCases = newStandardRetryIntegrationTestCases.deserializeYaml(NewStandardRetryTestCase.serializer())
         testCases.forEach { (name, tc) ->
-            assertEquals(
-                1.0,
-                tc.given.exponentialBase,
-                "Test runner only supports exponential_base=1.0 (no jitter), got ${tc.given.exponentialBase} in '$name'",
-            )
-
             val tokenBucket = sepTokenBucket(tc.given.initialRetryTokens)
-            val retryer = StandardRetryStrategy {
-                maxAttempts = tc.given.maxAttempts
-                this.tokenBucket = tokenBucket
-                tc.given.service?.let { serviceName = it }
-                delayProvider {
-                    jitter = 0.0
-                    maxBackoff = (tc.given.maxBackoffTime * 1000).toLong().milliseconds
-                }
-            }
+            val retryer = buildStrategy(tc.given, tokenBucket)
 
             val policy = NewSepRetryPolicy(tc.responses)
             val block = object {
@@ -71,11 +80,7 @@ class NewStandardRetryIntegrationTest {
                         )
                     }
                     val resp = tc.responses[index++]
-                    // Propagate x-amz-retry-after header to the strategy (mirrors RetryMiddleware behavior)
-                    retryer.retryAfterMillis = resp.response.headers
-                        ?.get("x-amz-retry-after")
-                        ?.toLongOrNull()
-                        ?.takeIf { it >= 0 }
+                    retryer.retryAfterMillis = resp.response.parseRetryAfterMillis()
                     return resp.response.toResult()
                 }
             }::doIt
@@ -136,15 +141,7 @@ class NewStandardRetryIntegrationTest {
         val testCases = newStandardRetryMultiInvocationTestCases.deserializeYaml(NewStandardRetryTestCase.serializer())
         testCases.forEach { (name, tc) ->
             val tokenBucket = sepTokenBucket(tc.given.initialRetryTokens)
-            val retryer = StandardRetryStrategy {
-                maxAttempts = tc.given.maxAttempts
-                this.tokenBucket = tokenBucket
-                tc.given.service?.let { serviceName = it }
-                delayProvider {
-                    jitter = 0.0
-                    maxBackoff = (tc.given.maxBackoffTime * 1000).toLong().milliseconds
-                }
-            }
+            val retryer = buildStrategy(tc.given, tokenBucket)
 
             // Split responses into invocations at each success boundary
             val invocations = mutableListOf<List<NewStandardResponseAndExpectation>>()
@@ -161,12 +158,17 @@ class NewStandardRetryIntegrationTest {
             for (invocation in invocations) {
                 val policy = NewSepRetryPolicy(invocation)
                 var index = 0
+                retryer.retryAfterMillis = null // clear between invocations
                 retryer.retry(policy) {
+                    if (index > 0) {
+                        assertEquals(
+                            invocation[index - 1].expected.retryQuota,
+                            tokenBucket.capacity,
+                            "Quota mismatch after response ${index - 1} in '$name'",
+                        )
+                    }
                     val resp = invocation[index++]
-                    retryer.retryAfterMillis = resp.response.headers
-                        ?.get("x-amz-retry-after")
-                        ?.toLongOrNull()
-                        ?.takeIf { it >= 0 }
+                    retryer.retryAfterMillis = resp.response.parseRetryAfterMillis()
                     resp.response.toResult()
                 }
             }
@@ -191,15 +193,7 @@ class NewStandardRetryIntegrationTest {
         val testCases = newStandardRetryMultiThreadedTestCases.deserializeYaml(NewStandardMultiThreadedTestCase.serializer())
         testCases.forEach { (name, tc) ->
             val tokenBucket = sepTokenBucket(tc.given.initialRetryTokens)
-            val retryer = StandardRetryStrategy {
-                maxAttempts = tc.given.maxAttempts
-                this.tokenBucket = tokenBucket
-                tc.given.service?.let { serviceName = it }
-                delayProvider {
-                    jitter = 0.0
-                    maxBackoff = (tc.given.maxBackoffTime * 1000).toLong().milliseconds
-                }
-            }
+            val retryer = buildStrategy(tc.given, tokenBucket)
 
             val serverSidePolicy = object : RetryPolicy<Ok> {
                 override fun evaluate(result: Result<Ok>): RetryDirective = when {
@@ -236,6 +230,9 @@ private class NewSepRetryPolicy(private val responses: List<NewStandardResponseA
         }
     }
 }
+
+private fun NewStandardResponse.parseRetryAfterMillis(): Long? =
+    headers?.get("x-amz-retry-after")?.toLongOrNull()?.takeIf { it >= 0 }
 
 private fun NewStandardResponse.toResult() = when (statusCode) {
     200 -> Ok

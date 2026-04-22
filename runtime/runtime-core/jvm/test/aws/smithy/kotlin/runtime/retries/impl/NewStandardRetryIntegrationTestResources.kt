@@ -208,7 +208,6 @@ val newStandardRetryIntegrationTestCases = mapOf(
         """
             given:
               service: dynamodb
-              max_attempts: 4
               exponential_base: 1
             responses:
               - response:
@@ -400,10 +399,10 @@ data class NewStandardRetryTestCase(val given: NewStandardGiven, val responses: 
 
 @Serializable
 data class NewStandardGiven(
-    @SerialName("max_attempts") val maxAttempts: Int = 3,
-    @SerialName("initial_retry_tokens") val initialRetryTokens: Int = 500,
-    @SerialName("exponential_base") val exponentialBase: Double = 1.0,
-    @SerialName("max_backoff_time") val maxBackoffTime: Double = 20.0,
+    @SerialName("max_attempts") val maxAttempts: Int? = null,
+    @SerialName("initial_retry_tokens") val initialRetryTokens: Int? = null,
+    @SerialName("exponential_base") val exponentialBase: Double? = null,
+    @SerialName("max_backoff_time") val maxBackoffTime: Double? = null,
     val service: String? = null,
 )
 
