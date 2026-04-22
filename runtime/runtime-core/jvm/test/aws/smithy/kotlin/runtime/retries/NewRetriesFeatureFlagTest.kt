@@ -38,5 +38,4 @@ class NewRetriesFeatureFlagTest {
         val strategy = StandardRetryStrategy()
         assertIs<StandardRetryTokenBucket>(strategy.config.tokenBucket)
     }
-
 }

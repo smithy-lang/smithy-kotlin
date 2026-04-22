@@ -49,16 +49,15 @@ class NewStandardRetryIntegrationTest {
         timeoutRetryCost = sepThrottlingRetryCost
     }
 
-    private fun buildStrategy(given: NewStandardGiven, tokenBucket: StandardRetryTokenBucket) =
-        StandardRetryStrategy {
-            given.maxAttempts?.let { maxAttempts = it }
-            this.tokenBucket = tokenBucket
-            given.service?.let { serviceName = it }
-            delayProvider {
-                if (given.exponentialBase == 1.0) jitter = 0.0
-                given.maxBackoffTime?.let { maxBackoff = (it * 1000).toLong().milliseconds }
-            }
+    private fun buildStrategy(given: NewStandardGiven, tokenBucket: StandardRetryTokenBucket) = StandardRetryStrategy {
+        given.maxAttempts?.let { maxAttempts = it }
+        this.tokenBucket = tokenBucket
+        given.service?.let { serviceName = it }
+        delayProvider {
+            if (given.exponentialBase == 1.0) jitter = 0.0
+            given.maxBackoffTime?.let { maxBackoff = (it * 1000).toLong().milliseconds }
         }
+    }
 
     @OptIn(ExperimentalCoroutinesApi::class)
     @Test
@@ -231,8 +230,7 @@ private class NewSepRetryPolicy(private val responses: List<NewStandardResponseA
     }
 }
 
-private fun NewStandardResponse.parseRetryAfterMillis(): Long? =
-    headers?.get("x-amz-retry-after")?.toLongOrNull()?.takeIf { it >= 0 }
+private fun NewStandardResponse.parseRetryAfterMillis(): Long? = headers?.get("x-amz-retry-after")?.toLongOrNull()?.takeIf { it >= 0 }
 
 private fun NewStandardResponse.toResult() = when (statusCode) {
     200 -> Ok
