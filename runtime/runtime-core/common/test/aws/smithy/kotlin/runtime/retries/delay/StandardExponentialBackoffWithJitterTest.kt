@@ -100,6 +100,38 @@ class StandardExponentialBackoffWithJitterTest {
         val series = (1..3).map { idx -> measure { delayer.backoff(idx) } }.map { it.first }
         assertEquals(listOf(50, 100, 200), series)
     }
+
+    @Test
+    fun testRetryAfterHonored() = runTest {
+        // x-amz-retry-after: 1500 → delay = 1500ms (within [50, 50+5000] range)
+        val delayer = StandardExponentialBackoffWithJitter { jitter = 0.0 }
+        val (ms, _) = measure { delayer.backoff(1, RetryErrorType.ServerSide, null, 1500L) }
+        assertEquals(1500, ms)
+    }
+
+    @Test
+    fun testRetryAfterClampedToMinimum() = runTest {
+        // x-amz-retry-after: 0 → clamped to t_i (50ms for attempt 1)
+        val delayer = StandardExponentialBackoffWithJitter { jitter = 0.0 }
+        val (ms, _) = measure { delayer.backoff(1, RetryErrorType.ServerSide, null, 0L) }
+        assertEquals(50, ms)
+    }
+
+    @Test
+    fun testRetryAfterClampedToMaximum() = runTest {
+        // x-amz-retry-after: 10000 → clamped to t_i + 5000 (50 + 5000 = 5050ms)
+        val delayer = StandardExponentialBackoffWithJitter { jitter = 0.0 }
+        val (ms, _) = measure { delayer.backoff(1, RetryErrorType.ServerSide, null, 10000L) }
+        assertEquals(5050, ms)
+    }
+
+    @Test
+    fun testRetryAfterIgnoredWhenNull() = runTest {
+        // No header → normal backoff (50ms)
+        val delayer = StandardExponentialBackoffWithJitter { jitter = 0.0 }
+        val (ms, _) = measure { delayer.backoff(1, RetryErrorType.ServerSide, null, null) }
+        assertEquals(50, ms)
+    }
 }
 
 private suspend fun TestScope.backoffSeries(

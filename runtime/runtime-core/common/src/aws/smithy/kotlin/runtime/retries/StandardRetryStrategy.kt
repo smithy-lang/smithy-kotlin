@@ -30,6 +30,13 @@ public open class StandardRetryStrategy(override val config: Config = Config.def
     }
 
     /**
+     * The server-specified retry-after duration in milliseconds from the `x-amz-retry-after` response header.
+     * Set by the HTTP retry middleware before each retry attempt. The strategy reads and clears this value
+     * when computing backoff.
+     */
+    public var retryAfterMillis: Long? = null
+
+    /**
      * Retry the given block of code until it's successful. Note this method throws exceptions for non-successful
      * outcomes from retrying.
      */
@@ -81,7 +88,7 @@ public open class StandardRetryStrategy(override val config: Config = Config.def
                         // Prep for another loop
                         val delayProvider = config.delayProvider
                         if (delayProvider is RetryAwareDelayProvider) {
-                            delayProvider.backoff(attempt, evaluation.reason, config.serviceName)
+                            delayProvider.backoff(attempt, evaluation.reason, config.serviceName, retryAfterMillis)
                         } else {
                             delayProvider.backoff(attempt)
                         }

@@ -53,9 +53,15 @@ public class StandardExponentialBackoffWithJitter(
 
     /**
      * Delays for an appropriate amount of time after the given attempt number, selecting the base delay according to
-     * the [errorType] and [serviceName].
+     * the [errorType] and [serviceName]. If [retryAfterMillis] is provided, the delay is clamped per SEP 2.1:
+     * `clamp(retryAfterMs, t_i, t_i + 5000)` with no jitter applied to the server-specified value.
      */
-    override suspend fun backoff(attempt: Int, errorType: RetryErrorType, serviceName: String?) {
+    override suspend fun backoff(
+        attempt: Int,
+        errorType: RetryErrorType,
+        serviceName: String?,
+        retryAfterMillis: Long?,
+    ) {
         require(attempt > 0) { "attempt was $attempt but must be greater than 0" }
         val baseMs = when {
             errorType == RetryErrorType.Throttling -> 1000.0
@@ -65,8 +71,12 @@ public class StandardExponentialBackoffWithJitter(
         val exp = baseMs * config.scaleFactor.pow(attempt - 1)
         val capped = min(exp, config.maxBackoff.toDouble(DurationUnit.MILLISECONDS))
         val jitterProportion = if (config.jitter > 0.0) random.nextDouble(config.jitter) else 0.0
-        val delayMs = capped * (1.0 - jitterProportion)
-        delay(delayMs.toLong())
+        val tI = capped * (1.0 - jitterProportion)
+
+        val delayMs = retryAfterMillis?.// SEP: clamp(retry_after, t_i, t_i + 5s). MAX_BACKOFF does not apply.
+        toDouble()?.coerceIn(tI, tI + 5000.0) ?: tI
+
+        delay(delayMs.toLong().milliseconds)
     }
 
     /**
