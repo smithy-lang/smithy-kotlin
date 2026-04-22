@@ -79,7 +79,12 @@ public open class StandardRetryStrategy(override val config: Config = Config.def
                         throwTooManyAttempts(attempt, callResult)
                     } else {
                         // Prep for another loop
-                        config.delayProvider.backoff(attempt)
+                        val delayProvider = config.delayProvider
+                        if (delayProvider is RetryAwareDelayProvider) {
+                            delayProvider.backoff(attempt, evaluation.reason, config.serviceName)
+                        } else {
+                            delayProvider.backoff(attempt)
+                        }
                         fromToken.scheduleRetry(evaluation.reason)
                     }
             }.also {
@@ -219,18 +224,28 @@ public open class StandardRetryStrategy(override val config: Config = Config.def
          */
         public val delayProvider: DelayProvider = builder.delayProviderProperty.supply()
 
-        override val maxAttempts: Int = builder.maxAttempts
+        override val maxAttempts: Int = when {
+            builder.isMaxAttemptsSet -> builder.maxAttempts
+            newRetriesEnabled() && builder.serviceName?.lowercase() in setOf("dynamodb", "dynamodb streams") -> 4
+            else -> DEFAULT_MAX_ATTEMPTS
+        }
 
         /**
          * The token bucket instance. Utilizing an existing token bucket will share call capacity between scopes.
          */
         public val tokenBucket: RetryTokenBucket = builder.tokenBucketProperty.supply()
 
+        /**
+         * The service name, used for service-specific retry behavior (e.g., DynamoDB backoff).
+         */
+        public val serviceName: String? = builder.serviceName
+
         override fun toBuilderApplicator(): RetryStrategy.Config.Builder.() -> Unit = {
             if (this is Builder) {
                 delayProvider = this@Config.delayProvider
                 maxAttempts = this@Config.maxAttempts
                 tokenBucket = this@Config.tokenBucket
+                serviceName = this@Config.serviceName
             }
         }
 
@@ -238,8 +253,10 @@ public open class StandardRetryStrategy(override val config: Config = Config.def
          * A mutable builder for a [Config]
          */
         public open class Builder : RetryStrategy.Config.Builder {
+            private val useNewRetries = newRetriesEnabled()
+
             internal val delayProviderProperty = DslBuilderProperty<DelayProvider.Config.Builder, DelayProvider>(
-                ExponentialBackoffWithJitter,
+                if (useNewRetries) StandardExponentialBackoffWithJitter else ExponentialBackoffWithJitter,
                 { config.toBuilderApplicator() },
             )
 
@@ -252,8 +269,8 @@ public open class StandardRetryStrategy(override val config: Config = Config.def
              * Configure a new exponential backoff delayer
              * @param block A DSL block which sets the parameters for the exponential backoff delayer
              */
-            public fun delayProvider(block: ExponentialBackoffWithJitter.Config.Builder.() -> Unit) {
-                delayProviderProperty.dsl(ExponentialBackoffWithJitter, block)
+            public fun delayProvider(block: StandardExponentialBackoffWithJitter.Config.Builder.() -> Unit) {
+                delayProviderProperty.dsl(StandardExponentialBackoffWithJitter, block)
             }
 
             /**
@@ -269,14 +286,33 @@ public open class StandardRetryStrategy(override val config: Config = Config.def
             }
 
             /**
-             * The maximum number of attempts to make (including the first attempt)
+             * The maximum number of attempts to make (including the first attempt).
              */
             public override var maxAttempts: Int = DEFAULT_MAX_ATTEMPTS
+                set(value) {
+                    field = value
+                    isMaxAttemptsSet = true
+                }
+            internal var isMaxAttemptsSet = false
+
+            /**
+             * The service name, used for service-specific retry behavior (e.g., DynamoDB backoff).
+             */
+            public var serviceName: String? = null
 
             internal val tokenBucketProperty = DslBuilderProperty<RetryTokenBucket.Config.Builder, RetryTokenBucket>(
                 StandardRetryTokenBucket,
                 { config.toBuilderApplicator() },
             )
+
+            init {
+                if (useNewRetries) {
+                    tokenBucketProperty.dsl(StandardRetryTokenBucket) {
+                        retryCost = 14
+                        timeoutRetryCost = 5
+                    }
+                }
+            }
 
             /**
              * The token bucket instance. Utilizing an existing token bucket will share call capacity between scopes.
