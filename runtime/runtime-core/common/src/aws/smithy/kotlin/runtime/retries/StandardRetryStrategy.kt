@@ -7,6 +7,7 @@ package aws.smithy.kotlin.runtime.retries
 
 import aws.smithy.kotlin.runtime.ClientErrorContext
 import aws.smithy.kotlin.runtime.ErrorMetadata
+import aws.smithy.kotlin.runtime.InternalApi
 import aws.smithy.kotlin.runtime.ServiceException
 import aws.smithy.kotlin.runtime.collections.appendValue
 import aws.smithy.kotlin.runtime.retries.delay.*
@@ -239,7 +240,7 @@ public open class StandardRetryStrategy(override val config: Config = Config.def
 
         override val maxAttempts: Int = when {
             builder.isMaxAttemptsSet -> builder.maxAttempts
-            newRetriesEnabled() && builder.serviceName?.lowercase() in DYNAMODB_SERVICES -> DEFAULT_DYNAMODB_SERVICES_MAX_ATTEMPTS
+            builder.standardRetryDefaultsEnabled && builder.serviceName?.lowercase() in DYNAMODB_SERVICES -> DEFAULT_DYNAMODB_SERVICES_MAX_ATTEMPTS
             else -> DEFAULT_MAX_ATTEMPTS
         }
 
@@ -323,11 +324,30 @@ public open class StandardRetryStrategy(override val config: Config = Config.def
 
             init {
                 if (useNewRetries) {
-                    tokenBucketProperty.dsl(StandardRetryTokenBucket) {
-                        retryCost = 14
-                        timeoutRetryCost = 5
-                        initialTrySuccessIncrement = 1
-                    }
+                    enableStandardRetryDefaults()
+                }
+            }
+
+            /**
+             * Whether the standard retry defaults have been enabled (via env var or explicit call).
+             */
+            internal var standardRetryDefaultsEnabled: Boolean = useNewRetries
+                private set
+
+            /**
+             * Configures the builder with the standard retry strategy defaults: updated backoff provider,
+             * retry quota constants, and service-specific max attempts for DynamoDB.
+             * Called automatically when the `SMITHY_NEW_RETRIES_2026` flag is set, or can be called
+             * explicitly by higher-level SDKs.
+             */
+            @InternalApi
+            public fun enableStandardRetryDefaults() {
+                standardRetryDefaultsEnabled = true
+                delayProviderProperty.dsl(StandardExponentialBackoffWithJitter) {}
+                tokenBucketProperty.dsl(StandardRetryTokenBucket) {
+                    retryCost = 14
+                    timeoutRetryCost = 5
+                    initialTrySuccessIncrement = 1
                 }
             }
 
