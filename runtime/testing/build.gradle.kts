@@ -10,13 +10,14 @@ kotlin {
         commonMain {
             dependencies {
                 implementation(libs.kotlin.test)
+                api(libs.kotlinx.io.core)
                 implementation(project(":runtime:runtime-core")) // for Uuid
             }
         }
         jvmMain {
             dependencies {
                 api(libs.junit.jupiter)
-                implementation(libs.kotlin.test)
+                implementation(libs.kotlin.test.junit5)
                 api(libs.kotlinx.coroutines.test)
             }
         }

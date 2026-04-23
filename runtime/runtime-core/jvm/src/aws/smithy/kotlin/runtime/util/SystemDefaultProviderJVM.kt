@@ -9,7 +9,10 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.io.File
 import java.io.IOException
+import java.io.RandomAccessFile
+import java.nio.file.Files
 import java.nio.file.Path
+import java.nio.file.attribute.PosixFilePermissions
 import java.util.*
 
 internal actual object SystemDefaultProvider : PlatformProvider {
@@ -49,6 +52,32 @@ internal actual object SystemDefaultProvider : PlatformProvider {
     }
 
     actual override fun fileExists(path: String): Boolean = File(path).exists()
+    actual override fun write(
+        path: String,
+        data: ByteArray,
+        writeType: WriteType,
+        mustExist: Boolean,
+        permissions: String?,
+    ) {
+        val file = File(path)
+        val creating = !file.exists()
+        if (creating && mustExist) throw IOException("$path does not exist and mustExist is set to true")
+
+        if (creating && permissions != null && osInfo().family != OsFamily.Windows) {
+            file.createNewFile()
+            Files.setPosixFilePermissions(file.toPath(), PosixFilePermissions.fromString(permissions.toPermissionString()))
+        }
+
+        when (writeType) {
+            is WriteType.OFFSET ->
+                RandomAccessFile(path, "rw").use {
+                    it.seek(writeType.offset)
+                    it.write(data)
+                }
+            is WriteType.APPEND -> file.appendBytes(data)
+            is WriteType.OVERWRITE -> file.writeBytes(data)
+        }
+    }
 
     public suspend fun readFileOrNull(path: Path): ByteArray? = readFileOrNull(path.toAbsolutePath().toString())
     public suspend fun readFileOrNull(file: File): ByteArray? = readFileOrNull(file.absolutePath)
@@ -96,4 +125,23 @@ private fun getOsInfo(): OperatingSystem {
     val version = runCatching { System.getProperty("os.version") }.getOrNull()
 
     return OperatingSystem(family, version)
+}
+
+/**
+ * Convert an octal permission string (e.g., `"600"`) to a POSIX permission string (e.g., `"rw-------"`).
+ * Each octal digit maps to three permission bits: read (4), write (2), execute (1).
+ */
+private fun String.toPermissionString(): String {
+    val mask = toInt(8)
+    return buildString(9) {
+        append(if (mask and 0b100_000_000 != 0) 'r' else '-')
+        append(if (mask and 0b010_000_000 != 0) 'w' else '-')
+        append(if (mask and 0b001_000_000 != 0) 'x' else '-')
+        append(if (mask and 0b000_100_000 != 0) 'r' else '-')
+        append(if (mask and 0b000_010_000 != 0) 'w' else '-')
+        append(if (mask and 0b000_001_000 != 0) 'x' else '-')
+        append(if (mask and 0b000_000_100 != 0) 'r' else '-')
+        append(if (mask and 0b000_000_010 != 0) 'w' else '-')
+        append(if (mask and 0b000_000_001 != 0) 'x' else '-')
+    }
 }

@@ -1,5 +1,22 @@
 # Changelog
 
+## [1.6.12] - 04/20/2026
+
+## [1.6.11] - 04/17/2026
+
+### Fixes
+* Fix codegen for `getAttr` returning boolean in endpoint rule conditions
+
+## [1.6.10] - 04/13/2026
+
+## [1.6.9] - 03/31/2026
+
+### Fixes
+* Fix code generation of negative default values for doubles
+* Sleep outside of lock in adaptive rate limiter
+
+## [1.6.8] - 03/30/2026
+
 ## [1.6.7] - 03/24/2026
 
 ## [1.6.6] - 03/13/2026
