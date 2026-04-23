@@ -1770,10 +1770,6 @@ public final class aws/smithy/kotlin/runtime/retries/AdaptiveRetryStrategy$Confi
 	public final fun getDefault ()Laws/smithy/kotlin/runtime/retries/AdaptiveRetryStrategy$Config;
 }
 
-public final class aws/smithy/kotlin/runtime/retries/NewRetriesKt {
-	public static final fun newRetriesEnabled ()Z
-}
-
 public abstract class aws/smithy/kotlin/runtime/retries/Outcome {
 	public abstract fun getAttempts ()I
 }
@@ -1819,6 +1815,10 @@ public abstract class aws/smithy/kotlin/runtime/retries/RetryException : aws/smi
 
 public final class aws/smithy/kotlin/runtime/retries/RetryFailureException : aws/smithy/kotlin/runtime/retries/RetryException {
 	public fun <init> (Ljava/lang/String;Ljava/lang/Throwable;ILjava/lang/Object;)V
+}
+
+public final class aws/smithy/kotlin/runtime/retries/RetrySettingsKt {
+	public static final fun newRetriesEnabled ()Z
 }
 
 public abstract interface class aws/smithy/kotlin/runtime/retries/RetryStrategy {
