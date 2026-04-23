@@ -282,8 +282,11 @@ public open class StandardRetryStrategy(override val config: Config = Config.def
              * Configure a new exponential backoff delayer
              * @param block A DSL block which sets the parameters for the exponential backoff delayer
              */
-            public fun delayProvider(block: StandardExponentialBackoffWithJitter.Config.Builder.() -> Unit) {
-                delayProviderProperty.dsl(StandardExponentialBackoffWithJitter, block)
+            public fun delayProvider(block: ExponentialBackoffWithJitterConfig.() -> Unit) {
+                delayProviderProperty.dsl(
+                    if (useNewRetries) StandardExponentialBackoffWithJitter else ExponentialBackoffWithJitter,
+                    block,
+                )
             }
 
             /**

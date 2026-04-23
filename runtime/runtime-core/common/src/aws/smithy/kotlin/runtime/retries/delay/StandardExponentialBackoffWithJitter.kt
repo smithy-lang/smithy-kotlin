@@ -121,26 +121,26 @@ public class StandardExponentialBackoffWithJitter(
         /**
          * A mutable builder for config for [StandardExponentialBackoffWithJitter].
          */
-        public class Builder : DelayProvider.Config.Builder {
+        public class Builder : ExponentialBackoffWithJitterConfig {
             /**
              * The base delay for non-throttling, non-DynamoDB errors.
              */
-            public var initialDelay: Duration = 50.milliseconds
+            override var initialDelay: Duration = 50.milliseconds
 
             /**
              * The scale factor by which to multiply the previous max delay.
              */
-            public var scaleFactor: Double = 2.0
+            override var scaleFactor: Double = 2.0
 
             /**
              * The amount of random variability over the max delay (1.0 means full jitter, 0.0 means no jitter).
              */
-            public var jitter: Double = 1.0
+            override var jitter: Double = 1.0
 
             /**
              * An upper bound for the computed delay which will override the [scaleFactor].
              */
-            public var maxBackoff: Duration = 20.seconds
+            override var maxBackoff: Duration = 20.seconds
         }
     }
 }

@@ -1983,21 +1983,32 @@ public final class aws/smithy/kotlin/runtime/retries/delay/ExponentialBackoffWit
 	public fun toBuilderApplicator ()Lkotlin/jvm/functions/Function1;
 }
 
-public final class aws/smithy/kotlin/runtime/retries/delay/ExponentialBackoffWithJitter$Config$Builder : aws/smithy/kotlin/runtime/retries/delay/DelayProvider$Config$Builder {
+public final class aws/smithy/kotlin/runtime/retries/delay/ExponentialBackoffWithJitter$Config$Builder : aws/smithy/kotlin/runtime/retries/delay/ExponentialBackoffWithJitterConfig {
 	public fun <init> ()V
-	public final fun getInitialDelay-UwyO8pc ()J
-	public final fun getJitter ()D
-	public final fun getMaxBackoff-UwyO8pc ()J
-	public final fun getScaleFactor ()D
-	public final fun setInitialDelay-LRDsOJo (J)V
-	public final fun setJitter (D)V
-	public final fun setMaxBackoff-LRDsOJo (J)V
-	public final fun setScaleFactor (D)V
+	public fun getInitialDelay-UwyO8pc ()J
+	public fun getJitter ()D
+	public fun getMaxBackoff-UwyO8pc ()J
+	public fun getScaleFactor ()D
+	public fun setInitialDelay-LRDsOJo (J)V
+	public fun setJitter (D)V
+	public fun setMaxBackoff-LRDsOJo (J)V
+	public fun setScaleFactor (D)V
 }
 
 public final class aws/smithy/kotlin/runtime/retries/delay/ExponentialBackoffWithJitter$Config$Companion {
 	public final fun getDefault ()Laws/smithy/kotlin/runtime/retries/delay/ExponentialBackoffWithJitter$Config;
 	public final fun invoke (Lkotlin/jvm/functions/Function1;)Laws/smithy/kotlin/runtime/retries/delay/ExponentialBackoffWithJitter$Config;
+}
+
+public abstract interface class aws/smithy/kotlin/runtime/retries/delay/ExponentialBackoffWithJitterConfig : aws/smithy/kotlin/runtime/retries/delay/DelayProvider$Config$Builder {
+	public abstract fun getInitialDelay-UwyO8pc ()J
+	public abstract fun getJitter ()D
+	public abstract fun getMaxBackoff-UwyO8pc ()J
+	public abstract fun getScaleFactor ()D
+	public abstract fun setInitialDelay-LRDsOJo (J)V
+	public abstract fun setJitter (D)V
+	public abstract fun setMaxBackoff-LRDsOJo (J)V
+	public abstract fun setScaleFactor (D)V
 }
 
 public final class aws/smithy/kotlin/runtime/retries/delay/InfiniteTokenBucket : aws/smithy/kotlin/runtime/retries/delay/RetryTokenBucket {
@@ -2078,16 +2089,16 @@ public final class aws/smithy/kotlin/runtime/retries/delay/StandardExponentialBa
 	public fun toBuilderApplicator ()Lkotlin/jvm/functions/Function1;
 }
 
-public final class aws/smithy/kotlin/runtime/retries/delay/StandardExponentialBackoffWithJitter$Config$Builder : aws/smithy/kotlin/runtime/retries/delay/DelayProvider$Config$Builder {
+public final class aws/smithy/kotlin/runtime/retries/delay/StandardExponentialBackoffWithJitter$Config$Builder : aws/smithy/kotlin/runtime/retries/delay/ExponentialBackoffWithJitterConfig {
 	public fun <init> ()V
-	public final fun getInitialDelay-UwyO8pc ()J
-	public final fun getJitter ()D
-	public final fun getMaxBackoff-UwyO8pc ()J
-	public final fun getScaleFactor ()D
-	public final fun setInitialDelay-LRDsOJo (J)V
-	public final fun setJitter (D)V
-	public final fun setMaxBackoff-LRDsOJo (J)V
-	public final fun setScaleFactor (D)V
+	public fun getInitialDelay-UwyO8pc ()J
+	public fun getJitter ()D
+	public fun getMaxBackoff-UwyO8pc ()J
+	public fun getScaleFactor ()D
+	public fun setInitialDelay-LRDsOJo (J)V
+	public fun setJitter (D)V
+	public fun setMaxBackoff-LRDsOJo (J)V
+	public fun setScaleFactor (D)V
 }
 
 public final class aws/smithy/kotlin/runtime/retries/delay/StandardExponentialBackoffWithJitter$Config$Companion {
