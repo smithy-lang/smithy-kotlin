@@ -5,6 +5,8 @@
 
 package aws.smithy.kotlin.runtime.util
 
+import aws.smithy.kotlin.runtime.InternalApi
+import aws.smithy.kotlin.runtime.PlannedRemoval
 import aws.smithy.kotlin.runtime.io.IOException
 import kotlinx.io.files.FileNotFoundException
 import kotlinx.io.files.Path
@@ -18,6 +20,7 @@ import okio.FileSystem as OkioFileSystem
 /**
  * Abstraction over filesystem
  */
+@InternalApi
 public interface Filesystem {
 
     /**
@@ -32,8 +35,8 @@ public interface Filesystem {
      * @param path fully qualified path encoded specifically to the target platform's filesystem.
      * @return contents of file or null if error (file does not exist, etc.)
      */
-    // TODO: Deprecate
-    // @Deprecated("Use read() instead", replaceWith = ReplaceWith("read(path, readAll = true)"))
+    @Deprecated("Use readOrNull() instead", replaceWith = ReplaceWith("readOrNull(path, readAll = true)"))
+    @PlannedRemoval(1, 8)
     public suspend fun readFileOrNull(path: String): ByteArray?
 
     /**
@@ -41,16 +44,16 @@ public interface Filesystem {
      * @param path fully qualified path encoded specifically to the target platform's filesystem
      * @param data the file contents to write to disk
      */
-    // TODO: Deprecate
-    // @Deprecated("Use write() instead", replaceWith = ReplaceWith("write(path, data, WriteType.OVERWRITE)"))
+    @Deprecated("Use write() instead", replaceWith = ReplaceWith("write(path, data, WriteType.OVERWRITE)"))
+    @PlannedRemoval(1, 8)
     public suspend fun writeFile(path: String, data: ByteArray)
 
     /**
      * Check if a file exists at the [path].
      * @param path fully qualified path encoded specifically to the target platform's filesystem
      */
-    // TODO: Deprecate
-    // @Deprecated("Use exists() instead", replaceWith = ReplaceWith("exists(path)"))
+    @Deprecated("Use exists() instead", replaceWith = ReplaceWith("exists(path)"))
+    @PlannedRemoval(1, 8)
     public fun fileExists(path: String): Boolean
 
     /**
@@ -229,10 +232,18 @@ internal class MapFilesystem(
     private val memFs: MutableMap<String, ByteArray>,
     override val filePathSeparator: String,
 ) : Filesystem {
+    @OptIn(PlannedRemoval::class)
+    @Deprecated("Use readOrNull() instead", replaceWith = ReplaceWith("readOrNull(path, readAll = true)"))
     override suspend fun readFileOrNull(path: String): ByteArray? = memFs[path]
+
+    @OptIn(PlannedRemoval::class)
+    @Deprecated("Use write() instead", replaceWith = ReplaceWith("write(path, data, WriteType.OVERWRITE)"))
     override suspend fun writeFile(path: String, data: ByteArray) {
         memFs[path] = data
     }
+
+    @OptIn(PlannedRemoval::class)
+    @Deprecated("Use exists() instead", replaceWith = ReplaceWith("exists(path)"))
     override fun fileExists(path: String): Boolean = memFs[path] != null
     override fun write(
         path: String,
