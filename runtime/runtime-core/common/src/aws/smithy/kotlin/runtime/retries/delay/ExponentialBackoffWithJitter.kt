@@ -97,26 +97,26 @@ public class ExponentialBackoffWithJitter(override val config: Config = Config.D
         /**
          * A mutable builder for config for [ExponentialBackoffWithJitter]
          */
-        public class Builder : ExponentialBackoffWithJitterConfig {
+        public class Builder : DelayProvider.Config.Builder {
             /**
              * The initial maximum amount of delay
              */
-            override var initialDelay: Duration = 10.milliseconds
+            public var initialDelay: Duration = 10.milliseconds
 
             /**
              * The scale factor by which to multiply the previous max delay
              */
-            override var scaleFactor: Double = 1.5
+            public var scaleFactor: Double = 1.5
 
             /**
              * The amount of random variability over the max delay (1.0 mean full jitter, 0.0 means no jitter)
              */
-            override var jitter: Double = 1.0
+            public var jitter: Double = 1.0
 
             /**
              * An upper bound for max delay which will override the [scaleFactor]
              */
-            override var maxBackoff: Duration = 20.seconds
+            public var maxBackoff: Duration = 20.seconds
         }
     }
 }

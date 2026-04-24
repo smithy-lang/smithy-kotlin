@@ -78,12 +78,6 @@ public object HttpOperationContext {
      * The name of the default algorithm to be used for computing a checksum of the request.
      */
     public val DefaultChecksumAlgorithm: AttributeKey<String> = AttributeKey("aws.smithy.kotlin#DefaultChecksumAlgorithm")
-
-    /**
-     * The parsed value of the `x-amz-retry-after` response header in milliseconds, if present and valid.
-     * Set by [RetryMiddleware] after each attempt and consumed by the retry strategy's delay provider.
-     */
-    public val RetryAfterMillis: AttributeKey<Long> = AttributeKey("aws.smithy.kotlin#RetryAfterMillis")
 }
 
 internal val ExecutionContext.operationMetrics: OperationMetrics
