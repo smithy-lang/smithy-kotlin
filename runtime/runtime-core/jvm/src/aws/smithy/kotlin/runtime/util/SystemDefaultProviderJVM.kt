@@ -5,6 +5,7 @@
 
 package aws.smithy.kotlin.runtime.util
 
+import aws.smithy.kotlin.runtime.PlannedRemoval
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.io.File
@@ -37,6 +38,8 @@ internal actual object SystemDefaultProvider : PlatformProvider {
      * @param path fully qualified path encoded specifically to the target platform's filesystem.
      * @return contents of file or null if error (file does not exist, etc.)
      */
+    @OptIn(PlannedRemoval::class)
+    @Deprecated("Use readOrNull() instead", replaceWith = ReplaceWith("readOrNull(path, readAll = true)"))
     actual override suspend fun readFileOrNull(path: String): ByteArray? = try {
         withContext(Dispatchers.IO) {
             File(path).readBytes()
@@ -45,12 +48,16 @@ internal actual object SystemDefaultProvider : PlatformProvider {
         null
     }
 
+    @OptIn(PlannedRemoval::class)
+    @Deprecated("Use write() instead", replaceWith = ReplaceWith("write(path, data, WriteType.OVERWRITE)"))
     actual override suspend fun writeFile(path: String, data: ByteArray) {
         withContext(Dispatchers.IO) {
             File(path).writeBytes(data)
         }
     }
 
+    @OptIn(PlannedRemoval::class)
+    @Deprecated("Use exists() instead", replaceWith = ReplaceWith("exists(path)"))
     actual override fun fileExists(path: String): Boolean = File(path).exists()
     actual override fun write(
         path: String,
@@ -79,7 +86,10 @@ internal actual object SystemDefaultProvider : PlatformProvider {
         }
     }
 
+    @Suppress("DEPRECATION")
     public suspend fun readFileOrNull(path: Path): ByteArray? = readFileOrNull(path.toAbsolutePath().toString())
+
+    @Suppress("DEPRECATION")
     public suspend fun readFileOrNull(file: File): ByteArray? = readFileOrNull(file.absolutePath)
 
     actual override fun getAllProperties(): Map<String, String> = System
