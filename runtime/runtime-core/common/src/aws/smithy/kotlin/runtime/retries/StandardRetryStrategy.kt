@@ -215,21 +215,6 @@ public open class StandardRetryStrategy(override val config: Config = Config.def
              * The default number of maximum attempts for new config instances
              */
             public const val DEFAULT_MAX_ATTEMPTS: Int = 3
-
-            /**
-             * The default retry cost for the standard retry strategy
-             */
-            public const val DEFAULT_STANDARD_RETRY_COST: Int = 14
-
-            /**
-             * The default timeout/throttling retry cost for the standard retry strategy
-             */
-            public const val DEFAULT_STANDARD_TIMEOUT_RETRY_COST: Int = 5
-
-            /**
-             * The default capacity to return on a successful initial try for the standard retry strategy
-             */
-            public const val DEFAULT_STANDARD_INITIAL_TRY_SUCCESS_INCREMENT: Int = 1
         }
 
         /**
@@ -289,7 +274,7 @@ public open class StandardRetryStrategy(override val config: Config = Config.def
             }
 
             /**
-             * The maximum number of attempts to make (including the first attempt).
+             * The maximum number of attempts to make (including the first attempt)
              */
             public override var maxAttempts: Int = DEFAULT_MAX_ATTEMPTS
 
@@ -305,12 +290,6 @@ public open class StandardRetryStrategy(override val config: Config = Config.def
             }
 
             /**
-             * Whether the standard retry defaults have been enabled (via env var or explicit call).
-             */
-            internal var standardRetryDefaultsEnabled: Boolean = useNewRetries
-                private set
-
-            /**
              * Configures the builder with the standard retry strategy defaults: updated backoff provider
              * and retry quota constants.
              * Called automatically when the `SMITHY_NEW_RETRIES_2026` flag is set, or can be called
@@ -318,13 +297,8 @@ public open class StandardRetryStrategy(override val config: Config = Config.def
              */
             @InternalApi
             public fun enableStandardRetryDefaults() {
-                standardRetryDefaultsEnabled = true
                 delayProviderProperty.dsl(ExponentialBackoffWithJitter) {}
-                tokenBucketProperty.dsl(StandardRetryTokenBucket) {
-                    retryCost = DEFAULT_STANDARD_RETRY_COST
-                    timeoutRetryCost = DEFAULT_STANDARD_TIMEOUT_RETRY_COST
-                    initialTrySuccessIncrement = DEFAULT_STANDARD_INITIAL_TRY_SUCCESS_INCREMENT
-                }
+                tokenBucketProperty.dsl(StandardRetryTokenBucket) {}
             }
 
             /**

@@ -191,6 +191,8 @@ public class StandardRetryTokenBucket internal constructor(
          * A mutable builder for a [Config]
          */
         public class Builder : RetryTokenBucket.Config.Builder {
+            private val useNewRetries = CoreSettings.NewRetriesEnabled
+
             /**
              * When `true`, indicates that attempts to acquire tokens or schedule retries should fail if all capacity
              * has been depleted. When `false`, calls to acquire tokens or schedule retries will delay until sufficient
@@ -226,12 +228,12 @@ public class StandardRetryTokenBucket internal constructor(
             /**
              * The amount of capacity to decrement for standard retries
              */
-            public var retryCost: Int = 5
+            public var retryCost: Int = if (useNewRetries) 14 else 5
 
             /**
              * The amount of capacity to decrement for timeout or throttling retries
              */
-            public var timeoutRetryCost: Int = 10
+            public var timeoutRetryCost: Int = if (useNewRetries) 5 else 10
         }
     }
 }
