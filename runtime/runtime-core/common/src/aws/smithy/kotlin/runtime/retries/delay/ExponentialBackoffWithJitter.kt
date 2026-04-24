@@ -21,8 +21,8 @@ import kotlin.time.Duration.Companion.seconds
 import kotlin.time.DurationUnit
 
 /**
- * A [DelayProvider] that implements exponential backoff with jitter.
- *
+ * A [DelayProvider] that implements exponential backoff with jitter
+ * (i.e., randomization of delay amount).
  * When a [RetryContext] is present in the coroutine context, the delay provider uses
  * [RetryContext.errorType] to select the base delay and [RetryContext.retryAfter] to
  * clamp the computed delay. Without a [RetryContext], the provider falls back to
@@ -44,6 +44,9 @@ public class ExponentialBackoffWithJitter(
 
     private val random = Random.Default
 
+    /**
+     * Delays for an appropriate amount of time after the given attempt number.
+     */
     override suspend fun backoff(attempt: Int) {
         require(attempt > 0) { "attempt was $attempt but must be greater than 0" }
 
@@ -68,49 +71,49 @@ public class ExponentialBackoffWithJitter(
     }
 
     /**
-     * Configuration options for [ExponentialBackoffWithJitter].
+     * Configuration options for [ExponentialBackoffWithJitter]
      */
     public class Config(builder: Builder) : DelayProvider.Config {
         public companion object {
             /**
-             * The default configuration.
+             * The default configuration
              */
             public val Default: Config = Config(Builder())
 
             /**
-             * Initializes a new config from a builder.
-             * @param block A DSL builder block which sets the values for this config.
+             * Initializes a new config from a builder
+             * @param block A DSL builder block which sets the values for this config
              */
             public operator fun invoke(block: Builder.() -> Unit): Config = Config(Builder().apply(block))
         }
 
         /**
-         * The base delay for non-throttling errors.
+         * The base delay for non-throttling errors
          */
         public val initialDelay: Duration = builder.initialDelay
 
         /**
-         * The scale factor by which to multiply the previous max delay.
-         */
-        public val scaleFactor: Double = builder.scaleFactor
-
-        /**
-         * The amount of random variability over the max delay (1.0 means full jitter, 0.0 means no jitter).
-         */
-        public val jitter: Double = builder.jitter
-
-        /**
-         * An upper bound for the computed delay which will override the [scaleFactor].
-         */
-        public val maxBackoff: Duration = builder.maxBackoff
-
-        /**
-         * The base delay used for throttling errors.
+         * The base delay used for throttling errors
          */
         public val throttlingBaseDelay: Duration = builder.throttlingBaseDelay
 
         /**
-         * The maximum amount the retry-after value can exceed the computed backoff.
+         * The scale factor by which to multiply the previous max delay
+         */
+        public val scaleFactor: Double = builder.scaleFactor
+
+        /**
+         * The amount of random variability over the max delay (1.0 means full jitter, 0.0 means no jitter)
+         */
+        public val jitter: Double = builder.jitter
+
+        /**
+         * An upper bound for the computed delay which will override the [scaleFactor]
+         */
+        public val maxBackoff: Duration = builder.maxBackoff
+
+        /**
+         * The maximum amount the retry-after value can exceed the computed backoff
          */
         public val retryAfterMaxOvershoot: Duration = builder.retryAfterMaxOvershoot
 
@@ -127,27 +130,39 @@ public class ExponentialBackoffWithJitter(
         }
 
         /**
-         * A mutable builder for [Config].
+         * A mutable builder for config for [ExponentialBackoffWithJitter]
          */
         public class Builder : DelayProvider.Config.Builder {
             private val useNewRetries = CoreSettings.NewRetriesEnabled
 
-            /** The base delay for non-throttling errors. */
+            /**
+             * The base delay for non-throttling errors
+             */
             public var initialDelay: Duration = if (useNewRetries) 50.milliseconds else 10.milliseconds
 
-            /** The scale factor by which to multiply the previous max delay. */
+            /**
+             * The scale factor by which to multiply the previous max delay
+             * */
             public var scaleFactor: Double = if (useNewRetries) 2.0 else 1.5
 
-            /** The amount of random variability over the max delay (1.0 means full jitter, 0.0 means no jitter). */
+            /**
+             * The amount of random variability over the max delay (1.0 means full jitter, 0.0 means no jitter)
+             * */
             public var jitter: Double = 1.0
 
-            /** An upper bound for the computed delay which will override the [scaleFactor]. */
+            /**
+             * An upper bound for the computed delay which will override the [scaleFactor]
+             * */
             public var maxBackoff: Duration = 20.seconds
 
-            /** The base delay used for throttling errors. */
+            /**
+             * The base delay used for throttling errors
+             * */
             public var throttlingBaseDelay: Duration = 1.seconds
 
-            /** The maximum amount the retry-after value can exceed the computed backoff. */
+            /**
+             *  The maximum amount the retry-after value can exceed the computed backoff
+             *  */
             public var retryAfterMaxOvershoot: Duration = 5.seconds
         }
     }
