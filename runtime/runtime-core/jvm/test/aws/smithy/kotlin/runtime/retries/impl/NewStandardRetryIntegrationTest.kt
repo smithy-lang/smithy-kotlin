@@ -5,6 +5,7 @@
 
 package aws.smithy.kotlin.runtime.retries.impl
 
+import aws.smithy.kotlin.runtime.retries.RetryContext
 import aws.smithy.kotlin.runtime.retries.StandardRetryStrategy
 import aws.smithy.kotlin.runtime.retries.delay.StandardRetryTokenBucket
 import aws.smithy.kotlin.runtime.retries.getOrThrow
@@ -13,9 +14,11 @@ import aws.smithy.kotlin.runtime.retries.policy.RetryErrorType
 import aws.smithy.kotlin.runtime.retries.policy.RetryPolicy
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.currentTime
 import kotlinx.coroutines.test.runTest
+import kotlinx.coroutines.withContext
 import kotlin.test.*
 import kotlin.time.Duration.Companion.milliseconds
 
@@ -68,6 +71,7 @@ class NewStandardRetryIntegrationTest {
             val retryer = buildStrategy(tc.given, tokenBucket)
 
             val policy = NewSepRetryPolicy(tc.responses)
+            val retryCtx = RetryContext()
             val block = object {
                 var index = 0
                 suspend fun doIt(): Ok {
@@ -79,13 +83,13 @@ class NewStandardRetryIntegrationTest {
                         )
                     }
                     val resp = tc.responses[index++]
-                    retryer.retryAfterMillis = resp.response.parseRetryAfterMillis()
+                    currentCoroutineContext()[RetryContext]!!.retryAfterMillis = resp.response.parseRetryAfterMillis()
                     return resp.response.toResult()
                 }
             }::doIt
 
             val startTimeMs = currentTime
-            val result = runCatching { retryer.retry(policy, block) }
+            val result = runCatching { withContext(retryCtx) { retryer.retry(policy, block) } }
             val totalDelayMs = currentTime - startTimeMs
 
             val finalState = tc.responses.last().expected
@@ -157,18 +161,19 @@ class NewStandardRetryIntegrationTest {
             for (invocation in invocations) {
                 val policy = NewSepRetryPolicy(invocation)
                 var index = 0
-                retryer.retryAfterMillis = null // clear between invocations
-                retryer.retry(policy) {
-                    if (index > 0) {
-                        assertEquals(
-                            invocation[index - 1].expected.retryQuota,
-                            tokenBucket.capacity,
-                            "Quota mismatch after response ${index - 1} in '$name'",
-                        )
+                withContext(RetryContext()) {
+                    retryer.retry(policy) {
+                        if (index > 0) {
+                            assertEquals(
+                                invocation[index - 1].expected.retryQuota,
+                                tokenBucket.capacity,
+                                "Quota mismatch after response ${index - 1} in '$name'",
+                            )
+                        }
+                        val resp = invocation[index++]
+                        currentCoroutineContext()[RetryContext]!!.retryAfterMillis = resp.response.parseRetryAfterMillis()
+                        resp.response.toResult()
                     }
-                    val resp = invocation[index++]
-                    retryer.retryAfterMillis = resp.response.parseRetryAfterMillis()
-                    resp.response.toResult()
                 }
             }
 

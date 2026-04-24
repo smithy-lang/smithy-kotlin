@@ -15,6 +15,7 @@ import aws.smithy.kotlin.runtime.http.request.toBuilder
 import aws.smithy.kotlin.runtime.io.Handler
 import aws.smithy.kotlin.runtime.io.middleware.Middleware
 import aws.smithy.kotlin.runtime.retries.AdaptiveRetryStrategy
+import aws.smithy.kotlin.runtime.retries.RetryContext
 import aws.smithy.kotlin.runtime.retries.RetryStrategy
 import aws.smithy.kotlin.runtime.retries.StandardRetryStrategy
 import aws.smithy.kotlin.runtime.retries.policy.RetryDirective
@@ -23,6 +24,7 @@ import aws.smithy.kotlin.runtime.retries.toResult
 import aws.smithy.kotlin.runtime.telemetry.logging.debug
 import aws.smithy.kotlin.runtime.telemetry.trace.withSpan
 import kotlinx.coroutines.currentCoroutineContext
+import kotlinx.coroutines.withContext
 import kotlin.coroutines.CoroutineContext
 
 /**
@@ -46,29 +48,30 @@ internal class RetryMiddleware<I, O>(
             // wire that through without changing the `RetryPolicy` interface
             val wrappedPolicy = PolicyLogger(policy, currentCoroutineContext())
 
-            val outcome = strategy.retry(wrappedPolicy) {
-                withSpan<RetryMiddleware<*, *>, _>("Attempt-$attempt") {
-                    when (strategy::class) {
-                        StandardRetryStrategy::class -> modified.context.emitBusinessMetric(SmithyBusinessMetric.RETRY_MODE_STANDARD)
-                        AdaptiveRetryStrategy::class -> modified.context.emitBusinessMetric(SmithyBusinessMetric.RETRY_MODE_ADAPTIVE)
+            val outcome = withContext(RetryContext()) {
+                val retryCtx = coroutineContext[RetryContext]!!
+                strategy.retry(wrappedPolicy) {
+                    withSpan<RetryMiddleware<*, *>, _>("Attempt-$attempt") {
+                        when (strategy::class) {
+                            StandardRetryStrategy::class -> modified.context.emitBusinessMetric(SmithyBusinessMetric.RETRY_MODE_STANDARD)
+                            AdaptiveRetryStrategy::class -> modified.context.emitBusinessMetric(SmithyBusinessMetric.RETRY_MODE_ADAPTIVE)
+                        }
+
+                        if (attempt > 1) {
+                            coroutineContext.debug<RetryMiddleware<*, *>> { "retrying request, attempt $attempt" }
+                        }
+
+                        // Deep copy the request because later middlewares (e.g., signing) mutate it
+                        val requestCopy = modified.deepCopy()
+
+                        val attemptResult = tryAttempt(requestCopy, next, attempt)
+
+                        // Propagate x-amz-retry-after to the per-call coroutine context for backoff calculation
+                        retryCtx.retryAfterMillis = modified.context.getOrNull(HttpOperationContext.RetryAfterMillis)
+
+                        attempt++
+                        attemptResult.getOrThrow()
                     }
-
-                    if (attempt > 1) {
-                        coroutineContext.debug<RetryMiddleware<*, *>> { "retrying request, attempt $attempt" }
-                    }
-
-                    // Deep copy the request because later middlewares (e.g., signing) mutate it
-                    val requestCopy = modified.deepCopy()
-
-                    val attemptResult = tryAttempt(requestCopy, next, attempt)
-
-                    // Propagate x-amz-retry-after to the strategy for backoff calculation
-                    if (strategy is StandardRetryStrategy) {
-                        strategy.retryAfterMillis = modified.context.getOrNull(HttpOperationContext.RetryAfterMillis)
-                    }
-
-                    attempt++
-                    attemptResult.getOrThrow()
                 }
             }
             outcome.toResult()

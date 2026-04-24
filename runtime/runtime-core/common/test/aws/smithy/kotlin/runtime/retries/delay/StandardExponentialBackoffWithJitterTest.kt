@@ -5,9 +5,11 @@
 
 package aws.smithy.kotlin.runtime.retries.delay
 
+import aws.smithy.kotlin.runtime.retries.RetryContext
 import aws.smithy.kotlin.runtime.retries.policy.RetryErrorType
 import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.runTest
+import kotlinx.coroutines.withContext
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
@@ -105,7 +107,7 @@ class StandardExponentialBackoffWithJitterTest {
     fun testRetryAfterHonored() = runTest {
         // x-amz-retry-after: 1500 → delay = 1500ms (within [50, 50+5000] range)
         val delayer = StandardExponentialBackoffWithJitter { jitter = 0.0 }
-        val (ms, _) = measure { delayer.backoff(1, RetryErrorType.ServerSide, null, 1500L) }
+        val (ms, _) = measure { withContext(RetryContext().apply { retryAfterMillis = 1500L }) { delayer.backoff(1, RetryErrorType.ServerSide) } }
         assertEquals(1500, ms)
     }
 
@@ -113,7 +115,7 @@ class StandardExponentialBackoffWithJitterTest {
     fun testRetryAfterClampedToMinimum() = runTest {
         // x-amz-retry-after: 0 → clamped to t_i (50ms for attempt 1)
         val delayer = StandardExponentialBackoffWithJitter { jitter = 0.0 }
-        val (ms, _) = measure { delayer.backoff(1, RetryErrorType.ServerSide, null, 0L) }
+        val (ms, _) = measure { withContext(RetryContext().apply { retryAfterMillis = 0L }) { delayer.backoff(1, RetryErrorType.ServerSide) } }
         assertEquals(50, ms)
     }
 
@@ -121,7 +123,7 @@ class StandardExponentialBackoffWithJitterTest {
     fun testRetryAfterClampedToMaximum() = runTest {
         // x-amz-retry-after: 10000 → clamped to t_i + 5000 (50 + 5000 = 5050ms)
         val delayer = StandardExponentialBackoffWithJitter { jitter = 0.0 }
-        val (ms, _) = measure { delayer.backoff(1, RetryErrorType.ServerSide, null, 10000L) }
+        val (ms, _) = measure { withContext(RetryContext().apply { retryAfterMillis = 10000L }) { delayer.backoff(1, RetryErrorType.ServerSide) } }
         assertEquals(5050, ms)
     }
 
@@ -129,7 +131,7 @@ class StandardExponentialBackoffWithJitterTest {
     fun testRetryAfterIgnoredWhenNull() = runTest {
         // No header → normal backoff (50ms)
         val delayer = StandardExponentialBackoffWithJitter { jitter = 0.0 }
-        val (ms, _) = measure { delayer.backoff(1, RetryErrorType.ServerSide, null, null) }
+        val (ms, _) = measure { delayer.backoff(1, RetryErrorType.ServerSide) }
         assertEquals(50, ms)
     }
 }

@@ -6,8 +6,10 @@
 package aws.smithy.kotlin.runtime.retries.delay
 
 import aws.smithy.kotlin.runtime.InternalApi
+import aws.smithy.kotlin.runtime.retries.RetryContext
 import aws.smithy.kotlin.runtime.retries.policy.RetryErrorType
 import aws.smithy.kotlin.runtime.util.DslFactory
+import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.delay
 import kotlin.math.min
 import kotlin.math.pow
@@ -45,16 +47,17 @@ public class StandardExponentialBackoffWithJitter(
 
     /**
      * Delays for an appropriate amount of time after the given attempt number, selecting the base delay according to
-     * the [errorType] and [serviceName]. If [retryAfterMillis] is provided, the delay is clamped to
-     * `[t_i, t_i + 5000ms]` where `t_i` is the computed exponential backoff. `MAX_BACKOFF` does not apply to this value.
+     * the [errorType] and [serviceName]. If a [RetryContext] with a non-null [RetryContext.retryAfterMillis] is present
+     * in the coroutine context, the delay is clamped to `[t_i, t_i + 5000ms]` where `t_i` is the computed exponential
+     * backoff. `MAX_BACKOFF` does not apply to this value.
      */
     override suspend fun backoff(
         attempt: Int,
         errorType: RetryErrorType,
         serviceName: String?,
-        retryAfterMillis: Long?,
     ) {
         require(attempt > 0) { "attempt was $attempt but must be greater than 0" }
+        val retryAfterMillis = currentCoroutineContext()[RetryContext]?.retryAfterMillis
         val baseMs = when {
             errorType == RetryErrorType.Throttling -> 1000.0
             serviceName?.lowercase() in DYNAMODB_SERVICES -> 25.0
