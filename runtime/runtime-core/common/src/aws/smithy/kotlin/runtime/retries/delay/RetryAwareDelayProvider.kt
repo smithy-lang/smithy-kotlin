@@ -23,7 +23,7 @@ public interface RetryAwareDelayProvider : DelayProvider {
     /**
      * Delays for an appropriate amount of time after the given attempt number, taking into account the type of error
      * and the service name. If a [RetryContext] is present in the current coroutine context with a non-null
-     * [RetryContext.retryAfterMillis], implementations should use it to adjust the delay.
+     * [RetryContext.retryAfter], implementations should use it to adjust the delay.
      * @param attempt The ordinal index of the attempt.
      * @param errorType The type of error that triggered the retry.
      * @param serviceName The optional service name, used for service-specific backoff (e.g., DynamoDB).

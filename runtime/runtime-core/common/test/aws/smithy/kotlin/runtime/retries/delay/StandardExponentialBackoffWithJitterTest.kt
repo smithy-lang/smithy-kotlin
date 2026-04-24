@@ -107,7 +107,7 @@ class StandardExponentialBackoffWithJitterTest {
     fun testRetryAfterHonored() = runTest {
         // x-amz-retry-after: 1500 → delay = 1500ms (within [50, 50+5000] range)
         val delayer = StandardExponentialBackoffWithJitter { jitter = 0.0 }
-        val (ms, _) = measure { withContext(RetryContext().apply { retryAfterMillis = 1500L }) { delayer.backoff(1, RetryErrorType.ServerSide) } }
+        val (ms, _) = measure { withContext(RetryContext().apply { retryAfter = 1500L.milliseconds }) { delayer.backoff(1, RetryErrorType.ServerSide) } }
         assertEquals(1500, ms)
     }
 
@@ -115,7 +115,7 @@ class StandardExponentialBackoffWithJitterTest {
     fun testRetryAfterClampedToMinimum() = runTest {
         // x-amz-retry-after: 0 → clamped to t_i (50ms for attempt 1)
         val delayer = StandardExponentialBackoffWithJitter { jitter = 0.0 }
-        val (ms, _) = measure { withContext(RetryContext().apply { retryAfterMillis = 0L }) { delayer.backoff(1, RetryErrorType.ServerSide) } }
+        val (ms, _) = measure { withContext(RetryContext().apply { retryAfter = 0L.milliseconds }) { delayer.backoff(1, RetryErrorType.ServerSide) } }
         assertEquals(50, ms)
     }
 
@@ -123,7 +123,7 @@ class StandardExponentialBackoffWithJitterTest {
     fun testRetryAfterClampedToMaximum() = runTest {
         // x-amz-retry-after: 10000 → clamped to t_i + 5000 (50 + 5000 = 5050ms)
         val delayer = StandardExponentialBackoffWithJitter { jitter = 0.0 }
-        val (ms, _) = measure { withContext(RetryContext().apply { retryAfterMillis = 10000L }) { delayer.backoff(1, RetryErrorType.ServerSide) } }
+        val (ms, _) = measure { withContext(RetryContext().apply { retryAfter = 10000L.milliseconds }) { delayer.backoff(1, RetryErrorType.ServerSide) } }
         assertEquals(5050, ms)
     }
 

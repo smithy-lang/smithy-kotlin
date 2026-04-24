@@ -26,6 +26,7 @@ import aws.smithy.kotlin.runtime.telemetry.trace.withSpan
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.withContext
 import kotlin.coroutines.CoroutineContext
+import kotlin.time.Duration.Companion.milliseconds
 
 /**
  * Retry requests with the given strategy and policy
@@ -67,7 +68,7 @@ internal class RetryMiddleware<I, O>(
                         val attemptResult = tryAttempt(requestCopy, next, attempt)
 
                         // Propagate x-amz-retry-after to the per-call coroutine context for backoff calculation
-                        retryCtx.retryAfterMillis = modified.context.getOrNull(HttpOperationContext.RetryAfterMillis)
+                        retryCtx.retryAfter = modified.context.getOrNull(HttpOperationContext.RetryAfter)
 
                         attempt++
                         attemptResult.getOrThrow()
@@ -91,7 +92,7 @@ internal class RetryMiddleware<I, O>(
         attempt: Int,
     ): Result<O> {
         // Clear any previous retry-after value
-        request.context.remove(HttpOperationContext.RetryAfterMillis)
+        request.context.remove(HttpOperationContext.RetryAfter)
 
         val result = interceptors.readBeforeAttempt(request.subject.immutableView())
             .mapCatching {
@@ -109,7 +110,7 @@ internal class RetryMiddleware<I, O>(
         call?.response?.headers?.get("x-amz-retry-after")?.let { raw ->
             val ms = raw.toLongOrNull()?.takeIf { it >= 0 }
             if (ms != null) {
-                request.context[HttpOperationContext.RetryAfterMillis] = ms
+                request.context[HttpOperationContext.RetryAfter] = ms.milliseconds
             } else {
                 currentCoroutineContext().debug<RetryMiddleware<*, *>> { "ignoring invalid x-amz-retry-after header: $raw" }
             }

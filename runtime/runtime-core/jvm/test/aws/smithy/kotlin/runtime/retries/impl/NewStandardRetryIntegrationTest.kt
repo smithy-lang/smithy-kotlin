@@ -20,6 +20,7 @@ import kotlinx.coroutines.test.currentTime
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.withContext
 import kotlin.test.*
+import kotlin.time.Duration
 import kotlin.time.Duration.Companion.milliseconds
 
 /**
@@ -83,7 +84,7 @@ class NewStandardRetryIntegrationTest {
                         )
                     }
                     val resp = tc.responses[index++]
-                    currentCoroutineContext()[RetryContext]!!.retryAfterMillis = resp.response.parseRetryAfterMillis()
+                    currentCoroutineContext()[RetryContext]!!.retryAfter = resp.response.parseRetryAfter()
                     return resp.response.toResult()
                 }
             }::doIt
@@ -171,7 +172,7 @@ class NewStandardRetryIntegrationTest {
                             )
                         }
                         val resp = invocation[index++]
-                        currentCoroutineContext()[RetryContext]!!.retryAfterMillis = resp.response.parseRetryAfterMillis()
+                        currentCoroutineContext()[RetryContext]!!.retryAfter = resp.response.parseRetryAfter()
                         resp.response.toResult()
                     }
                 }
@@ -235,7 +236,7 @@ private class NewSepRetryPolicy(private val responses: List<NewStandardResponseA
     }
 }
 
-private fun NewStandardResponse.parseRetryAfterMillis(): Long? = headers?.get("x-amz-retry-after")?.toLongOrNull()?.takeIf { it >= 0 }
+private fun NewStandardResponse.parseRetryAfter(): Duration? = headers?.get("x-amz-retry-after")?.toLongOrNull()?.takeIf { it >= 0 }?.milliseconds
 
 private fun NewStandardResponse.toResult() = when (statusCode) {
     200 -> Ok

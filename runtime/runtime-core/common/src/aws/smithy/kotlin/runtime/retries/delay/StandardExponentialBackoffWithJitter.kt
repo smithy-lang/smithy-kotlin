@@ -47,7 +47,7 @@ public class StandardExponentialBackoffWithJitter(
 
     /**
      * Delays for an appropriate amount of time after the given attempt number, selecting the base delay according to
-     * the [errorType] and [serviceName]. If a [RetryContext] with a non-null [RetryContext.retryAfterMillis] is present
+     * the [errorType] and [serviceName]. If a [RetryContext] with a non-null [RetryContext.retryAfter] is present
      * in the coroutine context, the delay is clamped to `[t_i, t_i + 5000ms]` where `t_i` is the computed exponential
      * backoff. `MAX_BACKOFF` does not apply to this value.
      */
@@ -57,7 +57,7 @@ public class StandardExponentialBackoffWithJitter(
         serviceName: String?,
     ) {
         require(attempt > 0) { "attempt was $attempt but must be greater than 0" }
-        val retryAfterMillis = currentCoroutineContext()[RetryContext]?.retryAfterMillis
+        val retryAfterMs = currentCoroutineContext()[RetryContext]?.retryAfter?.toDouble(DurationUnit.MILLISECONDS)
         val baseMs = when {
             errorType == RetryErrorType.Throttling -> 1000.0
             serviceName?.lowercase() in DYNAMODB_SERVICES -> 25.0
@@ -69,7 +69,7 @@ public class StandardExponentialBackoffWithJitter(
         val tI = capped * (1.0 - jitterProportion)
 
         // Clamp retry-after to [t_i, t_i + 5s]. MAX_BACKOFF does not apply.
-        val delayMs = retryAfterMillis?.toDouble()?.coerceIn(tI, tI + 5000.0) ?: tI
+        val delayMs = retryAfterMs?.coerceIn(tI, tI + 5000.0) ?: tI
 
         delay(delayMs.toLong().milliseconds)
     }

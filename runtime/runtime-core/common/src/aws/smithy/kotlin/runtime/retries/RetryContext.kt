@@ -8,6 +8,7 @@ package aws.smithy.kotlin.runtime.retries
 import aws.smithy.kotlin.runtime.InternalApi
 import kotlin.coroutines.AbstractCoroutineContextElement
 import kotlin.coroutines.CoroutineContext
+import kotlin.time.Duration
 
 /**
  * A coroutine context element that carries per-call retry state. Installed by the retry middleware
@@ -17,10 +18,10 @@ import kotlin.coroutines.CoroutineContext
 @InternalApi
 public class RetryContext : AbstractCoroutineContextElement(Key) {
     /**
-     * The server-specified retry-after duration in milliseconds from the `x-amz-retry-after` response header.
-     * Written by the retry middleware after each attempt, read by the strategy before computing backoff.
+     * The server-specified retry-after duration from the `x-amz-retry-after` response header.
+     * Written by the retry middleware after each attempt, read by the delay provider before computing backoff.
      */
-    public var retryAfterMillis: Long? = null
+    public var retryAfter: Duration? = null
 
     public companion object Key : CoroutineContext.Key<RetryContext>
 }
