@@ -550,6 +550,7 @@ public final class aws/smithy/kotlin/runtime/http/operation/HttpOperationContext
 	public final fun getOperationAttributes ()Laws/smithy/kotlin/runtime/collections/AttributeKey;
 	public final fun getOperationInput ()Laws/smithy/kotlin/runtime/collections/AttributeKey;
 	public final fun getOperationMetrics ()Laws/smithy/kotlin/runtime/collections/AttributeKey;
+	public final fun getRetryAfterMillis ()Laws/smithy/kotlin/runtime/collections/AttributeKey;
 	public final fun getSdkInvocationId ()Laws/smithy/kotlin/runtime/collections/AttributeKey;
 }
 
