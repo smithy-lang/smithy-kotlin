@@ -72,7 +72,7 @@ class StandardRetryTokenBucketTest {
         // Only Throttling gets the timeout/throttling cost; everything else pays retryCost
         mapOf(
             RetryErrorType.Throttling to DEFAULT_TIMEOUT_RETRY_COST,
-            RetryErrorType.Transient to DEFAULT_RETRY_COST,
+            RetryErrorType.Transient to DEFAULT_TIMEOUT_RETRY_COST,
             RetryErrorType.ClientSide to DEFAULT_RETRY_COST,
             RetryErrorType.ServerSide to DEFAULT_RETRY_COST,
         ).forEach { (errorType, cost) ->

@@ -25,6 +25,9 @@ class NewRetriesFeatureFlagTest {
         val delayer = assertIs<ExponentialBackoffWithJitter>(strategy.config.delayProvider)
         assertEquals(10.milliseconds, delayer.config.initialDelay)
         assertEquals(1.5, delayer.config.scaleFactor)
+        val tokenBucket = assertIs<StandardRetryTokenBucket>(strategy.config.tokenBucket)
+        assertEquals(5, tokenBucket.config.retryCost)
+        assertEquals(10, tokenBucket.config.timeoutRetryCost)
     }
 
     @Test
@@ -34,6 +37,9 @@ class NewRetriesFeatureFlagTest {
         val delayer = assertIs<ExponentialBackoffWithJitter>(strategy.config.delayProvider)
         assertEquals(50.milliseconds, delayer.config.initialDelay)
         assertEquals(2.0, delayer.config.scaleFactor)
+        val tokenBucket = assertIs<StandardRetryTokenBucket>(strategy.config.tokenBucket)
+        assertEquals(14, tokenBucket.config.retryCost)
+        assertEquals(5, tokenBucket.config.timeoutRetryCost)
     }
 
     @Test

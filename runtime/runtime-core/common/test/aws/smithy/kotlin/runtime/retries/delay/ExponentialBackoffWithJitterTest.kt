@@ -38,9 +38,9 @@ class ExponentialBackoffWithJitterTest {
     fun testScaling() = runTest {
         val delayer = ExponentialBackoffWithJitter {
             initialDelay = 10.milliseconds
-            scaleFactor = 2.0
-            jitter = 0.0
-            maxBackoff = Duration.INFINITE
+            scaleFactor = 2.0 // Make the numbers easy for tests
+            jitter = 0.0 // Disable jitter for this test
+            maxBackoff = Duration.INFINITE // Effectively disable max backoff
         }
         assertEquals(listOf(10, 20, 40, 80, 160, 320), backoffSeries(6, delayer))
     }
@@ -49,9 +49,9 @@ class ExponentialBackoffWithJitterTest {
     fun testJitter() = runTest {
         val delayer = ExponentialBackoffWithJitter {
             initialDelay = 10.milliseconds
-            scaleFactor = 2.0
-            jitter = 0.6
-            maxBackoff = Duration.INFINITE
+            scaleFactor = 2.0 // Make the numbers easy for tests
+            jitter = 0.6 // 60% jitter for this test
+            maxBackoff = Duration.INFINITE // Effectively disable max backoff
         }
         backoffSeries(6, delayer)
             .zip(listOf(4..10, 8..20, 16..40, 32..80, 64..160, 128..320))
@@ -64,8 +64,8 @@ class ExponentialBackoffWithJitterTest {
     fun testMaxBackoff() = runTest {
         val delayer = ExponentialBackoffWithJitter {
             initialDelay = 10.milliseconds
-            scaleFactor = 2.0
-            jitter = 0.0
+            scaleFactor = 2.0 // Make the numbers easy for tests
+            jitter = 0.0 // Disable jitter for this test
             maxBackoff = 100.milliseconds
         }
         assertEquals(listOf(10, 20, 40, 80, 100, 100), backoffSeries(6, delayer))
