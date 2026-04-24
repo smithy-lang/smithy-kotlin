@@ -26,7 +26,7 @@ import kotlin.time.Duration.Companion.milliseconds
 /**
  * Integration tests for the standard retry strategy behavior.
  * These tests configure the standard retry constants (retryCost=14, timeoutRetryCost=5)
- * and use [StandardExponentialBackoffWithJitter] (initialDelay=50ms, scaleFactor=2.0).
+ * and use [ExponentialBackoffWithJitter] (initialDelay=50ms, scaleFactor=2.0).
  */
 class NewStandardRetryIntegrationTest {
     /** Standard retry cost for non-throttling errors. */

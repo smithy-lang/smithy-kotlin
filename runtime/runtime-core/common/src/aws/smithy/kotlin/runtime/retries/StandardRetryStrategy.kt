@@ -16,6 +16,7 @@ import aws.smithy.kotlin.runtime.retries.policy.RetryPolicy
 import aws.smithy.kotlin.runtime.util.DslBuilderProperty
 import aws.smithy.kotlin.runtime.util.DslFactory
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.currentCoroutineContext
 
 /**
  * Implements a retry strategy utilizing backoff delayer and a token bucket for rate limiting and circuit breaking. Note
@@ -79,13 +80,9 @@ public open class StandardRetryStrategy(override val config: Config = Config.def
                     if (attempt >= config.maxAttempts) {
                         throwTooManyAttempts(attempt, callResult)
                     } else {
-                        // Prep for another loop
-                        val delayProvider = config.delayProvider
-                        if (delayProvider is RetryAwareDelayProvider) {
-                            delayProvider.backoff(attempt, evaluation.reason)
-                        } else {
-                            delayProvider.backoff(attempt)
-                        }
+                        // Prep for another loop — set errorType on context for the delay provider
+                        currentCoroutineContext()[RetryContext]?.let { it.errorType = evaluation.reason }
+                        config.delayProvider.backoff(attempt)
                         fromToken.scheduleRetry(evaluation.reason)
                     }
             }.also {
@@ -262,7 +259,7 @@ public open class StandardRetryStrategy(override val config: Config = Config.def
             private val useNewRetries = CoreSettings.NewRetriesEnabled
 
             internal val delayProviderProperty = DslBuilderProperty<DelayProvider.Config.Builder, DelayProvider>(
-                if (useNewRetries) StandardExponentialBackoffWithJitter else ExponentialBackoffWithJitter,
+                ExponentialBackoffWithJitter,
                 { config.toBuilderApplicator() },
             )
 
@@ -275,11 +272,8 @@ public open class StandardRetryStrategy(override val config: Config = Config.def
              * Configure a new exponential backoff delayer
              * @param block A DSL block which sets the parameters for the exponential backoff delayer
              */
-            public fun delayProvider(block: ExponentialBackoffWithJitterConfig.() -> Unit) {
-                delayProviderProperty.dsl(
-                    if (useNewRetries) StandardExponentialBackoffWithJitter else ExponentialBackoffWithJitter,
-                    block,
-                )
+            public fun delayProvider(block: ExponentialBackoffWithJitter.Config.Builder.() -> Unit) {
+                delayProviderProperty.dsl(ExponentialBackoffWithJitter, block)
             }
 
             /**
@@ -325,7 +319,7 @@ public open class StandardRetryStrategy(override val config: Config = Config.def
             @InternalApi
             public fun enableStandardRetryDefaults() {
                 standardRetryDefaultsEnabled = true
-                delayProviderProperty.dsl(StandardExponentialBackoffWithJitter) {}
+                delayProviderProperty.dsl(ExponentialBackoffWithJitter) {}
                 tokenBucketProperty.dsl(StandardRetryTokenBucket) {
                     retryCost = DEFAULT_STANDARD_RETRY_COST
                     timeoutRetryCost = DEFAULT_STANDARD_TIMEOUT_RETRY_COST

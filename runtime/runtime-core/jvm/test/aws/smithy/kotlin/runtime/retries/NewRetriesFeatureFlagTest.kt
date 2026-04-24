@@ -6,9 +6,9 @@
 package aws.smithy.kotlin.runtime.retries
 
 import aws.smithy.kotlin.runtime.retries.delay.ExponentialBackoffWithJitter
-import aws.smithy.kotlin.runtime.retries.delay.StandardExponentialBackoffWithJitter
 import aws.smithy.kotlin.runtime.retries.delay.StandardRetryTokenBucket
 import kotlin.test.*
+import kotlin.time.Duration.Companion.milliseconds
 
 class NewRetriesFeatureFlagTest {
     private val sysPropKey = "smithy.newRetries2026"
@@ -19,17 +19,21 @@ class NewRetriesFeatureFlagTest {
     }
 
     @Test
-    fun testFlagOffUsesLegacyDelayProvider() {
+    fun testFlagOffUsesLegacyDefaults() {
         System.clearProperty(sysPropKey)
         val strategy = StandardRetryStrategy()
-        assertIs<ExponentialBackoffWithJitter>(strategy.config.delayProvider)
+        val delayer = assertIs<ExponentialBackoffWithJitter>(strategy.config.delayProvider)
+        assertEquals(10.milliseconds, delayer.config.initialDelay)
+        assertEquals(1.5, delayer.config.scaleFactor)
     }
 
     @Test
-    fun testFlagOnUsesStandardDelayProvider() {
+    fun testFlagOnUsesStandardDefaults() {
         System.setProperty(sysPropKey, "true")
         val strategy = StandardRetryStrategy()
-        assertIs<StandardExponentialBackoffWithJitter>(strategy.config.delayProvider)
+        val delayer = assertIs<ExponentialBackoffWithJitter>(strategy.config.delayProvider)
+        assertEquals(50.milliseconds, delayer.config.initialDelay)
+        assertEquals(2.0, delayer.config.scaleFactor)
     }
 
     @Test
