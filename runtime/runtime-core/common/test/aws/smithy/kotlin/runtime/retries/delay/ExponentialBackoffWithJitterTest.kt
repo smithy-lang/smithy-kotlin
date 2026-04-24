@@ -20,10 +20,12 @@ import kotlin.time.Duration.Companion.seconds
 class ExponentialBackoffWithJitterTest {
     @Test
     fun testDefaults() {
-        val config = ExponentialBackoffWithJitter.Config(ExponentialBackoffWithJitter.Config.Builder().apply {
-            initialDelay = 50.milliseconds
-            scaleFactor = 2.0
-        })
+        val config = ExponentialBackoffWithJitter.Config(
+            ExponentialBackoffWithJitter.Config.Builder().apply {
+                initialDelay = 50.milliseconds
+                scaleFactor = 2.0
+            },
+        )
         assertEquals(50.milliseconds, config.initialDelay)
         assertEquals(2.0, config.scaleFactor)
         assertEquals(1.0, config.jitter)
@@ -93,7 +95,11 @@ class ExponentialBackoffWithJitterTest {
 
     @Test
     fun testRetryAfterHonored() = runTest {
-        val delayer = ExponentialBackoffWithJitter { initialDelay = 50.milliseconds; scaleFactor = 2.0; jitter = 0.0 }
+        val delayer = ExponentialBackoffWithJitter {
+            initialDelay = 50.milliseconds
+            scaleFactor = 2.0
+            jitter = 0.0
+        }
         val ctx = RetryContext().apply { retryAfter = 1500L.milliseconds }
         val (ms, _) = measure { withContext(ctx) { delayer.backoff(1) } }
         assertEquals(1500, ms)
@@ -101,7 +107,11 @@ class ExponentialBackoffWithJitterTest {
 
     @Test
     fun testRetryAfterClampedToMinimum() = runTest {
-        val delayer = ExponentialBackoffWithJitter { initialDelay = 50.milliseconds; scaleFactor = 2.0; jitter = 0.0 }
+        val delayer = ExponentialBackoffWithJitter {
+            initialDelay = 50.milliseconds
+            scaleFactor = 2.0
+            jitter = 0.0
+        }
         val ctx = RetryContext().apply { retryAfter = 0L.milliseconds }
         val (ms, _) = measure { withContext(ctx) { delayer.backoff(1) } }
         assertEquals(50, ms)
@@ -109,7 +119,11 @@ class ExponentialBackoffWithJitterTest {
 
     @Test
     fun testRetryAfterClampedToMaximum() = runTest {
-        val delayer = ExponentialBackoffWithJitter { initialDelay = 50.milliseconds; scaleFactor = 2.0; jitter = 0.0 }
+        val delayer = ExponentialBackoffWithJitter {
+            initialDelay = 50.milliseconds
+            scaleFactor = 2.0
+            jitter = 0.0
+        }
         val ctx = RetryContext().apply { retryAfter = 10000L.milliseconds }
         val (ms, _) = measure { withContext(ctx) { delayer.backoff(1) } }
         assertEquals(5050, ms)
@@ -117,7 +131,11 @@ class ExponentialBackoffWithJitterTest {
 
     @Test
     fun testRetryAfterIgnoredWhenNull() = runTest {
-        val delayer = ExponentialBackoffWithJitter { initialDelay = 50.milliseconds; scaleFactor = 2.0; jitter = 0.0 }
+        val delayer = ExponentialBackoffWithJitter {
+            initialDelay = 50.milliseconds
+            scaleFactor = 2.0
+            jitter = 0.0
+        }
         val (ms, _) = measure { delayer.backoff(1) }
         assertEquals(50, ms)
     }
@@ -131,8 +149,11 @@ private suspend fun TestScope.backoffSeries(
     val ctx = errorType?.let { RetryContext().apply { this.errorType = it } }
     return (1..times)
         .map { idx ->
-            if (ctx != null) measure { withContext(ctx) { delayer.backoff(idx) } }
-            else measure { delayer.backoff(idx) }
+            if (ctx != null) {
+                measure { withContext(ctx) { delayer.backoff(idx) } }
+            } else {
+                measure { delayer.backoff(idx) }
+            }
         }
         .map { it.first }
 }

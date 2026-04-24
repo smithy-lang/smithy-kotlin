@@ -39,8 +39,7 @@ public class ExponentialBackoffWithJitter(
     override val config: Config = Config.Default,
 ) : DelayProvider {
     public companion object : DslFactory<Config.Builder, ExponentialBackoffWithJitter> {
-        override fun invoke(block: Config.Builder.() -> Unit): ExponentialBackoffWithJitter =
-            ExponentialBackoffWithJitter(Config(block))
+        override fun invoke(block: Config.Builder.() -> Unit): ExponentialBackoffWithJitter = ExponentialBackoffWithJitter(Config(block))
     }
 
     private val random = Random.Default
