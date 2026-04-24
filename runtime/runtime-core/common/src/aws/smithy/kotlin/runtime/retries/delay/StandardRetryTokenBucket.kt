@@ -6,6 +6,7 @@
 package aws.smithy.kotlin.runtime.retries.delay
 
 import aws.smithy.kotlin.runtime.InternalApi
+import aws.smithy.kotlin.runtime.retries.newRetriesEnabled
 import aws.smithy.kotlin.runtime.retries.policy.RetryErrorType
 import aws.smithy.kotlin.runtime.util.DslFactory
 import kotlinx.coroutines.delay
@@ -110,6 +111,7 @@ public class StandardRetryTokenBucket internal constructor(
         override suspend fun scheduleRetry(reason: RetryErrorType): RetryToken {
             val size = when (reason) {
                 RetryErrorType.Throttling -> config.timeoutRetryCost
+                RetryErrorType.Transient -> if (newRetriesEnabled()) config.timeoutRetryCost else config.retryCost
                 else -> config.retryCost
             }
             checkoutCapacity(size)
