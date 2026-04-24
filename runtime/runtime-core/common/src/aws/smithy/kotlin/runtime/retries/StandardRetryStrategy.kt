@@ -241,8 +241,6 @@ public open class StandardRetryStrategy(override val config: Config = Config.def
          * A mutable builder for a [Config]
          */
         public open class Builder : RetryStrategy.Config.Builder {
-            private val useNewRetries = CoreSettings.NewRetriesEnabled
-
             internal val delayProviderProperty = DslBuilderProperty<DelayProvider.Config.Builder, DelayProvider>(
                 ExponentialBackoffWithJitter,
                 { config.toBuilderApplicator() },
@@ -282,24 +280,6 @@ public open class StandardRetryStrategy(override val config: Config = Config.def
                 StandardRetryTokenBucket,
                 { config.toBuilderApplicator() },
             )
-
-            init {
-                if (useNewRetries) {
-                    enableStandardRetryDefaults()
-                }
-            }
-
-            /**
-             * Configures the builder with the standard retry strategy defaults: updated backoff provider
-             * and retry quota constants.
-             * Called automatically when the `SMITHY_NEW_RETRIES_2026` flag is set, or can be called
-             * explicitly by higher-level SDKs.
-             */
-            @InternalApi
-            public fun enableStandardRetryDefaults() {
-                delayProviderProperty.dsl(ExponentialBackoffWithJitter) {}
-                tokenBucketProperty.dsl(StandardRetryTokenBucket) {}
-            }
 
             /**
              * The token bucket instance. Utilizing an existing token bucket will share call capacity between scopes.
