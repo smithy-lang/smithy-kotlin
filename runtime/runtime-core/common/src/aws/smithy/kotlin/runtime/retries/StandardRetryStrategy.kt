@@ -225,6 +225,21 @@ public open class StandardRetryStrategy(override val config: Config = Config.def
              * The default number of maximum attempts for new config instances using DynamoDB services
              */
             public const val DEFAULT_DYNAMODB_SERVICES_MAX_ATTEMPTS: Int = 4
+
+            /**
+             * The default retry cost for the standard retry strategy
+             */
+            public const val DEFAULT_STANDARD_RETRY_COST: Int = 14
+
+            /**
+             * The default timeout/throttling retry cost for the standard retry strategy
+             */
+            public const val DEFAULT_STANDARD_TIMEOUT_RETRY_COST: Int = 5
+
+            /**
+             * The default capacity to return on a successful initial try for the standard retry strategy
+             */
+            public const val DEFAULT_STANDARD_INITIAL_TRY_SUCCESS_INCREMENT: Int = 1
         }
 
         /**
@@ -261,7 +276,7 @@ public open class StandardRetryStrategy(override val config: Config = Config.def
          * A mutable builder for a [Config]
          */
         public open class Builder : RetryStrategy.Config.Builder {
-            private val useNewRetries = newRetriesEnabled()
+            private val useNewRetries = CoreSettings.NewRetriesEnabled
 
             internal val delayProviderProperty = DslBuilderProperty<DelayProvider.Config.Builder, DelayProvider>(
                 if (useNewRetries) StandardExponentialBackoffWithJitter else ExponentialBackoffWithJitter,
@@ -339,9 +354,9 @@ public open class StandardRetryStrategy(override val config: Config = Config.def
                 standardRetryDefaultsEnabled = true
                 delayProviderProperty.dsl(StandardExponentialBackoffWithJitter) {}
                 tokenBucketProperty.dsl(StandardRetryTokenBucket) {
-                    retryCost = 14
-                    timeoutRetryCost = 5
-                    initialTrySuccessIncrement = 1
+                    retryCost = DEFAULT_STANDARD_RETRY_COST
+                    timeoutRetryCost = DEFAULT_STANDARD_TIMEOUT_RETRY_COST
+                    initialTrySuccessIncrement = DEFAULT_STANDARD_INITIAL_TRY_SUCCESS_INCREMENT
                 }
             }
 

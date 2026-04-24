@@ -8,11 +8,17 @@ import aws.smithy.kotlin.runtime.InternalApi
 import aws.smithy.kotlin.runtime.config.boolEnvSetting
 import aws.smithy.kotlin.runtime.config.resolve
 
-private val NEW_RETRIES_SETTING = boolEnvSetting("smithy.newRetries2026", "SMITHY_NEW_RETRIES_2026").orElse(false)
-
-/**
- * Returns `true` when the `SMITHY_NEW_RETRIES_2026` environment variable (or `smithy.newRetries2026` system property)
- * is set to `true`, enabling the standard retry strategy behavior. Defaults to `false`.
- */
 @InternalApi
-public fun newRetriesEnabled(): Boolean = NEW_RETRIES_SETTING.resolve() ?: false
+public object CoreSettings {
+    private val newRetriesSetting = boolEnvSetting("smithy.newRetries2026", "SMITHY_NEW_RETRIES_2026").orElse(false)
+
+    /**
+     * Whether the standard retry strategy behavior is enabled.
+     * Controlled by the `SMITHY_NEW_RETRIES_2026` environment variable or `smithy.newRetries2026` system property.
+     *
+     * Uses a computed property (`get()`) instead of a stored `val` so the value is re-evaluated on each access,
+     * allowing tests to toggle the system property between test methods within the same JVM.
+     */
+    public val NewRetriesEnabled: Boolean
+        get() = newRetriesSetting.resolve() ?: false
+}
