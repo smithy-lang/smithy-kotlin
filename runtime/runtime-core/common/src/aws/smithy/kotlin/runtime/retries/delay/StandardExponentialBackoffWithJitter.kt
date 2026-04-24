@@ -25,8 +25,8 @@ private val DYNAMODB_SERVICES = setOf("dynamodb", "dynamodb streams")
  * A [RetryAwareDelayProvider] that implements the standard exponential backoff with jitter. The base delay varies by
  * error type and service name:
  *
- * - **Throttling** errors use a base delay of **1000 ms**.
- * - **DynamoDB** and **DynamoDB Streams** services use a base delay of **25 ms**.
+ * - **Throttling** errors use [Config.throttlingBaseDelay] (default **1000 ms**).
+ * - **DynamoDB** and **DynamoDB Streams** services use [Config.dynamoDbBaseDelay] (default **25 ms**).
  * - All other errors use [Config.initialDelay] (default **50 ms**).
  *
  * The delay for a given attempt is calculated as:
@@ -48,8 +48,8 @@ public class StandardExponentialBackoffWithJitter(
     /**
      * Delays for an appropriate amount of time after the given attempt number, selecting the base delay according to
      * the [errorType] and [serviceName]. If a [RetryContext] with a non-null [RetryContext.retryAfter] is present
-     * in the coroutine context, the delay is clamped to `[t_i, t_i + 5000ms]` where `t_i` is the computed exponential
-     * backoff. `MAX_BACKOFF` does not apply to this value.
+     * in the coroutine context, the delay is clamped to `[t_i, t_i + retryAfterMaxOvershoot]` where `t_i` is the
+     * computed exponential backoff. `MAX_BACKOFF` does not apply to this value.
      */
     override suspend fun backoff(
         attempt: Int,
@@ -59,8 +59,8 @@ public class StandardExponentialBackoffWithJitter(
         require(attempt > 0) { "attempt was $attempt but must be greater than 0" }
         val retryAfterMs = currentCoroutineContext()[RetryContext]?.retryAfter?.toDouble(DurationUnit.MILLISECONDS)
         val baseMs = when {
-            errorType == RetryErrorType.Throttling -> 1000.0
-            serviceName?.lowercase() in DYNAMODB_SERVICES -> 25.0
+            errorType == RetryErrorType.Throttling -> config.throttlingBaseDelay.toDouble(DurationUnit.MILLISECONDS)
+            serviceName?.lowercase() in DYNAMODB_SERVICES -> config.dynamoDbBaseDelay.toDouble(DurationUnit.MILLISECONDS)
             else -> config.initialDelay.toDouble(DurationUnit.MILLISECONDS)
         }
         val exp = baseMs * config.scaleFactor.pow(attempt - 1)
@@ -68,8 +68,9 @@ public class StandardExponentialBackoffWithJitter(
         val jitterProportion = if (config.jitter > 0.0) random.nextDouble(config.jitter) else 0.0
         val tI = capped * (1.0 - jitterProportion)
 
-        // Clamp retry-after to [t_i, t_i + 5s]. MAX_BACKOFF does not apply.
-        val delayMs = retryAfterMs?.coerceIn(tI, tI + 5000.0) ?: tI
+        // Clamp retry-after to [t_i, t_i + retryAfterMaxOvershoot]. MAX_BACKOFF does not apply.
+        val overshootMs = config.retryAfterMaxOvershoot.toDouble(DurationUnit.MILLISECONDS)
+        val delayMs = retryAfterMs?.coerceIn(tI, tI + overshootMs) ?: tI
 
         delay(delayMs.toLong().milliseconds)
     }
@@ -111,6 +112,23 @@ public class StandardExponentialBackoffWithJitter(
          */
         public val maxBackoff: Duration = builder.maxBackoff
 
+        /**
+         * The base delay used for throttling errors.
+         */
+        public val throttlingBaseDelay: Duration = builder.throttlingBaseDelay
+
+        /**
+         * The base delay used for DynamoDB and DynamoDB Streams services.
+         */
+        public val dynamoDbBaseDelay: Duration = builder.dynamoDbBaseDelay
+
+        /**
+         * The maximum amount the retry-after value can exceed the computed backoff.
+         * When a server-specified retry-after is present, the delay is clamped to
+         * `[t_i, t_i + retryAfterMaxOvershoot]`.
+         */
+        public val retryAfterMaxOvershoot: Duration = builder.retryAfterMaxOvershoot
+
         @InternalApi
         override fun toBuilderApplicator(): DelayProvider.Config.Builder.() -> Unit = {
             if (this is Builder) {
@@ -118,6 +136,9 @@ public class StandardExponentialBackoffWithJitter(
                 scaleFactor = this@Config.scaleFactor
                 jitter = this@Config.jitter
                 maxBackoff = this@Config.maxBackoff
+                throttlingBaseDelay = this@Config.throttlingBaseDelay
+                dynamoDbBaseDelay = this@Config.dynamoDbBaseDelay
+                retryAfterMaxOvershoot = this@Config.retryAfterMaxOvershoot
             }
         }
 
@@ -129,6 +150,16 @@ public class StandardExponentialBackoffWithJitter(
              * The base delay for non-throttling, non-DynamoDB errors.
              */
             override var initialDelay: Duration = 50.milliseconds
+
+            /**
+             * The base delay used for throttling errors.
+             */
+            public var throttlingBaseDelay: Duration = 1.seconds
+
+            /**
+             * The base delay used for DynamoDB and DynamoDB Streams services.
+             */
+            public var dynamoDbBaseDelay: Duration = 25.milliseconds
 
             /**
              * The scale factor by which to multiply the previous max delay.
@@ -144,6 +175,11 @@ public class StandardExponentialBackoffWithJitter(
              * An upper bound for the computed delay which will override the [scaleFactor].
              */
             override var maxBackoff: Duration = 20.seconds
+
+            /**
+             * The maximum amount the retry-after value can exceed the computed backoff.
+             */
+            public var retryAfterMaxOvershoot: Duration = 5.seconds
         }
     }
 }
