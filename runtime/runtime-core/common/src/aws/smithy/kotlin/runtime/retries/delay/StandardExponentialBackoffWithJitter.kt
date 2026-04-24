@@ -19,14 +19,11 @@ import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.seconds
 import kotlin.time.DurationUnit
 
-private val DYNAMODB_SERVICES = setOf("dynamodb", "dynamodb streams")
-
 /**
  * A [RetryAwareDelayProvider] that implements the standard exponential backoff with jitter. The base delay varies by
- * error type and service name:
+ * error type:
  *
  * - **Throttling** errors use [Config.throttlingBaseDelay] (default **1000 ms**).
- * - **DynamoDB** and **DynamoDB Streams** services use [Config.dynamoDbBaseDelay] (default **25 ms**).
  * - All other errors use [Config.initialDelay] (default **50 ms**).
  *
  * The delay for a given attempt is calculated as:
@@ -47,20 +44,18 @@ public class StandardExponentialBackoffWithJitter(
 
     /**
      * Delays for an appropriate amount of time after the given attempt number, selecting the base delay according to
-     * the [errorType] and [serviceName]. If a [RetryContext] with a non-null [RetryContext.retryAfter] is present
+     * the [errorType]. If a [RetryContext] with a non-null [RetryContext.retryAfter] is present
      * in the coroutine context, the delay is clamped to `[t_i, t_i + retryAfterMaxOvershoot]` where `t_i` is the
      * computed exponential backoff. `MAX_BACKOFF` does not apply to this value.
      */
     override suspend fun backoff(
         attempt: Int,
         errorType: RetryErrorType,
-        serviceName: String?,
     ) {
         require(attempt > 0) { "attempt was $attempt but must be greater than 0" }
         val retryAfterMs = currentCoroutineContext()[RetryContext]?.retryAfter?.toDouble(DurationUnit.MILLISECONDS)
-        val baseMs = when {
-            errorType == RetryErrorType.Throttling -> config.throttlingBaseDelay.toDouble(DurationUnit.MILLISECONDS)
-            serviceName?.lowercase() in DYNAMODB_SERVICES -> config.dynamoDbBaseDelay.toDouble(DurationUnit.MILLISECONDS)
+        val baseMs = when (errorType) {
+            RetryErrorType.Throttling -> config.throttlingBaseDelay.toDouble(DurationUnit.MILLISECONDS)
             else -> config.initialDelay.toDouble(DurationUnit.MILLISECONDS)
         }
         val exp = baseMs * config.scaleFactor.pow(attempt - 1)
@@ -93,7 +88,7 @@ public class StandardExponentialBackoffWithJitter(
         }
 
         /**
-         * The base delay for non-throttling, non-DynamoDB errors.
+         * The base delay for non-throttling errors.
          */
         public val initialDelay: Duration = builder.initialDelay
 
@@ -118,11 +113,6 @@ public class StandardExponentialBackoffWithJitter(
         public val throttlingBaseDelay: Duration = builder.throttlingBaseDelay
 
         /**
-         * The base delay used for DynamoDB and DynamoDB Streams services.
-         */
-        public val dynamoDbBaseDelay: Duration = builder.dynamoDbBaseDelay
-
-        /**
          * The maximum amount the retry-after value can exceed the computed backoff.
          * When a server-specified retry-after is present, the delay is clamped to
          * `[t_i, t_i + retryAfterMaxOvershoot]`.
@@ -137,7 +127,6 @@ public class StandardExponentialBackoffWithJitter(
                 jitter = this@Config.jitter
                 maxBackoff = this@Config.maxBackoff
                 throttlingBaseDelay = this@Config.throttlingBaseDelay
-                dynamoDbBaseDelay = this@Config.dynamoDbBaseDelay
                 retryAfterMaxOvershoot = this@Config.retryAfterMaxOvershoot
             }
         }
@@ -147,7 +136,7 @@ public class StandardExponentialBackoffWithJitter(
          */
         public class Builder : ExponentialBackoffWithJitterConfig {
             /**
-             * The base delay for non-throttling, non-DynamoDB errors.
+             * The base delay for non-throttling errors.
              */
             override var initialDelay: Duration = 50.milliseconds
 
@@ -155,11 +144,6 @@ public class StandardExponentialBackoffWithJitter(
              * The base delay used for throttling errors.
              */
             public var throttlingBaseDelay: Duration = 1.seconds
-
-            /**
-             * The base delay used for DynamoDB and DynamoDB Streams services.
-             */
-            public var dynamoDbBaseDelay: Duration = 25.milliseconds
 
             /**
              * The scale factor by which to multiply the previous max delay.

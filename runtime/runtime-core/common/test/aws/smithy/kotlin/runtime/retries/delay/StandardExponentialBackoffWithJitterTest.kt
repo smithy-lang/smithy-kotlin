@@ -50,25 +50,6 @@ class StandardExponentialBackoffWithJitterTest {
     }
 
     @Test
-    fun testDynamoDbBase() = runTest {
-        val delayer = StandardExponentialBackoffWithJitter {
-            jitter = 0.0
-            maxBackoff = Duration.INFINITE
-        }
-        // DynamoDB base = 25ms: 25, 50, 100
-        assertEquals(listOf(25, 50, 100), backoffSeries(3, delayer, RetryErrorType.ServerSide, "dynamodb"))
-    }
-
-    @Test
-    fun testDynamoDbStreamsBase() = runTest {
-        val delayer = StandardExponentialBackoffWithJitter {
-            jitter = 0.0
-            maxBackoff = Duration.INFINITE
-        }
-        assertEquals(listOf(25, 50, 100), backoffSeries(3, delayer, RetryErrorType.ServerSide, "DynamoDB Streams"))
-    }
-
-    @Test
     fun testMaxBackoff() = runTest {
         val delayer = StandardExponentialBackoffWithJitter {
             jitter = 0.0
@@ -140,7 +121,6 @@ private suspend fun TestScope.backoffSeries(
     times: Int,
     delayer: StandardExponentialBackoffWithJitter,
     errorType: RetryErrorType,
-    serviceName: String? = null,
 ): List<Int> = (1..times)
-    .map { idx -> measure { delayer.backoff(idx, errorType, serviceName) } }
+    .map { idx -> measure { delayer.backoff(idx, errorType) } }
     .map { it.first }

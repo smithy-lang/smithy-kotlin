@@ -17,8 +17,6 @@ import aws.smithy.kotlin.runtime.util.DslBuilderProperty
 import aws.smithy.kotlin.runtime.util.DslFactory
 import kotlinx.coroutines.CancellationException
 
-private val DYNAMODB_SERVICES = setOf("dynamodb", "dynamodb streams")
-
 /**
  * Implements a retry strategy utilizing backoff delayer and a token bucket for rate limiting and circuit breaking. Note
  * that the backoff delayer and token bucket work independently of each other. Either can delay retries (and the token
@@ -84,7 +82,7 @@ public open class StandardRetryStrategy(override val config: Config = Config.def
                         // Prep for another loop
                         val delayProvider = config.delayProvider
                         if (delayProvider is RetryAwareDelayProvider) {
-                            delayProvider.backoff(attempt, evaluation.reason, config.serviceName)
+                            delayProvider.backoff(attempt, evaluation.reason)
                         } else {
                             delayProvider.backoff(attempt)
                         }
@@ -222,11 +220,6 @@ public open class StandardRetryStrategy(override val config: Config = Config.def
             public const val DEFAULT_MAX_ATTEMPTS: Int = 3
 
             /**
-             * The default number of maximum attempts for new config instances using DynamoDB services
-             */
-            public const val DEFAULT_DYNAMODB_SERVICES_MAX_ATTEMPTS: Int = 4
-
-            /**
              * The default retry cost for the standard retry strategy
              */
             public const val DEFAULT_STANDARD_RETRY_COST: Int = 14
@@ -247,28 +240,18 @@ public open class StandardRetryStrategy(override val config: Config = Config.def
          */
         public val delayProvider: DelayProvider = builder.delayProviderProperty.supply()
 
-        override val maxAttempts: Int = when {
-            builder.isMaxAttemptsSet -> builder.maxAttempts
-            builder.standardRetryDefaultsEnabled && builder.serviceName?.lowercase() in DYNAMODB_SERVICES -> DEFAULT_DYNAMODB_SERVICES_MAX_ATTEMPTS
-            else -> DEFAULT_MAX_ATTEMPTS
-        }
+        override val maxAttempts: Int = builder.maxAttempts
 
         /**
          * The token bucket instance. Utilizing an existing token bucket will share call capacity between scopes.
          */
         public val tokenBucket: RetryTokenBucket = builder.tokenBucketProperty.supply()
 
-        /**
-         * The service name, used for service-specific retry behavior (e.g., DynamoDB backoff).
-         */
-        public val serviceName: String? = builder.serviceName
-
         override fun toBuilderApplicator(): RetryStrategy.Config.Builder.() -> Unit = {
             if (this is Builder) {
                 delayProvider = this@Config.delayProvider
                 maxAttempts = this@Config.maxAttempts
                 tokenBucket = this@Config.tokenBucket
-                serviceName = this@Config.serviceName
             }
         }
 
@@ -315,16 +298,6 @@ public open class StandardRetryStrategy(override val config: Config = Config.def
              * The maximum number of attempts to make (including the first attempt).
              */
             public override var maxAttempts: Int = DEFAULT_MAX_ATTEMPTS
-                set(value) {
-                    field = value
-                    isMaxAttemptsSet = true
-                }
-            internal var isMaxAttemptsSet = false
-
-            /**
-             * The service name, used for service-specific retry behavior (e.g., DynamoDB backoff).
-             */
-            public var serviceName: String? = null
 
             internal val tokenBucketProperty = DslBuilderProperty<RetryTokenBucket.Config.Builder, RetryTokenBucket>(
                 StandardRetryTokenBucket,
@@ -344,8 +317,8 @@ public open class StandardRetryStrategy(override val config: Config = Config.def
                 private set
 
             /**
-             * Configures the builder with the standard retry strategy defaults: updated backoff provider,
-             * retry quota constants, and service-specific max attempts for DynamoDB.
+             * Configures the builder with the standard retry strategy defaults: updated backoff provider
+             * and retry quota constants.
              * Called automatically when the `SMITHY_NEW_RETRIES_2026` flag is set, or can be called
              * explicitly by higher-level SDKs.
              */

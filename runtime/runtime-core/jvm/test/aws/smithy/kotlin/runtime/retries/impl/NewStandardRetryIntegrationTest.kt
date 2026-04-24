@@ -56,7 +56,6 @@ class NewStandardRetryIntegrationTest {
     private fun buildStrategy(given: NewStandardGiven, tokenBucket: StandardRetryTokenBucket) = StandardRetryStrategy {
         given.maxAttempts?.let { maxAttempts = it }
         this.tokenBucket = tokenBucket
-        given.service?.let { serviceName = it }
         delayProvider {
             if (given.exponentialBase == 1.0) jitter = 0.0
             given.maxBackoffTime?.let { maxBackoff = (it * 1000).toLong().milliseconds }

@@ -204,37 +204,6 @@ val newStandardRetryIntegrationTestCases = mapOf(
                   retry_quota: 500
         """.trimIndent(),
 
-    "DynamoDB base backoff and increased retries" to // language=YAML
-        """
-            given:
-              service: dynamodb
-              exponential_base: 1
-            responses:
-              - response:
-                  status_code: 500
-                expected:
-                  outcome: retry_request
-                  retry_quota: 486
-                  delay: 0.025
-              - response:
-                  status_code: 500
-                expected:
-                  outcome: retry_request
-                  retry_quota: 472
-                  delay: 0.05
-              - response:
-                  status_code: 500
-                expected:
-                  outcome: retry_request
-                  retry_quota: 458
-                  delay: 0.1
-              - response:
-                  status_code: 500
-                expected:
-                  outcome: max_attempts_exceeded
-                  retry_quota: 458
-        """.trimIndent(),
-
     "Honor x-amz-retry-after header" to // language=YAML
         """
             given:
