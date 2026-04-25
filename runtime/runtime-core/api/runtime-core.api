@@ -1873,9 +1873,6 @@ public final class aws/smithy/kotlin/runtime/retries/StandardRetryStrategy$Compa
 public class aws/smithy/kotlin/runtime/retries/StandardRetryStrategy$Config : aws/smithy/kotlin/runtime/retries/RetryStrategy$Config {
 	public static final field Companion Laws/smithy/kotlin/runtime/retries/StandardRetryStrategy$Config$Companion;
 	public static final field DEFAULT_MAX_ATTEMPTS I
-	public static final field DEFAULT_STANDARD_INITIAL_TRY_SUCCESS_INCREMENT I
-	public static final field DEFAULT_STANDARD_RETRY_COST I
-	public static final field DEFAULT_STANDARD_TIMEOUT_RETRY_COST I
 	public fun <init> (Laws/smithy/kotlin/runtime/retries/StandardRetryStrategy$Config$Builder;)V
 	public final fun getDelayProvider ()Laws/smithy/kotlin/runtime/retries/delay/DelayProvider;
 	public fun getMaxAttempts ()I
@@ -1887,7 +1884,6 @@ public class aws/smithy/kotlin/runtime/retries/StandardRetryStrategy$Config$Buil
 	public fun <init> ()V
 	public final fun delayProvider (Laws/smithy/kotlin/runtime/util/DslFactory;Lkotlin/jvm/functions/Function1;)V
 	public final fun delayProvider (Lkotlin/jvm/functions/Function1;)V
-	public final fun enableStandardRetryDefaults ()V
 	public final fun getDelayProvider ()Laws/smithy/kotlin/runtime/retries/delay/DelayProvider;
 	public fun getMaxAttempts ()I
 	public final fun getTokenBucket ()Laws/smithy/kotlin/runtime/retries/delay/RetryTokenBucket;
