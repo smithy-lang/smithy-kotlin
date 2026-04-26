@@ -1,0 +1,5 @@
+{
+    "id": "50e86c30-b130-4a18-afe6-b57de5017511",
+    "type": "feature",
+    "description": "⚠️ **IMPORTANT**: Now writes cached auth files with `600` permissions on POSIX OSes"
+}
