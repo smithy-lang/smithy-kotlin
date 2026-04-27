@@ -9,6 +9,8 @@ import aws.smithy.kotlin.runtime.InternalApi
 import aws.smithy.kotlin.runtime.CoreSettings
 import aws.smithy.kotlin.runtime.retries.policy.RetryErrorType
 import aws.smithy.kotlin.runtime.util.DslFactory
+import aws.smithy.kotlin.runtime.util.PlatformEnvironProvider
+import aws.smithy.kotlin.runtime.util.PlatformProvider
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
@@ -111,7 +113,7 @@ public class StandardRetryTokenBucket internal constructor(
         override suspend fun scheduleRetry(reason: RetryErrorType): RetryToken {
             val size = when (reason) {
                 RetryErrorType.Throttling -> config.timeoutRetryCost
-                RetryErrorType.Transient -> if (CoreSettings.resolveNewRetriesEnabled()) config.retryCost else config.timeoutRetryCost
+                RetryErrorType.Transient -> if (config.useNewRetries) config.retryCost else config.timeoutRetryCost
                 else -> config.retryCost
             }
             checkoutCapacity(size)
@@ -142,6 +144,11 @@ public class StandardRetryTokenBucket internal constructor(
          * is available. This property will automatically be set to `true` if [refillUnitsPerSecond] is 0.
          */
         public val useCircuitBreakerMode: Boolean = builder.useCircuitBreakerMode
+
+        /**
+         * Whether the new retry behavior is enabled. Resolved from the environment at build time.
+         */
+        internal val useNewRetries: Boolean = builder.useNewRetries
 
         /**
          * The amount of capacity to decrement for the initial try
@@ -190,8 +197,8 @@ public class StandardRetryTokenBucket internal constructor(
         /**
          * A mutable builder for a [Config]
          */
-        public class Builder : RetryTokenBucket.Config.Builder {
-            private val useNewRetries = CoreSettings.resolveNewRetriesEnabled()
+        public class Builder(platform: PlatformEnvironProvider = PlatformProvider.System) : RetryTokenBucket.Config.Builder {
+            internal val useNewRetries = CoreSettings.resolveNewRetriesEnabled(platform)
 
             /**
              * When `true`, indicates that attempts to acquire tokens or schedule retries should fail if all capacity

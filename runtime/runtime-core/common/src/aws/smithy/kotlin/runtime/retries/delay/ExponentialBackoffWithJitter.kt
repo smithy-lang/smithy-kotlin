@@ -7,12 +7,11 @@ package aws.smithy.kotlin.runtime.retries.delay
 
 import aws.smithy.kotlin.runtime.InternalApi
 import aws.smithy.kotlin.runtime.CoreSettings
-import aws.smithy.kotlin.runtime.util.PlatformEnvironProvider
-import aws.smithy.kotlin.runtime.util.PlatformProvider
-import aws.smithy.kotlin.runtime.config.resolve
 import aws.smithy.kotlin.runtime.retries.RetryContext
 import aws.smithy.kotlin.runtime.retries.policy.RetryErrorType
 import aws.smithy.kotlin.runtime.util.DslFactory
+import aws.smithy.kotlin.runtime.util.PlatformEnvironProvider
+import aws.smithy.kotlin.runtime.util.PlatformProvider
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.delay
 import kotlin.math.min
@@ -135,8 +134,8 @@ public class ExponentialBackoffWithJitter(
         /**
          * A mutable builder for config for [ExponentialBackoffWithJitter]
          */
-        public class Builder : DelayProvider.Config.Builder {
-            private val useNewRetries = CoreSettings.resolveNewRetriesEnabled()
+        public class Builder(platform: PlatformEnvironProvider = PlatformProvider.System) : DelayProvider.Config.Builder {
+            private val useNewRetries = CoreSettings.resolveNewRetriesEnabled(platform)
 
             /**
              * The base delay for non-throttling errors

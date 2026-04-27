@@ -7,11 +7,13 @@ package aws.smithy.kotlin.runtime.retries.impl
 
 import aws.smithy.kotlin.runtime.retries.RetryContext
 import aws.smithy.kotlin.runtime.retries.StandardRetryStrategy
+import aws.smithy.kotlin.runtime.retries.delay.ExponentialBackoffWithJitter
 import aws.smithy.kotlin.runtime.retries.delay.StandardRetryTokenBucket
 import aws.smithy.kotlin.runtime.retries.getOrThrow
 import aws.smithy.kotlin.runtime.retries.policy.RetryDirective
 import aws.smithy.kotlin.runtime.retries.policy.RetryErrorType
 import aws.smithy.kotlin.runtime.retries.policy.RetryPolicy
+import aws.smithy.kotlin.runtime.util.TestPlatformProvider
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.currentCoroutineContext
@@ -29,34 +31,21 @@ import kotlin.time.Duration.Companion.milliseconds
  * and use [ExponentialBackoffWithJitter] (initialDelay=50ms, scaleFactor=2.0).
  */
 class NewStandardRetryIntegrationTest {
-    /** Standard retry cost for non-throttling errors. */
-    private val sepRetryCost = 14
+    private val platform = TestPlatformProvider(props = mapOf("smithy.newRetries2026" to "true"))
+    private val defaultDelayConfig = ExponentialBackoffWithJitter.Config(ExponentialBackoffWithJitter.Config.Builder(platform))
 
-    /** Standard retry cost for throttling errors. */
-    private val sepThrottlingRetryCost = 5
-
-    private val sysPropKey = "smithy.newRetries2026"
-
-    @BeforeTest
-    fun setup() {
-        System.setProperty(sysPropKey, "true")
-    }
-
-    @AfterTest
-    fun cleanup() {
-        System.clearProperty(sysPropKey)
-    }
-
-    private fun sepTokenBucket(maxCapacity: Int? = null) = StandardRetryTokenBucket {
-        maxCapacity?.let { this.maxCapacity = it }
-        retryCost = sepRetryCost
-        timeoutRetryCost = sepThrottlingRetryCost
+    private fun sepTokenBucket(maxCapacity: Int? = null): StandardRetryTokenBucket {
+        val builder = StandardRetryTokenBucket.Config.Builder(platform)
+        maxCapacity?.let { builder.maxCapacity = it }
+        return StandardRetryTokenBucket(StandardRetryTokenBucket.Config(builder))
     }
 
     private fun buildStrategy(given: NewStandardGiven, tokenBucket: StandardRetryTokenBucket) = StandardRetryStrategy {
         given.maxAttempts?.let { maxAttempts = it }
         this.tokenBucket = tokenBucket
         delayProvider {
+            initialDelay = defaultDelayConfig.initialDelay
+            scaleFactor = defaultDelayConfig.scaleFactor
             if (given.exponentialBase == 1.0) jitter = 0.0
             given.maxBackoffTime?.let { maxBackoff = (it * 1000).toLong().milliseconds }
         }

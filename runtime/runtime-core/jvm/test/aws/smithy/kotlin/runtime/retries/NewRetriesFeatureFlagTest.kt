@@ -5,57 +5,57 @@
 
 package aws.smithy.kotlin.runtime.retries
 
+import aws.smithy.kotlin.runtime.CoreSettings
 import aws.smithy.kotlin.runtime.retries.delay.ExponentialBackoffWithJitter
 import aws.smithy.kotlin.runtime.retries.delay.StandardRetryTokenBucket
 import aws.smithy.kotlin.runtime.retries.policy.RetryErrorType
+import aws.smithy.kotlin.runtime.util.TestPlatformProvider
 import kotlinx.coroutines.test.runTest
 import kotlin.test.*
 import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.seconds
 
 class NewRetriesFeatureFlagTest {
-    private val sysPropKey = "smithy.newRetries2026"
+    private val flagOff = TestPlatformProvider()
+    private val flagOn = TestPlatformProvider(props = mapOf("smithy.newRetries2026" to "true"))
 
-    @BeforeTest
-    fun setup() {
-        System.clearProperty(sysPropKey)
+    @Test
+    fun testResolvesFlagOff() {
+        assertFalse(CoreSettings.resolveNewRetriesEnabled(flagOff))
     }
 
-    @AfterTest
-    fun cleanup() {
-        System.clearProperty(sysPropKey)
+    @Test
+    fun testResolvesFlagOn() {
+        assertTrue(CoreSettings.resolveNewRetriesEnabled(flagOn))
     }
 
     @Test
     fun testFlagOffUsesLegacyDefaults() {
-        val strategy = StandardRetryStrategy()
-        val delayer = assertIs<ExponentialBackoffWithJitter>(strategy.config.delayProvider)
+        val delayer = ExponentialBackoffWithJitter(ExponentialBackoffWithJitter.Config(ExponentialBackoffWithJitter.Config.Builder(flagOff)))
         assertEquals(10.milliseconds, delayer.config.initialDelay)
         assertEquals(1.5, delayer.config.scaleFactor)
         assertEquals(1.seconds, delayer.config.throttlingBaseDelay)
         assertEquals(5.seconds, delayer.config.retryAfterMaxOvershoot)
-        val tokenBucket = assertIs<StandardRetryTokenBucket>(strategy.config.tokenBucket)
+        val tokenBucket = StandardRetryTokenBucket(StandardRetryTokenBucket.Config(StandardRetryTokenBucket.Config.Builder(flagOff)))
         assertEquals(5, tokenBucket.config.retryCost)
         assertEquals(10, tokenBucket.config.timeoutRetryCost)
     }
 
     @Test
     fun testFlagOnUsesStandardDefaults() {
-        System.setProperty(sysPropKey, "true")
-        val strategy = StandardRetryStrategy()
-        val delayer = assertIs<ExponentialBackoffWithJitter>(strategy.config.delayProvider)
+        val delayer = ExponentialBackoffWithJitter(ExponentialBackoffWithJitter.Config(ExponentialBackoffWithJitter.Config.Builder(flagOn)))
         assertEquals(50.milliseconds, delayer.config.initialDelay)
         assertEquals(2.0, delayer.config.scaleFactor)
         assertEquals(1.seconds, delayer.config.throttlingBaseDelay)
         assertEquals(5.seconds, delayer.config.retryAfterMaxOvershoot)
-        val tokenBucket = assertIs<StandardRetryTokenBucket>(strategy.config.tokenBucket)
+        val tokenBucket = StandardRetryTokenBucket(StandardRetryTokenBucket.Config(StandardRetryTokenBucket.Config.Builder(flagOn)))
         assertEquals(14, tokenBucket.config.retryCost)
         assertEquals(5, tokenBucket.config.timeoutRetryCost)
     }
 
     @Test
     fun testFlagOffTransientUsesTimeoutRetryCost() = runTest {
-        val bucket = StandardRetryTokenBucket(StandardRetryTokenBucket.Config {})
+        val bucket = StandardRetryTokenBucket(StandardRetryTokenBucket.Config(StandardRetryTokenBucket.Config.Builder(flagOff)))
         val token = bucket.acquireToken()
         token.scheduleRetry(RetryErrorType.Transient)
         assertEquals(500 - 10, bucket.capacity)
@@ -63,8 +63,7 @@ class NewRetriesFeatureFlagTest {
 
     @Test
     fun testFlagOnTransientUsesRetryCost() = runTest {
-        System.setProperty(sysPropKey, "true")
-        val bucket = StandardRetryTokenBucket(StandardRetryTokenBucket.Config {})
+        val bucket = StandardRetryTokenBucket(StandardRetryTokenBucket.Config(StandardRetryTokenBucket.Config.Builder(flagOn)))
         val token = bucket.acquireToken()
         token.scheduleRetry(RetryErrorType.Transient)
         assertEquals(500 - 14, bucket.capacity)
