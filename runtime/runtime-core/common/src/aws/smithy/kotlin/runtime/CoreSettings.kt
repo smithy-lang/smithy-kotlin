@@ -18,6 +18,5 @@ public object CoreSettings {
      * Controlled by the `smithy.newRetries2026` system property or `SMITHY_NEW_RETRIES_2026` environment variable.
      * @param platform The [PlatformEnvironProvider] to use. Defaults to [PlatformProvider.System].
      */
-    public fun resolveNewRetriesEnabled(platform: PlatformEnvironProvider = PlatformProvider.System): Boolean =
-        newRetriesSetting.resolve(platform) ?: false
+    public fun resolveNewRetriesEnabled(platform: PlatformEnvironProvider = PlatformProvider.System): Boolean = newRetriesSetting.resolve(platform) ?: false
 }

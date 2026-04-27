@@ -5,8 +5,8 @@
 
 package aws.smithy.kotlin.runtime.retries.delay
 
-import aws.smithy.kotlin.runtime.InternalApi
 import aws.smithy.kotlin.runtime.CoreSettings
+import aws.smithy.kotlin.runtime.InternalApi
 import aws.smithy.kotlin.runtime.retries.RetryContext
 import aws.smithy.kotlin.runtime.retries.policy.RetryErrorType
 import aws.smithy.kotlin.runtime.util.DslFactory
