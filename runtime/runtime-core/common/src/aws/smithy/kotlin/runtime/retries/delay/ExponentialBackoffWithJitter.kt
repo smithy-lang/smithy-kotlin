@@ -6,7 +6,10 @@
 package aws.smithy.kotlin.runtime.retries.delay
 
 import aws.smithy.kotlin.runtime.InternalApi
-import aws.smithy.kotlin.runtime.retries.CoreSettings
+import aws.smithy.kotlin.runtime.CoreSettings
+import aws.smithy.kotlin.runtime.util.PlatformEnvironProvider
+import aws.smithy.kotlin.runtime.util.PlatformProvider
+import aws.smithy.kotlin.runtime.config.resolve
 import aws.smithy.kotlin.runtime.retries.RetryContext
 import aws.smithy.kotlin.runtime.retries.policy.RetryErrorType
 import aws.smithy.kotlin.runtime.util.DslFactory
@@ -23,14 +26,14 @@ import kotlin.time.DurationUnit
 /**
  * A [DelayProvider] that implements exponential backoff with jitter
  * (i.e., randomization of delay amount).
- * When a [RetryContext] is present in the coroutine context, the delay provider uses
- * [RetryContext.errorType] to select the base delay and [RetryContext.retryAfter] to
- * clamp the computed delay. Without a [RetryContext], the provider falls back to
- * [Config.initialDelay] as the base.
+ * When [RetryContext.errorType] is non-null, the delay provider uses it to select the base delay.
+ * When [RetryContext.retryAfter] is non-null, it is used to clamp the computed delay.
+ * When either field is null, the provider falls back to
+ * [Config.initialDelay] as the base and pure exponential backoff respectively.
  *
  * The delay for a given attempt is calculated as:
  * ```
- * delay = random(0, 1) * min(base * scaleFactor^(attempt - 1), maxBackoff)
+ * delay = random(1 - jitter, 1) * min(base * scaleFactor^(attempt - 1), maxBackoff)
  * ```
  *
  * @param config The configuration to use for this delayer.
@@ -133,7 +136,7 @@ public class ExponentialBackoffWithJitter(
          * A mutable builder for config for [ExponentialBackoffWithJitter]
          */
         public class Builder : DelayProvider.Config.Builder {
-            private val useNewRetries = CoreSettings.NewRetriesEnabled
+            private val useNewRetries = CoreSettings.resolveNewRetriesEnabled()
 
             /**
              * The base delay for non-throttling errors

@@ -50,7 +50,6 @@ internal class RetryMiddleware<I, O>(
             val wrappedPolicy = PolicyLogger(policy, currentCoroutineContext())
 
             val outcome = withContext(RetryContext()) {
-                val retryCtx = coroutineContext[RetryContext]!!
                 strategy.retry(wrappedPolicy) {
                     withSpan<RetryMiddleware<*, *>, _>("Attempt-$attempt") {
                         when (strategy::class) {
@@ -66,9 +65,6 @@ internal class RetryMiddleware<I, O>(
                         val requestCopy = modified.deepCopy()
 
                         val attemptResult = tryAttempt(requestCopy, next, attempt)
-
-                        // Propagate x-amz-retry-after to the per-call coroutine context for backoff calculation
-                        retryCtx.retryAfter = modified.context.getOrNull(HttpOperationContext.RetryAfter)
 
                         attempt++
                         attemptResult.getOrThrow()
@@ -91,8 +87,9 @@ internal class RetryMiddleware<I, O>(
         next: Handler<SdkHttpRequest, O>,
         attempt: Int,
     ): Result<O> {
-        // Clear any previous retry-after value
-        request.context.remove(HttpOperationContext.RetryAfter)
+        // Reset per-attempt state so stale values from a previous attempt are never carried forward
+        val retryCtx = currentCoroutineContext()[RetryContext]
+        retryCtx?.reset()
 
         val result = interceptors.readBeforeAttempt(request.subject.immutableView())
             .mapCatching {
@@ -110,7 +107,7 @@ internal class RetryMiddleware<I, O>(
         call?.response?.headers?.get("x-amz-retry-after")?.let { raw ->
             val ms = raw.toLongOrNull()?.takeIf { it >= 0 }
             if (ms != null) {
-                request.context[HttpOperationContext.RetryAfter] = ms.milliseconds
+                retryCtx?.retryAfter = ms.milliseconds
             } else {
                 currentCoroutineContext().debug<RetryMiddleware<*, *>> { "ignoring invalid x-amz-retry-after header: $raw" }
             }

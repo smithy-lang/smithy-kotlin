@@ -6,7 +6,7 @@
 package aws.smithy.kotlin.runtime.retries.delay
 
 import aws.smithy.kotlin.runtime.InternalApi
-import aws.smithy.kotlin.runtime.retries.CoreSettings
+import aws.smithy.kotlin.runtime.CoreSettings
 import aws.smithy.kotlin.runtime.retries.policy.RetryErrorType
 import aws.smithy.kotlin.runtime.util.DslFactory
 import kotlinx.coroutines.delay
@@ -111,7 +111,7 @@ public class StandardRetryTokenBucket internal constructor(
         override suspend fun scheduleRetry(reason: RetryErrorType): RetryToken {
             val size = when (reason) {
                 RetryErrorType.Throttling -> config.timeoutRetryCost
-                RetryErrorType.Transient -> if (CoreSettings.NewRetriesEnabled) config.retryCost else config.timeoutRetryCost
+                RetryErrorType.Transient -> if (CoreSettings.resolveNewRetriesEnabled()) config.retryCost else config.timeoutRetryCost
                 else -> config.retryCost
             }
             checkoutCapacity(size)
@@ -191,7 +191,7 @@ public class StandardRetryTokenBucket internal constructor(
          * A mutable builder for a [Config]
          */
         public class Builder : RetryTokenBucket.Config.Builder {
-            private val useNewRetries = CoreSettings.NewRetriesEnabled
+            private val useNewRetries = CoreSettings.resolveNewRetriesEnabled()
 
             /**
              * When `true`, indicates that attempts to acquire tokens or schedule retries should fail if all capacity

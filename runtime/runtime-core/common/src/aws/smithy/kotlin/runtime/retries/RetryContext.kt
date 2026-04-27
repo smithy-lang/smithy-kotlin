@@ -30,5 +30,13 @@ public class RetryContext : AbstractCoroutineContextElement(Key) {
      */
     public var errorType: RetryErrorType? = null
 
+    /**
+     * Resets all per-attempt state so that stale values from a previous attempt are never carried forward.
+     */
+    public fun reset() {
+        retryAfter = null
+        errorType = null
+    }
+
     public companion object Key : CoroutineContext.Key<RetryContext>
 }
