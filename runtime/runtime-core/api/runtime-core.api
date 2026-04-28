@@ -2441,6 +2441,8 @@ public abstract interface class aws/smithy/kotlin/runtime/util/Filesystem {
 public final class aws/smithy/kotlin/runtime/util/Filesystem$Companion {
 	public final fun fromMap (Ljava/util/Map;Ljava/lang/String;)Laws/smithy/kotlin/runtime/util/Filesystem;
 	public static synthetic fun fromMap$default (Laws/smithy/kotlin/runtime/util/Filesystem$Companion;Ljava/util/Map;Ljava/lang/String;ILjava/lang/Object;)Laws/smithy/kotlin/runtime/util/Filesystem;
+	public final fun fromMapStringTestFile (Ljava/util/Map;Ljava/lang/String;)Laws/smithy/kotlin/runtime/util/Filesystem;
+	public static synthetic fun fromMapStringTestFile$default (Laws/smithy/kotlin/runtime/util/Filesystem$Companion;Ljava/util/Map;Ljava/lang/String;ILjava/lang/Object;)Laws/smithy/kotlin/runtime/util/Filesystem;
 }
 
 public final class aws/smithy/kotlin/runtime/util/Filesystem$DefaultImpls {
@@ -2485,6 +2487,26 @@ public abstract interface class aws/smithy/kotlin/runtime/util/LazyAsyncValue {
 
 public final class aws/smithy/kotlin/runtime/util/LazyAsyncValueKt {
 	public static final fun asyncLazy (Lkotlin/jvm/functions/Function1;)Laws/smithy/kotlin/runtime/util/LazyAsyncValue;
+}
+
+public final class aws/smithy/kotlin/runtime/util/MapFilesystem : aws/smithy/kotlin/runtime/util/Filesystem {
+	public fun <init> ()V
+	public fun <init> (Ljava/util/Map;Ljava/lang/String;)V
+	public synthetic fun <init> (Ljava/util/Map;Ljava/lang/String;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun atomicMove (Ljava/lang/String;Ljava/lang/String;ZZ)V
+	public fun createDir (Ljava/lang/String;Z)V
+	public fun delete (Ljava/lang/String;Z)V
+	public fun exists (Ljava/lang/String;)Z
+	public fun fileExists (Ljava/lang/String;)Z
+	public fun getFilePathSeparator ()Ljava/lang/String;
+	public final fun getFilePermissions (Ljava/lang/String;)Ljava/lang/String;
+	public fun list (Ljava/lang/String;Z)Ljava/util/Collection;
+	public fun read (Ljava/lang/String;JJZ)[B
+	public fun readFileOrNull (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun readOrNull (Ljava/lang/String;JJZZ)[B
+	public fun size (Ljava/lang/String;Z)J
+	public fun write (Ljava/lang/String;[BLaws/smithy/kotlin/runtime/util/WriteType;ZLjava/lang/String;)V
+	public fun writeFile (Ljava/lang/String;[BLkotlin/coroutines/Continuation;)Ljava/lang/Object;
 }
 
 public final class aws/smithy/kotlin/runtime/util/OperatingSystem {
@@ -2562,9 +2584,25 @@ public final class aws/smithy/kotlin/runtime/util/SingleFlightGroup {
 	public final fun singleFlight (Lkotlin/jvm/functions/Function1;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 }
 
+public final class aws/smithy/kotlin/runtime/util/TestFile {
+	public static final field Companion Laws/smithy/kotlin/runtime/util/TestFile$Companion;
+	public fun <init> (Ljava/lang/String;Ljava/lang/String;)V
+	public synthetic fun <init> (Ljava/lang/String;Ljava/lang/String;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun <init> ([BLjava/lang/String;)V
+	public synthetic fun <init> ([BLjava/lang/String;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun getContents ()[B
+	public final fun getPermissions ()Ljava/lang/String;
+}
+
+public final class aws/smithy/kotlin/runtime/util/TestFile$Companion {
+	public final fun transformMapStringByteArray (Ljava/util/Map;)Ljava/util/Map;
+	public final fun transformMapStringString (Ljava/util/Map;)Ljava/util/Map;
+}
+
 public final class aws/smithy/kotlin/runtime/util/TestPlatformProvider : aws/smithy/kotlin/runtime/util/Filesystem, aws/smithy/kotlin/runtime/util/PlatformProvider {
 	public static final field Companion Laws/smithy/kotlin/runtime/util/TestPlatformProvider$Companion;
 	public fun <init> ()V
+	public synthetic fun <init> (Ljava/util/Map;Ljava/util/Map;Laws/smithy/kotlin/runtime/util/Filesystem;Laws/smithy/kotlin/runtime/util/OperatingSystem;Lkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public fun <init> (Ljava/util/Map;Ljava/util/Map;Ljava/util/Map;Laws/smithy/kotlin/runtime/util/OperatingSystem;)V
 	public synthetic fun <init> (Ljava/util/Map;Ljava/util/Map;Ljava/util/Map;Laws/smithy/kotlin/runtime/util/OperatingSystem;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public fun atomicMove (Ljava/lang/String;Ljava/lang/String;ZZ)V
@@ -2575,6 +2613,7 @@ public final class aws/smithy/kotlin/runtime/util/TestPlatformProvider : aws/smi
 	public fun getAllEnvVars ()Ljava/util/Map;
 	public fun getAllProperties ()Ljava/util/Map;
 	public fun getFilePathSeparator ()Ljava/lang/String;
+	public final fun getFs ()Laws/smithy/kotlin/runtime/util/Filesystem;
 	public fun getProperty (Ljava/lang/String;)Ljava/lang/String;
 	public fun getenv (Ljava/lang/String;)Ljava/lang/String;
 	public fun isAndroid ()Z
@@ -2593,6 +2632,8 @@ public final class aws/smithy/kotlin/runtime/util/TestPlatformProvider : aws/smi
 }
 
 public final class aws/smithy/kotlin/runtime/util/TestPlatformProvider$Companion {
+	public final fun of (Ljava/util/Map;Ljava/util/Map;Ljava/util/Map;Laws/smithy/kotlin/runtime/util/OperatingSystem;)Laws/smithy/kotlin/runtime/util/TestPlatformProvider;
+	public static synthetic fun of$default (Laws/smithy/kotlin/runtime/util/TestPlatformProvider$Companion;Ljava/util/Map;Ljava/util/Map;Ljava/util/Map;Laws/smithy/kotlin/runtime/util/OperatingSystem;ILjava/lang/Object;)Laws/smithy/kotlin/runtime/util/TestPlatformProvider;
 }
 
 public final class aws/smithy/kotlin/runtime/util/Uuid {
