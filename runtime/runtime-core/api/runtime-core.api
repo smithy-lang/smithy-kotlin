@@ -1816,8 +1816,10 @@ public final class aws/smithy/kotlin/runtime/retries/RetryContext : kotlin/corou
 	public fun <init> ()V
 	public final fun getErrorType ()Laws/smithy/kotlin/runtime/retries/policy/RetryErrorType;
 	public final fun getRetryAfter-FghU774 ()Lkotlin/time/Duration;
+	public final fun isLongPolling ()Z
 	public final fun reset ()V
 	public final fun setErrorType (Laws/smithy/kotlin/runtime/retries/policy/RetryErrorType;)V
+	public final fun setLongPolling (Z)V
 	public final fun setRetryAfter-BwNAW2A (Lkotlin/time/Duration;)V
 }
 

@@ -82,13 +82,19 @@ public open class StandardRetryStrategy(override val config: Config = Config.def
                     } else {
                         // Prep for another loop — set errorType on context for the delay provider
                         currentCoroutineContext()[RetryContext]?.let { it.errorType = evaluation.reason }
+                        val nextToken = fromToken.scheduleRetry(evaluation.reason)
                         config.delayProvider.backoff(attempt)
-                        fromToken.scheduleRetry(evaluation.reason)
+                        nextToken
                     }
             }.also {
                 beforeRetry(attempt + 1, callResult, evaluation, policy)
             }
         } catch (ex: RetryCapacityExceededException) {
+            // Long-polling operations back off even when retry quota is exhausted
+            if (currentCoroutineContext()[RetryContext]?.isLongPolling == true) {
+                currentCoroutineContext()[RetryContext]?.let { it.errorType = (evaluation as RetryDirective.RetryError).reason }
+                config.delayProvider.backoff(attempt)
+            }
             throwCapacityExceeded(ex, attempt, callResult)
         } catch (ex: Throwable) {
             fromToken.notifyFailure()

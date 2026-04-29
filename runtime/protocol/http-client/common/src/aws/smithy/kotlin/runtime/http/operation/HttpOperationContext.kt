@@ -78,6 +78,12 @@ public object HttpOperationContext {
      * The name of the default algorithm to be used for computing a checksum of the request.
      */
     public val DefaultChecksumAlgorithm: AttributeKey<String> = AttributeKey("aws.smithy.kotlin#DefaultChecksumAlgorithm")
+
+    /**
+     * Whether the current operation is a long-polling operation. Long-polling operations always
+     * back off when retryable, even if the retry quota is exhausted.
+     */
+    public val LongPolling: AttributeKey<Boolean> = AttributeKey("aws.smithy.kotlin#LongPolling")
 }
 
 internal val ExecutionContext.operationMetrics: OperationMetrics
