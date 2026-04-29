@@ -15,6 +15,7 @@ import aws.smithy.kotlin.runtime.http.request.toBuilder
 import aws.smithy.kotlin.runtime.io.Handler
 import aws.smithy.kotlin.runtime.io.middleware.Middleware
 import aws.smithy.kotlin.runtime.retries.AdaptiveRetryStrategy
+import aws.smithy.kotlin.runtime.retries.RetryContext
 import aws.smithy.kotlin.runtime.retries.RetryStrategy
 import aws.smithy.kotlin.runtime.retries.StandardRetryStrategy
 import aws.smithy.kotlin.runtime.retries.policy.RetryDirective
@@ -22,8 +23,10 @@ import aws.smithy.kotlin.runtime.retries.policy.RetryPolicy
 import aws.smithy.kotlin.runtime.retries.toResult
 import aws.smithy.kotlin.runtime.telemetry.logging.debug
 import aws.smithy.kotlin.runtime.telemetry.trace.withSpan
+import kotlinx.coroutines.currentCoroutineContext
+import kotlinx.coroutines.withContext
 import kotlin.coroutines.CoroutineContext
-import kotlin.coroutines.coroutineContext
+import kotlin.time.Duration.Companion.milliseconds
 
 /**
  * Retry requests with the given strategy and policy
@@ -44,25 +47,28 @@ internal class RetryMiddleware<I, O>(
         val result = if (modified.subject.isRetryable) {
             // FIXME this is the wrong span/context because we want the fresh one from inside each attempt but there's no way to
             // wire that through without changing the `RetryPolicy` interface
-            val wrappedPolicy = PolicyLogger(policy, coroutineContext)
+            val wrappedPolicy = PolicyLogger(policy, currentCoroutineContext())
 
-            val outcome = strategy.retry(wrappedPolicy) {
-                withSpan<RetryMiddleware<*, *>, _>("Attempt-$attempt") {
-                    when (strategy::class) {
-                        StandardRetryStrategy::class -> modified.context.emitBusinessMetric(SmithyBusinessMetric.RETRY_MODE_STANDARD)
-                        AdaptiveRetryStrategy::class -> modified.context.emitBusinessMetric(SmithyBusinessMetric.RETRY_MODE_ADAPTIVE)
+            val outcome = withContext(RetryContext()) {
+                strategy.retry(wrappedPolicy) {
+                    withSpan<RetryMiddleware<*, *>, _>("Attempt-$attempt") {
+                        when (strategy::class) {
+                            StandardRetryStrategy::class -> modified.context.emitBusinessMetric(SmithyBusinessMetric.RETRY_MODE_STANDARD)
+                            AdaptiveRetryStrategy::class -> modified.context.emitBusinessMetric(SmithyBusinessMetric.RETRY_MODE_ADAPTIVE)
+                        }
+
+                        if (attempt > 1) {
+                            coroutineContext.debug<RetryMiddleware<*, *>> { "retrying request, attempt $attempt" }
+                        }
+
+                        // Deep copy the request because later middlewares (e.g., signing) mutate it
+                        val requestCopy = modified.deepCopy()
+
+                        val attemptResult = tryAttempt(requestCopy, next, attempt)
+
+                        attempt++
+                        attemptResult.getOrThrow()
                     }
-
-                    if (attempt > 1) {
-                        coroutineContext.debug<RetryMiddleware<*, *>> { "retrying request, attempt $attempt" }
-                    }
-
-                    // Deep copy the request because later middlewares (e.g., signing) mutate it
-                    val requestCopy = modified.deepCopy()
-
-                    val attemptResult = tryAttempt(requestCopy, next, attempt)
-                    attempt++
-                    attemptResult.getOrThrow()
                 }
             }
             outcome.toResult()
@@ -81,6 +87,10 @@ internal class RetryMiddleware<I, O>(
         next: Handler<SdkHttpRequest, O>,
         attempt: Int,
     ): Result<O> {
+        // Reset per-attempt state so stale values from a previous attempt are never carried forward
+        val retryCtx = currentCoroutineContext()[RetryContext]
+        retryCtx?.reset()
+
         val result = interceptors.readBeforeAttempt(request.subject.immutableView())
             .mapCatching {
                 val attemptTimeout = request.context.getOrNull(HttpOperationContext.AttemptTimeout)
@@ -92,6 +102,16 @@ internal class RetryMiddleware<I, O>(
         // get the http call for this attempt (if we made it that far)
         val callList = request.context.getOrNull(HttpOperationContext.HttpCallList) ?: emptyList()
         val call = callList.getOrNull(attempt - 1)
+
+        // Parse x-amz-retry-after header (integer milliseconds). Invalid values are ignored.
+        call?.response?.headers?.get("x-amz-retry-after")?.let { raw ->
+            val ms = raw.toLongOrNull()?.takeIf { it >= 0 }
+            if (ms != null) {
+                retryCtx?.retryAfter = ms.milliseconds
+            } else {
+                currentCoroutineContext().debug<RetryMiddleware<*, *>> { "ignoring invalid x-amz-retry-after header: $raw" }
+            }
+        }
 
         val httpRequest = request.subject.immutableView()
         val modified = interceptors.modifyBeforeAttemptCompletion(result, httpRequest, call?.response)

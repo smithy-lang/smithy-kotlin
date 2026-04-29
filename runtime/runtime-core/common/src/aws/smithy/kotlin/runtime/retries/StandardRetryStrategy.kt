@@ -7,6 +7,7 @@ package aws.smithy.kotlin.runtime.retries
 
 import aws.smithy.kotlin.runtime.ClientErrorContext
 import aws.smithy.kotlin.runtime.ErrorMetadata
+import aws.smithy.kotlin.runtime.InternalApi
 import aws.smithy.kotlin.runtime.ServiceException
 import aws.smithy.kotlin.runtime.collections.appendValue
 import aws.smithy.kotlin.runtime.retries.delay.*
@@ -15,6 +16,7 @@ import aws.smithy.kotlin.runtime.retries.policy.RetryPolicy
 import aws.smithy.kotlin.runtime.util.DslBuilderProperty
 import aws.smithy.kotlin.runtime.util.DslFactory
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.currentCoroutineContext
 
 /**
  * Implements a retry strategy utilizing backoff delayer and a token bucket for rate limiting and circuit breaking. Note
@@ -78,7 +80,8 @@ public open class StandardRetryStrategy(override val config: Config = Config.def
                     if (attempt >= config.maxAttempts) {
                         throwTooManyAttempts(attempt, callResult)
                     } else {
-                        // Prep for another loop
+                        // Prep for another loop — set errorType on context for the delay provider
+                        currentCoroutineContext()[RetryContext]?.let { it.errorType = evaluation.reason }
                         config.delayProvider.backoff(attempt)
                         fromToken.scheduleRetry(evaluation.reason)
                     }
