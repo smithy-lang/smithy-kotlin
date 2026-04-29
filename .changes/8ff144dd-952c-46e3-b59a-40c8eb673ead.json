@@ -1,5 +1,5 @@
 {
   "id": "8ff144dd-952c-46e3-b59a-40c8eb673ead",
   "type": "feature",
-  "description": "Add standard retry strategy with updated exponential backoff, retry quotas, `x-amz-retry-after` header support, and service-specific behavior for DynamoDB. Gated behind the `SMITHY_NEW_RETRIES_2026` feature flag"
+  "description": "Add standard retry strategy with updated exponential backoff, retry quotas, `x-amz-retry-after` header support, and service-specific behavior for DynamoDB. Gated behind the `SMITHY_NEW_RETRIES_2026` feature flag. See the [announcement](https://github.com/aws/aws-sdk-kotlin/discussions/1885) for more details."
 }
