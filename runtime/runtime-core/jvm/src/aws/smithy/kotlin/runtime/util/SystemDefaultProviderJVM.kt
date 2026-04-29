@@ -65,7 +65,18 @@ internal actual object SystemDefaultProvider : PlatformProvider {
 
         if (creating && permissions != null && osInfo().family != OsFamily.Windows) {
             file.createNewFile()
-            Files.setPosixFilePermissions(file.toPath(), PosixFilePermissions.fromString(permissions.toPermissionString()))
+
+            try {
+                Files.setPosixFilePermissions(file.toPath(), PosixFilePermissions.fromString(permissions.toPermissionString()))
+            } catch (permissionsException: Throwable) {
+                try {
+                    file.delete()
+                } catch (deleteException: Throwable) {
+                    permissionsException.addSuppressed(deleteException)
+                }
+
+                throw permissionsException
+            }
         }
 
         when (writeType) {
