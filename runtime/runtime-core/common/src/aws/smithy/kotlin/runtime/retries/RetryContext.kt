@@ -14,9 +14,6 @@ import kotlin.time.Duration
 /**
  * A coroutine context element that carries per-call retry state. Installed by the retry middleware
  * so that the delay provider can read retry metadata without mutable state on the shared strategy instance.
- *
- * Uses a computed property (`get()`) instead of a stored `val` so the value is re-evaluated on each access,
- * allowing tests to toggle the system property between test methods within the same JVM.
  */
 @InternalApi
 public class RetryContext : AbstractCoroutineContextElement(Key) {

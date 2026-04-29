@@ -18,6 +18,7 @@ import kotlin.time.Duration.Companion.seconds
 class NewRetriesFeatureFlagTest {
     private val flagOff = TestPlatformProvider()
     private val flagOn = TestPlatformProvider(props = mapOf("smithy.newRetries2026" to "true"))
+    private val flagOnEnv = TestPlatformProvider(env = mapOf("SMITHY_NEW_RETRIES_2026" to "true"))
 
     @Test
     fun testResolvesFlagOff() {
@@ -30,6 +31,11 @@ class NewRetriesFeatureFlagTest {
     }
 
     @Test
+    fun testResolvesFlagOnViaEnv() {
+        assertTrue(CoreSettings.resolveNewRetriesEnabled(flagOnEnv))
+    }
+
+    @Test
     fun testFlagOffUsesLegacyDefaults() {
         val delayer = ExponentialBackoffWithJitter(ExponentialBackoffWithJitter.Config(ExponentialBackoffWithJitter.Config.Builder(flagOff)))
         assertEquals(10.milliseconds, delayer.config.initialDelay)
@@ -39,6 +45,18 @@ class NewRetriesFeatureFlagTest {
         val tokenBucket = StandardRetryTokenBucket(StandardRetryTokenBucket.Config(StandardRetryTokenBucket.Config.Builder(flagOff)))
         assertEquals(5, tokenBucket.config.retryCost)
         assertEquals(10, tokenBucket.config.timeoutRetryCost)
+    }
+
+    @Test
+    fun testFlagOnEnvUsesStandardDefaults() {
+        val delayer = ExponentialBackoffWithJitter(ExponentialBackoffWithJitter.Config(ExponentialBackoffWithJitter.Config.Builder(flagOnEnv)))
+        assertEquals(50.milliseconds, delayer.config.initialDelay)
+        assertEquals(2.0, delayer.config.scaleFactor)
+        assertEquals(1.seconds, delayer.config.throttlingBaseDelay)
+        assertEquals(5.seconds, delayer.config.retryAfterMaxOvershoot)
+        val tokenBucket = StandardRetryTokenBucket(StandardRetryTokenBucket.Config(StandardRetryTokenBucket.Config.Builder(flagOnEnv)))
+        assertEquals(14, tokenBucket.config.retryCost)
+        assertEquals(5, tokenBucket.config.timeoutRetryCost)
     }
 
     @Test
@@ -59,6 +77,14 @@ class NewRetriesFeatureFlagTest {
         val token = bucket.acquireToken()
         token.scheduleRetry(RetryErrorType.Transient)
         assertEquals(500 - 10, bucket.capacity)
+    }
+
+    @Test
+    fun testFlagOnEnvTransientUsesRetryCost() = runTest {
+        val bucket = StandardRetryTokenBucket(StandardRetryTokenBucket.Config(StandardRetryTokenBucket.Config.Builder(flagOnEnv)))
+        val token = bucket.acquireToken()
+        token.scheduleRetry(RetryErrorType.Transient)
+        assertEquals(500 - 14, bucket.capacity)
     }
 
     @Test
