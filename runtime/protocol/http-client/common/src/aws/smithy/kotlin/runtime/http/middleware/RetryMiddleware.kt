@@ -50,6 +50,8 @@ internal class RetryMiddleware<I, O>(
             val wrappedPolicy = PolicyLogger(policy, currentCoroutineContext())
 
             val outcome = withContext(RetryContext()) {
+                currentCoroutineContext()[RetryContext]!!.isLongPolling =
+                    modified.context.getOrNull(HttpOperationContext.LongPolling) ?: false
                 strategy.retry(wrappedPolicy) {
                     withSpan<RetryMiddleware<*, *>, _>("Attempt-$attempt") {
                         when (strategy::class) {
