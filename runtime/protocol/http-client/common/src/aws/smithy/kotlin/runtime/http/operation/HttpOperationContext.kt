@@ -84,6 +84,11 @@ public object HttpOperationContext {
      * back off when retryable, even if the retry quota is exhausted.
      */
     public val LongPolling: AttributeKey<Boolean> = AttributeKey("aws.smithy.kotlin#LongPolling")
+
+    /**
+     * An operation-level override for the socket read timeout.
+     */
+    public val SocketReadTimeout: AttributeKey<Duration> = AttributeKey("aws.smithy.kotlin#SocketReadTimeout")
 }
 
 internal val ExecutionContext.operationMetrics: OperationMetrics

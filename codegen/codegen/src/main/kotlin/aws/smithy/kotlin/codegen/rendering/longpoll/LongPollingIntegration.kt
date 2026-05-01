@@ -36,9 +36,16 @@ private val longPollingMiddleware = object : ProtocolMiddleware {
     override fun isEnabledFor(ctx: ProtocolGenerator.GenerationContext, op: OperationShape): Boolean = op.hasTrait<LongPollTrait>()
 
     override fun render(ctx: ProtocolGenerator.GenerationContext, op: OperationShape, writer: KotlinWriter) {
+        val trait = op.expectTrait<LongPollTrait>()
         writer.write(
             "op.context[#T.LongPolling] = true",
             RuntimeTypes.HttpClient.Operation.HttpOperationContext,
+        )
+        writer.write(
+            "op.context[#1T.SocketReadTimeout] = #2L.#3T",
+            RuntimeTypes.HttpClient.Operation.HttpOperationContext,
+            trait.timeoutMillis,
+            KotlinTypes.Time.milliseconds,
         )
     }
 }
