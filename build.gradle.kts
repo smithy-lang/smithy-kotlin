@@ -23,7 +23,7 @@ buildscript {
         https://github.com/Kotlin/dokka/issues/3472#issuecomment-1929712374
         https://github.com/Kotlin/dokka/issues/3194#issuecomment-1929382630
          */
-        classpath(enforcedPlatform("com.fasterxml.jackson:jackson-bom:2.21.2"))
+        classpath(enforcedPlatform("com.fasterxml.jackson:jackson-bom:2.21.3"))
     }
 
     configurations.classpath {
