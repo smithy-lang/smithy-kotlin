@@ -90,6 +90,5 @@ class LongPollingIntegrationTest {
         val actual = generateClient(normalModel)
         val method = actual.lines("    override suspend fun normalOp(input: NormalOpRequest): NormalOpResponse {", "    }")
         assertFalse(method.contains("LongPolling"), "Normal operation should not set LongPolling")
-
     }
 }

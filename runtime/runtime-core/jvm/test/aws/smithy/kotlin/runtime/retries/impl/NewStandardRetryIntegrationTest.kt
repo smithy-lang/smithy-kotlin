@@ -242,7 +242,8 @@ class NewStandardRetryIntegrationTest {
             when (finalState.outcome) {
                 NewStandardTestOutcome.RetryQuotaExceeded,
                 NewStandardTestOutcome.MaxAttemptsExceeded,
-                NewStandardTestOutcome.FailRequest -> {
+                NewStandardTestOutcome.FailRequest,
+                -> {
                     assertIs<HttpCodeException>(result.exceptionOrNull(), "Expected exception for '$name'")
                 }
                 NewStandardTestOutcome.Success -> {
