@@ -1,5 +1,5 @@
 {
-  "id": "4f80f750-b4a6-49d3-a2e9-8b419870e418",
+  "id": "731b8994-73ab-48e3-81a7-2601ec800c0f",
   "type": "feature",
   "description": "Add retry logic for long polling operations. See the [announcement](https://github.com/aws/aws-sdk-kotlin/discussions/1885) for more details."
 }
