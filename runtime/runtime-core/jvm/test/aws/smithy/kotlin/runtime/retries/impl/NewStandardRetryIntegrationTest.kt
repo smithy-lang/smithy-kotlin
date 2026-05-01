@@ -240,17 +240,13 @@ class NewStandardRetryIntegrationTest {
 
             val finalState = tc.responses.last().expected
             when (finalState.outcome) {
-                NewStandardTestOutcome.RetryQuotaExceeded -> {
-                    assertIs<HttpCodeException>(result.exceptionOrNull(), "Expected exception for '$name'")
-                }
-                NewStandardTestOutcome.MaxAttemptsExceeded -> {
+                NewStandardTestOutcome.RetryQuotaExceeded,
+                NewStandardTestOutcome.MaxAttemptsExceeded,
+                NewStandardTestOutcome.FailRequest -> {
                     assertIs<HttpCodeException>(result.exceptionOrNull(), "Expected exception for '$name'")
                 }
                 NewStandardTestOutcome.Success -> {
                     assertTrue(result.isSuccess, "Expected success for '$name' but got ${result.exceptionOrNull()}")
-                }
-                NewStandardTestOutcome.FailRequest -> {
-                    assertIs<HttpCodeException>(result.exceptionOrNull(), "Expected exception for '$name'")
                 }
                 else -> fail("Unexpected final outcome for '$name': ${finalState.outcome}")
             }
