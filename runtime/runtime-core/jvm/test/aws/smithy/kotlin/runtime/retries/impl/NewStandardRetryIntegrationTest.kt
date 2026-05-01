@@ -42,6 +42,7 @@ class NewStandardRetryIntegrationTest {
 
     private fun buildStrategy(given: NewStandardGiven, tokenBucket: StandardRetryTokenBucket) = StandardRetryStrategy {
         given.maxAttempts?.let { maxAttempts = it }
+        if (given.longPolling) enableLongPollingBackoff = true
         this.tokenBucket = tokenBucket
         delayProvider {
             initialDelay = defaultDelayConfig.initialDelay
