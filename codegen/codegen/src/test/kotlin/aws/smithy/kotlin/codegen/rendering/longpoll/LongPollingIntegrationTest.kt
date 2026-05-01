@@ -83,7 +83,7 @@ class LongPollingIntegrationTest {
         val actual = generateClient(longPollModel(70000))
         val method = actual.lines("    override suspend fun longPollOp(input: LongPollOpRequest): LongPollOpResponse {", "    }")
         method.shouldContainOnlyOnceWithDiff("op.context[HttpOperationContext.LongPolling] = true")
-        method.shouldContainOnlyOnceWithDiff("op.context[HttpOperationContext.SocketReadTimeout] = 70000L.milliseconds")
+        method.shouldContainOnlyOnceWithDiff("op.context[HttpOperationContext.SocketReadTimeout] = 70000.milliseconds")
     }
 
     @Test

@@ -42,7 +42,7 @@ private val longPollingMiddleware = object : ProtocolMiddleware {
             RuntimeTypes.HttpClient.Operation.HttpOperationContext,
         )
         writer.write(
-            "op.context[#1T.SocketReadTimeout] = #2L.#3T",
+            "op.context[#T.SocketReadTimeout] = #L.#T",
             RuntimeTypes.HttpClient.Operation.HttpOperationContext,
             trait.timeoutMillis,
             KotlinTypes.Time.milliseconds,
