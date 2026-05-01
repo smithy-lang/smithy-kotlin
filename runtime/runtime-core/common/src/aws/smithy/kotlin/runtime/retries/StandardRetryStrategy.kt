@@ -238,7 +238,7 @@ public open class StandardRetryStrategy(override val config: Config = Config.def
         /**
          * Whether long-polling operations should back off even when retry quota is exhausted.
          */
-        internal val enableLongPollingBackoff: Boolean = builder.enableLongPollingBackoff
+        public val enableLongPollingBackoff: Boolean = builder.enableLongPollingBackoff
 
         override fun toBuilderApplicator(): RetryStrategy.Config.Builder.() -> Unit = {
             if (this is Builder) {
