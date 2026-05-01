@@ -1879,6 +1879,7 @@ public class aws/smithy/kotlin/runtime/retries/StandardRetryStrategy$Config : aw
 	public static final field DEFAULT_MAX_ATTEMPTS I
 	public fun <init> (Laws/smithy/kotlin/runtime/retries/StandardRetryStrategy$Config$Builder;)V
 	public final fun getDelayProvider ()Laws/smithy/kotlin/runtime/retries/delay/DelayProvider;
+	public final fun getEnableLongPollingBackoff ()Z
 	public fun getMaxAttempts ()I
 	public final fun getTokenBucket ()Laws/smithy/kotlin/runtime/retries/delay/RetryTokenBucket;
 	public fun toBuilderApplicator ()Lkotlin/jvm/functions/Function1;
