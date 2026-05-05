@@ -775,6 +775,7 @@ public final class aws/smithy/kotlin/codegen/core/RuntimeTypes$Core$Utils : aws/
 public final class aws/smithy/kotlin/codegen/core/RuntimeTypes$Http : aws/smithy/kotlin/codegen/core/RuntimeTypePackage {
 	public static final field INSTANCE Laws/smithy/kotlin/codegen/core/RuntimeTypes$Http;
 	public final fun getHeaders ()Lsoftware/amazon/smithy/codegen/core/Symbol;
+	public final fun getHeadersBuilder ()Lsoftware/amazon/smithy/codegen/core/Symbol;
 	public final fun getHttpBody ()Lsoftware/amazon/smithy/codegen/core/Symbol;
 	public final fun getHttpCall ()Lsoftware/amazon/smithy/codegen/core/Symbol;
 	public final fun getHttpMethod ()Lsoftware/amazon/smithy/codegen/core/Symbol;

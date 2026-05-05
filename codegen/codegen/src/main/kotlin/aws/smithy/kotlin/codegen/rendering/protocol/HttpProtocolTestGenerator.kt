@@ -87,7 +87,12 @@ class HttpProtocolTestGenerator(
                         logger.fine("Generating serialization benchmark for ${operation.id}")
                         writer.addImport("${ctx.settings.pkg.name}.model", "*")
                         HttpProtocolSerdeBenchmarkGenerator(
-                            ctx, writer, ctx.model, ctx.symbolProvider, operation, ctx.service,
+                            ctx,
+                            writer,
+                            ctx.model,
+                            ctx.symbolProvider,
+                            operation,
+                            ctx.service,
                         ).renderRequestBenchmarkClass(benchmarkClassName, benchmarkCases)
                     }
                 }
@@ -131,7 +136,12 @@ class HttpProtocolTestGenerator(
                         logger.fine("Generating deserialization benchmark for ${operation.id}")
                         writer.addImport("${ctx.settings.pkg.name}.model", "*")
                         HttpProtocolSerdeBenchmarkGenerator(
-                            ctx, writer, ctx.model, ctx.symbolProvider, operation, ctx.service,
+                            ctx,
+                            writer,
+                            ctx.model,
+                            ctx.symbolProvider,
+                            operation,
+                            ctx.service,
                         ).renderResponseBenchmarkClass(benchmarkClassName, benchmarkCases)
                     }
                 }

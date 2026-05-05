@@ -211,8 +211,6 @@ class HttpProtocolSerdeBenchmarkGenerator(
         writer.closeBlock("}")
     }
 
-    private fun sanitizeName(id: String): String {
-        return id.replace(Regex("[^a-zA-Z0-9_]"), "_")
-            .replaceFirstChar { it.lowercaseChar() }
-    }
+    private fun sanitizeName(id: String): String = id.replace(Regex("[^a-zA-Z0-9_]"), "_")
+        .replaceFirstChar { it.lowercaseChar() }
 }
