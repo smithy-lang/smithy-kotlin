@@ -9,13 +9,13 @@ import aws.smithy.kotlin.codegen.core.RuntimeTypes
 import aws.smithy.kotlin.codegen.core.defaultName
 import aws.smithy.kotlin.codegen.model.expectShape
 import aws.smithy.kotlin.codegen.model.hasTrait
+import aws.smithy.kotlin.codegen.model.shape
 import aws.smithy.kotlin.codegen.rendering.ShapeValueGenerator
 import aws.smithy.kotlin.codegen.rendering.endpoints.EndpointProviderGenerator
+import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.codegen.core.SymbolProvider
 import software.amazon.smithy.model.Model
-import software.amazon.smithy.model.shapes.OperationShape
-import software.amazon.smithy.model.shapes.ServiceShape
-import software.amazon.smithy.model.shapes.StructureShape
+import software.amazon.smithy.model.shapes.*
 import software.amazon.smithy.model.traits.IdempotencyTokenTrait
 import software.amazon.smithy.protocoltests.traits.HttpRequestTestCase
 import software.amazon.smithy.protocoltests.traits.HttpResponseTestCase
@@ -99,6 +99,12 @@ class HttpProtocolSerdeBenchmarkGenerator(
     }
 
     private fun renderClientConfig() {
+        // Per spec: explicit region, endpoint, and mock credentials
+        writer.write("region = \"us-east-1\"")
+        writer.write("credentialsProvider = aws.sdk.kotlin.runtime.auth.credentials.StaticCredentialsProvider {")
+        writer.write("    accessKeyId = \"BENCHMARK\"")
+        writer.write("    secretAccessKey = \"BENCHMARK\"")
+        writer.write("}")
         if (idempotentFieldsInModel) {
             writer.write(
                 "idempotencyTokenProvider = #T { \"00000000-0000-4000-8000-000000000000\" }",
@@ -166,9 +172,19 @@ class HttpProtocolSerdeBenchmarkGenerator(
         }
 
         // Body
-        val body = testCase.body.orElse("")
+        val body = testCase.body.orElse("").trim()
         if (body.isNotBlank()) {
-            writer.write("val respBody = #T.fromBytes(#S.encodeToByteArray())", RuntimeTypes.Http.HttpBody, body)
+            val isCborProtocol = testCase.protocol.name == "rpcv2Cbor"
+            if (isCborProtocol) {
+                writer.write(
+                    "val respBody = #T.fromBytes(#S.#T())",
+                    RuntimeTypes.Http.HttpBody,
+                    body,
+                    RuntimeTypes.Core.Text.Encoding.decodeBase64Bytes,
+                )
+            } else {
+                writer.write("val respBody = #T.fromBytes(#S.encodeToByteArray())", RuntimeTypes.Http.HttpBody, body)
+            }
         } else {
             writer.write("val respBody = #T.Empty", RuntimeTypes.Http.HttpBody)
         }
@@ -193,16 +209,18 @@ class HttpProtocolSerdeBenchmarkGenerator(
 
         if (operation.input.isPresent) {
             val inputShape = model.expectShape<StructureShape>(operation.input.get())
-            // Use empty params for input — response benchmarks measure deserialization,
-            // the input just needs to be valid enough to invoke the operation.
-            writer.writeInline("val input = ")
-                .indent()
-                .call {
-                    ShapeValueGenerator(model, symbolProvider, explicitReceiver = true)
-                        .instantiateShapeInline(writer, inputShape, software.amazon.smithy.model.node.ObjectNode.builder().build())
+            val inputSymbol = symbolProvider.toSymbol(inputShape)
+            // Populate required members with dummy values so the client doesn't reject the request
+            val requiredMembers = inputShape.members().filter { it.isRequired }
+            writer.openBlock("val input = #T {", inputSymbol)
+            requiredMembers.forEach { member ->
+                val memberSymbol = symbolProvider.toSymbol(member)
+                val defaultValue = memberSymbol.defaultUnboxedValue(writer)
+                if (defaultValue != null) {
+                    writer.write("#L = #L", member.defaultName(), defaultValue)
                 }
-                .dedent()
-                .write("")
+            }
+            writer.closeBlock("}")
             writer.write("$fieldName.#L(input)", opName)
         } else {
             writer.write("$fieldName.#L()", opName)
@@ -213,4 +231,17 @@ class HttpProtocolSerdeBenchmarkGenerator(
 
     private fun sanitizeName(id: String): String = id.replace(Regex("[^a-zA-Z0-9_]"), "_")
         .replaceFirstChar { it.lowercaseChar() }
+}
+
+private fun Symbol.defaultUnboxedValue(writer: KotlinWriter): String? = when (shape) {
+    is LongShape -> "0L"
+    is FloatShape -> "0.0f"
+    is DoubleShape -> "0.0"
+    is NumberShape -> "0"
+    is StringShape -> "\"\""
+    is BooleanShape -> "false"
+    is TimestampShape -> writer.format("#T.now()", RuntimeTypes.Core.Instant)
+    is ListShape -> "emptyList()"
+    is MapShape -> "emptyMap()"
+    else -> null
 }
