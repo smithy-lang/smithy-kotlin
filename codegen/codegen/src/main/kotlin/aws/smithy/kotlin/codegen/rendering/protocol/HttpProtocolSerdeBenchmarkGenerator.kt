@@ -153,11 +153,27 @@ class HttpProtocolSerdeBenchmarkGenerator(
 
     private fun renderResponseClientField(testCase: HttpResponseTestCase) {
         val fieldName = "client_${sanitizeName(testCase.id)}"
+        val bodyFieldName = "respBody_${sanitizeName(testCase.id)}"
 
+        // Pre-compute response body bytes once (not per benchmark invocation)
+        val body = testCase.body.orElse("").trim()
         writer.write("")
+        if (body.isNotBlank()) {
+            val isCborProtocol = testCase.protocol.name == "rpcv2Cbor"
+            if (isCborProtocol) {
+                writer.write(
+                    "private val #L = #S.#T()",
+                    bodyFieldName,
+                    body,
+                    RuntimeTypes.Core.Text.Encoding.decodeBase64Bytes,
+                )
+            } else {
+                writer.write("private val #L = #S.encodeToByteArray()", bodyFieldName, body)
+            }
+        }
+
         writer.openBlock("private val $fieldName = ${serviceSymbol.name} {")
 
-        // Build a TestEngine that returns the canned response from the test case
         writer.openBlock("httpClient = #T { _, request ->", RuntimeTypes.HttpTest.TestEngine)
 
         // Headers
@@ -171,20 +187,9 @@ class HttpProtocolSerdeBenchmarkGenerator(
             writer.write("val respHeaders = #T.Empty", RuntimeTypes.Http.Headers)
         }
 
-        // Body
-        val body = testCase.body.orElse("").trim()
+        // Body - reference pre-computed bytes
         if (body.isNotBlank()) {
-            val isCborProtocol = testCase.protocol.name == "rpcv2Cbor"
-            if (isCborProtocol) {
-                writer.write(
-                    "val respBody = #T.fromBytes(#S.#T())",
-                    RuntimeTypes.Http.HttpBody,
-                    body,
-                    RuntimeTypes.Core.Text.Encoding.decodeBase64Bytes,
-                )
-            } else {
-                writer.write("val respBody = #T.fromBytes(#S.encodeToByteArray())", RuntimeTypes.Http.HttpBody, body)
-            }
+            writer.write("val respBody = #T.fromBytes(#L)", RuntimeTypes.Http.HttpBody, bodyFieldName)
         } else {
             writer.write("val respBody = #T.Empty", RuntimeTypes.Http.HttpBody)
         }
