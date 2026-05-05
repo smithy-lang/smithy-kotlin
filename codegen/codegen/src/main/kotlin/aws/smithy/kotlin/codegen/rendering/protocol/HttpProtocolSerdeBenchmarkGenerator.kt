@@ -96,6 +96,7 @@ class HttpProtocolSerdeBenchmarkGenerator(
         writer.write("import kotlinx.benchmark.*")
         writer.write("import kotlinx.coroutines.runBlocking")
         writer.write("import org.openjdk.jmh.annotations.State")
+        writer.write("import aws.smithy.kotlin.runtime.http.engine.callContext")
     }
 
     private fun renderClientConfig() {
@@ -196,7 +197,7 @@ class HttpProtocolSerdeBenchmarkGenerator(
 
         writer.write("val resp = #T(#T.fromValue(${testCase.code}), respHeaders, respBody)", RuntimeTypes.Http.Response.HttpResponse, RuntimeTypes.Http.StatusCode)
         writer.write("val now = #T.now()", RuntimeTypes.Core.Instant)
-        writer.write("#T(request, resp, now, now)", RuntimeTypes.Http.HttpCall)
+        writer.write("#T(request, resp, now, now, callContext())", RuntimeTypes.Http.HttpCall)
         writer.closeBlock("}")
 
         renderClientConfig()
