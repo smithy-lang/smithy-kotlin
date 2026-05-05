@@ -50,7 +50,6 @@ class HttpProtocolSerdeBenchmarkGenerator(
         writer.write("@OutputTimeUnit(BenchmarkTimeUnit.NANOSECONDS)")
         writer.write("@Warmup(iterations = 5, time = 1, timeUnit = BenchmarkTimeUnit.SECONDS)")
         writer.write("@Measurement(iterations = 20, time = 1, timeUnit = BenchmarkTimeUnit.SECONDS)")
-        writer.write("@org.openjdk.jmh.annotations.Fork(value = 1, jvmArgs = [\"-Xmx4g\"])")
         writer.openBlock("class $className {")
 
         // Use TestEngine which returns HTTP 200 by default — the request will be serialized
@@ -78,7 +77,6 @@ class HttpProtocolSerdeBenchmarkGenerator(
         writer.write("@OutputTimeUnit(BenchmarkTimeUnit.NANOSECONDS)")
         writer.write("@Warmup(iterations = 5, time = 1, timeUnit = BenchmarkTimeUnit.SECONDS)")
         writer.write("@Measurement(iterations = 20, time = 1, timeUnit = BenchmarkTimeUnit.SECONDS)")
-        writer.write("@org.openjdk.jmh.annotations.Fork(value = 1, jvmArgs = [\"-Xmx4g\"])")
         writer.openBlock("class $className {")
 
         for (testCase in testCases) {
