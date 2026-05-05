@@ -2300,6 +2300,12 @@ public final class aws/smithy/kotlin/codegen/rendering/protocol/HttpProtocolClie
 	public static synthetic fun putIfAbsent$default (Laws/smithy/kotlin/codegen/core/KotlinWriter;Lsoftware/amazon/smithy/codegen/core/Symbol;Ljava/lang/String;Ljava/lang/String;ZILjava/lang/Object;)V
 }
 
+public final class aws/smithy/kotlin/codegen/rendering/protocol/HttpProtocolSerdeBenchmarkGenerator {
+	public fun <init> (Laws/smithy/kotlin/codegen/rendering/protocol/ProtocolGenerator$GenerationContext;Laws/smithy/kotlin/codegen/core/KotlinWriter;Lsoftware/amazon/smithy/model/Model;Lsoftware/amazon/smithy/codegen/core/SymbolProvider;Lsoftware/amazon/smithy/model/shapes/OperationShape;Lsoftware/amazon/smithy/model/shapes/ServiceShape;)V
+	public final fun renderRequestBenchmarkClass (Ljava/lang/String;Ljava/util/List;)V
+	public final fun renderResponseBenchmarkClass (Ljava/lang/String;Ljava/util/List;)V
+}
+
 public final class aws/smithy/kotlin/codegen/rendering/protocol/HttpProtocolTestGenerator {
 	public fun <init> (Laws/smithy/kotlin/codegen/rendering/protocol/ProtocolGenerator$GenerationContext;Laws/smithy/kotlin/codegen/rendering/protocol/HttpProtocolUnitTestRequestGenerator$Builder;Laws/smithy/kotlin/codegen/rendering/protocol/HttpProtocolUnitTestResponseGenerator$Builder;Laws/smithy/kotlin/codegen/rendering/protocol/HttpProtocolUnitTestErrorGenerator$Builder;Laws/smithy/kotlin/codegen/rendering/protocol/TestMemberDelta;)V
 	public synthetic fun <init> (Laws/smithy/kotlin/codegen/rendering/protocol/ProtocolGenerator$GenerationContext;Laws/smithy/kotlin/codegen/rendering/protocol/HttpProtocolUnitTestRequestGenerator$Builder;Laws/smithy/kotlin/codegen/rendering/protocol/HttpProtocolUnitTestResponseGenerator$Builder;Laws/smithy/kotlin/codegen/rendering/protocol/HttpProtocolUnitTestErrorGenerator$Builder;Laws/smithy/kotlin/codegen/rendering/protocol/TestMemberDelta;ILkotlin/jvm/internal/DefaultConstructorMarker;)V

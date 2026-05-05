@@ -16,6 +16,8 @@ import software.amazon.smithy.protocoltests.traits.HttpResponseTestsTrait
 import java.util.*
 import java.util.logging.Logger
 
+private const val SERDE_BENCHMARK_TAG = "serde-benchmark"
+
 enum class TestContainmentMode {
     RUN_TESTS,
     EXCLUDE_TESTS,
@@ -53,25 +55,41 @@ class HttpProtocolTestGenerator(
                 ?.filter(::isTestCaseAllowedForRunMode)
 
             requestTests?.let { testCases ->
-                val testOperationName = operation.id.name.replaceFirstChar { c -> c.uppercaseChar() }
-                val testClassName = "${testOperationName}RequestTest"
-                val testFilename = "$testClassName.kt"
-                ctx.delegator.useTestFileWriter(testFilename, ctx.settings.pkg.name) { writer ->
-                    logger.fine("Generating request protocol test cases for ${operation.id}")
+                val (benchmarkCases, regularCases) = testCases.partition { SERDE_BENCHMARK_TAG in it.tags }
 
-                    // import package.models.*
-                    writer.addImport("${ctx.settings.pkg.name}.model", "*")
+                // Generate regular protocol tests
+                if (regularCases.isNotEmpty()) {
+                    val testOperationName = operation.id.name.replaceFirstChar { c -> c.uppercaseChar() }
+                    val testClassName = "${testOperationName}RequestTest"
+                    val testFilename = "$testClassName.kt"
+                    ctx.delegator.useTestFileWriter(testFilename, ctx.settings.pkg.name) { writer ->
+                        logger.fine("Generating request protocol test cases for ${operation.id}")
+                        writer.addImport("${ctx.settings.pkg.name}.model", "*")
+                        requestTestBuilder
+                            .ctx(ctx)
+                            .writer(writer)
+                            .model(ctx.model)
+                            .symbolProvider(ctx.symbolProvider)
+                            .operation(operation)
+                            .service(ctx.service)
+                            .testCases(regularCases)
+                            .build()
+                            .renderTestClass(testClassName)
+                    }
+                }
 
-                    requestTestBuilder
-                        .ctx(ctx)
-                        .writer(writer)
-                        .model(ctx.model)
-                        .symbolProvider(ctx.symbolProvider)
-                        .operation(operation)
-                        .service(ctx.service)
-                        .testCases(testCases)
-                        .build()
-                        .renderTestClass(testClassName)
+                // Generate serde benchmark classes
+                if (benchmarkCases.isNotEmpty()) {
+                    val testOperationName = operation.id.name.replaceFirstChar { c -> c.uppercaseChar() }
+                    val benchmarkClassName = "${testOperationName}SerializationBenchmark"
+                    val benchmarkFilename = "$benchmarkClassName.kt"
+                    ctx.delegator.useTestFileWriter(benchmarkFilename, ctx.settings.pkg.name) { writer ->
+                        logger.fine("Generating serialization benchmark for ${operation.id}")
+                        writer.addImport("${ctx.settings.pkg.name}.model", "*")
+                        HttpProtocolSerdeBenchmarkGenerator(
+                            ctx, writer, ctx.model, ctx.symbolProvider, operation, ctx.service,
+                        ).renderRequestBenchmarkClass(benchmarkClassName, benchmarkCases)
+                    }
                 }
             }
 
@@ -81,23 +99,41 @@ class HttpProtocolTestGenerator(
                 ?.filter(::isTestCaseAllowedForRunMode)
 
             responseTests?.let { testCases ->
-                val testOperationName = operation.id.name.replaceFirstChar { c -> c.uppercaseChar() }
-                val testClassName = "${testOperationName}ResponseTest"
-                val testFilename = "$testClassName.kt"
-                ctx.delegator.useTestFileWriter(testFilename, ctx.settings.pkg.name) { writer ->
-                    logger.fine("Generating response protocol test cases for ${operation.id}")
+                val (benchmarkCases, regularCases) = testCases.partition { SERDE_BENCHMARK_TAG in it.tags }
 
-                    writer.addImport("${ctx.settings.pkg.name}.model", "*")
-                    responseTestBuilder
-                        .ctx(ctx)
-                        .writer(writer)
-                        .model(ctx.model)
-                        .symbolProvider(ctx.symbolProvider)
-                        .operation(operation)
-                        .service(ctx.service)
-                        .testCases(testCases)
-                        .build()
-                        .renderTestClass(testClassName)
+                // Generate regular protocol tests
+                if (regularCases.isNotEmpty()) {
+                    val testOperationName = operation.id.name.replaceFirstChar { c -> c.uppercaseChar() }
+                    val testClassName = "${testOperationName}ResponseTest"
+                    val testFilename = "$testClassName.kt"
+                    ctx.delegator.useTestFileWriter(testFilename, ctx.settings.pkg.name) { writer ->
+                        logger.fine("Generating response protocol test cases for ${operation.id}")
+                        writer.addImport("${ctx.settings.pkg.name}.model", "*")
+                        responseTestBuilder
+                            .ctx(ctx)
+                            .writer(writer)
+                            .model(ctx.model)
+                            .symbolProvider(ctx.symbolProvider)
+                            .operation(operation)
+                            .service(ctx.service)
+                            .testCases(regularCases)
+                            .build()
+                            .renderTestClass(testClassName)
+                    }
+                }
+
+                // Generate serde benchmark classes
+                if (benchmarkCases.isNotEmpty()) {
+                    val testOperationName = operation.id.name.replaceFirstChar { c -> c.uppercaseChar() }
+                    val benchmarkClassName = "${testOperationName}DeserializationBenchmark"
+                    val benchmarkFilename = "$benchmarkClassName.kt"
+                    ctx.delegator.useTestFileWriter(benchmarkFilename, ctx.settings.pkg.name) { writer ->
+                        logger.fine("Generating deserialization benchmark for ${operation.id}")
+                        writer.addImport("${ctx.settings.pkg.name}.model", "*")
+                        HttpProtocolSerdeBenchmarkGenerator(
+                            ctx, writer, ctx.model, ctx.symbolProvider, operation, ctx.service,
+                        ).renderResponseBenchmarkClass(benchmarkClassName, benchmarkCases)
+                    }
                 }
             }
 

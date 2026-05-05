@@ -23,6 +23,7 @@ object RuntimeTypes {
         val StatusCode = symbol("HttpStatusCode")
         val toSdkByteReadChannel = symbol("toSdkByteReadChannel")
         val Headers = symbol("Headers")
+        val HeadersBuilder = symbol("HeadersBuilder")
 
         object Util : RuntimeTypePackage(KotlinDependency.HTTP, "util") {
             val encodeLabel = symbol("encodeLabel")
