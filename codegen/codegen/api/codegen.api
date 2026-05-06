@@ -2152,6 +2152,21 @@ public final class aws/smithy/kotlin/codegen/rendering/endpoints/discovery/Endpo
 	public final fun isOptionalFor (Laws/smithy/kotlin/codegen/core/CodegenContext;)Z
 }
 
+public final class aws/smithy/kotlin/codegen/rendering/longpoll/LongPollingIntegration : aws/smithy/kotlin/codegen/integration/KotlinIntegration {
+	public fun <init> ()V
+	public fun additionalServiceConfigProps (Laws/smithy/kotlin/codegen/core/CodegenContext;)Ljava/util/List;
+	public fun authSchemes (Laws/smithy/kotlin/codegen/rendering/protocol/ProtocolGenerator$GenerationContext;)Ljava/util/List;
+	public fun customizeEndpointResolution (Laws/smithy/kotlin/codegen/rendering/protocol/ProtocolGenerator$GenerationContext;)Laws/smithy/kotlin/codegen/rendering/endpoints/EndpointCustomization;
+	public fun customizeMiddleware (Laws/smithy/kotlin/codegen/rendering/protocol/ProtocolGenerator$GenerationContext;Ljava/util/List;)Ljava/util/List;
+	public fun decorateSymbolProvider (Laws/smithy/kotlin/codegen/KotlinSettings;Lsoftware/amazon/smithy/model/Model;Lsoftware/amazon/smithy/codegen/core/SymbolProvider;)Lsoftware/amazon/smithy/codegen/core/SymbolProvider;
+	public fun enabledForService (Lsoftware/amazon/smithy/model/Model;Laws/smithy/kotlin/codegen/KotlinSettings;)Z
+	public fun getOrder ()B
+	public fun getProtocolGenerators ()Ljava/util/List;
+	public fun getSectionWriters ()Ljava/util/List;
+	public fun preprocessModel (Lsoftware/amazon/smithy/model/Model;Laws/smithy/kotlin/codegen/KotlinSettings;)Lsoftware/amazon/smithy/model/Model;
+	public fun writeAdditionalFiles (Laws/smithy/kotlin/codegen/core/CodegenContext;Laws/smithy/kotlin/codegen/core/KotlinDelegator;)V
+}
+
 public final class aws/smithy/kotlin/codegen/rendering/protocol/ApplicationProtocol {
 	public static final field Companion Laws/smithy/kotlin/codegen/rendering/protocol/ApplicationProtocol$Companion;
 	public fun <init> (Ljava/lang/String;Lsoftware/amazon/smithy/codegen/core/Symbol;Lsoftware/amazon/smithy/codegen/core/Symbol;)V

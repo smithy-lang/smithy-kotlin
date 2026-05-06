@@ -1816,8 +1816,10 @@ public final class aws/smithy/kotlin/runtime/retries/RetryContext : kotlin/corou
 	public fun <init> ()V
 	public final fun getErrorType ()Laws/smithy/kotlin/runtime/retries/policy/RetryErrorType;
 	public final fun getRetryAfter-FghU774 ()Lkotlin/time/Duration;
+	public final fun isLongPolling ()Z
 	public final fun reset ()V
 	public final fun setErrorType (Laws/smithy/kotlin/runtime/retries/policy/RetryErrorType;)V
+	public final fun setLongPolling (Z)V
 	public final fun setRetryAfter-BwNAW2A (Lkotlin/time/Duration;)V
 }
 
@@ -1877,6 +1879,7 @@ public class aws/smithy/kotlin/runtime/retries/StandardRetryStrategy$Config : aw
 	public static final field DEFAULT_MAX_ATTEMPTS I
 	public fun <init> (Laws/smithy/kotlin/runtime/retries/StandardRetryStrategy$Config$Builder;)V
 	public final fun getDelayProvider ()Laws/smithy/kotlin/runtime/retries/delay/DelayProvider;
+	public final fun getEnableLongPollingBackoff ()Z
 	public fun getMaxAttempts ()I
 	public final fun getTokenBucket ()Laws/smithy/kotlin/runtime/retries/delay/RetryTokenBucket;
 	public fun toBuilderApplicator ()Lkotlin/jvm/functions/Function1;
@@ -1887,9 +1890,11 @@ public class aws/smithy/kotlin/runtime/retries/StandardRetryStrategy$Config$Buil
 	public final fun delayProvider (Laws/smithy/kotlin/runtime/util/DslFactory;Lkotlin/jvm/functions/Function1;)V
 	public final fun delayProvider (Lkotlin/jvm/functions/Function1;)V
 	public final fun getDelayProvider ()Laws/smithy/kotlin/runtime/retries/delay/DelayProvider;
+	public final fun getEnableLongPollingBackoff ()Z
 	public fun getMaxAttempts ()I
 	public final fun getTokenBucket ()Laws/smithy/kotlin/runtime/retries/delay/RetryTokenBucket;
 	public final fun setDelayProvider (Laws/smithy/kotlin/runtime/retries/delay/DelayProvider;)V
+	public final fun setEnableLongPollingBackoff (Z)V
 	public fun setMaxAttempts (I)V
 	public final fun setTokenBucket (Laws/smithy/kotlin/runtime/retries/delay/RetryTokenBucket;)V
 	public final fun tokenBucket (Laws/smithy/kotlin/runtime/util/DslFactory;Lkotlin/jvm/functions/Function1;)V

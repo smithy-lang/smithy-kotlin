@@ -42,6 +42,7 @@ class NewStandardRetryIntegrationTest {
 
     private fun buildStrategy(given: NewStandardGiven, tokenBucket: StandardRetryTokenBucket) = StandardRetryStrategy {
         given.maxAttempts?.let { maxAttempts = it }
+        if (given.longPolling) enableLongPollingBackoff = true
         this.tokenBucket = tokenBucket
         delayProvider {
             initialDelay = defaultDelayConfig.initialDelay
@@ -209,6 +210,58 @@ class NewStandardRetryIntegrationTest {
             assertEquals(tc.expectedFinalQuota, tokenBucket.capacity, "Final quota mismatch for '$name'")
         }
     }
+
+    /**
+     * Long-polling operations back off even when retry quota is exhausted.
+     * Also verifies that long-polling does NOT add delays for max_attempts_exceeded, success, or non-retryable errors.
+     */
+    @OptIn(ExperimentalCoroutinesApi::class)
+    @Test
+    fun testLongPollingCases() = runTest {
+        val testCases = newStandardRetryLongPollingTestCases.deserializeYaml(NewStandardRetryTestCase.serializer())
+        testCases.forEach { (name, tc) ->
+            val tokenBucket = sepTokenBucket(tc.given.initialRetryTokens)
+            val retryer = buildStrategy(tc.given, tokenBucket)
+
+            val policy = NewSepRetryPolicy(tc.responses)
+            val retryCtx = RetryContext().apply { isLongPolling = tc.given.longPolling }
+            val block = object {
+                var index = 0
+                suspend fun doIt(): Ok {
+                    val resp = tc.responses[index++]
+                    currentCoroutineContext()[RetryContext]!!.retryAfter = resp.response.parseRetryAfter()
+                    return resp.response.toResult()
+                }
+            }::doIt
+
+            val startTimeMs = currentTime
+            val result = runCatching { withContext(retryCtx) { retryer.retry(policy, block) } }
+            val totalDelayMs = currentTime - startTimeMs
+
+            val finalState = tc.responses.last().expected
+            when (finalState.outcome) {
+                NewStandardTestOutcome.RetryQuotaExceeded,
+                NewStandardTestOutcome.MaxAttemptsExceeded,
+                NewStandardTestOutcome.FailRequest,
+                -> {
+                    assertIs<HttpCodeException>(result.exceptionOrNull(), "Expected exception for '$name'")
+                }
+                NewStandardTestOutcome.Success -> {
+                    assertTrue(result.isSuccess, "Expected success for '$name' but got ${result.exceptionOrNull()}")
+                }
+                else -> fail("Unexpected final outcome for '$name': ${finalState.outcome}")
+            }
+
+            finalState.retryQuota?.let {
+                assertEquals(it, tokenBucket.capacity, "Final quota mismatch for '$name'")
+            }
+
+            val expectedDelayMs = tc.responses
+                .mapNotNull { it.expected.delay }
+                .sumOf { (it * 1000).toLong() }
+            assertEquals(expectedDelayMs, totalDelayMs, "Delay mismatch for '$name'")
+        }
+    }
 }
 
 private class NewSepRetryPolicy(private val responses: List<NewStandardResponseAndExpectation>) : RetryPolicy<Ok> {
@@ -219,7 +272,8 @@ private class NewSepRetryPolicy(private val responses: List<NewStandardResponseA
         return when {
             result.isSuccess -> RetryDirective.TerminateAndSucceed
             response.errorCode == "Throttling" -> RetryDirective.RetryError(RetryErrorType.Throttling)
-            else -> RetryDirective.RetryError(RetryErrorType.ServerSide)
+            response.statusCode in setOf(500, 502, 503, 504) -> RetryDirective.RetryError(RetryErrorType.ServerSide)
+            else -> RetryDirective.TerminateAndFail
         }
     }
 }

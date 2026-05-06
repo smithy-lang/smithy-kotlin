@@ -82,13 +82,19 @@ public open class StandardRetryStrategy(override val config: Config = Config.def
                     } else {
                         // Prep for another loop — set errorType on context for the delay provider
                         currentCoroutineContext()[RetryContext]?.let { it.errorType = evaluation.reason }
+                        val nextToken = fromToken.scheduleRetry(evaluation.reason)
                         config.delayProvider.backoff(attempt)
-                        fromToken.scheduleRetry(evaluation.reason)
+                        nextToken
                     }
             }.also {
                 beforeRetry(attempt + 1, callResult, evaluation, policy)
             }
         } catch (ex: RetryCapacityExceededException) {
+            // Long-polling operations back off even when retry quota is exhausted
+            if (config.enableLongPollingBackoff && currentCoroutineContext()[RetryContext]?.isLongPolling == true) {
+                currentCoroutineContext()[RetryContext]?.let { it.errorType = (evaluation as RetryDirective.RetryError).reason }
+                config.delayProvider.backoff(attempt)
+            }
             throwCapacityExceeded(ex, attempt, callResult)
         } catch (ex: Throwable) {
             fromToken.notifyFailure()
@@ -229,11 +235,17 @@ public open class StandardRetryStrategy(override val config: Config = Config.def
          */
         public val tokenBucket: RetryTokenBucket = builder.tokenBucketProperty.supply()
 
+        /**
+         * Whether long-polling operations should back off even when retry quota is exhausted.
+         */
+        public val enableLongPollingBackoff: Boolean = builder.enableLongPollingBackoff
+
         override fun toBuilderApplicator(): RetryStrategy.Config.Builder.() -> Unit = {
             if (this is Builder) {
                 delayProvider = this@Config.delayProvider
                 maxAttempts = this@Config.maxAttempts
                 tokenBucket = this@Config.tokenBucket
+                enableLongPollingBackoff = this@Config.enableLongPollingBackoff
             }
         }
 
@@ -275,6 +287,11 @@ public open class StandardRetryStrategy(override val config: Config = Config.def
              * The maximum number of attempts to make (including the first attempt)
              */
             public override var maxAttempts: Int = DEFAULT_MAX_ATTEMPTS
+
+            /**
+             * Whether long-polling operations should back off even when retry quota is exhausted.
+             */
+            public var enableLongPollingBackoff: Boolean = false
 
             internal val tokenBucketProperty = DslBuilderProperty<RetryTokenBucket.Config.Builder, RetryTokenBucket>(
                 StandardRetryTokenBucket,

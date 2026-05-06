@@ -28,6 +28,12 @@ public class RetryContext : AbstractCoroutineContextElement(Key) {
     public var errorType: RetryErrorType? = null
 
     /**
+     * Whether the current operation is a long-polling operation. Long-polling operations always
+     * back off when retryable, even if the retry quota is exhausted.
+     */
+    public var isLongPolling: Boolean = false
+
+    /**
      * Resets all per-attempt state so that stale values from a previous attempt are never carried forward.
      */
     public fun reset() {

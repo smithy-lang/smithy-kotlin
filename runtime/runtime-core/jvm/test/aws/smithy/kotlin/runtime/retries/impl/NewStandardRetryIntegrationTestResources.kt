@@ -284,8 +284,93 @@ val newStandardRetryIntegrationTestCases = mapOf(
                   retry_quota: 500
         """.trimIndent(),
 
-    // NOTE: Long-polling backoff test case ("Long-Polling Backoff When Token Bucket Empty")
-    // is not yet implemented — long-polling support is deferred.
+)
+
+val newStandardRetryLongPollingTestCases = mapOf(
+    "Long-polling backoff after transient error when token bucket empty" to // language=YAML
+        """
+            given:
+              service: sqs
+              long_polling: true
+              initial_retry_tokens: 0
+              exponential_base: 1
+            responses:
+              - response:
+                  status_code: 500
+                expected:
+                  outcome: retry_quota_exceeded
+                  retry_quota: 0
+                  delay: 0.05
+        """.trimIndent(),
+
+    "Long-polling backoff after throttling error when token bucket empty" to // language=YAML
+        """
+            given:
+              service: sqs
+              long_polling: true
+              initial_retry_tokens: 0
+              exponential_base: 1
+            responses:
+              - response:
+                  status_code: 400
+                  error_code: Throttling
+                expected:
+                  outcome: retry_quota_exceeded
+                  retry_quota: 0
+                  delay: 1.0
+        """.trimIndent(),
+
+    "Long-polling max attempts exceeded must NOT delay" to // language=YAML
+        """
+            given:
+              service: sqs
+              long_polling: true
+              max_attempts: 2
+              exponential_base: 1
+            responses:
+              - response:
+                  status_code: 500
+                expected:
+                  outcome: retry_request
+                  delay: 0.05
+              - response:
+                  status_code: 500
+                expected:
+                  outcome: max_attempts_exceeded
+        """.trimIndent(),
+
+    "Long-polling success must NOT delay" to // language=YAML
+        """
+            given:
+              service: sqs
+              long_polling: true
+              max_attempts: 2
+              exponential_base: 1
+            responses:
+              - response:
+                  status_code: 500
+                expected:
+                  outcome: retry_request
+                  delay: 0.05
+              - response:
+                  status_code: 200
+                expected:
+                  outcome: success
+        """.trimIndent(),
+
+    "Long-polling non-retryable errors must NOT delay" to // language=YAML
+        """
+            given:
+              service: sqs
+              long_polling: true
+              max_attempts: 2
+              exponential_base: 1
+            responses:
+              - response:
+                  status_code: 404
+                expected:
+                  outcome: fail_request
+        """.trimIndent(),
 )
 
 val newStandardRetryMultiInvocationTestCases = mapOf(
@@ -373,6 +458,7 @@ data class NewStandardGiven(
     @SerialName("exponential_base") val exponentialBase: Double? = null,
     @SerialName("max_backoff_time") val maxBackoffTime: Double? = null,
     val service: String? = null,
+    @SerialName("long_polling") val longPolling: Boolean = false,
 )
 
 @Serializable
@@ -388,7 +474,7 @@ data class NewStandardResponse(
 @Serializable
 data class NewStandardExpectation(
     val outcome: NewStandardTestOutcome,
-    @SerialName("retry_quota") val retryQuota: Int,
+    @SerialName("retry_quota") val retryQuota: Int? = null,
     val delay: Double? = null,
 )
 
@@ -405,6 +491,9 @@ enum class NewStandardTestOutcome {
 
     @SerialName("success")
     Success,
+
+    @SerialName("fail_request")
+    FailRequest,
 }
 
 @Serializable
