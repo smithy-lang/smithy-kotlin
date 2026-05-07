@@ -52,12 +52,18 @@ class HttpProtocolSerdeBenchmarkGenerator(
         writer.write("@Measurement(iterations = 20, time = 1, timeUnit = BenchmarkTimeUnit.SECONDS)")
         writer.openBlock("class $className {")
 
-        // Use TestEngine which returns HTTP 200 by default — the request will be serialized
-        // and sent to the engine. We catch any exception from the operation (e.g. deserialization
-        // of the empty response may fail) since we only care about measuring serialization.
+        // Nested exception object to halt the pipeline at the transport boundary.
+        // Pre-allocated with no stack trace to minimize measurement noise.
+        writer.write("")
+        writer.openBlock("private object HaltException : Exception() {")
+        writer.write("override fun fillInStackTrace(): Throwable = this")
+        writer.closeBlock("}")
+
+        // Use a TestEngine that throws immediately — this ensures the benchmark measures
+        // only serialization (up to the transport boundary) without any response deserialization.
         writer.write("")
         writer.openBlock("private val client = ${serviceSymbol.name} {")
-        writer.write("httpClient = #T()", RuntimeTypes.HttpTest.TestEngine)
+        writer.write("httpClient = #T { _, _ -> throw HaltException }", RuntimeTypes.HttpTest.TestEngine)
         renderClientConfig()
         writer.closeBlock("}")
 
@@ -142,11 +148,11 @@ class HttpProtocolSerdeBenchmarkGenerator(
                 .write("")
             writer.openBlock("try {")
             writer.write("client.#L(input)", opName)
-            writer.closeBlock("} catch (_: Exception) {}")
+            writer.closeBlock("} catch (_: HaltException) {}")
         } else {
             writer.openBlock("try {")
             writer.write("client.#L()", opName)
-            writer.closeBlock("} catch (_: Exception) {}")
+            writer.closeBlock("} catch (_: HaltException) {}")
         }
 
         writer.closeBlock("}")
