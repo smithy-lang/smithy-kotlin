@@ -1,5 +1,14 @@
 # Changelog
 
+## [1.6.14] - 05/08/2026
+
+### Features
+* Add standard retry strategy with updated exponential backoff, retry quotas, `x-amz-retry-after` header support, and service-specific behavior for DynamoDB. Gated behind the `SMITHY_NEW_RETRIES_2026` feature flag. See the [announcement](https://github.com/aws/aws-sdk-kotlin/discussions/1885) for more details.
+* Add retry logic for long polling operations. See the [announcement](https://github.com/aws/aws-sdk-kotlin/discussions/1885) for more details.
+
+### Fixes
+* Erase empty file if setting permissions fails
+
 ## [1.6.13] - 04/28/2026
 
 ### Miscellaneous
