@@ -1,0 +1,5 @@
+{
+    "id": "669afdfa-3db5-4436-b029-e46bc508aa18",
+    "type": "bugfix",
+    "description": "Erase empty file if setting permissions fails"
+}

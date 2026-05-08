@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.6.13] - 04/28/2026
+
+### Miscellaneous
+* Bumping Kotlin version to 2.3.20
+
 ## [1.6.12] - 04/20/2026
 
 ## [1.6.11] - 04/17/2026
