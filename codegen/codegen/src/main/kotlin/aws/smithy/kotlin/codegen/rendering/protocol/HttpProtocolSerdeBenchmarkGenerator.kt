@@ -22,8 +22,9 @@ import software.amazon.smithy.protocoltests.traits.HttpResponseTestCase
 import software.amazon.smithy.rulesengine.traits.EndpointRuleSetTrait
 
 /**
- * Generates JMH benchmark classes for protocol test cases tagged with "serde-benchmark".
- * Follows the same pattern as the endpoint resolution benchmarks in aws-sdk-kotlin.
+ * Generates benchmark classes for protocol test cases tagged with "serde-benchmark".
+ * Uses a custom timing harness with interceptor-based measurement instead of JMH,
+ * capturing precise serialization/deserialization timestamps at the SDK boundary.
  */
 class HttpProtocolSerdeBenchmarkGenerator(
     private val ctx: ProtocolGenerator.GenerationContext,
@@ -45,32 +46,56 @@ class HttpProtocolSerdeBenchmarkGenerator(
         writeImports()
 
         writer.write("")
-        writer.write("@State(Scope.Benchmark)")
-        writer.write("@BenchmarkMode(Mode.AverageTime)")
-        writer.write("@OutputTimeUnit(BenchmarkTimeUnit.NANOSECONDS)")
-        writer.write("@Warmup(iterations = 5, time = 1, timeUnit = BenchmarkTimeUnit.SECONDS)")
-        writer.write("@Measurement(iterations = 20, time = 1, timeUnit = BenchmarkTimeUnit.SECONDS)")
         writer.openBlock("class $className {")
-
-        // Nested exception object to halt the pipeline at the transport boundary.
-        // Pre-allocated with no stack trace to minimize measurement noise.
         writer.write("")
-        writer.openBlock("private object HaltException : Exception() {")
-        writer.write("override fun fillInStackTrace(): Throwable = this")
-        writer.closeBlock("}")
-
-        // Use a TestEngine that throws immediately — this ensures the benchmark measures
-        // only serialization (up to the transport boundary) without any response deserialization.
+        writer.write("private val interceptor = BenchmarkInterceptor()")
         writer.write("")
+
+        // Client with TestEngine returning 200 OK (no exception needed)
         writer.openBlock("private val client = ${serviceSymbol.name} {")
-        writer.write("httpClient = #T { _, _ -> throw HaltException }", RuntimeTypes.HttpTest.TestEngine)
+        writer.write("httpClient = #T { _, request ->", RuntimeTypes.HttpTest.TestEngine)
+        if (isRpcV2Cbor()) {
+            writer.write("    val respHeaders = #T().apply { append(\"smithy-protocol\", \"rpc-v2-cbor\") }.build()", RuntimeTypes.Http.HeadersBuilder)
+            writer.write("    val resp = #T(#T.OK, respHeaders, #T.Empty)", RuntimeTypes.Http.Response.HttpResponse, RuntimeTypes.Http.StatusCode, RuntimeTypes.Http.HttpBody)
+        } else {
+            writer.write("    val resp = #T(#T.OK, #T.Empty, #T.Empty)", RuntimeTypes.Http.Response.HttpResponse, RuntimeTypes.Http.StatusCode, RuntimeTypes.Http.Headers, RuntimeTypes.Http.HttpBody)
+        }
+        writer.write("    val now = #T.now()", RuntimeTypes.Core.Instant)
+        writer.write("    #T(request, resp, now, now, callContext())", RuntimeTypes.Http.HttpCall)
+        writer.write("}")
         renderClientConfig()
+        writer.write("interceptors.add(interceptor)")
         writer.closeBlock("}")
 
+        // Pre-constructed inputs (outside timed loop)
         for (testCase in testCases) {
-            renderRequestBenchmark(testCase)
+            renderInputField(testCase)
         }
 
+        // suspend fun benchmarks(): List<BenchmarkResult>
+        writer.write("")
+        writer.openBlock("suspend fun benchmarks(): List<BenchmarkResult> {")
+        writer.write("val results = mutableListOf<BenchmarkResult>()")
+        for (testCase in testCases) {
+            val fieldName = "input_${sanitizeName(testCase.id)}"
+            writer.openBlock("results.add(BenchmarkHarness.run(")
+            writer.write("id = #S,", testCase.id)
+            writer.write("interceptor = interceptor,")
+            writer.write("extractNanos = BenchmarkInterceptor::serializationNanos,")
+            writer.closeBlock(") { client.#L($fieldName) })", opName)
+        }
+        writer.write("return results")
+        writer.closeBlock("}")
+
+        writer.closeBlock("}")
+
+        // main() function
+        writer.write("")
+        writer.openBlock("fun main() = kotlinx.coroutines.runBlocking {")
+        writer.write("val benchmark = $className()")
+        writer.write("val results = benchmark.benchmarks()")
+        writer.write("val metadata = BenchmarkMetadata(smithyKotlinVersion = #S, sdkVersion = #S)", "SNAPSHOT", "SNAPSHOT")
+        writer.write("println(BenchmarkHarness.toJson(metadata, results))")
         writer.closeBlock("}")
     }
 
@@ -78,35 +103,69 @@ class HttpProtocolSerdeBenchmarkGenerator(
         writeImports()
 
         writer.write("")
-        writer.write("@State(Scope.Benchmark)")
-        writer.write("@BenchmarkMode(Mode.AverageTime)")
-        writer.write("@OutputTimeUnit(BenchmarkTimeUnit.NANOSECONDS)")
-        writer.write("@Warmup(iterations = 5, time = 1, timeUnit = BenchmarkTimeUnit.SECONDS)")
-        writer.write("@Measurement(iterations = 20, time = 1, timeUnit = BenchmarkTimeUnit.SECONDS)")
         writer.openBlock("class $className {")
+        writer.write("")
+        writer.write("private val interceptor = BenchmarkInterceptor()")
 
+        // Per-test-case clients with canned responses
         for (testCase in testCases) {
             renderResponseClientField(testCase)
         }
 
-        writer.write("")
-
-        for (testCase in testCases) {
-            renderResponseBenchmark(testCase)
+        // Pre-constructed inputs (outside timed loop)
+        if (operation.input.isPresent) {
+            val inputShape = model.expectShape<StructureShape>(operation.input.get())
+            val inputSymbol = symbolProvider.toSymbol(inputShape)
+            val requiredMembers = inputShape.members().filter { it.isRequired }
+            writer.write("")
+            writer.openBlock("private val input = #T {", inputSymbol)
+            requiredMembers.forEach { member ->
+                val memberSymbol = symbolProvider.toSymbol(member)
+                val defaultValue = memberSymbol.defaultUnboxedValue(writer)
+                if (defaultValue != null) {
+                    writer.write("#L = #L", member.defaultName(), defaultValue)
+                }
+            }
+            writer.closeBlock("}")
         }
 
+        // suspend fun benchmarks(): List<BenchmarkResult>
+        writer.write("")
+        writer.openBlock("suspend fun benchmarks(): List<BenchmarkResult> {")
+        writer.write("val results = mutableListOf<BenchmarkResult>()")
+        for (testCase in testCases) {
+            val clientField = "client_${sanitizeName(testCase.id)}"
+            val inputArg = if (operation.input.isPresent) "input" else ""
+            writer.openBlock("results.add(BenchmarkHarness.run(")
+            writer.write("id = #S,", testCase.id)
+            writer.write("interceptor = interceptor,")
+            writer.write("extractNanos = BenchmarkInterceptor::deserializationNanos,")
+            writer.closeBlock(") { $clientField.#L($inputArg) })", opName)
+        }
+        writer.write("return results")
+        writer.closeBlock("}")
+
+        writer.closeBlock("}")
+
+        // main() function
+        writer.write("")
+        writer.openBlock("fun main() = kotlinx.coroutines.runBlocking {")
+        writer.write("val benchmark = $className()")
+        writer.write("val results = benchmark.benchmarks()")
+        writer.write("val metadata = BenchmarkMetadata(smithyKotlinVersion = #S, sdkVersion = #S)", "SNAPSHOT", "SNAPSHOT")
+        writer.write("println(BenchmarkHarness.toJson(metadata, results))")
         writer.closeBlock("}")
     }
 
     private fun writeImports() {
-        writer.write("import kotlinx.benchmark.*")
-        writer.write("import kotlinx.coroutines.runBlocking")
-        writer.write("import org.openjdk.jmh.annotations.State")
+        writer.write("import aws.sdk.kotlin.benchmarks.serde.BenchmarkHarness")
+        writer.write("import aws.sdk.kotlin.benchmarks.serde.BenchmarkInterceptor")
+        writer.write("import aws.sdk.kotlin.benchmarks.serde.BenchmarkMetadata")
+        writer.write("import aws.sdk.kotlin.benchmarks.serde.BenchmarkResult")
         writer.write("import aws.smithy.kotlin.runtime.http.engine.callContext")
     }
 
     private fun renderClientConfig() {
-        // Per spec: explicit region, endpoint, and mock credentials
         writer.write("region = \"us-east-1\"")
         writer.write("credentialsProvider = aws.sdk.kotlin.runtime.auth.credentials.StaticCredentialsProvider {")
         writer.write("    accessKeyId = \"BENCHMARK\"")
@@ -128,17 +187,13 @@ class HttpProtocolSerdeBenchmarkGenerator(
         }
     }
 
-    private fun renderRequestBenchmark(testCase: HttpRequestTestCase) {
-        val methodName = sanitizeName(testCase.id)
-
-        testCase.documentation.ifPresent { writer.dokka(it) }
-        writer.write("")
-        writer.write("@Benchmark")
-        writer.openBlock("fun $methodName() = runBlocking {")
+    private fun renderInputField(testCase: HttpRequestTestCase) {
+        val fieldName = "input_${sanitizeName(testCase.id)}"
 
         if (operation.input.isPresent) {
             val inputShape = model.expectShape<StructureShape>(operation.input.get())
-            writer.writeInline("val input = ")
+            writer.write("")
+            writer.writeInline("private val $fieldName = ")
                 .indent()
                 .call {
                     ShapeValueGenerator(model, symbolProvider, explicitReceiver = true)
@@ -146,23 +201,13 @@ class HttpProtocolSerdeBenchmarkGenerator(
                 }
                 .dedent()
                 .write("")
-            writer.openBlock("try {")
-            writer.write("client.#L(input)", opName)
-            writer.closeBlock("} catch (_: HaltException) {}")
-        } else {
-            writer.openBlock("try {")
-            writer.write("client.#L()", opName)
-            writer.closeBlock("} catch (_: HaltException) {}")
         }
-
-        writer.closeBlock("}")
     }
 
     private fun renderResponseClientField(testCase: HttpResponseTestCase) {
         val fieldName = "client_${sanitizeName(testCase.id)}"
         val bodyFieldName = "respBody_${sanitizeName(testCase.id)}"
 
-        // Pre-compute response body bytes once (not per benchmark invocation)
         val body = testCase.body.orElse("").trim()
         writer.write("")
         if (body.isNotBlank()) {
@@ -183,7 +228,6 @@ class HttpProtocolSerdeBenchmarkGenerator(
 
         writer.openBlock("httpClient = #T { _, request ->", RuntimeTypes.HttpTest.TestEngine)
 
-        // Headers
         if (testCase.headers.isNotEmpty()) {
             writer.openBlock("val respHeaders = #T().apply {", RuntimeTypes.Http.HeadersBuilder)
             for ((key, value) in testCase.headers) {
@@ -194,7 +238,6 @@ class HttpProtocolSerdeBenchmarkGenerator(
             writer.write("val respHeaders = #T.Empty", RuntimeTypes.Http.Headers)
         }
 
-        // Body - reference pre-computed bytes
         if (body.isNotBlank()) {
             writer.write("val respBody = #T.fromBytes(#L)", RuntimeTypes.Http.HttpBody, bodyFieldName)
         } else {
@@ -207,39 +250,12 @@ class HttpProtocolSerdeBenchmarkGenerator(
         writer.closeBlock("}")
 
         renderClientConfig()
+        writer.write("interceptors.add(interceptor)")
         writer.closeBlock("}")
     }
 
-    private fun renderResponseBenchmark(testCase: HttpResponseTestCase) {
-        val methodName = sanitizeName(testCase.id)
-        val fieldName = "client_$methodName"
-
-        testCase.documentation.ifPresent { writer.dokka(it) }
-        writer.write("")
-        writer.write("@Benchmark")
-        writer.openBlock("fun $methodName() = runBlocking {")
-
-        if (operation.input.isPresent) {
-            val inputShape = model.expectShape<StructureShape>(operation.input.get())
-            val inputSymbol = symbolProvider.toSymbol(inputShape)
-            // Populate required members with dummy values so the client doesn't reject the request
-            val requiredMembers = inputShape.members().filter { it.isRequired }
-            writer.openBlock("val input = #T {", inputSymbol)
-            requiredMembers.forEach { member ->
-                val memberSymbol = symbolProvider.toSymbol(member)
-                val defaultValue = memberSymbol.defaultUnboxedValue(writer)
-                if (defaultValue != null) {
-                    writer.write("#L = #L", member.defaultName(), defaultValue)
-                }
-            }
-            writer.closeBlock("}")
-            writer.write("$fieldName.#L(input)", opName)
-        } else {
-            writer.write("$fieldName.#L()", opName)
-        }
-
-        writer.closeBlock("}")
-    }
+    private fun isRpcV2Cbor(): Boolean =
+        serviceShape.allTraits.keys.any { it.toString().contains("rpcv2Cbor") }
 
     private fun sanitizeName(id: String): String = id.replace(Regex("[^a-zA-Z0-9_]"), "_")
         .replaceFirstChar { it.lowercaseChar() }
