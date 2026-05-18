@@ -37,6 +37,13 @@ internal expect object SystemDefaultProvider : PlatformProvider {
     override fun osInfo(): OperatingSystem
     override val filePathSeparator: String
     override fun fileExists(path: String): Boolean
+    override fun write(
+        path: String,
+        data: ByteArray,
+        writeType: WriteType,
+        mustExist: Boolean,
+        permissions: String?,
+    )
     override fun getAllEnvVars(): Map<String, String>
     override fun getAllProperties(): Map<String, String>
     override fun getProperty(key: String): String?
