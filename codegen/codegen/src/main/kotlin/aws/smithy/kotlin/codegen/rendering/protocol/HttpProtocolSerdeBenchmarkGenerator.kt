@@ -163,6 +163,7 @@ class HttpProtocolSerdeBenchmarkGenerator(
         writer.write("import aws.sdk.kotlin.benchmarks.serde.BenchmarkMetadata")
         writer.write("import aws.sdk.kotlin.benchmarks.serde.BenchmarkResult")
         writer.write("import aws.smithy.kotlin.runtime.http.engine.callContext")
+        writer.write("import aws.smithy.kotlin.runtime.smithy.test.encodeAsByteArray")
     }
 
     private fun renderClientConfig() {
