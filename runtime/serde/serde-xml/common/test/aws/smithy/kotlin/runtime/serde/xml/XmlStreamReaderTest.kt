@@ -5,6 +5,8 @@
 package aws.smithy.kotlin.runtime.serde.xml
 
 import aws.smithy.kotlin.runtime.serde.DeserializationException
+import aws.smithy.kotlin.runtime.serde.DeserializationRecursionException
+import aws.smithy.kotlin.runtime.serde.MAX_RECURSION_DEPTH
 import kotlin.test.*
 
 class XmlStreamReaderTest {
@@ -746,7 +748,22 @@ class XmlStreamReaderTest {
         reader.nextToken()
         assertEquals(XmlToken.Text(1, "This is a <test/> of CDATA"), reader.nextToken())
     }
-}
+
+    @Test
+    fun testDeeplyNestedElementsThrows() {
+        val payload = "<a>".repeat(MAX_RECURSION_DEPTH + 1) + "</a>".repeat(MAX_RECURSION_DEPTH + 1)
+        val reader = xmlStreamReader(payload.encodeToByteArray())
+        assertFailsWith<DeserializationRecursionException> {
+            while (reader.nextToken() != null) {}
+        }
+    }
+
+    @Test
+    fun testNestingAtExactLimitSucceeds() {
+        val payload = "<a>".repeat(MAX_RECURSION_DEPTH) + "</a>".repeat(MAX_RECURSION_DEPTH)
+        val reader = xmlStreamReader(payload.encodeToByteArray())
+        while (reader.nextToken() != null) {}
+    }}
 
 fun XmlStreamReader.allTokens(): List<XmlToken> {
     val tokenList = mutableListOf<XmlToken>()

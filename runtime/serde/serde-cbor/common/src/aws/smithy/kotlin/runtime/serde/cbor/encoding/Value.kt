@@ -8,6 +8,7 @@ import aws.smithy.kotlin.runtime.io.SdkBuffer
 import aws.smithy.kotlin.runtime.io.SdkBufferedSink
 import aws.smithy.kotlin.runtime.io.SdkBufferedSource
 import aws.smithy.kotlin.runtime.serde.DeserializationException
+import aws.smithy.kotlin.runtime.serde.DeserializationRecursionException
 
 /**
  * Represents an encodable / decodable CBOR value.
@@ -23,8 +24,11 @@ internal interface Value {
         /**
          * Decode a [Value] from the given [buffer]
          * @param buffer the [SdkBufferedSource] to read the next [Value] from
+         * @param depth the current recursion depth
          */
-        fun decode(buffer: SdkBufferedSource): Value {
+        fun decode(buffer: SdkBufferedSource, depth: Int = 0): Value {
+            DeserializationRecursionException.assertDepth(depth)
+
             val major = peekMajor(buffer)
             val minor = peekMinorByte(buffer)
 
@@ -33,33 +37,31 @@ internal interface Value {
                 Major.NEG_INT -> NegInt.decode(buffer)
                 Major.BYTE_STRING -> ByteString.decode(buffer)
                 Major.STRING -> TextString.decode(buffer)
-                Major.LIST -> {
-                    return if (minor == Minor.INDEFINITE.value) {
-                        IndefiniteList.decode(buffer)
-                    } else {
-                        List.decode(buffer)
-                    }
+
+                Major.LIST -> if (minor == Minor.INDEFINITE.value) {
+                    IndefiniteList.decode(buffer, depth)
+                } else {
+                    List.decode(buffer, depth)
                 }
-                Major.MAP -> {
-                    if (minor == Minor.INDEFINITE.value) {
-                        IndefiniteMap.decode(buffer)
-                    } else {
-                        Map.decode(buffer)
-                    }
+
+                Major.MAP -> if (minor == Minor.INDEFINITE.value) {
+                    IndefiniteMap.decode(buffer, depth)
+                } else {
+                    Map.decode(buffer, depth)
                 }
+
                 Major.TAG -> Tag.decode(buffer)
-                Major.TYPE_7 -> {
-                    when (minor) {
-                        Minor.TRUE.value -> Boolean.decode(buffer)
-                        Minor.FALSE.value -> Boolean.decode(buffer)
-                        Minor.NULL.value -> Null.decode(buffer)
-                        Minor.UNDEFINED.value -> Null.decode(buffer)
-                        Minor.FLOAT16.value -> Float16.decode(buffer)
-                        Minor.FLOAT32.value -> Float32.decode(buffer)
-                        Minor.FLOAT64.value -> Float64.decode(buffer)
-                        Minor.INDEFINITE.value -> IndefiniteBreak.decode(buffer)
-                        else -> throw DeserializationException("Unexpected type 7 minor value $minor")
-                    }
+
+                Major.TYPE_7 -> when (minor) {
+                    Minor.TRUE.value -> Boolean.decode(buffer)
+                    Minor.FALSE.value -> Boolean.decode(buffer)
+                    Minor.NULL.value -> Null.decode(buffer)
+                    Minor.UNDEFINED.value -> Null.decode(buffer)
+                    Minor.FLOAT16.value -> Float16.decode(buffer)
+                    Minor.FLOAT32.value -> Float32.decode(buffer)
+                    Minor.FLOAT64.value -> Float64.decode(buffer)
+                    Minor.INDEFINITE.value -> IndefiniteBreak.decode(buffer)
+                    else -> throw DeserializationException("Unexpected type 7 minor value $minor")
                 }
             }
         }
