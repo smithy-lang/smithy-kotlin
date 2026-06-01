@@ -255,8 +255,7 @@ class HttpProtocolSerdeBenchmarkGenerator(
         writer.closeBlock("}")
     }
 
-    private fun isRpcV2Cbor(): Boolean =
-        serviceShape.allTraits.keys.any { it.toString().contains("rpcv2Cbor") }
+    private fun isRpcV2Cbor(): Boolean = serviceShape.allTraits.keys.any { it.toString().contains("rpcv2Cbor") }
 
     private fun sanitizeName(id: String): String = id.replace(Regex("[^a-zA-Z0-9_]"), "_")
         .replaceFirstChar { it.lowercaseChar() }
