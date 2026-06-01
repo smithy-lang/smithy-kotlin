@@ -6,6 +6,7 @@ package aws.smithy.kotlin.runtime.serde.cbor
 
 import aws.smithy.kotlin.runtime.io.SdkBuffer
 import aws.smithy.kotlin.runtime.serde.*
+import aws.smithy.kotlin.runtime.serde.cbor.encoding.Value
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFails
@@ -63,7 +64,7 @@ class CborDeserializerTest {
         p[n] = 0x00 // uint 0
 
         val buffer = SdkBuffer().apply { write(p) }
-        aws.smithy.kotlin.runtime.serde.cbor.encoding.Value.decode(buffer)
+        Value.decode(buffer)
     }
 
     /**
@@ -120,8 +121,8 @@ class CborDeserializerTest {
     }
 
     /**
-     * Deeply nested DecimalFraction tags bypass the recursion depth limit because Tag.decode does not
-     * propagate depth, and DecimalFraction.decode calls List.decode(buffer) with depth defaulting to 0.
+     * Verify that deeply-nested `DecimalFraction` tags do not bypass the recursion depth limit by resetting the
+     * recursion depth to 0.
      *
      * Payload structure (repeated n times):
      *   0xC4        — Tag(4) = DecimalFraction
@@ -157,7 +158,7 @@ class CborDeserializerTest {
         // The depth limit should fire, but it doesn't — Tag.decode doesn't propagate depth.
         // With the fix, this will throw DeserializationRecursionException.
         assertFailsWith<DeserializationRecursionException> {
-            aws.smithy.kotlin.runtime.serde.cbor.encoding.Value.decode(buffer)
+            Value.decode(buffer)
         }
     }
 
@@ -187,7 +188,7 @@ class CborDeserializerTest {
 
         val buffer = SdkBuffer().apply { write(p) }
         assertFailsWith<DeserializationRecursionException> {
-            aws.smithy.kotlin.runtime.serde.cbor.encoding.Value.decode(buffer)
+            Value.decode(buffer)
         }
     }
 }
