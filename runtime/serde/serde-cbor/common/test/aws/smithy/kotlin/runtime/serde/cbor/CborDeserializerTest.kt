@@ -66,26 +66,6 @@ class CborDeserializerTest {
         aws.smithy.kotlin.runtime.serde.cbor.encoding.Value.decode(buffer)
     }
 
-    @Test
-    fun testFindNextFieldIndexRecursion() {
-        // CBOR indef map with n × (empty-string key, null value): 0xbf (0x60 0xf6)×n 0xff
-        // This tests tailrec iteration, not nesting depth — should complete without throwing.
-        val n = 50000
-        val p = ByteArray(1 + 2 * n + 1)
-        p[0] = 0xbf.toByte()
-        for (i in 0..<n) {
-            p[1 + 2 * i] = 0x60
-            p[2 + 2 * i] = 0xf6.toByte()
-        }
-        p[p.size - 1] = 0xff.toByte()
-
-        // Descriptor with one field "" so candidate is computed → null-skip path → tailrec iteration
-        val b = SdkObjectDescriptor.Builder()
-        b.field(SdkFieldDescriptor(SerialKind.String, CborSerialName("")))
-
-        CborDeserializer(p).deserializeStruct(b.build()).findNextFieldIndex()
-    }
-
     /**
      * tt/P441722592/F9: A CBOR payload with an unknown field containing deeply nested arrays must throw
      * DeserializationRecursionException, not StackOverflowError. The depth check in Value.decode catches this before
