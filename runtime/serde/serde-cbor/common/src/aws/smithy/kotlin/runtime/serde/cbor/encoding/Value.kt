@@ -35,8 +35,8 @@ internal interface Value {
             return when (major) {
                 Major.U_INT -> UInt.decode(buffer)
                 Major.NEG_INT -> NegInt.decode(buffer)
-                Major.BYTE_STRING -> ByteString.decode(buffer)
-                Major.STRING -> TextString.decode(buffer)
+                Major.BYTE_STRING -> ByteString.decode(buffer, depth)
+                Major.STRING -> TextString.decode(buffer, depth)
 
                 Major.LIST -> if (minor == Minor.INDEFINITE.value) {
                     IndefiniteList.decode(buffer, depth)
@@ -50,7 +50,7 @@ internal interface Value {
                     Map.decode(buffer, depth)
                 }
 
-                Major.TAG -> Tag.decode(buffer)
+                Major.TAG -> Tag.decode(buffer, depth)
 
                 Major.TYPE_7 -> when (minor) {
                     Minor.TRUE.value -> Boolean.decode(buffer)

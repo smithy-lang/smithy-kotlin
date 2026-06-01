@@ -20,8 +20,8 @@ internal class TextString(val value: String) : Value {
     }
 
     internal companion object {
-        fun decode(buffer: SdkBufferedSource): TextString = if (peekMinorByte(buffer) == Minor.INDEFINITE.value) {
-            val list = IndefiniteList.decode(buffer).value
+        fun decode(buffer: SdkBufferedSource, depth: Int = 0): TextString = if (peekMinorByte(buffer) == Minor.INDEFINITE.value) {
+            val list = IndefiniteList.decode(buffer, depth).value
 
             val sb = StringBuilder()
             list.forEach {
@@ -53,8 +53,8 @@ internal class ByteString(val value: ByteArray) : Value {
     }
 
     internal companion object {
-        fun decode(buffer: SdkBufferedSource): ByteString = if (peekMinorByte(buffer) == Minor.INDEFINITE.value) {
-            val list = IndefiniteList.decode(buffer).value
+        fun decode(buffer: SdkBufferedSource, depth: Int = 0): ByteString = if (peekMinorByte(buffer) == Minor.INDEFINITE.value) {
+            val list = IndefiniteList.decode(buffer, depth).value
 
             val tempBuffer = SdkBuffer()
             list.forEach {

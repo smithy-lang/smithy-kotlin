@@ -138,4 +138,76 @@ class CborDeserializerTest {
         val result = iter.findNextFieldIndex()
         assertNull(result)
     }
+
+    /**
+     * Deeply nested DecimalFraction tags bypass the recursion depth limit because Tag.decode does not
+     * propagate depth, and DecimalFraction.decode calls List.decode(buffer) with depth defaulting to 0.
+     *
+     * Payload structure (repeated n times):
+     *   0xC4        — Tag(4) = DecimalFraction
+     *   0x82        — List(2)
+     *   0x00        — UInt(0) exponent
+     *   [next level or terminal mantissa]
+     *
+     * Terminal mantissa: 0xC2 0x41 0x01 — Tag(2) BigNum, ByteString(1) [0x01]
+     *
+     * This should throw DeserializationRecursionException but currently does NOT because
+     * depth resets to 0 at each DecimalFraction.decode → List.decode call.
+     * Instead it recurses freely and throws a different exception (type mismatch) at the bottom,
+     * proving the depth check was never triggered despite exceeding MAX_RECURSION_DEPTH.
+     */
+    @Test
+    fun nestedDecimalFractionTagsBypassesDepthLimit() {
+        val n = MAX_RECURSION_DEPTH + 1
+        // Each level: 0xC4 0x82 0x00 (3 bytes), terminal: 0xC2 0x41 0x01 (3 bytes)
+        val p = ByteArray(n * 3 + 3)
+        var i = 0
+        for (j in 0..<n) {
+            p[i++] = 0xC4.toByte() // Tag(4) DecimalFraction
+            p[i++] = 0x82.toByte() // List(2)
+            p[i++] = 0x00 // UInt(0) exponent
+            // mantissa is the next level (or terminal)
+        }
+        // Terminal mantissa: BigNum tag wrapping ByteString
+        p[i++] = 0xC2.toByte() // Tag(2) BigNum
+        p[i++] = 0x41 // ByteString(1)
+        p[i++] = 0x01 // byte value
+
+        val buffer = SdkBuffer().apply { write(p) }
+        // The depth limit should fire, but it doesn't — Tag.decode doesn't propagate depth.
+        // With the fix, this will throw DeserializationRecursionException.
+        assertFailsWith<DeserializationRecursionException> {
+            aws.smithy.kotlin.runtime.serde.cbor.encoding.Value.decode(buffer)
+        }
+    }
+
+    /**
+     * Nested indefinite-length TextStrings bypass the depth limit because TextString.decode calls
+     * IndefiniteList.decode(buffer) without a depth parameter (defaults to 0).
+     *
+     * Each indefinite text string level: 0x7F (indef string start) ... 0xFF (break)
+     * Inside, Value.decode dispatches STRING major back to TextString.decode, which again
+     * calls IndefiniteList.decode(buffer) with depth=0, creating unbounded recursion.
+     *
+     * Payload: n nested indefinite text strings, innermost contains a definite chunk "a".
+     *   0x7F 0x7F 0x7F ... 0x61 0x61 ... 0xFF 0xFF 0xFF
+     *
+     * This should throw DeserializationRecursionException but currently causes StackOverflowError.
+     */
+    @Test
+    fun indefiniteTextStringResetsDepthCounter() {
+        val n = MAX_RECURSION_DEPTH + 1
+        // n × 0x7F (indef text start) + definite chunk "a" (0x61 0x61) + n × 0xFF (break)
+        val p = ByteArray(n + 2 + n)
+        var i = 0
+        for (j in 0..<n) p[i++] = 0x7F.toByte() // indefinite-length text string
+        p[i++] = 0x61 // text(1)
+        p[i++] = 0x61 // "a"
+        for (j in 0..<n) p[i++] = 0xFF.toByte() // break
+
+        val buffer = SdkBuffer().apply { write(p) }
+        assertFailsWith<DeserializationRecursionException> {
+            aws.smithy.kotlin.runtime.serde.cbor.encoding.Value.decode(buffer)
+        }
+    }
 }
