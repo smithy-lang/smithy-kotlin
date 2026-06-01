@@ -90,7 +90,8 @@ class XmlStreamReaderTest {
 
     @Test
     fun garbageInGarbageOut() {
-        val payload = """you try to parse me once, jokes on me..try twice jokes on you bucko.""".trimIndent().encodeToByteArray()
+        val payload =
+            """you try to parse me once, jokes on me..try twice jokes on you bucko.""".trimIndent().encodeToByteArray()
         assertFailsWith(DeserializationException::class) { xmlStreamReader(payload).allTokens() }
     }
 
@@ -377,7 +378,11 @@ class XmlStreamReaderTest {
 
         val expected = listOf(
             // root element belongs to default namespace declared
-            XmlToken.BeginElement(1, XmlToken.QualifiedName("MyStructure"), nsDeclarations = listOf(XmlToken.Namespace("http://foo.com"))),
+            XmlToken.BeginElement(
+                1,
+                XmlToken.QualifiedName("MyStructure"),
+                nsDeclarations = listOf(XmlToken.Namespace("http://foo.com")),
+            ),
             XmlToken.BeginElement(2, XmlToken.QualifiedName("foo")),
             XmlToken.Text(2, "bar"),
             XmlToken.EndElement(2, XmlToken.QualifiedName("foo")),
@@ -398,7 +403,11 @@ class XmlStreamReaderTest {
         val actual = xmlStreamReader(payload).allTokens()
 
         val expected = listOf(
-            XmlToken.BeginElement(1, XmlToken.QualifiedName("MyStructure"), nsDeclarations = listOf(XmlToken.Namespace("http://foo.com", "baz"))),
+            XmlToken.BeginElement(
+                1,
+                XmlToken.QualifiedName("MyStructure"),
+                nsDeclarations = listOf(XmlToken.Namespace("http://foo.com", "baz")),
+            ),
             XmlToken.BeginElement(2, "foo"),
             XmlToken.Text(2, "what"),
             XmlToken.EndElement(2, "foo"),
@@ -421,7 +430,11 @@ class XmlStreamReaderTest {
         val actual = xmlStreamReader(payload).allTokens()
 
         val expected = listOf(
-            XmlToken.BeginElement(1, XmlToken.QualifiedName("MyStructure"), nsDeclarations = listOf(XmlToken.Namespace("http://foo.com", "baz"))),
+            XmlToken.BeginElement(
+                1,
+                XmlToken.QualifiedName("MyStructure"),
+                nsDeclarations = listOf(XmlToken.Namespace("http://foo.com", "baz")),
+            ),
             XmlToken.BeginElement(2, "foo", attributes = mapOf(XmlToken.QualifiedName("k1", "baz") to "v1")),
             XmlToken.EndElement(2, "foo"),
             XmlToken.EndElement(1, "MyStructure"),
@@ -754,7 +767,8 @@ class XmlStreamReaderTest {
         val payload = "<a>".repeat(MAX_RECURSION_DEPTH + 1) + "</a>".repeat(MAX_RECURSION_DEPTH + 1)
         val reader = xmlStreamReader(payload.encodeToByteArray())
         assertFailsWith<DeserializationRecursionException> {
-            while (reader.nextToken() != null) {}
+            while (reader.nextToken() != null) {
+            }
         }
     }
 
@@ -762,8 +776,9 @@ class XmlStreamReaderTest {
     fun testNestingAtExactLimitSucceeds() {
         val payload = "<a>".repeat(MAX_RECURSION_DEPTH) + "</a>".repeat(MAX_RECURSION_DEPTH)
         val reader = xmlStreamReader(payload.encodeToByteArray())
-        while (reader.nextToken() != null) {}
-    }}
+        while (reader.nextToken() != null) { }
+    }
+}
 
 fun XmlStreamReader.allTokens(): List<XmlToken> {
     val tokenList = mutableListOf<XmlToken>()

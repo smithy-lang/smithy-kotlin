@@ -39,9 +39,7 @@ public open class DeserializationException : ClientException {
 /**
  * Exception thrown when deserialization exceeds the maximum allowed recursion depth.
  */
-public class DeserializationRecursionException : DeserializationException(
-    "Max recursion depth ($MAX_RECURSION_DEPTH) exceeded during deserialization",
-) {
+public class DeserializationRecursionException : DeserializationException("Max recursion depth ($MAX_RECURSION_DEPTH) exceeded during deserialization") {
     @InternalApi
     public companion object {
         /**

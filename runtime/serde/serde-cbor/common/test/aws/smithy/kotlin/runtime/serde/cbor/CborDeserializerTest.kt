@@ -138,5 +138,4 @@ class CborDeserializerTest {
         val result = iter.findNextFieldIndex()
         assertNull(result)
     }
-
 }
