@@ -5,6 +5,7 @@
 package aws.smithy.kotlin.codegen.rendering.protocol
 
 import aws.smithy.kotlin.codegen.core.KotlinDependency
+import aws.smithy.kotlin.codegen.core.KotlinWriter
 import aws.smithy.kotlin.codegen.core.RuntimeTypes
 import aws.smithy.kotlin.codegen.core.declareSection
 import aws.smithy.kotlin.codegen.core.defaultName
@@ -227,12 +228,16 @@ open class HttpProtocolUnitTestResponseGenerator protected constructor(builder: 
     }
 }
 
-private fun Symbol.defaultUnboxedValue(): String = when (shape) {
+internal fun Symbol.defaultUnboxedValue(writer: KotlinWriter? = null): String = when (shape) {
     is LongShape -> "0L"
     is FloatShape -> "0.0f"
     is DoubleShape -> "0.0"
     is NumberShape -> "0"
     is StringShape -> "\"\""
     is BooleanShape -> "false"
+    is TimestampShape -> writer?.format("#T.now()", RuntimeTypes.Core.Instant)
+        ?: throw CodegenException("KotlinWriter required for TimestampShape default value")
+    is ListShape -> "emptyList()"
+    is MapShape -> "emptyMap()"
     else -> throw CodegenException("Cannot determine default value for unsupported shape $shape")
 }

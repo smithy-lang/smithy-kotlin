@@ -77,6 +77,7 @@ object RuntimeTypes {
 
         object Engine : RuntimeTypePackage(KotlinDependency.HTTP_CLIENT, "engine") {
             val HttpClientEngine = symbol("HttpClientEngine")
+            val callContext = symbol("callContext")
             val manage = symbol("manage", "engine.internal", isExtension = true)
         }
 
@@ -97,6 +98,10 @@ object RuntimeTypes {
 
     object HttpTest : RuntimeTypePackage(KotlinDependency.HTTP_TEST) {
         val TestEngine = symbol("TestEngine")
+    }
+
+    object SmithyTest : RuntimeTypePackage(KotlinDependency.SMITHY_TEST) {
+        val encodeAsByteArray = symbol("encodeAsByteArray")
     }
 
     object Core : RuntimeTypePackage(KotlinDependency.CORE) {
@@ -438,6 +443,17 @@ object RuntimeTypes {
             val take = "kotlinx.coroutines.flow.take".toSymbol()
             val single = "kotlinx.coroutines.flow.single".toSymbol()
         }
+    }
+
+    object AwsSdkCredentials {
+        val StaticCredentialsProvider = "aws.sdk.kotlin.runtime.auth.credentials.StaticCredentialsProvider".toSymbol()
+    }
+
+    object Benchmarks {
+        val BenchmarkHarness = "aws.sdk.kotlin.benchmarks.serde.BenchmarkHarness".toSymbol()
+        val BenchmarkInterceptor = "aws.sdk.kotlin.benchmarks.serde.BenchmarkInterceptor".toSymbol()
+        val BenchmarkMetadata = "aws.sdk.kotlin.benchmarks.serde.BenchmarkMetadata".toSymbol()
+        val BenchmarkResult = "aws.sdk.kotlin.benchmarks.serde.BenchmarkResult".toSymbol()
     }
 
     object HttpClientEngines {
