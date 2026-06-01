@@ -12,6 +12,7 @@ import aws.smithy.kotlin.runtime.serde.deserializeList
 import aws.smithy.kotlin.runtime.serde.deserializeMap
 import kotlin.test.Test
 import kotlin.test.assertFails
+import kotlin.test.assertFailsWith
 
 class CborDeserializerErrorTest {
     @Test
@@ -764,6 +765,26 @@ class CborDeserializerErrorTest {
 
         assertFails {
             Tag.decode(buffer)
+        }
+    }
+
+    /**
+     * tt/V2228436368/F20: CBOR decimal fraction (tag 4) with exponent 999999999 and mantissa 1 should not create a
+     * [BigDecimal][aws.smithy.kotlin.runtime.content.BigDecimal] with huge scale that causes OOM when `toPlainString`
+     * is invoked. Instead, the deserializer should reject exponents this large rather than creating a dangerous
+     * `BigDecimal`.
+     */
+    @Test
+    fun testDecimalFractionExponentDoesNotOom() {
+        val payload = "0xc4821a3b9ac9ff01".toByteArray()
+
+        val buffer = SdkBuffer().apply { write(payload) }
+        val deserializer = CborPrimitiveDeserializer(buffer)
+
+        assertFailsWith<Exception> {
+            val result = deserializer.deserializeBigDecimal()
+            // If deserialization doesn't reject it, toPlainString() will OOM
+            result.toPlainString()
         }
     }
 }

@@ -1,0 +1,5 @@
+{
+    "id": "31cb979a-e70c-4d6c-b5d3-9745ee91bdd1",
+    "type": "bugfix",
+    "description": "Limit exponent scale to prevent OOM errors when expanding exponents"
+}

@@ -466,6 +466,10 @@ public final class aws/smithy/kotlin/runtime/content/BigDecimal : java/lang/Numb
 	public fun toString ()Ljava/lang/String;
 }
 
+public final class aws/smithy/kotlin/runtime/content/BigDecimalKt {
+	public static final field MAX_DECIMAL_FRACTION_EXPONENT I
+}
+
 public final class aws/smithy/kotlin/runtime/content/BigInteger : java/lang/Number, java/lang/Comparable {
 	public fun <init> (Ljava/lang/String;)V
 	public fun <init> ([B)V

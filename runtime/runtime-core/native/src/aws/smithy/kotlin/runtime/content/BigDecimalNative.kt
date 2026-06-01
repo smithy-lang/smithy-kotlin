@@ -22,12 +22,18 @@ public actual class BigDecimal private constructor(private val delegate: IonSpin
             right.delegate -> right
             else -> BigDecimal(value)
         }
+
+        fun checkedCreate(mantissa: BigInteger, exponent: Int): IonSpinBigDecimal {
+            require(exponent in -MAX_DECIMAL_FRACTION_EXPONENT..MAX_DECIMAL_FRACTION_EXPONENT) {
+                "BigDecimal exponent $exponent exceeds maximum allowed magnitude of $MAX_DECIMAL_FRACTION_EXPONENT"
+            }
+            return IonSpinBigDecimal.fromBigIntegerWithExponent(mantissa.delegate, exponent.toLong())
+        }
     }
 
     public actual constructor(value: String) : this(IonSpinBigDecimal.parseString(value, 10))
 
-    public actual constructor(mantissa: BigInteger, exponent: Int) :
-        this(IonSpinBigDecimal.fromBigIntegerWithExponent(mantissa.delegate, exponent.toLong()))
+    public actual constructor(mantissa: BigInteger, exponent: Int) : this(checkedCreate(mantissa, exponent))
 
     actual override fun toByte(): Byte = delegate.byteValue(exactRequired = false)
     actual override fun toDouble(): Double = delegate.doubleValue(exactRequired = false)

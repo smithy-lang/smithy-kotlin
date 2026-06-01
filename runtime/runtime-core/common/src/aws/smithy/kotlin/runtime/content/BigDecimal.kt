@@ -5,6 +5,12 @@
 package aws.smithy.kotlin.runtime.content
 
 /**
+ * Maximum allowed magnitude for a [BigDecimal] exponent. Exponents beyond this limit would cause
+ * excessive memory allocation when the value is materialized as a plain string.
+ */
+public const val MAX_DECIMAL_FRACTION_EXPONENT: Int = 1000
+
+/**
  * A floating point decimal number with arbitrary precision.
  * @param value the [String] representation of this decimal number
  */
