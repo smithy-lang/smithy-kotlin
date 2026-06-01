@@ -1,0 +1,5 @@
+{
+    "id": "3d3ef467-7538-4a74-85b8-c0c6c77f4aad",
+    "type": "bugfix",
+    "description": "Validate that OkHttp header values do not contain CR or LF"
+}
