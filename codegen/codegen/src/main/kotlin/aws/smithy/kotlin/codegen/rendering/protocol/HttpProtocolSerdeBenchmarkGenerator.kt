@@ -76,7 +76,7 @@ class HttpProtocolSerdeBenchmarkGenerator(
                     write("id = #S,", testCase.id)
                     write("interceptor = interceptor,")
                     write("extractNanos = #T::serializationNanos,", RuntimeTypes.Benchmarks.BenchmarkInterceptor)
-                    closeBlock(") { client.#L($fieldName) })", opName)
+                    closeBlock(") { client.#L(#L) })", opName, fieldName)
                 }
                 write("return results")
             }
@@ -127,7 +127,7 @@ class HttpProtocolSerdeBenchmarkGenerator(
                     write("id = #S,", testCase.id)
                     write("interceptor = interceptor,")
                     write("extractNanos = #T::deserializationNanos,", RuntimeTypes.Benchmarks.BenchmarkInterceptor)
-                    closeBlock(") { $clientField.#L($inputArg) })", opName)
+                    closeBlock(") { #L.#L(#L) })", clientField, opName, inputArg)
                 }
                 write("return results")
             }
@@ -171,7 +171,7 @@ class HttpProtocolSerdeBenchmarkGenerator(
         if (operation.input.isPresent) {
             val inputShape = model.expectShape<StructureShape>(operation.input.get())
             writer.write("")
-            writer.writeInline("private val $fieldName = ")
+            writer.writeInline("private val #L = ", fieldName)
                 .indent()
                 .call {
                     ShapeValueGenerator(model, symbolProvider, explicitReceiver = true)
@@ -220,7 +220,7 @@ class HttpProtocolSerdeBenchmarkGenerator(
                     write("val respBody = #T.Empty", RuntimeTypes.Http.HttpBody)
                 }
 
-                write("val resp = #T(#T.fromValue(${testCase.code}), respHeaders, respBody)", RuntimeTypes.Http.Response.HttpResponse, RuntimeTypes.Http.StatusCode)
+                write("val resp = #T(#T.fromValue(#L), respHeaders, respBody)", RuntimeTypes.Http.Response.HttpResponse, RuntimeTypes.Http.StatusCode, testCase.code)
                 write("val now = #T.now()", RuntimeTypes.Core.Instant)
                 write("#T(request, resp, now, now, #T())", RuntimeTypes.Http.HttpCall, RuntimeTypes.HttpClient.Engine.callContext)
             }
