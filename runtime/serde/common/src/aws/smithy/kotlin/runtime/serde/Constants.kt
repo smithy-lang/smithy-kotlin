@@ -6,7 +6,7 @@ package aws.smithy.kotlin.runtime.serde
 
 /**
  * The maximum allowed depth of recursion when parsing data through serde. In practice, this limits the levels of
- * nesting of objects, maps, lists, and arrays. For example, a limit of `1_000` allows the following:
+ * nesting of objects, maps, lists, and arrays. For example, a limit of `100` allows the following:
  *
  * ```json
  * {
@@ -14,7 +14,7 @@ package aws.smithy.kotlin.runtime.serde
  *     "obj2": {
  *       "obj3": {
  *         ...
- *           "obj1000": "foo"
+ *           "obj100": "foo"
  *         ...
  *       }
  *     }
@@ -30,8 +30,8 @@ package aws.smithy.kotlin.runtime.serde
  *     "obj2": {
  *       "obj3": {
  *         ...
- *           "obj1000": {
- *             "obj1001": "foo"
+ *           "obj100": {
+ *             "obj101": "foo"
  *           }
  *         ...
  *       }
@@ -40,4 +40,4 @@ package aws.smithy.kotlin.runtime.serde
  * }
  * ```
  */
-public const val MAX_RECURSION_DEPTH: Int = 1_000
+public const val MAX_RECURSION_DEPTH: Int = 100
