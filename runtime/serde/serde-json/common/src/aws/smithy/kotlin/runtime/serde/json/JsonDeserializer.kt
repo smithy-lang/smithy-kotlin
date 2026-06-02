@@ -200,41 +200,43 @@ private class JsonFieldIterator(
     PrimitiveDeserializer by deserializer {
 
     override fun findNextFieldIndex(): Int? {
-        val candidate = when (reader.peek()) {
-            JsonToken.EndObject -> {
-                // consume the token
-                reader.nextTokenOf<JsonToken.EndObject>()
-                null
-            }
-            JsonToken.EndDocument -> null
-            JsonToken.Null -> {
-                reader.nextTokenOf<JsonToken.Null>()
-                null
-            }
-            else -> {
-                val token = reader.nextTokenOf<JsonToken.Name>()
-                val propertyName = token.value
-                val field = descriptor.fields.find { it.serialName == propertyName }
+        while (true) {
+            val candidate = when (reader.peek()) {
+                JsonToken.EndObject -> {
+                    // consume the token
+                    reader.nextTokenOf<JsonToken.EndObject>()
+                    null
+                }
+                JsonToken.EndDocument -> null
+                JsonToken.Null -> {
+                    reader.nextTokenOf<JsonToken.Null>()
+                    null
+                }
+                else -> {
+                    val token = reader.nextTokenOf<JsonToken.Name>()
+                    val propertyName = token.value
+                    val field = descriptor.fields.find { it.serialName == propertyName }
 
-                if (IgnoreKey(propertyName) in descriptor.traits) {
-                    reader.skipNext() // the value of the ignored key
-                    return findNextFieldIndex()
-                } else {
-                    field?.index ?: Deserializer.FieldIterator.UNKNOWN_FIELD
+                    if (IgnoreKey(propertyName) in descriptor.traits) {
+                        reader.skipNext() // the value of the ignored key
+                        continue
+                    } else {
+                        field?.index ?: Deserializer.FieldIterator.UNKNOWN_FIELD
+                    }
                 }
             }
-        }
 
-        if (candidate != null) {
-            // found a field
-            if (reader.peek() == JsonToken.Null) {
-                // skip explicit nulls
-                reader.nextTokenOf<JsonToken.Null>()
-                return findNextFieldIndex()
+            if (candidate != null) {
+                // found a field
+                if (reader.peek() == JsonToken.Null) {
+                    // skip explicit nulls
+                    reader.nextTokenOf<JsonToken.Null>()
+                    continue
+                }
             }
-        }
 
-        return candidate
+            return candidate
+        }
     }
 
     override fun skipValue() {

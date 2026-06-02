@@ -833,4 +833,102 @@ class JsonDeserializerTest {
             deserializer.deserializeInstant(TimestampFormat.EPOCH_SECONDS)
         }
     }
+
+    @Test
+    fun testDeeplyNestedArraysThrows() {
+        val payload = "[".repeat(MAX_RECURSION_DEPTH + 1) + "]".repeat(MAX_RECURSION_DEPTH + 1)
+        val reader = jsonStreamReader(payload.encodeToByteArray())
+        assertFailsWith<DeserializationRecursionException> {
+            while (true) {
+                reader.nextToken()
+            }
+        }
+    }
+
+    @Test
+    fun testDeeplyNestedObjectsThrows() {
+        val payload = buildString {
+            repeat(MAX_RECURSION_DEPTH + 1) { append("""{"a":""") }
+            append("1")
+            repeat(MAX_RECURSION_DEPTH + 1) { append("}") }
+        }
+        val reader = jsonStreamReader(payload.encodeToByteArray())
+        assertFailsWith<DeserializationRecursionException> {
+            while (true) {
+                reader.nextToken()
+            }
+        }
+    }
+
+    @Test
+    fun testNestingAtExactLimitSucceeds() {
+        val payload = "[".repeat(MAX_RECURSION_DEPTH) + "]".repeat(MAX_RECURSION_DEPTH)
+        val reader = jsonStreamReader(payload.encodeToByteArray())
+        while (reader.peek() != JsonToken.EndDocument) {
+            reader.nextToken()
+        }
+    }
+
+    /**
+     * F21: A flat JSON object with many null-valued known fields must not cause StackOverflowError.
+     * The null-skip path in findNextFieldIndex recurses once per null field. With 50,000 null fields
+     * this previously caused SOE. After fix (tailrec or loop), it should complete normally.
+     */
+    @Test
+    fun findNextFieldIndexNullSkipDoesNotStackOverflow() {
+        val n = 50_000
+        val json = buildString {
+            append("{")
+            repeat(n) { i ->
+                if (i > 0) append(",")
+                append("\"k\":null")
+            }
+            append("}")
+        }
+
+        val descriptor = SdkObjectDescriptor.build {
+            field(SdkFieldDescriptor(SerialKind.String, JsonSerialName("k")))
+        }
+
+        val deserializer = JsonDeserializer(json.encodeToByteArray())
+        val iter = deserializer.deserializeStruct(descriptor)
+        // Should return null (all fields are null → all skipped) without StackOverflowError
+        val result = iter.findNextFieldIndex()
+        assertNull(result)
+    }
+
+    /**
+     * tt/P441722592/F22: Deeply nested JSON arrays in a document must throw DeserializationRecursionException,
+     * not StackOverflowError. The lexer depth check catches this before the recursive deserializeDocumentImpl can
+     * exhaust the stack.
+     */
+    @Test
+    fun deserializeDocumentNestedArraysThrowsRecursionException() {
+        val n = MAX_RECURSION_DEPTH + 1
+        val json = "[".repeat(n) + "0" + "]".repeat(n)
+
+        val deserializer = JsonDeserializer(json.encodeToByteArray())
+        assertFailsWith<DeserializationRecursionException> {
+            deserializer.deserializeDocument()
+        }
+    }
+
+    /**
+     * tt/P441722592/F22: Deeply nested JSON objects in a document must throw DeserializationRecursionException,
+     * not StackOverflowError.
+     */
+    @Test
+    fun f22_deserializeDocumentNestedObjectsThrowsRecursionException() {
+        val n = MAX_RECURSION_DEPTH + 1
+        val json = buildString {
+            repeat(n) { append("""{"a":""") }
+            append("1")
+            repeat(n) { append("}") }
+        }
+
+        val deserializer = JsonDeserializer(json.encodeToByteArray())
+        assertFailsWith<DeserializationRecursionException> {
+            deserializer.deserializeDocument()
+        }
+    }
 }

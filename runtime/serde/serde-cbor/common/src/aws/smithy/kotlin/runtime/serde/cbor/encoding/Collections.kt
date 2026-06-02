@@ -20,8 +20,8 @@ internal class TextString(val value: String) : Value {
     }
 
     internal companion object {
-        fun decode(buffer: SdkBufferedSource): TextString = if (peekMinorByte(buffer) == Minor.INDEFINITE.value) {
-            val list = IndefiniteList.decode(buffer).value
+        fun decode(buffer: SdkBufferedSource, depth: Int = 0): TextString = if (peekMinorByte(buffer) == Minor.INDEFINITE.value) {
+            val list = IndefiniteList.decode(buffer, depth).value
 
             val sb = StringBuilder()
             list.forEach {
@@ -53,8 +53,8 @@ internal class ByteString(val value: ByteArray) : Value {
     }
 
     internal companion object {
-        fun decode(buffer: SdkBufferedSource): ByteString = if (peekMinorByte(buffer) == Minor.INDEFINITE.value) {
-            val list = IndefiniteList.decode(buffer).value
+        fun decode(buffer: SdkBufferedSource, depth: Int = 0): ByteString = if (peekMinorByte(buffer) == Minor.INDEFINITE.value) {
+            val list = IndefiniteList.decode(buffer, depth).value
 
             val tempBuffer = SdkBuffer()
             list.forEach {
@@ -86,12 +86,12 @@ internal class List(val value: kotlin.collections.List<Value>) : Value {
     }
 
     internal companion object {
-        internal fun decode(buffer: SdkBufferedSource): List {
+        internal fun decode(buffer: SdkBufferedSource, depth: Int = 0): List {
             val length = decodeArgument(buffer).toInt()
             val valuesList = mutableListOf<Value>()
 
             for (i in 0 until length) {
-                valuesList.add(Value.decode(buffer))
+                valuesList.add(Value.decode(buffer, depth + 1))
             }
 
             return List(valuesList)
@@ -119,13 +119,13 @@ internal class IndefiniteList(val value: Collection<Value> = listOf()) : Value {
     }
 
     internal companion object {
-        internal fun decode(buffer: SdkBufferedSource): IndefiniteList {
+        internal fun decode(buffer: SdkBufferedSource, depth: Int = 0): IndefiniteList {
             buffer.readByte() // discard head
 
             val list = mutableListOf<Value>()
 
             while (!buffer.nextValueIsIndefiniteBreak) {
-                list.add(Value.decode(buffer))
+                list.add(Value.decode(buffer, depth + 1))
             }
 
             IndefiniteBreak.decode(buffer)
@@ -148,13 +148,13 @@ internal class Map(val value: kotlin.collections.Map<Value, Value>) : Value {
     }
 
     internal companion object {
-        internal fun decode(buffer: SdkBufferedSource): Map {
+        internal fun decode(buffer: SdkBufferedSource, depth: Int = 0): Map {
             val valueMap = mutableMapOf<Value, Value>()
             val length = decodeArgument(buffer).toInt()
 
             for (i in 0 until length) {
-                val key = Value.decode(buffer)
-                val value = Value.decode(buffer)
+                val key = Value.decode(buffer, depth + 1)
+                val value = Value.decode(buffer, depth + 1)
                 valueMap[key] = value
             }
 
@@ -184,13 +184,13 @@ internal class IndefiniteMap(val value: kotlin.collections.Map<Value, Value> = m
     }
 
     internal companion object {
-        internal fun decode(buffer: SdkBufferedSource): IndefiniteMap {
+        internal fun decode(buffer: SdkBufferedSource, depth: Int = 0): IndefiniteMap {
             buffer.readByte() // discard head byte
             val valueMap = mutableMapOf<Value, Value>()
 
             while (!buffer.nextValueIsIndefiniteBreak) {
-                val key = Value.decode(buffer)
-                val value = Value.decode(buffer)
+                val key = Value.decode(buffer, depth + 1)
+                val value = Value.decode(buffer, depth + 1)
                 valueMap[key] = value
             }
 

@@ -1,0 +1,5 @@
+{
+    "id": "0c6de8ff-1483-4c9b-b134-097aaf072ae9",
+    "type": "bugfix",
+    "description": "Limit serde parsing depth to 1,000 levels of nesting to prevent `StackOverflowError`"
+}
