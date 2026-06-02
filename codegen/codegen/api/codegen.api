@@ -633,10 +633,23 @@ public final class aws/smithy/kotlin/codegen/core/RuntimeTypes$AwsProtocolCore :
 	public final fun getXAmznQueryErrorHeader ()Lsoftware/amazon/smithy/codegen/core/Symbol;
 }
 
+public final class aws/smithy/kotlin/codegen/core/RuntimeTypes$AwsSdkCredentials {
+	public static final field INSTANCE Laws/smithy/kotlin/codegen/core/RuntimeTypes$AwsSdkCredentials;
+	public final fun getStaticCredentialsProvider ()Lsoftware/amazon/smithy/codegen/core/Symbol;
+}
+
 public final class aws/smithy/kotlin/codegen/core/RuntimeTypes$AwsXmlProtocols : aws/smithy/kotlin/codegen/core/RuntimeTypePackage {
 	public static final field INSTANCE Laws/smithy/kotlin/codegen/core/RuntimeTypes$AwsXmlProtocols;
 	public final fun getParseEc2QueryErrorResponse ()Lsoftware/amazon/smithy/codegen/core/Symbol;
 	public final fun getParseRestXmlErrorResponse ()Lsoftware/amazon/smithy/codegen/core/Symbol;
+}
+
+public final class aws/smithy/kotlin/codegen/core/RuntimeTypes$Benchmarks {
+	public static final field INSTANCE Laws/smithy/kotlin/codegen/core/RuntimeTypes$Benchmarks;
+	public final fun getBenchmarkHarness ()Lsoftware/amazon/smithy/codegen/core/Symbol;
+	public final fun getBenchmarkInterceptor ()Lsoftware/amazon/smithy/codegen/core/Symbol;
+	public final fun getBenchmarkMetadata ()Lsoftware/amazon/smithy/codegen/core/Symbol;
+	public final fun getBenchmarkResult ()Lsoftware/amazon/smithy/codegen/core/Symbol;
 }
 
 public final class aws/smithy/kotlin/codegen/core/RuntimeTypes$Core : aws/smithy/kotlin/codegen/core/RuntimeTypePackage {
@@ -822,6 +835,7 @@ public final class aws/smithy/kotlin/codegen/core/RuntimeTypes$HttpClient$Config
 
 public final class aws/smithy/kotlin/codegen/core/RuntimeTypes$HttpClient$Engine : aws/smithy/kotlin/codegen/core/RuntimeTypePackage {
 	public static final field INSTANCE Laws/smithy/kotlin/codegen/core/RuntimeTypes$HttpClient$Engine;
+	public final fun getCallContext ()Lsoftware/amazon/smithy/codegen/core/Symbol;
 	public final fun getHttpClientEngine ()Lsoftware/amazon/smithy/codegen/core/Symbol;
 	public final fun getManage ()Lsoftware/amazon/smithy/codegen/core/Symbol;
 }
@@ -1060,6 +1074,11 @@ public final class aws/smithy/kotlin/codegen/core/RuntimeTypes$SmithyRpcV2Protoc
 	public static final field INSTANCE Laws/smithy/kotlin/codegen/core/RuntimeTypes$SmithyRpcV2Protocols$Cbor;
 	public final fun getRpcV2CborErrorDeserializer ()Lsoftware/amazon/smithy/codegen/core/Symbol;
 	public final fun getRpcV2CborSmithyProtocolResponseHeaderInterceptor ()Lsoftware/amazon/smithy/codegen/core/Symbol;
+}
+
+public final class aws/smithy/kotlin/codegen/core/RuntimeTypes$SmithyTest : aws/smithy/kotlin/codegen/core/RuntimeTypePackage {
+	public static final field INSTANCE Laws/smithy/kotlin/codegen/core/RuntimeTypes$SmithyTest;
+	public final fun getEncodeAsByteArray ()Lsoftware/amazon/smithy/codegen/core/Symbol;
 }
 
 public final class aws/smithy/kotlin/codegen/core/SourceSet : java/lang/Enum {
