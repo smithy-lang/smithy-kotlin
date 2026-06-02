@@ -829,7 +829,7 @@ class JsonDeserializerTest {
     fun testEpochExponentDoesNotOOM() {
         val payload = "\"1e999999999\"".encodeToByteArray()
         val deserializer = JsonDeserializer(payload)
-        assertFailsWith<Exception> {
+        assertFailsWith<DeserializationException> {
             deserializer.deserializeInstant(TimestampFormat.EPOCH_SECONDS)
         }
     }

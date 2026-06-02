@@ -4,6 +4,7 @@
  */
 package aws.smithy.kotlin.runtime.serde.xml
 
+import aws.smithy.kotlin.runtime.serde.DeserializationException
 import aws.smithy.kotlin.runtime.serde.SdkFieldDescriptor
 import aws.smithy.kotlin.runtime.serde.SerialKind
 import aws.smithy.kotlin.runtime.serde.parseInt
@@ -147,7 +148,7 @@ class XmlTagReaderTest {
         val payload = "<Timestamp>1e999999999</Timestamp>".encodeToByteArray()
         val fieldDescriptor = SdkFieldDescriptor(SerialKind.Timestamp, XmlSerialName("Timestamp"))
         val deserializer = XmlPrimitiveDeserializer(payload, fieldDescriptor)
-        assertFailsWith<Exception> {
+        assertFailsWith<DeserializationException> {
             deserializer.deserializeInstant(TimestampFormat.EPOCH_SECONDS)
         }
     }

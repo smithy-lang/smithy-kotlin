@@ -5,6 +5,7 @@
 package aws.smithy.kotlin.runtime.serde.cbor
 
 import aws.smithy.kotlin.runtime.io.SdkBuffer
+import aws.smithy.kotlin.runtime.serde.DeserializationException
 import aws.smithy.kotlin.runtime.serde.SdkFieldDescriptor
 import aws.smithy.kotlin.runtime.serde.SerialKind
 import aws.smithy.kotlin.runtime.serde.cbor.encoding.Tag
@@ -781,7 +782,7 @@ class CborDeserializerErrorTest {
         val buffer = SdkBuffer().apply { write(payload) }
         val deserializer = CborPrimitiveDeserializer(buffer)
 
-        assertFailsWith<Exception> {
+        assertFailsWith<DeserializationException> {
             val result = deserializer.deserializeBigDecimal()
             // If deserialization doesn't reject it, toPlainString() will OOM
             result.toPlainString()

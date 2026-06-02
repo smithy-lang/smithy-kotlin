@@ -24,15 +24,17 @@ public actual class BigDecimal private constructor(private val delegate: JvmBigD
         }
 
         fun checkedCreate(mantissa: BigInteger, exponent: Int): JvmBigDecimal {
-            require(exponent in -MAX_DECIMAL_FRACTION_EXPONENT..MAX_DECIMAL_FRACTION_EXPONENT) {
-                "BigDecimal exponent $exponent exceeds maximum allowed magnitude of $MAX_DECIMAL_FRACTION_EXPONENT"
-            }
+            assertExponent(exponent)
             return JvmBigDecimal(mantissa.delegate, exponent)
         }
     }
 
     public actual constructor(value: String) : this(JvmBigDecimal(value))
     public actual constructor(mantissa: BigInteger, exponent: Int) : this(checkedCreate(mantissa, exponent))
+
+    init {
+        assertExponent(delegate.scale())
+    }
 
     public actual fun toPlainString(): String = delegate.toPlainString()
     public actual override fun toString(): String = delegate.toString()
@@ -59,4 +61,10 @@ public actual class BigDecimal private constructor(private val delegate: JvmBigD
     public actual operator fun minus(other: BigDecimal): BigDecimal = coalesceOrCreate(delegate - other.delegate, this, other)
 
     actual override fun compareTo(other: BigDecimal): Int = delegate.compareTo(other.delegate)
+}
+
+private fun assertExponent(value: Int) {
+    require(value in -MAX_DECIMAL_FRACTION_EXPONENT..MAX_DECIMAL_FRACTION_EXPONENT) {
+        "BigDecimal exponent $value exceeds maximum allowed magnitude of $MAX_DECIMAL_FRACTION_EXPONENT"
+    }
 }
