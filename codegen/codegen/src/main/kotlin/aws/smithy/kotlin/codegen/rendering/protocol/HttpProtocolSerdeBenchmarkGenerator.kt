@@ -72,11 +72,11 @@ class HttpProtocolSerdeBenchmarkGenerator(
                 write("val results = mutableListOf<#T>()", RuntimeTypes.Benchmarks.BenchmarkResult)
                 for (testCase in testCases) {
                     val fieldName = "input_${sanitizeName(testCase.id)}"
-                    openBlock("results.add(#T.run(", RuntimeTypes.Benchmarks.BenchmarkHarness)
-                    write("id = #S,", testCase.id)
-                    write("interceptor = interceptor,")
-                    write("extractNanos = #T::serializationNanos,", RuntimeTypes.Benchmarks.BenchmarkInterceptor)
-                    closeBlock(") { client.#L(#L) })", opName, fieldName)
+                    withBlock("results.add(#T.run(", ") { client.#L(#L) })", RuntimeTypes.Benchmarks.BenchmarkHarness, opName, fieldName) {
+                        write("id = #S,", testCase.id)
+                        write("interceptor = interceptor,")
+                        write("extractNanos = #T::serializationNanos,", RuntimeTypes.Benchmarks.BenchmarkInterceptor)
+                    }
                 }
                 write("return results")
             }
@@ -123,11 +123,11 @@ class HttpProtocolSerdeBenchmarkGenerator(
                 for (testCase in testCases) {
                     val clientField = "client_${sanitizeName(testCase.id)}"
                     val inputArg = if (operation.input.isPresent) "input" else ""
-                    openBlock("results.add(#T.run(", RuntimeTypes.Benchmarks.BenchmarkHarness)
-                    write("id = #S,", testCase.id)
-                    write("interceptor = interceptor,")
-                    write("extractNanos = #T::deserializationNanos,", RuntimeTypes.Benchmarks.BenchmarkInterceptor)
-                    closeBlock(") { #L.#L(#L) })", clientField, opName, inputArg)
+                    withBlock("results.add(#T.run(", ") { #L.#L(#L) })", RuntimeTypes.Benchmarks.BenchmarkHarness, clientField, opName, inputArg) {
+                        write("id = #S,", testCase.id)
+                        write("interceptor = interceptor,")
+                        write("extractNanos = #T::deserializationNanos,", RuntimeTypes.Benchmarks.BenchmarkInterceptor)
+                    }
                 }
                 write("return results")
             }
