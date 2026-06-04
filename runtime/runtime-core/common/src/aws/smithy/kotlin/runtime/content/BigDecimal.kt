@@ -108,3 +108,11 @@ public expect class BigDecimal(value: String) :
      */
     public override operator fun compareTo(other: BigDecimal): Int
 }
+
+internal fun assertExponent(value: Int) {
+    require(value in -MAX_DECIMAL_FRACTION_EXPONENT..MAX_DECIMAL_FRACTION_EXPONENT) {
+        "BigDecimal exponent $value exceeds maximum allowed magnitude of $MAX_DECIMAL_FRACTION_EXPONENT"
+    }
+}
+
+internal fun assertExponent(value: Long) = assertExponent(value.toInt())
