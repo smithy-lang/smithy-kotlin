@@ -153,7 +153,7 @@ public class JsonDeserializer(payload: ByteArray) :
             else -> throw DeserializationException("unknown timestamp format: $format")
         }
     } catch (pe: ParseException) {
-        throw DeserializationException("Cannot deserialize unsupported timestamp format", pe)
+        throw DeserializationException("Cannot deserialize timestamp value", pe)
     }
 
     override fun nextHasValue(): Boolean = reader.peek() != JsonToken.Null
