@@ -445,17 +445,6 @@ object RuntimeTypes {
         }
     }
 
-    object AwsSdkCredentials {
-        val StaticCredentialsProvider = "aws.sdk.kotlin.runtime.auth.credentials.StaticCredentialsProvider".toSymbol()
-    }
-
-    object Benchmarks {
-        val BenchmarkHarness = "aws.sdk.kotlin.benchmarks.serde.BenchmarkHarness".toSymbol()
-        val BenchmarkInterceptor = "aws.sdk.kotlin.benchmarks.serde.BenchmarkInterceptor".toSymbol()
-        val BenchmarkMetadata = "aws.sdk.kotlin.benchmarks.serde.BenchmarkMetadata".toSymbol()
-        val BenchmarkResult = "aws.sdk.kotlin.benchmarks.serde.BenchmarkResult".toSymbol()
-    }
-
     object HttpClientEngines {
         object Default : RuntimeTypePackage(KotlinDependency.DEFAULT_HTTP_ENGINE) {
             val DefaultHttpEngine = symbol("DefaultHttpEngine")

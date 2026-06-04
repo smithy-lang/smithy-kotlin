@@ -633,23 +633,10 @@ public final class aws/smithy/kotlin/codegen/core/RuntimeTypes$AwsProtocolCore :
 	public final fun getXAmznQueryErrorHeader ()Lsoftware/amazon/smithy/codegen/core/Symbol;
 }
 
-public final class aws/smithy/kotlin/codegen/core/RuntimeTypes$AwsSdkCredentials {
-	public static final field INSTANCE Laws/smithy/kotlin/codegen/core/RuntimeTypes$AwsSdkCredentials;
-	public final fun getStaticCredentialsProvider ()Lsoftware/amazon/smithy/codegen/core/Symbol;
-}
-
 public final class aws/smithy/kotlin/codegen/core/RuntimeTypes$AwsXmlProtocols : aws/smithy/kotlin/codegen/core/RuntimeTypePackage {
 	public static final field INSTANCE Laws/smithy/kotlin/codegen/core/RuntimeTypes$AwsXmlProtocols;
 	public final fun getParseEc2QueryErrorResponse ()Lsoftware/amazon/smithy/codegen/core/Symbol;
 	public final fun getParseRestXmlErrorResponse ()Lsoftware/amazon/smithy/codegen/core/Symbol;
-}
-
-public final class aws/smithy/kotlin/codegen/core/RuntimeTypes$Benchmarks {
-	public static final field INSTANCE Laws/smithy/kotlin/codegen/core/RuntimeTypes$Benchmarks;
-	public final fun getBenchmarkHarness ()Lsoftware/amazon/smithy/codegen/core/Symbol;
-	public final fun getBenchmarkInterceptor ()Lsoftware/amazon/smithy/codegen/core/Symbol;
-	public final fun getBenchmarkMetadata ()Lsoftware/amazon/smithy/codegen/core/Symbol;
-	public final fun getBenchmarkResult ()Lsoftware/amazon/smithy/codegen/core/Symbol;
 }
 
 public final class aws/smithy/kotlin/codegen/core/RuntimeTypes$Core : aws/smithy/kotlin/codegen/core/RuntimeTypePackage {
@@ -2320,12 +2307,6 @@ public final class aws/smithy/kotlin/codegen/rendering/protocol/HttpProtocolClie
 	public static synthetic fun putIfAbsent$default (Laws/smithy/kotlin/codegen/core/KotlinWriter;Lsoftware/amazon/smithy/codegen/core/Symbol;Ljava/lang/String;Ljava/lang/String;ZILjava/lang/Object;)V
 }
 
-public final class aws/smithy/kotlin/codegen/rendering/protocol/HttpProtocolSerdeBenchmarkGenerator {
-	public fun <init> (Laws/smithy/kotlin/codegen/rendering/protocol/ProtocolGenerator$GenerationContext;Laws/smithy/kotlin/codegen/core/KotlinWriter;Lsoftware/amazon/smithy/model/Model;Lsoftware/amazon/smithy/codegen/core/SymbolProvider;Lsoftware/amazon/smithy/model/shapes/OperationShape;Lsoftware/amazon/smithy/model/shapes/ServiceShape;)V
-	public final fun renderRequestBenchmarkClass (Ljava/lang/String;Ljava/util/List;)V
-	public final fun renderResponseBenchmarkClass (Ljava/lang/String;Ljava/util/List;)V
-}
-
 public final class aws/smithy/kotlin/codegen/rendering/protocol/HttpProtocolTestGenerator {
 	public fun <init> (Laws/smithy/kotlin/codegen/rendering/protocol/ProtocolGenerator$GenerationContext;Laws/smithy/kotlin/codegen/rendering/protocol/HttpProtocolUnitTestRequestGenerator$Builder;Laws/smithy/kotlin/codegen/rendering/protocol/HttpProtocolUnitTestResponseGenerator$Builder;Laws/smithy/kotlin/codegen/rendering/protocol/HttpProtocolUnitTestErrorGenerator$Builder;Laws/smithy/kotlin/codegen/rendering/protocol/TestMemberDelta;)V
 	public synthetic fun <init> (Laws/smithy/kotlin/codegen/rendering/protocol/ProtocolGenerator$GenerationContext;Laws/smithy/kotlin/codegen/rendering/protocol/HttpProtocolUnitTestRequestGenerator$Builder;Laws/smithy/kotlin/codegen/rendering/protocol/HttpProtocolUnitTestResponseGenerator$Builder;Laws/smithy/kotlin/codegen/rendering/protocol/HttpProtocolUnitTestErrorGenerator$Builder;Laws/smithy/kotlin/codegen/rendering/protocol/TestMemberDelta;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
@@ -2432,6 +2413,11 @@ public final class aws/smithy/kotlin/codegen/rendering/protocol/HttpProtocolUnit
 	public final fun getContext ()Laws/smithy/kotlin/codegen/integration/SectionKey;
 	public final fun getOperation ()Laws/smithy/kotlin/codegen/integration/SectionKey;
 	public final fun getTest ()Laws/smithy/kotlin/codegen/integration/SectionKey;
+}
+
+public final class aws/smithy/kotlin/codegen/rendering/protocol/HttpProtocolUnitTestResponseGeneratorKt {
+	public static final fun defaultUnboxedValue (Lsoftware/amazon/smithy/codegen/core/Symbol;Laws/smithy/kotlin/codegen/core/KotlinWriter;)Ljava/lang/String;
+	public static synthetic fun defaultUnboxedValue$default (Lsoftware/amazon/smithy/codegen/core/Symbol;Laws/smithy/kotlin/codegen/core/KotlinWriter;ILjava/lang/Object;)Ljava/lang/String;
 }
 
 public final class aws/smithy/kotlin/codegen/rendering/protocol/HttpStringValuesMapSerializer {
@@ -2551,6 +2537,11 @@ public final class aws/smithy/kotlin/codegen/rendering/protocol/ProtocolMiddlewa
 
 public final class aws/smithy/kotlin/codegen/rendering/protocol/ProtocolMiddlewareKt {
 	public static final fun replace (Ljava/util/List;Laws/smithy/kotlin/codegen/rendering/protocol/ProtocolMiddleware;Lkotlin/jvm/functions/Function1;)Ljava/util/List;
+}
+
+public abstract interface class aws/smithy/kotlin/codegen/rendering/protocol/SerdeBenchmarkGeneratorFactory {
+	public abstract fun renderRequestBenchmark (Laws/smithy/kotlin/codegen/rendering/protocol/ProtocolGenerator$GenerationContext;Laws/smithy/kotlin/codegen/core/KotlinWriter;Lsoftware/amazon/smithy/model/shapes/OperationShape;Ljava/lang/String;Ljava/util/List;)V
+	public abstract fun renderResponseBenchmark (Laws/smithy/kotlin/codegen/rendering/protocol/ProtocolGenerator$GenerationContext;Laws/smithy/kotlin/codegen/core/KotlinWriter;Lsoftware/amazon/smithy/model/shapes/OperationShape;Ljava/lang/String;Ljava/util/List;)V
 }
 
 public final class aws/smithy/kotlin/codegen/rendering/protocol/TestContainmentMode : java/lang/Enum {

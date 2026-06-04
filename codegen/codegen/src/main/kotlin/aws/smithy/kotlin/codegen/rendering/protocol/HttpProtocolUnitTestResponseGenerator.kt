@@ -227,8 +227,7 @@ open class HttpProtocolUnitTestResponseGenerator protected constructor(builder: 
         override fun build(): HttpProtocolUnitTestGenerator<HttpResponseTestCase> = HttpProtocolUnitTestResponseGenerator(this)
     }
 }
-
-internal fun Symbol.defaultUnboxedValue(writer: KotlinWriter? = null): String = when (shape) {
+fun Symbol.defaultUnboxedValue(writer: KotlinWriter? = null): String = when (shape) {
     is LongShape -> "0L"
     is FloatShape -> "0.0f"
     is DoubleShape -> "0.0"

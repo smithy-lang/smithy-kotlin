@@ -39,6 +39,8 @@ class HttpProtocolTestGenerator(
     // list of test ID's to ignore/skip
     private val testDelta: TestMemberDelta = TestMemberDelta(setOf()),
 ) {
+    private val benchmarkGeneratorFactory: SerdeBenchmarkGeneratorFactory? =
+        ctx.integrations.filterIsInstance<SerdeBenchmarkGeneratorFactory>().firstOrNull()
     private val logger = Logger.getLogger(javaClass.name)
 
     /**
@@ -79,21 +81,14 @@ class HttpProtocolTestGenerator(
                 }
 
                 // Generate serde benchmark classes
-                if (benchmarkCases.isNotEmpty()) {
+                if (benchmarkCases.isNotEmpty() && benchmarkGeneratorFactory != null) {
                     val testOperationName = operation.id.name.replaceFirstChar { c -> c.uppercaseChar() }
                     val benchmarkClassName = "${testOperationName}SerializationBenchmark"
                     val benchmarkFilename = "$benchmarkClassName.kt"
                     ctx.delegator.useTestFileWriter(benchmarkFilename, ctx.settings.pkg.name) { writer ->
                         logger.fine("Generating serialization benchmark for ${operation.id}")
                         writer.addImport("${ctx.settings.pkg.name}.model", "*")
-                        HttpProtocolSerdeBenchmarkGenerator(
-                            ctx,
-                            writer,
-                            ctx.model,
-                            ctx.symbolProvider,
-                            operation,
-                            ctx.service,
-                        ).renderRequestBenchmarkClass(benchmarkClassName, benchmarkCases)
+                        benchmarkGeneratorFactory.renderRequestBenchmark(ctx, writer, operation, benchmarkClassName, benchmarkCases)
                     }
                 }
             }
@@ -128,21 +123,14 @@ class HttpProtocolTestGenerator(
                 }
 
                 // Generate serde benchmark classes
-                if (benchmarkCases.isNotEmpty()) {
+                if (benchmarkCases.isNotEmpty() && benchmarkGeneratorFactory != null) {
                     val testOperationName = operation.id.name.replaceFirstChar { c -> c.uppercaseChar() }
                     val benchmarkClassName = "${testOperationName}DeserializationBenchmark"
                     val benchmarkFilename = "$benchmarkClassName.kt"
                     ctx.delegator.useTestFileWriter(benchmarkFilename, ctx.settings.pkg.name) { writer ->
                         logger.fine("Generating deserialization benchmark for ${operation.id}")
                         writer.addImport("${ctx.settings.pkg.name}.model", "*")
-                        HttpProtocolSerdeBenchmarkGenerator(
-                            ctx,
-                            writer,
-                            ctx.model,
-                            ctx.symbolProvider,
-                            operation,
-                            ctx.service,
-                        ).renderResponseBenchmarkClass(benchmarkClassName, benchmarkCases)
+                        benchmarkGeneratorFactory.renderResponseBenchmark(ctx, writer, operation, benchmarkClassName, benchmarkCases)
                     }
                 }
             }
