@@ -5,14 +5,17 @@
 
 package aws.smithy.kotlin.runtime.util
 
+import aws.smithy.kotlin.runtime.InternalApi
 import aws.smithy.kotlin.runtime.io.IOException
 import kotlinx.io.files.FileNotFoundException
 import kotlinx.io.files.Path
 import kotlinx.io.files.SystemFileSystem
+import kotlinx.io.files.SystemPathSeparator
 import okio.Path.Companion.toPath
 import okio.SYSTEM
 import okio.buffer
 import okio.use
+import kotlin.jvm.JvmName
 import okio.FileSystem as OkioFileSystem
 
 /**
@@ -60,7 +63,7 @@ public interface Filesystem {
      * @param data the bytes to write
      * @param writeType the write strategy: [WriteType.OVERWRITE] to replace file contents,
      * [WriteType.APPEND] to add to the end, or [WriteType.OFFSET] to write at a specific byte position
-     * @param mustExist if true, throws [aws.smithy.kotlin.runtime.io.IOException] when the file does not exist
+     * @param mustExist if true, throws [IOException] when the file does not exist
      * @param permissions optional POSIX file permissions as an octal string to apply when the file is created
      * (e.g., `"600"` for owner read/write only). Ignored if the file already exists or the platform does not
      * support POSIX permissions (e.g., Windows).
@@ -73,7 +76,7 @@ public interface Filesystem {
      * @param source fully qualified path of the file to move
      * @param destination fully qualified path of the target location
      * @param mustExist if true, throws [FileNotFoundException] when [source] does not exist
-     * @param overwrite if false, throws [aws.smithy.kotlin.runtime.io.IOException] when [destination] already exists
+     * @param overwrite if false, throws [IOException] when [destination] already exists
      */
     public fun atomicMove(source: String, destination: String, mustExist: Boolean = true, overwrite: Boolean = false) {
         if (!exists(source) && mustExist) {
@@ -123,7 +126,7 @@ public interface Filesystem {
      * @param path fully qualified path of the file
      * @param mustExist if true, throws [FileNotFoundException] when [path] does not exist
      * @return the file size in bytes
-     * @throws [aws.smithy.kotlin.runtime.io.IOException] if the size cannot be determined
+     * @throws [IOException] if the size cannot be determined
      */
     public fun size(path: String, mustExist: Boolean = true): Long {
         if (!exists(path) && mustExist) {
@@ -201,7 +204,20 @@ public interface Filesystem {
         /**
          * Construct a fake filesystem from a mapping of paths to contents
          */
-        public fun fromMap(data: Map<String, ByteArray>, filePathSeparator: String = "/"): Filesystem = MapFilesystem(data.toMutableMap(), filePathSeparator)
+        // TODO deprecate
+        public fun fromMap(data: Map<String, ByteArray>, filePathSeparator: String = "/"): Filesystem = MapFilesystem(
+            TestFile.transformMap(data).toMutableMap(),
+            filePathSeparator,
+        )
+
+        /**
+         * Construct a fake filesystem from a mapping of paths to contents
+         */
+        @JvmName("fromMapStringTestFile")
+        public fun fromMap(data: Map<String, TestFile>, filePathSeparator: String = "/"): Filesystem = MapFilesystem(
+            data.toMutableMap(),
+            filePathSeparator,
+        )
     }
 }
 
@@ -225,14 +241,14 @@ public sealed class WriteType {
     public data class OFFSET(public val offset: Long) : WriteType()
 }
 
-internal class MapFilesystem(
-    private val memFs: MutableMap<String, ByteArray>,
-    override val filePathSeparator: String,
+@InternalApi
+public class MapFilesystem(
+    private val memFs: MutableMap<String, TestFile> = mutableMapOf(),
+    override val filePathSeparator: String = SystemPathSeparator.toString(),
 ) : Filesystem {
-    override suspend fun readFileOrNull(path: String): ByteArray? = memFs[path]
-    override suspend fun writeFile(path: String, data: ByteArray) {
-        memFs[path] = data
-    }
+    override suspend fun readFileOrNull(path: String): ByteArray? = memFs[path]?.contents
+    override suspend fun writeFile(path: String, data: ByteArray): Unit = write(path, data, WriteType.OVERWRITE)
+
     override fun fileExists(path: String): Boolean = memFs[path] != null
     override fun write(
         path: String,
@@ -244,16 +260,24 @@ internal class MapFilesystem(
         if (memFs[path] == null && mustExist) {
             throw FileNotFoundException("$path does not exist and mustExist is set to true")
         }
-        when (writeType) {
+
+        val existing = memFs[path] ?: TestFile(byteArrayOf())
+
+        val newData = when (writeType) {
             is WriteType.OFFSET -> {
-                val existing = memFs[path] ?: ByteArray(0)
-                val end = (writeType.offset.toInt() + data.size)
-                val result = existing.copyOf(newSize = maxOf(existing.size, end))
+                val end = writeType.offset.toInt() + data.size
+                val result = existing.contents.copyOf(newSize = maxOf(existing.contents.size, end))
                 data.copyInto(result, destinationOffset = writeType.offset.toInt())
-                memFs[path] = result
+                result
             }
-            is WriteType.APPEND -> memFs[path] = memFs[path]?.let { it + data } ?: data
-            is WriteType.OVERWRITE -> memFs[path] = data
+            is WriteType.APPEND -> existing.contents + data
+            is WriteType.OVERWRITE -> data
         }
+
+        val newPermissions = permissions ?: existing.permissions
+        memFs[path] = TestFile(newData, newPermissions)
     }
+
+    @InternalApi
+    public fun getFilePermissions(path: String): String = memFs.getValue(path).permissions ?: ""
 }
