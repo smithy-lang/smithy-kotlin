@@ -25,7 +25,7 @@ public class SerializationException : ClientException {
 /**
  * Exception class for all deserialization errors
  */
-public class DeserializationException : ClientException {
+public open class DeserializationException : ClientException {
 
     public constructor() : super()
 
@@ -34,6 +34,25 @@ public class DeserializationException : ClientException {
     public constructor(message: String?, cause: Throwable?) : super(message, cause)
 
     public constructor(cause: Throwable?) : super(cause)
+}
+
+/**
+ * Exception thrown when deserialization exceeds the maximum allowed recursion depth.
+ */
+public class DeserializationRecursionException : DeserializationException("Max recursion depth ($MAX_RECURSION_DEPTH) exceeded during deserialization") {
+    @InternalApi
+    public companion object {
+        /**
+         * Compares [currentDepth] to [MAX_RECURSION_DEPTH] and throws [DeserializationRecursionException] if the former
+         * exceeds the latter. Otherwise, returns silently.
+         */
+        @InternalApi
+        public fun assertDepth(currentDepth: Int) {
+            if (currentDepth > MAX_RECURSION_DEPTH) {
+                throw DeserializationRecursionException()
+            }
+        }
+    }
 }
 
 /**
