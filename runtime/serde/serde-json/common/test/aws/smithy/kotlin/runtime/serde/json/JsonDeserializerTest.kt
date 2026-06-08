@@ -7,6 +7,7 @@ package aws.smithy.kotlin.runtime.serde.json
 import aws.smithy.kotlin.runtime.content.Document
 import aws.smithy.kotlin.runtime.content.buildDocument
 import aws.smithy.kotlin.runtime.serde.*
+import aws.smithy.kotlin.runtime.time.TimestampFormat
 import io.kotest.matchers.collections.shouldContainExactly
 import io.kotest.matchers.maps.shouldContainExactly
 import kotlin.math.abs
@@ -819,6 +820,18 @@ class JsonDeserializerTest {
         }
 
         testDeserializeDocument(doc, expected)
+    }
+
+    /**
+     * tt/V2228436368/F20: "1e999999999" in an epoch-seconds field should not be expanded and cause OOM
+     */
+    @Test
+    fun testEpochExponentDoesNotOOM() {
+        val payload = "\"1e999999999\"".encodeToByteArray()
+        val deserializer = JsonDeserializer(payload)
+        assertFailsWith<DeserializationException> {
+            deserializer.deserializeInstant(TimestampFormat.EPOCH_SECONDS)
+        }
     }
 
     @Test
