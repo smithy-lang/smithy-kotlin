@@ -61,9 +61,9 @@ public actual class BigDecimal private constructor(private val delegate: IonSpin
     public actual val exponent: Int
         get() = normalized.exponent.toInt()
 
-    actual override fun compareTo(other: BigDecimal): Int = delegate.compare(other.delegate)
+    actual override fun compareTo(other: BigDecimal): Int = normalized.compare(other.normalized)
     public actual override fun equals(other: Any?): Boolean = other is BigDecimal && (delegate.compareTo(other.delegate) == 0)
-    actual override fun hashCode(): Int = 31 + delegate.hashCode()
+    actual override fun hashCode(): Int = 31 * normalized.hashCode()
     public actual fun toPlainString(): String = delegate.toPlainString()
     actual override fun toString(): String = delegate.toString()
 

@@ -115,4 +115,8 @@ internal fun assertExponent(value: Int) {
     }
 }
 
-internal fun assertExponent(value: Long) = assertExponent(value.toInt())
+internal fun assertExponent(value: Long) {
+    require(value in -MAX_DECIMAL_FRACTION_EXPONENT..MAX_DECIMAL_FRACTION_EXPONENT) {
+        "BigDecimal exponent $value exceeds maximum allowed magnitude of $MAX_DECIMAL_FRACTION_EXPONENT"
+    }
+}

@@ -47,17 +47,17 @@ public actual class BigDecimal private constructor(private val delegate: JvmBigD
 
     public actual override fun equals(other: Any?): Boolean = other is BigDecimal && (delegate.compareTo(other.delegate) == 0)
 
-    public actual override fun hashCode(): Int = 31 + delegate.hashCode()
+    public actual override fun hashCode(): Int = 31 * normalized.hashCode()
 
-    private val stripped: JvmBigDecimal by lazy {
+    private val normalized: JvmBigDecimal by lazy {
         if (delegate.signum() == 0) JvmBigDecimal.ZERO else delegate.stripTrailingZeros()
     }
 
     public actual val mantissa: BigInteger
-        get() = BigInteger(stripped.unscaledValue())
+        get() = BigInteger(normalized.unscaledValue())
 
     public actual val exponent: Int
-        get() = if (delegate.signum() == 0) 0 else stripped.unscaledValue().abs().toString().length - 1 - stripped.scale()
+        get() = if (delegate.signum() == 0) 0 else normalized.unscaledValue().abs().toString().length - 1 - normalized.scale()
 
     public val value: String = delegate.toString()
 
@@ -65,5 +65,5 @@ public actual class BigDecimal private constructor(private val delegate: JvmBigD
 
     public actual operator fun minus(other: BigDecimal): BigDecimal = coalesceOrCreate(delegate - other.delegate, this, other)
 
-    actual override fun compareTo(other: BigDecimal): Int = delegate.compareTo(other.delegate)
+    actual override fun compareTo(other: BigDecimal): Int = normalized.compareTo(other.normalized)
 }
