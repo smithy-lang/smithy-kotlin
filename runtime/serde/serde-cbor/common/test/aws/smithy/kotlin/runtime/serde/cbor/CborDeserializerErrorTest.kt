@@ -778,13 +778,13 @@ class CborDeserializerErrorTest {
     @Test
     fun testDecimalFractionExponentDoesNotOom() {
         val payloads = listOf(
-            "0xc48219270f01", // 1E9999
-            "0xc4821a0001869f01", // 1E99999
-            "0xc4821a000f423f01", // 1E999999
-            "0xc4821a0098967f01", // 1E9999999
-            "0xc4821a05f5e0ff01", // 1E99999999
-            "0xc4821a3b9ac9ff01", // 1E999999999
-        ).map { it.toByteArray() }
+            "c48219270f01", // 1E9999
+            "c4821a0001869f01", // 1E99999
+            "c4821a000f423f01", // 1E999999
+            "c4821a0098967f01", // 1E9999999
+            "c4821a05f5e0ff01", // 1E99999999
+            "c4821a3b9ac9ff01", // 1E999999999
+        ).map { it.hexToByteArray() }
 
         payloads.forEach { payload ->
             val buffer = SdkBuffer().apply { write(payload) }
