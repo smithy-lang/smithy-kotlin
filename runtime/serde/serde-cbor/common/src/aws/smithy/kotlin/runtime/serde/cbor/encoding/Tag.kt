@@ -183,7 +183,11 @@ internal class DecimalFraction(val value: BigDecimal) : Value {
                 else -> throw DeserializationException("Expected integer for CBOR decimal fraction exponent value, got $exponentValue.")
             }
 
-            return DecimalFraction(BigDecimal(mantissa, -exponent))
+            return try {
+                DecimalFraction(BigDecimal(mantissa, -exponent))
+            } catch (iae: IllegalArgumentException) {
+                throw DeserializationException("Cannot deserialize unsupported BigDecimal value", iae)
+            }
         }
     }
 }

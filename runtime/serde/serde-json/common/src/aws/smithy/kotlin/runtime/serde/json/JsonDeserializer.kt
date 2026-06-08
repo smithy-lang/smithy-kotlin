@@ -11,6 +11,7 @@ import aws.smithy.kotlin.runtime.content.Document
 import aws.smithy.kotlin.runtime.serde.*
 import aws.smithy.kotlin.runtime.text.encoding.decodeBase64Bytes
 import aws.smithy.kotlin.runtime.time.Instant
+import aws.smithy.kotlin.runtime.time.ParseException
 import aws.smithy.kotlin.runtime.time.TimestampFormat
 
 /**
@@ -144,11 +145,15 @@ public class JsonDeserializer(payload: ByteArray) :
 
     override fun deserializeByteArray(): ByteArray = deserializeString().decodeBase64Bytes()
 
-    override fun deserializeInstant(format: TimestampFormat): Instant = when (format) {
-        TimestampFormat.EPOCH_SECONDS -> deserializeString().let { Instant.fromEpochSeconds(it) }
-        TimestampFormat.ISO_8601 -> deserializeString().let { Instant.fromIso8601(it) }
-        TimestampFormat.RFC_5322 -> deserializeString().let { Instant.fromRfc5322(it) }
-        else -> throw DeserializationException("unknown timestamp format: $format")
+    override fun deserializeInstant(format: TimestampFormat): Instant = try {
+        when (format) {
+            TimestampFormat.EPOCH_SECONDS -> deserializeString().let { Instant.fromEpochSeconds(it) }
+            TimestampFormat.ISO_8601 -> deserializeString().let { Instant.fromIso8601(it) }
+            TimestampFormat.RFC_5322 -> deserializeString().let { Instant.fromRfc5322(it) }
+            else -> throw DeserializationException("unknown timestamp format: $format")
+        }
+    } catch (pe: ParseException) {
+        throw DeserializationException("Cannot deserialize timestamp value", pe)
     }
 
     override fun nextHasValue(): Boolean = reader.peek() != JsonToken.Null
