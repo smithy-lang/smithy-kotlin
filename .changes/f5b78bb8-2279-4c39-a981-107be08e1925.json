@@ -1,8 +1,0 @@
-{
-    "id": "f5b78bb8-2279-4c39-a981-107be08e1925",
-    "type": "feature",
-    "description": "Add support for Smithy's [`@requiresLength`](https://smithy.io/2.0/spec/streaming.html#smithy-api-requireslength-trait) and verify that annotated blob shapes include a `Content-Length`",
-    "issues": [
-        "https://github.com/smithy-lang/smithy-kotlin/issues/363"
-    ]
-}

@@ -1,5 +1,15 @@
 # Changelog
 
+## [1.6.15] - 06/10/2026
+
+### Features
+* [#363](https://github.com/smithy-lang/smithy-kotlin/issues/363) Add support for Smithy's [`@requiresLength`](https://smithy.io/2.0/spec/streaming.html#smithy-api-requireslength-trait) and verify that annotated blob shapes include a `Content-Length`
+
+### Fixes
+* Validate that OkHttp header values do not contain CR or LF
+* Limit exponent scale to prevent OOM errors when expanding exponents
+* Limit serde parsing depth to 1,000 levels of nesting to prevent `StackOverflowError`
+
 ## [1.6.14] - 05/08/2026
 
 ### Features
