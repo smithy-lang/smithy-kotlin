@@ -23,6 +23,7 @@ object RuntimeTypes {
         val StatusCode = symbol("HttpStatusCode")
         val toSdkByteReadChannel = symbol("toSdkByteReadChannel")
         val Headers = symbol("Headers")
+        val HeadersBuilder = symbol("HeadersBuilder")
 
         object Util : RuntimeTypePackage(KotlinDependency.HTTP, "util") {
             val encodeLabel = symbol("encodeLabel")
@@ -76,6 +77,7 @@ object RuntimeTypes {
 
         object Engine : RuntimeTypePackage(KotlinDependency.HTTP_CLIENT, "engine") {
             val HttpClientEngine = symbol("HttpClientEngine")
+            val callContext = symbol("callContext")
             val manage = symbol("manage", "engine.internal", isExtension = true)
         }
 
@@ -97,6 +99,10 @@ object RuntimeTypes {
 
     object HttpTest : RuntimeTypePackage(KotlinDependency.HTTP_TEST) {
         val TestEngine = symbol("TestEngine")
+    }
+
+    object SmithyTest : RuntimeTypePackage(KotlinDependency.SMITHY_TEST) {
+        val encodeAsByteArray = symbol("encodeAsByteArray")
     }
 
     object Core : RuntimeTypePackage(KotlinDependency.CORE) {

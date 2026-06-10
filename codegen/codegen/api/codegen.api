@@ -775,6 +775,7 @@ public final class aws/smithy/kotlin/codegen/core/RuntimeTypes$Core$Utils : aws/
 public final class aws/smithy/kotlin/codegen/core/RuntimeTypes$Http : aws/smithy/kotlin/codegen/core/RuntimeTypePackage {
 	public static final field INSTANCE Laws/smithy/kotlin/codegen/core/RuntimeTypes$Http;
 	public final fun getHeaders ()Lsoftware/amazon/smithy/codegen/core/Symbol;
+	public final fun getHeadersBuilder ()Lsoftware/amazon/smithy/codegen/core/Symbol;
 	public final fun getHttpBody ()Lsoftware/amazon/smithy/codegen/core/Symbol;
 	public final fun getHttpCall ()Lsoftware/amazon/smithy/codegen/core/Symbol;
 	public final fun getHttpMethod ()Lsoftware/amazon/smithy/codegen/core/Symbol;
@@ -821,6 +822,7 @@ public final class aws/smithy/kotlin/codegen/core/RuntimeTypes$HttpClient$Config
 
 public final class aws/smithy/kotlin/codegen/core/RuntimeTypes$HttpClient$Engine : aws/smithy/kotlin/codegen/core/RuntimeTypePackage {
 	public static final field INSTANCE Laws/smithy/kotlin/codegen/core/RuntimeTypes$HttpClient$Engine;
+	public final fun getCallContext ()Lsoftware/amazon/smithy/codegen/core/Symbol;
 	public final fun getHttpClientEngine ()Lsoftware/amazon/smithy/codegen/core/Symbol;
 	public final fun getManage ()Lsoftware/amazon/smithy/codegen/core/Symbol;
 }
@@ -1060,6 +1062,11 @@ public final class aws/smithy/kotlin/codegen/core/RuntimeTypes$SmithyRpcV2Protoc
 	public static final field INSTANCE Laws/smithy/kotlin/codegen/core/RuntimeTypes$SmithyRpcV2Protocols$Cbor;
 	public final fun getRpcV2CborErrorDeserializer ()Lsoftware/amazon/smithy/codegen/core/Symbol;
 	public final fun getRpcV2CborSmithyProtocolResponseHeaderInterceptor ()Lsoftware/amazon/smithy/codegen/core/Symbol;
+}
+
+public final class aws/smithy/kotlin/codegen/core/RuntimeTypes$SmithyTest : aws/smithy/kotlin/codegen/core/RuntimeTypePackage {
+	public static final field INSTANCE Laws/smithy/kotlin/codegen/core/RuntimeTypes$SmithyTest;
+	public final fun getEncodeAsByteArray ()Lsoftware/amazon/smithy/codegen/core/Symbol;
 }
 
 public final class aws/smithy/kotlin/codegen/core/SourceSet : java/lang/Enum {
@@ -2424,6 +2431,11 @@ public final class aws/smithy/kotlin/codegen/rendering/protocol/HttpProtocolUnit
 	public final fun getTest ()Laws/smithy/kotlin/codegen/integration/SectionKey;
 }
 
+public final class aws/smithy/kotlin/codegen/rendering/protocol/HttpProtocolUnitTestResponseGeneratorKt {
+	public static final fun defaultUnboxedValue (Lsoftware/amazon/smithy/codegen/core/Symbol;Laws/smithy/kotlin/codegen/core/KotlinWriter;)Ljava/lang/String;
+	public static synthetic fun defaultUnboxedValue$default (Lsoftware/amazon/smithy/codegen/core/Symbol;Laws/smithy/kotlin/codegen/core/KotlinWriter;ILjava/lang/Object;)Ljava/lang/String;
+}
+
 public final class aws/smithy/kotlin/codegen/rendering/protocol/HttpStringValuesMapSerializer {
 	public fun <init> (Laws/smithy/kotlin/codegen/rendering/protocol/ProtocolGenerator$GenerationContext;Ljava/util/List;Laws/smithy/kotlin/codegen/rendering/protocol/HttpBindingResolver;Lsoftware/amazon/smithy/model/traits/TimestampFormatTrait$Format;)V
 	public fun <init> (Lsoftware/amazon/smithy/model/Model;Lsoftware/amazon/smithy/codegen/core/SymbolProvider;Laws/smithy/kotlin/codegen/KotlinSettings;Ljava/util/List;Laws/smithy/kotlin/codegen/rendering/protocol/HttpBindingResolver;Lsoftware/amazon/smithy/model/traits/TimestampFormatTrait$Format;)V
@@ -2556,6 +2568,11 @@ public final class aws/smithy/kotlin/codegen/rendering/protocol/RequiresLengthIn
 	public fun getSectionWriters ()Ljava/util/List;
 	public fun preprocessModel (Lsoftware/amazon/smithy/model/Model;Laws/smithy/kotlin/codegen/KotlinSettings;)Lsoftware/amazon/smithy/model/Model;
 	public fun writeAdditionalFiles (Laws/smithy/kotlin/codegen/core/CodegenContext;Laws/smithy/kotlin/codegen/core/KotlinDelegator;)V
+}
+
+public abstract interface class aws/smithy/kotlin/codegen/rendering/protocol/SerdeBenchmarkGeneratorFactory {
+	public abstract fun renderRequestBenchmark (Laws/smithy/kotlin/codegen/rendering/protocol/ProtocolGenerator$GenerationContext;Laws/smithy/kotlin/codegen/core/KotlinWriter;Lsoftware/amazon/smithy/model/shapes/OperationShape;Ljava/lang/String;Ljava/util/List;)V
+	public abstract fun renderResponseBenchmark (Laws/smithy/kotlin/codegen/rendering/protocol/ProtocolGenerator$GenerationContext;Laws/smithy/kotlin/codegen/core/KotlinWriter;Lsoftware/amazon/smithy/model/shapes/OperationShape;Ljava/lang/String;Ljava/util/List;)V
 }
 
 public final class aws/smithy/kotlin/codegen/rendering/protocol/TestContainmentMode : java/lang/Enum {
