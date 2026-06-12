@@ -36,14 +36,14 @@ internal class Tag(val id: ULong, val value: Value) : Value {
     }
 
     internal companion object {
-        fun decode(buffer: SdkBufferedSource): Tag {
+        fun decode(buffer: SdkBufferedSource, depth: Int = 0): Tag {
             val id = decodeArgument(buffer)
 
             val value: Value = when (id) {
                 TagId.TIMESTAMP.value -> Timestamp.decode(buffer)
-                TagId.BIG_NUM.value -> BigNum.decode(buffer)
-                TagId.NEG_BIG_NUM.value -> NegBigNum.decode(buffer)
-                TagId.DECIMAL_FRACTION.value -> DecimalFraction.decode(buffer)
+                TagId.BIG_NUM.value -> BigNum.decode(buffer, depth)
+                TagId.NEG_BIG_NUM.value -> NegBigNum.decode(buffer, depth)
+                TagId.DECIMAL_FRACTION.value -> DecimalFraction.decode(buffer, depth)
                 else -> throw DeserializationException("Unsupported tag ID $id")
             }
 
@@ -100,8 +100,8 @@ internal class BigNum(val value: BigInteger) : Value {
     override fun encode(into: SdkBufferedSink) = Tag(2u, ByteString(value.toByteArray())).encode(into)
 
     internal companion object {
-        internal fun decode(buffer: SdkBufferedSource): BigNum {
-            val bytes = ByteString.decode(buffer).value
+        internal fun decode(buffer: SdkBufferedSource, depth: Int = 0): BigNum {
+            val bytes = ByteString.decode(buffer, depth).value
             return BigNum(BigInteger(bytes))
         }
     }
@@ -118,8 +118,8 @@ internal class NegBigNum(val value: BigInteger) : Value {
     }
 
     internal companion object {
-        internal fun decode(buffer: SdkBufferedSource): NegBigNum {
-            val bytes = ByteString.decode(buffer).value
+        internal fun decode(buffer: SdkBufferedSource, depth: Int = 0): NegBigNum {
+            val bytes = ByteString.decode(buffer, depth).value
 
             // note: CBOR encoding implies (-1 - $value), add one to get the real value.
             val bigInteger = BigInteger(bytes) + BigInteger("1")
@@ -160,8 +160,8 @@ internal class DecimalFraction(val value: BigDecimal) : Value {
     }
 
     internal companion object {
-        internal fun decode(buffer: SdkBufferedSource): DecimalFraction {
-            val list = List.decode(buffer).value
+        internal fun decode(buffer: SdkBufferedSource, depth: Int = 0): DecimalFraction {
+            val list = List.decode(buffer, depth).value
             check(list.size == 2) { "Expected array of length 2 for decimal fraction, got ${list.size}" }
 
             val (exponentValue, mantissaValue) = list
@@ -183,7 +183,11 @@ internal class DecimalFraction(val value: BigDecimal) : Value {
                 else -> throw DeserializationException("Expected integer for CBOR decimal fraction exponent value, got $exponentValue.")
             }
 
-            return DecimalFraction(BigDecimal(mantissa, -exponent))
+            return try {
+                DecimalFraction(BigDecimal(mantissa, -exponent))
+            } catch (iae: IllegalArgumentException) {
+                throw DeserializationException("Cannot deserialize unsupported BigDecimal value", iae)
+            }
         }
     }
 }

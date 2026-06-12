@@ -361,7 +361,7 @@ class KotlinSymbolProvider(private val model: Model, private val settings: Kotli
     private fun getDefaultValueForNumber(type: ShapeType, value: String) = when (type) {
         ShapeType.LONG -> "${value}L"
         ShapeType.FLOAT -> "${value}f"
-        ShapeType.DOUBLE -> if (value.matches("[0-9]*\\.[0-9]+".toRegex())) value else "$value.0"
+        ShapeType.DOUBLE -> if (value.matches("-?[0-9]*\\.[0-9]+".toRegex())) value else "$value.0"
         ShapeType.SHORT -> "$value.toShort()"
         ShapeType.BYTE -> "$value.toByte()"
         else -> value

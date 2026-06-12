@@ -22,8 +22,16 @@ import kotlinx.coroutines.yield
 import kotlin.test.*
 
 class SdkStreamResponseHandlerTest {
-    private class MockHttpStream(override val responseStatusCode: Int) : HttpStream {
+    private class MockHttpStream(private val statusCode: Int) : HttpStream {
         var closed: Boolean = false
+        var statusReadAfterClose: Boolean = false
+
+        override val responseStatusCode: Int
+            get() {
+                if (closed) statusReadAfterClose = true
+                return statusCode
+            }
+
         override fun activate() {}
         override suspend fun writeChunk(chunkData: ByteArray, isFinalChunk: Boolean) {
             TODO("Not yet implemented")
@@ -83,6 +91,22 @@ class SdkStreamResponseHandlerTest {
 
         val resp = handler.waitForResponse()
         assertEquals(HttpStatusCode.OK, resp.status)
+    }
+
+    @Test
+    fun testResponseSignalledBeforeStreamClosed() = runTest {
+        val handler = SdkStreamResponseHandler(mockConn, coroutineContext)
+        val stream = MockHttpStream(204)
+        launch {
+            handler.onResponseComplete(stream, 0)
+        }
+
+        val resp = handler.waitForResponse()
+        assertEquals(HttpStatusCode.NoContent, resp.status)
+
+        // the status code must have been read while the stream was still valid (before close)
+        assertTrue(stream.closed)
+        assertFalse(stream.statusReadAfterClose, "responseStatusCode was read after the stream was closed")
     }
 
     @Test

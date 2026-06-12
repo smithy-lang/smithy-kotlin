@@ -18,10 +18,7 @@ import aws.smithy.kotlin.codegen.test.createSymbolProvider
 import aws.smithy.kotlin.codegen.test.defaultSettings
 import aws.smithy.kotlin.codegen.test.prependNamespaceAndService
 import aws.smithy.kotlin.codegen.test.toSmithyModel
-import org.junit.jupiter.api.DisplayName
-import org.junit.jupiter.params.ParameterizedTest
-import org.junit.jupiter.params.provider.CsvSource
-import org.junit.jupiter.params.provider.ValueSource
+import aws.smithy.kotlin.runtime.testing.parameterized
 import software.amazon.smithy.codegen.core.SymbolProvider
 import software.amazon.smithy.model.knowledge.NullableIndex.CheckMode
 import software.amazon.smithy.model.shapes.*
@@ -65,26 +62,26 @@ class SymbolProviderTest {
         assertEquals("kotlin", memberSymbol.namespace)
     }
 
-    @DisplayName("Creates primitives")
-    @ParameterizedTest(name = "{index} ==> ''{0}''")
-    @CsvSource(
-        "String, null, true",
-        "Integer, null, true",
-        "PrimitiveInteger, 0, false",
-        "Short, null, true",
-        "PrimitiveShort, 0.toShort(), false",
-        "Long, null, true",
-        "PrimitiveLong, 0L, false",
-        "Byte, null, true",
-        "PrimitiveByte, 0.toByte(), false",
-        "Float, null, true",
-        "PrimitiveFloat, 0f, false",
-        "Double, null, true",
-        "PrimitiveDouble, 0.0, false",
-        "Boolean, null, true",
-        "PrimitiveBoolean, false, false",
-    )
-    fun `creates primitives`(primitiveType: String, expectedDefault: String, nullable: Boolean) {
+    @Test
+    fun `creates primitives`() = parameterized(
+        listOf(
+            Triple("String", "null", true),
+            Triple("Integer", "null", true),
+            Triple("PrimitiveInteger", "0", false),
+            Triple("Short", "null", true),
+            Triple("PrimitiveShort", "0.toShort()", false),
+            Triple("Long", "null", true),
+            Triple("PrimitiveLong", "0L", false),
+            Triple("Byte", "null", true),
+            Triple("PrimitiveByte", "0.toByte()", false),
+            Triple("Float", "null", true),
+            Triple("PrimitiveFloat", "0f", false),
+            Triple("Double", "null", true),
+            Triple("PrimitiveDouble", "0.0", false),
+            Triple("Boolean", "null", true),
+            Triple("PrimitiveBoolean", "false", false),
+        ),
+    ) { (primitiveType, expectedDefault, nullable) ->
         // IDLv2.0 requires modeling a default value on primitives
         val defaultTrait = when {
             primitiveType == "PrimitiveBoolean" -> "@default(false)"
@@ -138,6 +135,23 @@ class SymbolProviderTest {
     }
 
     @Test
+    fun `negative double default value does not get extra decimal appended`() {
+        val model = """
+        structure MyStruct {
+           @default(-100.0)
+           foo: MyFoo
+        }
+        
+        double MyFoo
+        """.prependNamespaceAndService().toSmithyModel()
+
+        val provider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(model)
+        val member = model.expectShape<MemberShape>("com.test#MyStruct\$foo")
+        val memberSymbol = provider.toSymbol(member)
+        assertEquals("-100.0", memberSymbol.defaultValue())
+    }
+
+    @Test
     fun `can read default trait from target`() {
         val modeledDefault = "2500"
         val expectedDefault = "2500L"
@@ -181,23 +195,24 @@ class SymbolProviderTest {
         assertTrue(memberSymbol.isNullable)
     }
 
-    @ParameterizedTest(name = "{index} ==> ''can default simple {0} type''")
-    @CsvSource(
-        "long,100,100L",
-        "integer,5,5",
-        "short,32767,32767.toShort()",
-        "float,3.14159,3.14159f",
-        "double,2.71828,2.71828",
-        "byte,10,10.toByte()",
-        "string,\"hello\",\"hello\"",
-        "blob,\"abcdefg\",\"abcdefg\".decodeBase64().encodeToByteArray()",
-        "boolean,true,true",
-        "bigInteger,5,5",
-        "bigDecimal,9.0123456789,9.0123456789",
-        "timestamp,1684869901,'Instant.fromEpochSeconds(1684869901, 0)'",
-        "timestamp,1.5,'Instant.fromEpochMilliseconds(1500)'",
-    )
-    fun `can default simple types`(typeName: String, modeledDefault: String, expectedDefault: String) {
+    @Test
+    fun `can default simple types`() = parameterized(
+        listOf(
+            Triple("long", "100", "100L"),
+            Triple("integer", "5", "5"),
+            Triple("short", "32767", "32767.toShort()"),
+            Triple("float", "3.14159", "3.14159f"),
+            Triple("double", "2.71828", "2.71828"),
+            Triple("byte", "10", "10.toByte()"),
+            Triple("string", "\"hello\"", "\"hello\""),
+            Triple("blob", "\"abcdefg\"", "\"abcdefg\".decodeBase64().encodeToByteArray()"),
+            Triple("boolean", "true", "true"),
+            Triple("bigInteger", "5", "5"),
+            Triple("bigDecimal", "9.0123456789", "9.0123456789"),
+            Triple("timestamp", "1684869901", "Instant.fromEpochSeconds(1684869901, 0)"),
+            Triple("timestamp", "1.5", "Instant.fromEpochMilliseconds(1500)"),
+        ),
+    ) { (typeName, modeledDefault, expectedDefault) ->
         val model = """
         structure MyStruct {
            @default($modeledDefault)
@@ -281,22 +296,23 @@ class SymbolProviderTest {
         assertEquals("com.test.model.Season.fromValue(2)", memberSymbol.defaultValue())
     }
 
-    @ParameterizedTest(name = "{index} ==> ''can default document with {0} type''")
-    @CsvSource(
-        "boolean,true,aws.smithy.kotlin.runtime.content.Document(true)",
-        "boolean,false,aws.smithy.kotlin.runtime.content.Document(false)",
-        "string,\"hello\",aws.smithy.kotlin.runtime.content.Document(\"hello\")",
-        "long,100,aws.smithy.kotlin.runtime.content.Document(100)",
-        "integer,5,aws.smithy.kotlin.runtime.content.Document(5)",
-        "short,32767,aws.smithy.kotlin.runtime.content.Document(32767)",
-        "float,3.14159,aws.smithy.kotlin.runtime.content.Document(3.14159)",
-        "double,2.71828,aws.smithy.kotlin.runtime.content.Document(2.71828)",
-        "byte,10,aws.smithy.kotlin.runtime.content.Document(10)",
-        "list,[],aws.smithy.kotlin.runtime.content.Document(listOf())",
-        "map,{},aws.smithy.kotlin.runtime.content.Document(mapOf())",
-    )
-    @Suppress("UNUSED_PARAMETER") // using the first parameter in the test name, but compiler doesn't acknowledge that
-    fun `can default document type`(typeName: String, modeledDefault: String, expectedDefault: String) {
+    @Test
+    @Suppress("UNUSED_PARAMETER")
+    fun `can default document type`() = parameterized(
+        listOf(
+            Triple("boolean", "true", "aws.smithy.kotlin.runtime.content.Document(true)"),
+            Triple("boolean", "false", "aws.smithy.kotlin.runtime.content.Document(false)"),
+            Triple("string", "\"hello\"", "aws.smithy.kotlin.runtime.content.Document(\"hello\")"),
+            Triple("long", "100", "aws.smithy.kotlin.runtime.content.Document(100)"),
+            Triple("integer", "5", "aws.smithy.kotlin.runtime.content.Document(5)"),
+            Triple("short", "32767", "aws.smithy.kotlin.runtime.content.Document(32767)"),
+            Triple("float", "3.14159", "aws.smithy.kotlin.runtime.content.Document(3.14159)"),
+            Triple("double", "2.71828", "aws.smithy.kotlin.runtime.content.Document(2.71828)"),
+            Triple("byte", "10", "aws.smithy.kotlin.runtime.content.Document(10)"),
+            Triple("list", "[]", "aws.smithy.kotlin.runtime.content.Document(listOf())"),
+            Triple("map", "{}", "aws.smithy.kotlin.runtime.content.Document(mapOf())"),
+        ),
+    ) { (typeName, modeledDefault, expectedDefault) ->
         val model = """
         structure MyStruct {
            @default($modeledDefault)
@@ -589,10 +605,8 @@ class SymbolProviderTest {
         assertTrue("com.test.model.Record" in refNames)
     }
 
-    @DisplayName("creates bigNumbers")
-    @ParameterizedTest(name = "{index} ==> ''{0}''")
-    @ValueSource(strings = ["BigInteger", "BigDecimal"])
-    fun `creates bigNumbers`(type: String) {
+    @Test
+    fun `creates bigNumbers`() = parameterized(listOf("BigInteger", "BigDecimal")) { type ->
         val member = MemberShape.builder().id("foo.bar#MyStruct\$quux").target("smithy.api#$type").build()
         val model = """
             structure MyStruct {
@@ -801,9 +815,10 @@ class SymbolProviderTest {
         assertEquals("com.test.model.Events", symbol.references[0].symbol.fullName)
     }
 
-    @ParameterizedTest(name = "{index} ==> ''{0}''")
-    @ValueSource(strings = ["CLIENT_CAREFUL", "CLIENT"])
-    fun `it handles client nullability for IDL v2 check modes`(rawCheckMode: String) {
+    @Test
+    fun `it handles client nullability for IDL v2 check modes`() = parameterized(
+        listOf("CLIENT_CAREFUL", "CLIENT"),
+    ) { rawCheckMode ->
         val model = """
             operation TestOp {
                 input: OpInput

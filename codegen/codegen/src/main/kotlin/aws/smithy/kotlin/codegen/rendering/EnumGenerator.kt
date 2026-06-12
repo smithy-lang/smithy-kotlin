@@ -63,7 +63,7 @@ import java.util.logging.Logger
  *
  *         fun values(): List<SimpleYesNo> = values
  *
- *         private val values: List<SimpleYesNo> = listOf(Yes, No)
+ *         private val values: List<SimpleYesNo> by lazy { listOf(Yes, No) }
  *     }
  * }
  *
@@ -93,7 +93,7 @@ import java.util.logging.Logger
  *
  *         fun values(): List<SimpleYesNo> = values
  *
- *         private val values: List<SimpleYesNo> = listOf(Yes, No)
+ *         private val values: List<SimpleYesNo> by lazy { listOf(Yes, No) }
  *     }
  * }
  * ```
@@ -160,7 +160,7 @@ class EnumGenerator(val shape: Shape, val symbol: Symbol, val writer: KotlinWrit
             write("public fun values(): #Q<#Q> = values", KotlinTypes.Collections.List, symbol)
             write("")
 
-            withBlock("private val values: #Q<#Q> = listOf(", ")", KotlinTypes.Collections.List, symbol) {
+            withBlock("private val values: #Q<#Q> by lazy { listOf(", ") }", KotlinTypes.Collections.List, symbol) {
                 ktEnum.variants.forEach { write("#L,", it.name) }
             }
         }

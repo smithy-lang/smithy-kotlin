@@ -161,12 +161,17 @@ internal fun parseIso8601(input: String): ParsedDatetime {
 
 private val exponentialNotationNumber = """(-)?(\d+(.(\d+))?)E(-?\d+)""".toRegex(RegexOption.IGNORE_CASE)
 
+private const val MAX_EPOCH_EXPONENT = 20
+
 private fun expandExponent(input: String): String = exponentialNotationNumber.matchEntire(input)?.let { match ->
     val (baseSign, base, _, _, exp) = match.destructured
     buildString {
         append(baseSign)
         val (mantissa, oldDecimalPos) = base.removeChar('.')
         val shift = exp.toIntOrNull() ?: throw ParseException(input, "Failed to read exponent", 0)
+        if (shift !in -MAX_EPOCH_EXPONENT..MAX_EPOCH_EXPONENT) {
+            throw ParseException(input, "Exponent $shift exceeds maximum allowed magnitude of $MAX_EPOCH_EXPONENT", 0)
+        }
         val newDecimalPos = oldDecimalPos + shift
         val (int, frac) = mantissa.splitAt(newDecimalPos)
         append(int)

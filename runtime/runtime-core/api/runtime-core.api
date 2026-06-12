@@ -15,6 +15,12 @@ public class aws/smithy/kotlin/runtime/ClientException : aws/smithy/kotlin/runti
 	public fun <init> (Ljava/lang/Throwable;)V
 }
 
+public final class aws/smithy/kotlin/runtime/CoreSettings {
+	public static final field INSTANCE Laws/smithy/kotlin/runtime/CoreSettings;
+	public final fun resolveNewRetriesEnabled (Laws/smithy/kotlin/runtime/util/PlatformEnvironProvider;)Z
+	public static synthetic fun resolveNewRetriesEnabled$default (Laws/smithy/kotlin/runtime/CoreSettings;Laws/smithy/kotlin/runtime/util/PlatformEnvironProvider;ILjava/lang/Object;)Z
+}
+
 public class aws/smithy/kotlin/runtime/ErrorMetadata {
 	public static final field Companion Laws/smithy/kotlin/runtime/ErrorMetadata$Companion;
 	public fun <init> ()V
@@ -458,6 +464,10 @@ public final class aws/smithy/kotlin/runtime/content/BigDecimal : java/lang/Numb
 	public final fun toPlainString ()Ljava/lang/String;
 	public fun toShort ()S
 	public fun toString ()Ljava/lang/String;
+}
+
+public final class aws/smithy/kotlin/runtime/content/BigDecimalKt {
+	public static final field MAX_DECIMAL_FRACTION_EXPONENT I
 }
 
 public final class aws/smithy/kotlin/runtime/content/BigInteger : java/lang/Number, java/lang/Comparable {
@@ -1805,6 +1815,21 @@ public final class aws/smithy/kotlin/runtime/retries/OutcomeKt {
 	public static final fun toResult (Laws/smithy/kotlin/runtime/retries/Outcome;)Ljava/lang/Object;
 }
 
+public final class aws/smithy/kotlin/runtime/retries/RetryContext : kotlin/coroutines/AbstractCoroutineContextElement {
+	public static final field Key Laws/smithy/kotlin/runtime/retries/RetryContext$Key;
+	public fun <init> ()V
+	public final fun getErrorType ()Laws/smithy/kotlin/runtime/retries/policy/RetryErrorType;
+	public final fun getRetryAfter-FghU774 ()Lkotlin/time/Duration;
+	public final fun isLongPolling ()Z
+	public final fun reset ()V
+	public final fun setErrorType (Laws/smithy/kotlin/runtime/retries/policy/RetryErrorType;)V
+	public final fun setLongPolling (Z)V
+	public final fun setRetryAfter-BwNAW2A (Lkotlin/time/Duration;)V
+}
+
+public final class aws/smithy/kotlin/runtime/retries/RetryContext$Key : kotlin/coroutines/CoroutineContext$Key {
+}
+
 public abstract class aws/smithy/kotlin/runtime/retries/RetryException : aws/smithy/kotlin/runtime/ClientException {
 	public synthetic fun <init> (Ljava/lang/String;Ljava/lang/Throwable;ILjava/lang/Object;Ljava/lang/Throwable;Lkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public final fun getAttempts ()I
@@ -1858,6 +1883,7 @@ public class aws/smithy/kotlin/runtime/retries/StandardRetryStrategy$Config : aw
 	public static final field DEFAULT_MAX_ATTEMPTS I
 	public fun <init> (Laws/smithy/kotlin/runtime/retries/StandardRetryStrategy$Config$Builder;)V
 	public final fun getDelayProvider ()Laws/smithy/kotlin/runtime/retries/delay/DelayProvider;
+	public final fun getEnableLongPollingBackoff ()Z
 	public fun getMaxAttempts ()I
 	public final fun getTokenBucket ()Laws/smithy/kotlin/runtime/retries/delay/RetryTokenBucket;
 	public fun toBuilderApplicator ()Lkotlin/jvm/functions/Function1;
@@ -1868,9 +1894,11 @@ public class aws/smithy/kotlin/runtime/retries/StandardRetryStrategy$Config$Buil
 	public final fun delayProvider (Laws/smithy/kotlin/runtime/util/DslFactory;Lkotlin/jvm/functions/Function1;)V
 	public final fun delayProvider (Lkotlin/jvm/functions/Function1;)V
 	public final fun getDelayProvider ()Laws/smithy/kotlin/runtime/retries/delay/DelayProvider;
+	public final fun getEnableLongPollingBackoff ()Z
 	public fun getMaxAttempts ()I
 	public final fun getTokenBucket ()Laws/smithy/kotlin/runtime/retries/delay/RetryTokenBucket;
 	public final fun setDelayProvider (Laws/smithy/kotlin/runtime/retries/delay/DelayProvider;)V
+	public final fun setEnableLongPollingBackoff (Z)V
 	public fun setMaxAttempts (I)V
 	public final fun setTokenBucket (Laws/smithy/kotlin/runtime/retries/delay/RetryTokenBucket;)V
 	public final fun tokenBucket (Laws/smithy/kotlin/runtime/util/DslFactory;Lkotlin/jvm/functions/Function1;)V
@@ -1969,20 +1997,28 @@ public final class aws/smithy/kotlin/runtime/retries/delay/ExponentialBackoffWit
 	public final fun getInitialDelay-UwyO8pc ()J
 	public final fun getJitter ()D
 	public final fun getMaxBackoff-UwyO8pc ()J
+	public final fun getRetryAfterMaxOvershoot-UwyO8pc ()J
 	public final fun getScaleFactor ()D
+	public final fun getThrottlingBaseDelay-UwyO8pc ()J
 	public fun toBuilderApplicator ()Lkotlin/jvm/functions/Function1;
 }
 
 public final class aws/smithy/kotlin/runtime/retries/delay/ExponentialBackoffWithJitter$Config$Builder : aws/smithy/kotlin/runtime/retries/delay/DelayProvider$Config$Builder {
 	public fun <init> ()V
+	public fun <init> (Laws/smithy/kotlin/runtime/util/PlatformEnvironProvider;)V
+	public synthetic fun <init> (Laws/smithy/kotlin/runtime/util/PlatformEnvironProvider;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public final fun getInitialDelay-UwyO8pc ()J
 	public final fun getJitter ()D
 	public final fun getMaxBackoff-UwyO8pc ()J
+	public final fun getRetryAfterMaxOvershoot-UwyO8pc ()J
 	public final fun getScaleFactor ()D
+	public final fun getThrottlingBaseDelay-UwyO8pc ()J
 	public final fun setInitialDelay-LRDsOJo (J)V
 	public final fun setJitter (D)V
 	public final fun setMaxBackoff-LRDsOJo (J)V
+	public final fun setRetryAfterMaxOvershoot-LRDsOJo (J)V
 	public final fun setScaleFactor (D)V
+	public final fun setThrottlingBaseDelay-LRDsOJo (J)V
 }
 
 public final class aws/smithy/kotlin/runtime/retries/delay/ExponentialBackoffWithJitter$Config$Companion {
@@ -2060,6 +2096,8 @@ public final class aws/smithy/kotlin/runtime/retries/delay/StandardRetryTokenBuc
 
 public final class aws/smithy/kotlin/runtime/retries/delay/StandardRetryTokenBucket$Config$Builder : aws/smithy/kotlin/runtime/retries/delay/RetryTokenBucket$Config$Builder {
 	public fun <init> ()V
+	public fun <init> (Laws/smithy/kotlin/runtime/util/PlatformEnvironProvider;)V
+	public synthetic fun <init> (Laws/smithy/kotlin/runtime/util/PlatformEnvironProvider;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public final fun getInitialTryCost ()I
 	public final fun getInitialTrySuccessIncrement ()I
 	public final fun getMaxCapacity ()I
@@ -2415,15 +2453,53 @@ public final class aws/smithy/kotlin/runtime/util/ExpiringValue {
 
 public abstract interface class aws/smithy/kotlin/runtime/util/Filesystem {
 	public static final field Companion Laws/smithy/kotlin/runtime/util/Filesystem$Companion;
+	public fun atomicMove (Ljava/lang/String;Ljava/lang/String;ZZ)V
+	public static synthetic fun atomicMove$default (Laws/smithy/kotlin/runtime/util/Filesystem;Ljava/lang/String;Ljava/lang/String;ZZILjava/lang/Object;)V
+	public fun createDir (Ljava/lang/String;Z)V
+	public static synthetic fun createDir$default (Laws/smithy/kotlin/runtime/util/Filesystem;Ljava/lang/String;ZILjava/lang/Object;)V
+	public fun delete (Ljava/lang/String;Z)V
+	public static synthetic fun delete$default (Laws/smithy/kotlin/runtime/util/Filesystem;Ljava/lang/String;ZILjava/lang/Object;)V
+	public fun exists (Ljava/lang/String;)Z
 	public abstract fun fileExists (Ljava/lang/String;)Z
 	public abstract fun getFilePathSeparator ()Ljava/lang/String;
+	public fun list (Ljava/lang/String;Z)Ljava/util/Collection;
+	public static synthetic fun list$default (Laws/smithy/kotlin/runtime/util/Filesystem;Ljava/lang/String;ZILjava/lang/Object;)Ljava/util/Collection;
+	public fun read (Ljava/lang/String;JJZ)[B
+	public static synthetic fun read$default (Laws/smithy/kotlin/runtime/util/Filesystem;Ljava/lang/String;JJZILjava/lang/Object;)[B
 	public abstract fun readFileOrNull (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun readOrNull (Ljava/lang/String;JJZZ)[B
+	public static synthetic fun readOrNull$default (Laws/smithy/kotlin/runtime/util/Filesystem;Ljava/lang/String;JJZZILjava/lang/Object;)[B
+	public fun size (Ljava/lang/String;Z)J
+	public static synthetic fun size$default (Laws/smithy/kotlin/runtime/util/Filesystem;Ljava/lang/String;ZILjava/lang/Object;)J
+	public abstract fun write (Ljava/lang/String;[BLaws/smithy/kotlin/runtime/util/WriteType;ZLjava/lang/String;)V
+	public static synthetic fun write$default (Laws/smithy/kotlin/runtime/util/Filesystem;Ljava/lang/String;[BLaws/smithy/kotlin/runtime/util/WriteType;ZLjava/lang/String;ILjava/lang/Object;)V
 	public abstract fun writeFile (Ljava/lang/String;[BLkotlin/coroutines/Continuation;)Ljava/lang/Object;
 }
 
 public final class aws/smithy/kotlin/runtime/util/Filesystem$Companion {
 	public final fun fromMap (Ljava/util/Map;Ljava/lang/String;)Laws/smithy/kotlin/runtime/util/Filesystem;
 	public static synthetic fun fromMap$default (Laws/smithy/kotlin/runtime/util/Filesystem$Companion;Ljava/util/Map;Ljava/lang/String;ILjava/lang/Object;)Laws/smithy/kotlin/runtime/util/Filesystem;
+	public final fun fromMapStringTestFile (Ljava/util/Map;Ljava/lang/String;)Laws/smithy/kotlin/runtime/util/Filesystem;
+	public static synthetic fun fromMapStringTestFile$default (Laws/smithy/kotlin/runtime/util/Filesystem$Companion;Ljava/util/Map;Ljava/lang/String;ILjava/lang/Object;)Laws/smithy/kotlin/runtime/util/Filesystem;
+}
+
+public final class aws/smithy/kotlin/runtime/util/Filesystem$DefaultImpls {
+	public static fun atomicMove (Laws/smithy/kotlin/runtime/util/Filesystem;Ljava/lang/String;Ljava/lang/String;ZZ)V
+	public static synthetic fun atomicMove$default (Laws/smithy/kotlin/runtime/util/Filesystem;Ljava/lang/String;Ljava/lang/String;ZZILjava/lang/Object;)V
+	public static fun createDir (Laws/smithy/kotlin/runtime/util/Filesystem;Ljava/lang/String;Z)V
+	public static synthetic fun createDir$default (Laws/smithy/kotlin/runtime/util/Filesystem;Ljava/lang/String;ZILjava/lang/Object;)V
+	public static fun delete (Laws/smithy/kotlin/runtime/util/Filesystem;Ljava/lang/String;Z)V
+	public static synthetic fun delete$default (Laws/smithy/kotlin/runtime/util/Filesystem;Ljava/lang/String;ZILjava/lang/Object;)V
+	public static fun exists (Laws/smithy/kotlin/runtime/util/Filesystem;Ljava/lang/String;)Z
+	public static fun list (Laws/smithy/kotlin/runtime/util/Filesystem;Ljava/lang/String;Z)Ljava/util/Collection;
+	public static synthetic fun list$default (Laws/smithy/kotlin/runtime/util/Filesystem;Ljava/lang/String;ZILjava/lang/Object;)Ljava/util/Collection;
+	public static fun read (Laws/smithy/kotlin/runtime/util/Filesystem;Ljava/lang/String;JJZ)[B
+	public static synthetic fun read$default (Laws/smithy/kotlin/runtime/util/Filesystem;Ljava/lang/String;JJZILjava/lang/Object;)[B
+	public static fun readOrNull (Laws/smithy/kotlin/runtime/util/Filesystem;Ljava/lang/String;JJZZ)[B
+	public static synthetic fun readOrNull$default (Laws/smithy/kotlin/runtime/util/Filesystem;Ljava/lang/String;JJZZILjava/lang/Object;)[B
+	public static fun size (Laws/smithy/kotlin/runtime/util/Filesystem;Ljava/lang/String;Z)J
+	public static synthetic fun size$default (Laws/smithy/kotlin/runtime/util/Filesystem;Ljava/lang/String;ZILjava/lang/Object;)J
+	public static synthetic fun write$default (Laws/smithy/kotlin/runtime/util/Filesystem;Ljava/lang/String;[BLaws/smithy/kotlin/runtime/util/WriteType;ZLjava/lang/String;ILjava/lang/Object;)V
 }
 
 public final class aws/smithy/kotlin/runtime/util/FlowUtilKt {
@@ -2449,6 +2525,26 @@ public abstract interface class aws/smithy/kotlin/runtime/util/LazyAsyncValue {
 
 public final class aws/smithy/kotlin/runtime/util/LazyAsyncValueKt {
 	public static final fun asyncLazy (Lkotlin/jvm/functions/Function1;)Laws/smithy/kotlin/runtime/util/LazyAsyncValue;
+}
+
+public final class aws/smithy/kotlin/runtime/util/MapFilesystem : aws/smithy/kotlin/runtime/util/Filesystem {
+	public fun <init> ()V
+	public fun <init> (Ljava/util/Map;Ljava/lang/String;)V
+	public synthetic fun <init> (Ljava/util/Map;Ljava/lang/String;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun atomicMove (Ljava/lang/String;Ljava/lang/String;ZZ)V
+	public fun createDir (Ljava/lang/String;Z)V
+	public fun delete (Ljava/lang/String;Z)V
+	public fun exists (Ljava/lang/String;)Z
+	public fun fileExists (Ljava/lang/String;)Z
+	public fun getFilePathSeparator ()Ljava/lang/String;
+	public final fun getFilePermissions (Ljava/lang/String;)Ljava/lang/String;
+	public fun list (Ljava/lang/String;Z)Ljava/util/Collection;
+	public fun read (Ljava/lang/String;JJZ)[B
+	public fun readFileOrNull (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun readOrNull (Ljava/lang/String;JJZZ)[B
+	public fun size (Ljava/lang/String;Z)J
+	public fun write (Ljava/lang/String;[BLaws/smithy/kotlin/runtime/util/WriteType;ZLjava/lang/String;)V
+	public fun writeFile (Ljava/lang/String;[BLkotlin/coroutines/Continuation;)Ljava/lang/Object;
 }
 
 public final class aws/smithy/kotlin/runtime/util/OperatingSystem {
@@ -2501,6 +2597,17 @@ public final class aws/smithy/kotlin/runtime/util/PlatformProvider$Companion {
 	public final fun getSystem ()Laws/smithy/kotlin/runtime/util/PlatformProvider;
 }
 
+public final class aws/smithy/kotlin/runtime/util/PlatformProvider$DefaultImpls {
+	public static fun atomicMove (Laws/smithy/kotlin/runtime/util/PlatformProvider;Ljava/lang/String;Ljava/lang/String;ZZ)V
+	public static fun createDir (Laws/smithy/kotlin/runtime/util/PlatformProvider;Ljava/lang/String;Z)V
+	public static fun delete (Laws/smithy/kotlin/runtime/util/PlatformProvider;Ljava/lang/String;Z)V
+	public static fun exists (Laws/smithy/kotlin/runtime/util/PlatformProvider;Ljava/lang/String;)Z
+	public static fun list (Laws/smithy/kotlin/runtime/util/PlatformProvider;Ljava/lang/String;Z)Ljava/util/Collection;
+	public static fun read (Laws/smithy/kotlin/runtime/util/PlatformProvider;Ljava/lang/String;JJZ)[B
+	public static fun readOrNull (Laws/smithy/kotlin/runtime/util/PlatformProvider;Ljava/lang/String;JJZZ)[B
+	public static fun size (Laws/smithy/kotlin/runtime/util/PlatformProvider;Ljava/lang/String;Z)J
+}
+
 public abstract interface class aws/smithy/kotlin/runtime/util/PropertyProvider {
 	public abstract fun getAllProperties ()Ljava/util/Map;
 	public abstract fun getProperty (Ljava/lang/String;)Ljava/lang/String;
@@ -2515,15 +2622,36 @@ public final class aws/smithy/kotlin/runtime/util/SingleFlightGroup {
 	public final fun singleFlight (Lkotlin/jvm/functions/Function1;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 }
 
+public final class aws/smithy/kotlin/runtime/util/TestFile {
+	public static final field Companion Laws/smithy/kotlin/runtime/util/TestFile$Companion;
+	public fun <init> (Ljava/lang/String;Ljava/lang/String;)V
+	public synthetic fun <init> (Ljava/lang/String;Ljava/lang/String;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun <init> ([BLjava/lang/String;)V
+	public synthetic fun <init> ([BLjava/lang/String;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun getContents ()[B
+	public final fun getPermissions ()Ljava/lang/String;
+}
+
+public final class aws/smithy/kotlin/runtime/util/TestFile$Companion {
+	public final fun transformMapStringByteArray (Ljava/util/Map;)Ljava/util/Map;
+	public final fun transformMapStringString (Ljava/util/Map;)Ljava/util/Map;
+}
+
 public final class aws/smithy/kotlin/runtime/util/TestPlatformProvider : aws/smithy/kotlin/runtime/util/Filesystem, aws/smithy/kotlin/runtime/util/PlatformProvider {
 	public static final field Companion Laws/smithy/kotlin/runtime/util/TestPlatformProvider$Companion;
 	public fun <init> ()V
+	public synthetic fun <init> (Ljava/util/Map;Ljava/util/Map;Laws/smithy/kotlin/runtime/util/Filesystem;Laws/smithy/kotlin/runtime/util/OperatingSystem;Lkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public fun <init> (Ljava/util/Map;Ljava/util/Map;Ljava/util/Map;Laws/smithy/kotlin/runtime/util/OperatingSystem;)V
 	public synthetic fun <init> (Ljava/util/Map;Ljava/util/Map;Ljava/util/Map;Laws/smithy/kotlin/runtime/util/OperatingSystem;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun atomicMove (Ljava/lang/String;Ljava/lang/String;ZZ)V
+	public fun createDir (Ljava/lang/String;Z)V
+	public fun delete (Ljava/lang/String;Z)V
+	public fun exists (Ljava/lang/String;)Z
 	public fun fileExists (Ljava/lang/String;)Z
 	public fun getAllEnvVars ()Ljava/util/Map;
 	public fun getAllProperties ()Ljava/util/Map;
 	public fun getFilePathSeparator ()Ljava/lang/String;
+	public final fun getFs ()Laws/smithy/kotlin/runtime/util/Filesystem;
 	public fun getProperty (Ljava/lang/String;)Ljava/lang/String;
 	public fun getenv (Ljava/lang/String;)Ljava/lang/String;
 	public fun isAndroid ()Z
@@ -2531,12 +2659,19 @@ public final class aws/smithy/kotlin/runtime/util/TestPlatformProvider : aws/smi
 	public fun isJvm ()Z
 	public fun isNative ()Z
 	public fun isNode ()Z
+	public fun list (Ljava/lang/String;Z)Ljava/util/Collection;
 	public fun osInfo ()Laws/smithy/kotlin/runtime/util/OperatingSystem;
+	public fun read (Ljava/lang/String;JJZ)[B
 	public fun readFileOrNull (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun readOrNull (Ljava/lang/String;JJZZ)[B
+	public fun size (Ljava/lang/String;Z)J
+	public fun write (Ljava/lang/String;[BLaws/smithy/kotlin/runtime/util/WriteType;ZLjava/lang/String;)V
 	public fun writeFile (Ljava/lang/String;[BLkotlin/coroutines/Continuation;)Ljava/lang/Object;
 }
 
 public final class aws/smithy/kotlin/runtime/util/TestPlatformProvider$Companion {
+	public final fun of (Ljava/util/Map;Ljava/util/Map;Ljava/util/Map;Laws/smithy/kotlin/runtime/util/OperatingSystem;)Laws/smithy/kotlin/runtime/util/TestPlatformProvider;
+	public static synthetic fun of$default (Laws/smithy/kotlin/runtime/util/TestPlatformProvider$Companion;Ljava/util/Map;Ljava/util/Map;Ljava/util/Map;Laws/smithy/kotlin/runtime/util/OperatingSystem;ILjava/lang/Object;)Laws/smithy/kotlin/runtime/util/TestPlatformProvider;
 }
 
 public final class aws/smithy/kotlin/runtime/util/Uuid {
@@ -2555,5 +2690,27 @@ public final class aws/smithy/kotlin/runtime/util/Uuid {
 
 public final class aws/smithy/kotlin/runtime/util/Uuid$Companion {
 	public final fun random ()Laws/smithy/kotlin/runtime/util/Uuid;
+}
+
+public abstract class aws/smithy/kotlin/runtime/util/WriteType {
+}
+
+public final class aws/smithy/kotlin/runtime/util/WriteType$APPEND : aws/smithy/kotlin/runtime/util/WriteType {
+	public static final field INSTANCE Laws/smithy/kotlin/runtime/util/WriteType$APPEND;
+}
+
+public final class aws/smithy/kotlin/runtime/util/WriteType$OFFSET : aws/smithy/kotlin/runtime/util/WriteType {
+	public fun <init> (J)V
+	public final fun component1 ()J
+	public final fun copy (J)Laws/smithy/kotlin/runtime/util/WriteType$OFFSET;
+	public static synthetic fun copy$default (Laws/smithy/kotlin/runtime/util/WriteType$OFFSET;JILjava/lang/Object;)Laws/smithy/kotlin/runtime/util/WriteType$OFFSET;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getOffset ()J
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class aws/smithy/kotlin/runtime/util/WriteType$OVERWRITE : aws/smithy/kotlin/runtime/util/WriteType {
+	public static final field INSTANCE Laws/smithy/kotlin/runtime/util/WriteType$OVERWRITE;
 }
 

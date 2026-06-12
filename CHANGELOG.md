@@ -1,5 +1,46 @@
 # Changelog
 
+## [1.6.15] - 06/10/2026
+
+### Features
+* [#363](https://github.com/smithy-lang/smithy-kotlin/issues/363) Add support for Smithy's [`@requiresLength`](https://smithy.io/2.0/spec/streaming.html#smithy-api-requireslength-trait) and verify that annotated blob shapes include a `Content-Length`
+
+### Fixes
+* Validate that OkHttp header values do not contain CR or LF
+* Limit exponent scale to prevent OOM errors when expanding exponents
+* Limit serde parsing depth to 1,000 levels of nesting to prevent `StackOverflowError`
+
+## [1.6.14] - 05/08/2026
+
+### Features
+* Add standard retry strategy with updated exponential backoff, retry quotas, `x-amz-retry-after` header support, and service-specific behavior for DynamoDB. Gated behind the `SMITHY_NEW_RETRIES_2026` feature flag. See the [announcement](https://github.com/aws/aws-sdk-kotlin/discussions/1885) for more details.
+* Add retry logic for long polling operations. See the [announcement](https://github.com/aws/aws-sdk-kotlin/discussions/1885) for more details.
+
+### Fixes
+* Erase empty file if setting permissions fails
+
+## [1.6.13] - 04/28/2026
+
+### Miscellaneous
+* Bumping Kotlin version to 2.3.20
+
+## [1.6.12] - 04/20/2026
+
+## [1.6.11] - 04/17/2026
+
+### Fixes
+* Fix codegen for `getAttr` returning boolean in endpoint rule conditions
+
+## [1.6.10] - 04/13/2026
+
+## [1.6.9] - 03/31/2026
+
+### Fixes
+* Fix code generation of negative default values for doubles
+* Sleep outside of lock in adaptive rate limiter
+
+## [1.6.8] - 03/30/2026
+
 ## [1.6.7] - 03/24/2026
 
 ## [1.6.6] - 03/13/2026
