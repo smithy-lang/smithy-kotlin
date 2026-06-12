@@ -188,16 +188,8 @@ internal class SdkStreamResponseHandler(
     }
 
     override fun onResponseComplete(stream: HttpStream, errorCode: Int) {
-        // stream is only valid until the end of this callback, ensure any further data being read downstream
-        // doesn't call incrementWindow on a resource that has been free'd
-        lock.withLock {
-            crtStream?.close()
-            crtStream = null
-            streamCompleted = true
-        }
-        stream.close()
-
-        // close the body channel
+        // close the body channel and signal response BEFORE closing the stream,
+        // since signalResponse needs to read stream.responseStatusCode
         if (errorCode != 0) {
             val ex = crtException(errorCode)
             responseReady.close(ex)
@@ -208,6 +200,15 @@ internal class SdkStreamResponseHandler(
             // ensure a response was signalled (will close the channel on it's own if it wasn't already sent)
             signalResponse(stream)
         }
+
+        // stream is only valid until the end of this callback, ensure any further data being read downstream
+        // doesn't call incrementWindow on a resource that has been freed
+        lock.withLock {
+            crtStream?.close()
+            crtStream = null
+            streamCompleted = true
+        }
+        stream.close()
     }
 
     internal suspend fun waitForResponse(): HttpResponse = responseReady.receive()
