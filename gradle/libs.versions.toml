@@ -28,7 +28,7 @@ smithy-version = "1.71.0"
 # testing
 junit-version = "5.14.4"
 kotest-version = "5.9.1"
-kotlin-compile-testing-version = "0.12.1"
+kotlin-compile-testing-version = "0.13.0"
 kotlinx-benchmark-version = "0.4.17"
 kotlinx-serialization-version = "1.11.0"
 docker-java-version = "3.7.1"
