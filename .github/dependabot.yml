@@ -1,5 +1,16 @@
 version: 2
 updates:
+  # Gradle but only non-runtime dependencies
+  - package-ecosystem: gradle
+    directory: /
+    open-pull-requests-limit: 0 # Disable alerts
+    groups:
+      non-runtime-dependencies:
+        applies-to: security-updates
+        patterns:
+          - "io.netty:*"
+
+  # All runtime dependencies
   - package-ecosystem: gradle
     directory: /
     schedule:
