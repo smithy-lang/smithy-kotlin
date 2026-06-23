@@ -5,6 +5,7 @@
 package aws.smithy.kotlin.runtime.serde.cbor
 
 import aws.smithy.kotlin.runtime.io.SdkBuffer
+import aws.smithy.kotlin.runtime.serde.DeserializationException
 import aws.smithy.kotlin.runtime.serde.SdkFieldDescriptor
 import aws.smithy.kotlin.runtime.serde.SerialKind
 import aws.smithy.kotlin.runtime.serde.cbor.encoding.Tag
@@ -12,11 +13,12 @@ import aws.smithy.kotlin.runtime.serde.deserializeList
 import aws.smithy.kotlin.runtime.serde.deserializeMap
 import kotlin.test.Test
 import kotlin.test.assertFails
+import kotlin.test.assertFailsWith
 
 class CborDeserializerErrorTest {
     @Test
     fun `TestDecode_InvalidArgument - major7 - float64 - incomplete float64 at end of buf`() {
-        val payload = "0xfb00000000000000".toByteArray()
+        val payload = "fb00000000000000".hexToByteArray()
 
         val buffer = SdkBuffer().apply { write(payload) }
         val deserializer = CborPrimitiveDeserializer(buffer)
@@ -28,7 +30,7 @@ class CborDeserializerErrorTest {
 
     @Test
     fun `TestDecode_InvalidArgument - uint - 2 - arg len 2 greater than remaining buf len`() {
-        val payload = "0x1900".toByteArray()
+        val payload = "1900".hexToByteArray()
 
         val buffer = SdkBuffer().apply { write(payload) }
         val deserializer = CborPrimitiveDeserializer(buffer)
@@ -40,7 +42,7 @@ class CborDeserializerErrorTest {
 
     @Test
     fun `TestDecode_InvalidArgument - uint - 4 - arg len 4 greater than remaining buf len`() {
-        val payload = "0x1a000000".toByteArray()
+        val payload = "1a000000".hexToByteArray()
 
         val buffer = SdkBuffer().apply { write(payload) }
         val deserializer = CborPrimitiveDeserializer(buffer)
@@ -52,7 +54,7 @@ class CborDeserializerErrorTest {
 
     @Test
     fun `TestDecode_InvalidArgument - negint - 2 - arg len 2 greater than remaining buf len`() {
-        val payload = "0x3900".toByteArray()
+        val payload = "3900".hexToByteArray()
 
         val buffer = SdkBuffer().apply { write(payload) }
         val deserializer = CborPrimitiveDeserializer(buffer)
@@ -64,7 +66,7 @@ class CborDeserializerErrorTest {
 
     @Test
     fun `TestDecode_InvalidArgument - slice - 2 - arg len 2 greater than remaining buf len`() {
-        val payload = "0x5900".toByteArray()
+        val payload = "5900".hexToByteArray()
 
         val buffer = SdkBuffer().apply { write(payload) }
         val deserializer = CborPrimitiveDeserializer(buffer)
@@ -76,7 +78,7 @@ class CborDeserializerErrorTest {
 
     @Test
     fun `TestDecode_InvalidArgument - slice - 8 - arg len 8 greater than remaining buf len`() {
-        val payload = "0x5b00000000000000".toByteArray()
+        val payload = "5b00000000000000".hexToByteArray()
 
         val buffer = SdkBuffer().apply { write(payload) }
         val deserializer = CborPrimitiveDeserializer(buffer)
@@ -88,7 +90,7 @@ class CborDeserializerErrorTest {
 
     @Test
     fun `TestDecode_InvalidArgument - tag - 2 - arg len 2 greater than remaining buf len`() {
-        val payload = "0xd900".toByteArray()
+        val payload = "d900".hexToByteArray()
 
         val buffer = SdkBuffer().apply { write(payload) }
 
@@ -99,7 +101,7 @@ class CborDeserializerErrorTest {
 
     @Test
     fun `TestDecode_InvalidArgument - tag - 4 - arg len 4 greater than remaining buf len`() {
-        val payload = "0xda000000".toByteArray()
+        val payload = "da000000".hexToByteArray()
 
         val buffer = SdkBuffer().apply { write(payload) }
 
@@ -110,7 +112,7 @@ class CborDeserializerErrorTest {
 
     @Test
     fun `TestDecode_InvalidArgument - uint - unexpected minor value 31`() {
-        val payload = "0x1f".toByteArray()
+        val payload = "1f".hexToByteArray()
 
         val buffer = SdkBuffer().apply { write(payload) }
         val deserializer = CborPrimitiveDeserializer(buffer)
@@ -122,7 +124,7 @@ class CborDeserializerErrorTest {
 
     @Test
     fun `TestDecode_InvalidArgument - list - 1 - arg len 1 greater than remaining buf len`() {
-        val payload = "0x98".toByteArray()
+        val payload = "98".hexToByteArray()
 
         val deserializer = CborDeserializer(payload)
         assertFails {
@@ -136,7 +138,7 @@ class CborDeserializerErrorTest {
 
     @Test
     fun `TestDecode_InvalidArgument - list - 4 - arg len 4 greater than remaining buf len`() {
-        val payload = "0x9a000000".toByteArray()
+        val payload = "9a000000".hexToByteArray()
 
         val deserializer = CborDeserializer(payload)
         assertFails {
@@ -150,7 +152,7 @@ class CborDeserializerErrorTest {
 
     @Test
     fun `TestDecode_InvalidArgument - list - 8 - arg len 8 greater than remaining buf len`() {
-        val payload = "0x9b00000000000000".toByteArray()
+        val payload = "9b00000000000000".hexToByteArray()
 
         val deserializer = CborDeserializer(payload)
         assertFails {
@@ -164,7 +166,7 @@ class CborDeserializerErrorTest {
 
     @Test
     fun `TestDecode_InvalidArgument - map - 1 - arg len 1 greater than remaining buf len`() {
-        val payload = "0xb8".toByteArray()
+        val payload = "b8".hexToByteArray()
 
         val deserializer = CborDeserializer(payload)
         assertFails {
@@ -179,7 +181,7 @@ class CborDeserializerErrorTest {
 
     @Test
     fun `TestDecode_InvalidArgument - map - 4 - arg len 4 greater than remaining buf len`() {
-        val payload = "0xba000000".toByteArray()
+        val payload = "ba000000".hexToByteArray()
 
         val deserializer = CborDeserializer(payload)
         assertFails {
@@ -194,7 +196,7 @@ class CborDeserializerErrorTest {
 
     @Test
     fun `TestDecode_InvalidArgument - major7 - float32 - incomplete float32 at end of buf`() {
-        val payload = "0xfa000000".toByteArray()
+        val payload = "fa000000".hexToByteArray()
 
         val buffer = SdkBuffer().apply { write(payload) }
         val deserializer = CborPrimitiveDeserializer(buffer)
@@ -206,7 +208,7 @@ class CborDeserializerErrorTest {
 
     @Test
     fun `TestDecode_InvalidArgument - string - 2 - arg len 2 greater than remaining buf len`() {
-        val payload = "0x7900".toByteArray()
+        val payload = "7900".hexToByteArray()
 
         val buffer = SdkBuffer().apply { write(payload) }
         val deserializer = CborPrimitiveDeserializer(buffer)
@@ -218,7 +220,7 @@ class CborDeserializerErrorTest {
 
     @Test
     fun `TestDecode_InvalidArgument - list - 2 - arg len 2 greater than remaining buf len`() {
-        val payload = "0x9900".toByteArray()
+        val payload = "9900".hexToByteArray()
 
         val deserializer = CborDeserializer(payload)
         assertFails {
@@ -232,7 +234,7 @@ class CborDeserializerErrorTest {
 
     @Test
     fun `TestDecode_InvalidArgument - negint - unexpected minor value 31`() {
-        val payload = "0x3f".toByteArray()
+        val payload = "3f".hexToByteArray()
 
         val buffer = SdkBuffer().apply { write(payload) }
         val deserializer = CborPrimitiveDeserializer(buffer)
@@ -244,7 +246,7 @@ class CborDeserializerErrorTest {
 
     @Test
     fun `TestDecode_InvalidArgument - string - 8 - arg len 8 greater than remaining buf len`() {
-        val payload = "0x7b00000000000000".toByteArray()
+        val payload = "7b00000000000000".hexToByteArray()
 
         val buffer = SdkBuffer().apply { write(payload) }
         val deserializer = CborPrimitiveDeserializer(buffer)
@@ -256,7 +258,7 @@ class CborDeserializerErrorTest {
 
     @Test
     fun `TestDecode_InvalidArgument - major7 - unexpected minor value 31`() {
-        val payload = "0xff".toByteArray()
+        val payload = "ff".hexToByteArray()
 
         val buffer = SdkBuffer().apply { write(payload) }
         val deserializer = CborPrimitiveDeserializer(buffer)
@@ -268,7 +270,7 @@ class CborDeserializerErrorTest {
 
     @Test
     fun `TestDecode_InvalidArgument - string - 1 - arg len 1 greater than remaining buf len`() {
-        val payload = "0x78".toByteArray()
+        val payload = "78".hexToByteArray()
 
         val buffer = SdkBuffer().apply { write(payload) }
         val deserializer = CborPrimitiveDeserializer(buffer)
@@ -280,7 +282,7 @@ class CborDeserializerErrorTest {
 
     @Test
     fun `TestDecode_InvalidArgument - tag - unexpected minor value 31`() {
-        val payload = "0xdf".toByteArray()
+        val payload = "df".hexToByteArray()
 
         val buffer = SdkBuffer().apply { write(payload) }
 
@@ -291,7 +293,7 @@ class CborDeserializerErrorTest {
 
     @Test
     fun `TestDecode_InvalidArgument - slice - 1 - arg len 1 greater than remaining buf len`() {
-        val payload = "0x58".toByteArray()
+        val payload = "58".hexToByteArray()
 
         val buffer = SdkBuffer().apply { write(payload) }
         val deserializer = CborPrimitiveDeserializer(buffer)
@@ -303,7 +305,7 @@ class CborDeserializerErrorTest {
 
     @Test
     fun `TestDecode_InvalidArgument - slice - 4 - arg len 4 greater than remaining buf len`() {
-        val payload = "0x5a000000".toByteArray()
+        val payload = "5a000000".hexToByteArray()
 
         val buffer = SdkBuffer().apply { write(payload) }
         val deserializer = CborPrimitiveDeserializer(buffer)
@@ -315,7 +317,7 @@ class CborDeserializerErrorTest {
 
     @Test
     fun `TestDecode_InvalidArgument - map - 2 - arg len 2 greater than remaining buf len`() {
-        val payload = "0xb900".toByteArray()
+        val payload = "b900".hexToByteArray()
 
         val deserializer = CborDeserializer(payload)
         assertFails {
@@ -330,7 +332,7 @@ class CborDeserializerErrorTest {
 
     @Test
     fun `TestDecode_InvalidArgument - map - 8 - arg len 8 greater than remaining buf len`() {
-        val payload = "0xbb00000000000000".toByteArray()
+        val payload = "bb00000000000000".hexToByteArray()
 
         val deserializer = CborDeserializer(payload)
         assertFails {
@@ -345,7 +347,7 @@ class CborDeserializerErrorTest {
 
     @Test
     fun `TestDecode_InvalidArgument - tag - 8 - arg len 8 greater than remaining buf len`() {
-        val payload = "0xdb00000000000000".toByteArray()
+        val payload = "db00000000000000".hexToByteArray()
 
         val buffer = SdkBuffer().apply { write(payload) }
 
@@ -356,7 +358,7 @@ class CborDeserializerErrorTest {
 
     @Test
     fun `TestDecode_InvalidArgument - uint - 1 - arg len 1 greater than remaining buf len`() {
-        val payload = "0x18".toByteArray()
+        val payload = "18".hexToByteArray()
 
         val buffer = SdkBuffer().apply { write(payload) }
         val deserializer = CborPrimitiveDeserializer(buffer)
@@ -368,7 +370,7 @@ class CborDeserializerErrorTest {
 
     @Test
     fun `TestDecode_InvalidArgument - major7 - float16 - incomplete float16 at end of buf`() {
-        val payload = "0xf900".toByteArray()
+        val payload = "f900".hexToByteArray()
 
         val buffer = SdkBuffer().apply { write(payload) }
         val deserializer = CborPrimitiveDeserializer(buffer)
@@ -380,7 +382,7 @@ class CborDeserializerErrorTest {
 
     @Test
     fun `TestDecode_InvalidArgument - uint - 8 - arg len 8 greater than remaining buf len`() {
-        val payload = "0x1b00000000000000".toByteArray()
+        val payload = "1b00000000000000".hexToByteArray()
 
         val buffer = SdkBuffer().apply { write(payload) }
         val deserializer = CborPrimitiveDeserializer(buffer)
@@ -392,7 +394,7 @@ class CborDeserializerErrorTest {
 
     @Test
     fun `TestDecode_InvalidArgument - negint - 1 - arg len 1 greater than remaining buf len`() {
-        val payload = "0x38".toByteArray()
+        val payload = "38".hexToByteArray()
 
         val buffer = SdkBuffer().apply { write(payload) }
         val deserializer = CborPrimitiveDeserializer(buffer)
@@ -404,7 +406,7 @@ class CborDeserializerErrorTest {
 
     @Test
     fun `TestDecode_InvalidArgument - negint - 4 - arg len 4 greater than remaining buf len`() {
-        val payload = "0x3a000000".toByteArray()
+        val payload = "3a000000".hexToByteArray()
 
         val buffer = SdkBuffer().apply { write(payload) }
         val deserializer = CborPrimitiveDeserializer(buffer)
@@ -416,7 +418,7 @@ class CborDeserializerErrorTest {
 
     @Test
     fun `TestDecode_InvalidArgument - negint - 8 - arg len 8 greater than remaining buf len`() {
-        val payload = "0x3b00000000000000".toByteArray()
+        val payload = "3b00000000000000".hexToByteArray()
 
         val buffer = SdkBuffer().apply { write(payload) }
         val deserializer = CborPrimitiveDeserializer(buffer)
@@ -428,7 +430,7 @@ class CborDeserializerErrorTest {
 
     @Test
     fun `TestDecode_InvalidArgument - string - 4 - arg len 4 greater than remaining buf len`() {
-        val payload = "0x7a000000".toByteArray()
+        val payload = "7a000000".hexToByteArray()
 
         val buffer = SdkBuffer().apply { write(payload) }
         val deserializer = CborPrimitiveDeserializer(buffer)
@@ -440,7 +442,7 @@ class CborDeserializerErrorTest {
 
     @Test
     fun `TestDecode_InvalidArgument - tag - 1 - arg len 1 greater than remaining buf len`() {
-        val payload = "0xd8".toByteArray()
+        val payload = "d8".hexToByteArray()
 
         val buffer = SdkBuffer().apply { write(payload) }
 
@@ -451,7 +453,7 @@ class CborDeserializerErrorTest {
 
     @Test
     fun `TestDecode_InvalidList - indefinite list  -  invalid item - arg len 1 greater than remaining buf len`() {
-        val payload = "0x9f18".toByteArray()
+        val payload = "9f18".hexToByteArray()
 
         val deserializer = CborDeserializer(payload)
         assertFails {
@@ -465,7 +467,7 @@ class CborDeserializerErrorTest {
 
     @Test
     fun `TestDecode_InvalidList - list  -  eof after head - unexpected end of payload`() {
-        val payload = "0x81".toByteArray()
+        val payload = "81".hexToByteArray()
 
         val deserializer = CborDeserializer(payload)
         assertFails {
@@ -479,7 +481,7 @@ class CborDeserializerErrorTest {
 
     @Test
     fun `TestDecode_InvalidList - list  -  invalid item - arg len 1 greater than remaining buf len`() {
-        val payload = "0x8118".toByteArray()
+        val payload = "8118".hexToByteArray()
 
         val deserializer = CborDeserializer(payload)
         assertFails {
@@ -493,7 +495,7 @@ class CborDeserializerErrorTest {
 
     @Test
     fun `TestDecode_InvalidList - indefinite list - no break - expected break marker`() {
-        val payload = "0x9f".toByteArray()
+        val payload = "9f".hexToByteArray()
 
         val deserializer = CborDeserializer(payload)
         assertFails {
@@ -507,7 +509,7 @@ class CborDeserializerErrorTest {
 
     @Test
     fun `TestDecode_InvalidMap - map  -  non-string key - unexpected major type 0 for map key`() {
-        val payload = "0xa100".toByteArray()
+        val payload = "a100".hexToByteArray()
 
         val deserializer = CborDeserializer(payload)
         assertFails {
@@ -522,7 +524,7 @@ class CborDeserializerErrorTest {
 
     @Test
     fun `TestDecode_InvalidMap - map  -  invalid key - slice len 1 greater than remaining buf len`() {
-        val payload = "0xa17801".toByteArray()
+        val payload = "a17801".hexToByteArray()
 
         val deserializer = CborDeserializer(payload)
         assertFails {
@@ -537,7 +539,7 @@ class CborDeserializerErrorTest {
 
     @Test
     fun `TestDecode_InvalidMap - map  -  invalid value - arg len 1 greater than remaining buf len`() {
-        val payload = "0xa163666f6f18".toByteArray()
+        val payload = "a163666f6f18".hexToByteArray()
 
         val deserializer = CborDeserializer(payload)
         assertFails {
@@ -552,7 +554,7 @@ class CborDeserializerErrorTest {
 
     @Test
     fun `TestDecode_InvalidMap - indefinite map  -  no break - expected break marker`() {
-        val payload = "0xbf".toByteArray()
+        val payload = "bf".hexToByteArray()
 
         val deserializer = CborDeserializer(payload)
         assertFails {
@@ -567,7 +569,7 @@ class CborDeserializerErrorTest {
 
     @Test
     fun `TestDecode_InvalidMap - indefinite map  -  non-string key - unexpected major type 0 for map key`() {
-        val payload = "0xbf00".toByteArray()
+        val payload = "bf00".hexToByteArray()
 
         val deserializer = CborDeserializer(payload)
         assertFails {
@@ -582,7 +584,7 @@ class CborDeserializerErrorTest {
 
     @Test
     fun `TestDecode_InvalidMap - indefinite map  -  invalid key - slice len 1 greater than remaining buf len`() {
-        val payload = "0xbf7801".toByteArray()
+        val payload = "bf7801".hexToByteArray()
 
         val deserializer = CborDeserializer(payload)
         assertFails {
@@ -597,7 +599,7 @@ class CborDeserializerErrorTest {
 
     @Test
     fun `TestDecode_InvalidMap - indefinite map  -  invalid value - arg len 1 greater than remaining buf len`() {
-        val payload = "0xbf63666f6f18".toByteArray()
+        val payload = "bf63666f6f18".hexToByteArray()
 
         val deserializer = CborDeserializer(payload)
         assertFails {
@@ -612,7 +614,7 @@ class CborDeserializerErrorTest {
 
     @Test
     fun `TestDecode_InvalidMap - map  -  eof after head - unexpected end of payload`() {
-        val payload = "0xa1".toByteArray()
+        val payload = "a1".hexToByteArray()
 
         val deserializer = CborDeserializer(payload)
         assertFails {
@@ -627,7 +629,7 @@ class CborDeserializerErrorTest {
 
     @Test
     fun `TestDecode_InvalidSlice - slice - invalid nested definite - decode subslice slice len 1 greater than remaining buf len`() {
-        val payload = "0x5f5801".toByteArray()
+        val payload = "5f5801".hexToByteArray()
 
         val buffer = SdkBuffer().apply { write(payload) }
         val deserializer = CborPrimitiveDeserializer(buffer)
@@ -639,7 +641,7 @@ class CborDeserializerErrorTest {
 
     @Test
     fun `TestDecode_InvalidSlice - string - no break - expected break marker`() {
-        val payload = "0x7f".toByteArray()
+        val payload = "7f".hexToByteArray()
 
         val buffer = SdkBuffer().apply { write(payload) }
         val deserializer = CborPrimitiveDeserializer(buffer)
@@ -651,7 +653,7 @@ class CborDeserializerErrorTest {
 
     @Test
     fun `TestDecode_InvalidSlice - string - invalid nested major - unexpected major type 2 in indefinite slice`() {
-        val payload = "0x7f40".toByteArray()
+        val payload = "7f40".hexToByteArray()
 
         val buffer = SdkBuffer().apply { write(payload) }
         val deserializer = CborPrimitiveDeserializer(buffer)
@@ -663,7 +665,7 @@ class CborDeserializerErrorTest {
 
     @Test
     fun `TestDecode_InvalidSlice - string - nested indefinite - nested indefinite slice`() {
-        val payload = "0x7f7f".toByteArray()
+        val payload = "7f7f".hexToByteArray()
 
         val buffer = SdkBuffer().apply { write(payload) }
         val deserializer = CborPrimitiveDeserializer(buffer)
@@ -675,7 +677,7 @@ class CborDeserializerErrorTest {
 
     @Test
     fun `TestDecode_InvalidSlice - string - invalid nested definite - decode subslice - slice len 1 greater than remaining buf len`() {
-        val payload = "0x7f7801".toByteArray()
+        val payload = "7f7801".hexToByteArray()
 
         val buffer = SdkBuffer().apply { write(payload) }
         val deserializer = CborPrimitiveDeserializer(buffer)
@@ -687,7 +689,7 @@ class CborDeserializerErrorTest {
 
     @Test
     fun `TestDecode_InvalidSlice - slice - invalid nested major - unexpected major type 3 in indefinite slice`() {
-        val payload = "0x5f60".toByteArray()
+        val payload = "5f60".hexToByteArray()
 
         val buffer = SdkBuffer().apply { write(payload) }
         val deserializer = CborPrimitiveDeserializer(buffer)
@@ -699,7 +701,7 @@ class CborDeserializerErrorTest {
 
     @Test
     fun `TestDecode_InvalidSlice - slice - no break - expected break marker`() {
-        val payload = "0x5f".toByteArray()
+        val payload = "5f".hexToByteArray()
 
         val buffer = SdkBuffer().apply { write(payload) }
         val deserializer = CborPrimitiveDeserializer(buffer)
@@ -711,7 +713,7 @@ class CborDeserializerErrorTest {
 
     @Test
     fun `TestDecode_InvalidSlice - slice - nested indefinite - nested indefinite slice`() {
-        val payload = "0x5f5f".toByteArray()
+        val payload = "5f5f".hexToByteArray()
 
         val buffer = SdkBuffer().apply { write(payload) }
         val deserializer = CborPrimitiveDeserializer(buffer)
@@ -723,7 +725,7 @@ class CborDeserializerErrorTest {
 
     @Test
     fun `TestDecode_InvalidSlice - string - 1 - not enough bytes - slice len 1 greater than remaining buf len`() {
-        val payload = "0x7801".toByteArray()
+        val payload = "7801".hexToByteArray()
 
         val buffer = SdkBuffer().apply { write(payload) }
         val deserializer = CborPrimitiveDeserializer(buffer)
@@ -735,7 +737,7 @@ class CborDeserializerErrorTest {
 
     @Test
     fun `TestDecode_InvalidSlice - slice - 1 - not enough bytes - slice len 1 greater than remaining buf len`() {
-        val payload = "0x5801".toByteArray()
+        val payload = "5801".hexToByteArray()
 
         val buffer = SdkBuffer().apply { write(payload) }
         val deserializer = CborPrimitiveDeserializer(buffer)
@@ -747,7 +749,7 @@ class CborDeserializerErrorTest {
 
     @Test
     fun `TestDecode_InvalidTag - invalid value - arg len 1 greater than remaining buf len`() {
-        val payload = "0xc118".toByteArray()
+        val payload = "c118".hexToByteArray()
 
         val buffer = SdkBuffer().apply { write(payload) }
 
@@ -758,12 +760,41 @@ class CborDeserializerErrorTest {
 
     @Test
     fun `TestDecode_InvalidTag - eof - unexpected end of payload`() {
-        val payload = "0xc1".toByteArray()
+        val payload = "c1".hexToByteArray()
 
         val buffer = SdkBuffer().apply { write(payload) }
 
         assertFails {
             Tag.decode(buffer)
+        }
+    }
+
+    /**
+     * tt/V2228436368/F20: CBOR decimal fraction (tag 4) with exponent 999999999 and mantissa 1 should not create a
+     * [BigDecimal][aws.smithy.kotlin.runtime.content.BigDecimal] with huge scale that causes OOM when `toPlainString`
+     * is invoked. Instead, the deserializer should reject exponents this large rather than creating a dangerous
+     * `BigDecimal`.
+     */
+    @Test
+    fun testDecimalFractionExponentDoesNotOom() {
+        val payloads = listOf(
+            "c48219270f01", // 1E9999
+            "c4821a0001869f01", // 1E99999
+            "c4821a000f423f01", // 1E999999
+            "c4821a0098967f01", // 1E9999999
+            "c4821a05f5e0ff01", // 1E99999999
+            "c4821a3b9ac9ff01", // 1E999999999
+        ).map { it.hexToByteArray() }
+
+        payloads.forEach { payload ->
+            val buffer = SdkBuffer().apply { write(payload) }
+            val deserializer = CborPrimitiveDeserializer(buffer)
+
+            assertFailsWith<DeserializationException> {
+                val result = deserializer.deserializeBigDecimal()
+                // If deserialization doesn't reject it, toPlainString() will OOM
+                result.toPlainString()
+            }
         }
     }
 }
