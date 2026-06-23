@@ -29,10 +29,10 @@ class SystemPlatformProviderTest {
 
         val expected = "Hello, File!".encodeToByteArray()
 
-        ps.writeFile(path, expected)
-        assertTrue(ps.fileExists(path))
+        ps.write(path, expected, WriteType.OVERWRITE)
+        assertTrue(ps.exists(path))
 
-        val actual = ps.readFileOrNull(path)
+        val actual = ps.readOrNull(path, readAll = true)
         assertContentEquals(expected, actual)
     }
 
@@ -62,6 +62,7 @@ class SystemPlatformProviderTest {
         val osInfo = PlatformProvider.System.osInfo()
         assertNotEquals(OsFamily.Unknown, osInfo.family)
     }
+
 
     private fun tempPath(): String {
         val ps = PlatformProvider.System
@@ -185,10 +186,10 @@ class SystemPlatformProviderTest {
         val path = tempPath()
 
         ps.write(path, "data".encodeToByteArray(), WriteType.OVERWRITE)
-        assertTrue(ps.fileExists(path))
+        assertTrue(ps.exists(path))
 
         ps.delete(path)
-        assertFalse(ps.fileExists(path))
+        assertFalse(ps.exists(path))
     }
 
     @Test
@@ -212,7 +213,7 @@ class SystemPlatformProviderTest {
         ps.write(src, "data".encodeToByteArray(), WriteType.OVERWRITE)
         ps.atomicMove(src, dst)
 
-        assertFalse(ps.fileExists(src))
+        assertFalse(ps.exists(src))
         assertContentEquals("data".encodeToByteArray(), ps.read(dst, readAll = true))
     }
 
@@ -245,7 +246,7 @@ class SystemPlatformProviderTest {
 
         ps.atomicMove(src, dst, overwrite = true)
 
-        assertFalse(ps.fileExists(src))
+        assertFalse(ps.exists(src))
         assertContentEquals("new".encodeToByteArray(), ps.read(dst, readAll = true))
     }
 

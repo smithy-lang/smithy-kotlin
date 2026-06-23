@@ -5,6 +5,7 @@
 
 package aws.smithy.kotlin.runtime.http.engine.okhttp
 
+import aws.smithy.kotlin.runtime.PlannedRemoval
 import aws.smithy.kotlin.runtime.http.engine.HttpClientEngineConfig
 import aws.smithy.kotlin.runtime.http.engine.HttpClientEngineConfigImpl
 import aws.smithy.kotlin.runtime.telemetry.Global
@@ -33,6 +34,9 @@ public class OkHttpEngineConfig private constructor(builder: Builder) : HttpClie
     }
 
     /**
+     * **⚠️Important**: The connection monitoring feature is now _deprecated_ and should no longer be necessary. See
+     * [the related GitHub Discussion post](https://github.com/aws/aws-sdk-kotlin/discussions/1797) for more details.
+     *
      * The interval in which to poll idle connections for remote closure or `null` to disable monitoring of idle
      * connections. The default value is `null`.
      *
@@ -46,6 +50,9 @@ public class OkHttpEngineConfig private constructor(builder: Builder) : HttpClie
      * When this value is `null`, polling is disabled. Idle connections in the pool which are closed remotely may
      * encounter errors when they are acquired for a subsequent call.
      */
+    @Deprecated("Connection idle polling is now deprecated. See https://github.com/aws/aws-sdk-kotlin/discussions/1797 for more details.")
+    @PlannedRemoval(major = 1, minor = 8)
+    @Suppress("DEPRECATION")
     public val connectionIdlePollingInterval: Duration? = builder.connectionIdlePollingInterval
 
     /**
@@ -87,10 +94,16 @@ public class OkHttpEngineConfig private constructor(builder: Builder) : HttpClie
     public val hostnameVerifier: HostnameVerifier? = builder.hostnameVerifier
 
     /**
-     * Whether to retry when a connectivity problem is encountered. When enabled, this client silently recovers from the following problems:
-     * * Unreachable IP addresses. If the URL's host has multiple IP addresses, failure to reach any individual IP address doesn't fail the overall request. This can increase availability of multi-homed services.
-     * * Stale pooled connections. The connection pool reuses sockets to decrease request latency, but these connections will occasionally time out.
-     * * Unreachable proxy servers. A ProxySelector can be used to attempt multiple proxy servers in sequence, eventually falling back to a direct connection.
+     * Whether to retry when a connectivity problem is encountered. When enabled, this client silently recovers from the
+     * following problems:
+     * * Unreachable IP addresses. If the URL's host has multiple IP addresses, failure to reach any individual IP
+     *   address doesn't fail the overall request. This can increase availability of multi-homed services.
+     * * Stale pooled connections. The connection pool reuses sockets to decrease request latency but these connections
+     *   will occasionally time out or be closed remotely.
+     * * Unreachable proxy servers. A ProxySelector can be used to attempt multiple proxy servers in sequence,
+     *   eventually falling back to a direct connection.
+     *
+     * If unspecified, the default value is `true` (enabled) for this feature.
      */
     public val retryOnConnectionFailure: Boolean = builder.retryOnConnectionFailure
 
@@ -98,7 +111,10 @@ public class OkHttpEngineConfig private constructor(builder: Builder) : HttpClie
         super.toBuilderApplicator()()
 
         if (this is Builder) {
+            @Suppress("DEPRECATION")
+            @OptIn(PlannedRemoval::class)
             connectionIdlePollingInterval = this@OkHttpEngineConfig.connectionIdlePollingInterval
+
             maxConcurrencyPerHost = this@OkHttpEngineConfig.maxConcurrencyPerHost
             trustManager = this@OkHttpEngineConfig.trustManager
             keyManager = this@OkHttpEngineConfig.keyManager
@@ -113,6 +129,10 @@ public class OkHttpEngineConfig private constructor(builder: Builder) : HttpClie
      */
     public class Builder : BuilderImpl() {
         /**
+         * **⚠️Important**: The connection monitoring feature is now _deprecated_ and should no longer be necessary. See
+         * [the related GitHub Discussion post](https://github.com/aws/aws-sdk-kotlin/discussions/1797) for more
+         * details.
+         *
          * The interval in which to poll idle connections for remote closure or `null` to disable monitoring of idle
          * connections. The default value is `null`.
          *
@@ -126,6 +146,8 @@ public class OkHttpEngineConfig private constructor(builder: Builder) : HttpClie
          * When this value is `null`, polling is disabled. Idle connections in the pool which are closed remotely may
          * encounter errors when they are acquired for a subsequent call.
          */
+        @Deprecated("Connection idle polling is now deprecated. See https://github.com/aws/aws-sdk-kotlin/discussions/1797 for more details.")
+        @PlannedRemoval(major = 1, minor = 8)
         public var connectionIdlePollingInterval: Duration? = null
 
         /**
@@ -169,10 +191,16 @@ public class OkHttpEngineConfig private constructor(builder: Builder) : HttpClie
         override var telemetryProvider: TelemetryProvider = TelemetryProvider.Global
 
         /**
-         * Whether to retry when a connectivity problem is encountered. When enabled, this client silently recovers from the following problems:
-         * * Unreachable IP addresses. If the URL's host has multiple IP addresses, failure to reach any individual IP address doesn't fail the overall request. This can increase availability of multi-homed services.
-         * * Stale pooled connections. The connection pool reuses sockets to decrease request latency, but these connections will occasionally time out.
-         * * Unreachable proxy servers. A ProxySelector can be used to attempt multiple proxy servers in sequence, eventually falling back to a direct connection.
+         * Whether to retry when a connectivity problem is encountered. When enabled, this client silently recovers from
+         * the following problems:
+         * * Unreachable IP addresses. If the URL's host has multiple IP addresses, failure to reach any individual IP
+         *   address doesn't fail the overall request. This can increase availability of multi-homed services.
+         * * Stale pooled connections. The connection pool reuses sockets to decrease request latency but these
+         *   connections will occasionally time out or be closed remotely.
+         * * Unreachable proxy servers. A ProxySelector can be used to attempt multiple proxy servers in sequence,
+         *   eventually falling back to a direct connection.
+         *
+         * If unspecified, the default value is `true` (enabled) for this feature.
          */
         public val retryOnConnectionFailure: Boolean = true
     }
