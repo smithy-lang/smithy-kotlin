@@ -63,7 +63,6 @@ class SystemPlatformProviderTest {
         assertNotEquals(OsFamily.Unknown, osInfo.family)
     }
 
-
     private fun tempPath(): String {
         val ps = PlatformProvider.System
         val tempDir = if (ps.osInfo().family == OsFamily.Windows) {
