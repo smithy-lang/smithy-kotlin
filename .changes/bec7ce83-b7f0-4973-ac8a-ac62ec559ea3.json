@@ -1,6 +1,6 @@
 {
     "id": "bec7ce83-b7f0-4973-ac8a-ac62ec559ea3",
     "type": "misc",
-    "description": "**Breaking**: Update Kotlin version from 2.3.20 to 2.4.0. Remove deprecated `AwsChunkedSource` constructor overload, `HttpRequestBuilder.setAwsChunkedBody` overload, and `Flow<SdkBuffer>.asEventStreamHttpBody(CoroutineScope)` overload that were scheduled for removal in 1.7. Deprecate `Filesystem.readFileOrNull`, `Filesystem.writeFile`, `Filesystem.fileExists`, `Filesystem.Companion.fromMap(Map<String, ByteArray>)`, `OkHttpEngineConfig.connectionIdlePollingInterval`, and `TestPlatformProvider` legacy constructors for removal in 1.8",
+    "description": "**Breaking**: Update Kotlin version from 2.3.20 to 2.4.0. Remove deprecated `AwsChunkedSource` constructor overload, `HttpRequestBuilder.setAwsChunkedBody` overload, and `Flow<SdkBuffer>.asEventStreamHttpBody(CoroutineScope)` overload that were scheduled for removal in 1.7. Deprecate `Filesystem.readFileOrNull`, `Filesystem.writeFile`, `Filesystem.fileExists`, `Filesystem.Companion.fromMap(Map<String, ByteArray>)`, and `TestPlatformProvider` legacy constructors for removal in 1.8",
     "requiresMinorVersionBump": true
 }
