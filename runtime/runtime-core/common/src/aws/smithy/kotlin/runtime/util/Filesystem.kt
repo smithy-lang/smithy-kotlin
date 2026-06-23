@@ -243,7 +243,8 @@ public sealed class WriteType {
     public data class OFFSET(public val offset: Long) : WriteType()
 }
 
-internal class MapFilesystem(
+@InternalApi
+public class MapFilesystem(
     private val memFs: MutableMap<String, TestFile> = mutableMapOf(),
     override val filePathSeparator: String = SystemPathSeparator.toString(),
 ) : Filesystem {

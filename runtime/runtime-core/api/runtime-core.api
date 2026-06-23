@@ -2527,6 +2527,26 @@ public final class aws/smithy/kotlin/runtime/util/LazyAsyncValueKt {
 	public static final fun asyncLazy (Lkotlin/jvm/functions/Function1;)Laws/smithy/kotlin/runtime/util/LazyAsyncValue;
 }
 
+public final class aws/smithy/kotlin/runtime/util/MapFilesystem : aws/smithy/kotlin/runtime/util/Filesystem {
+	public fun <init> ()V
+	public fun <init> (Ljava/util/Map;Ljava/lang/String;)V
+	public synthetic fun <init> (Ljava/util/Map;Ljava/lang/String;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun atomicMove (Ljava/lang/String;Ljava/lang/String;ZZ)V
+	public fun createDir (Ljava/lang/String;Z)V
+	public fun delete (Ljava/lang/String;Z)V
+	public fun exists (Ljava/lang/String;)Z
+	public fun fileExists (Ljava/lang/String;)Z
+	public fun getFilePathSeparator ()Ljava/lang/String;
+	public final fun getFilePermissions (Ljava/lang/String;)Ljava/lang/String;
+	public fun list (Ljava/lang/String;Z)Ljava/util/Collection;
+	public fun read (Ljava/lang/String;JJZ)[B
+	public fun readFileOrNull (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun readOrNull (Ljava/lang/String;JJZZ)[B
+	public fun size (Ljava/lang/String;Z)J
+	public fun write (Ljava/lang/String;[BLaws/smithy/kotlin/runtime/util/WriteType;ZLjava/lang/String;)V
+	public fun writeFile (Ljava/lang/String;[BLkotlin/coroutines/Continuation;)Ljava/lang/Object;
+}
+
 public final class aws/smithy/kotlin/runtime/util/OperatingSystem {
 	public fun <init> (Laws/smithy/kotlin/runtime/util/OsFamily;Ljava/lang/String;)V
 	public final fun component1 ()Laws/smithy/kotlin/runtime/util/OsFamily;
