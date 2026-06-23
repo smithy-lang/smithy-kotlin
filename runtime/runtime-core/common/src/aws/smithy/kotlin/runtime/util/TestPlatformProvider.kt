@@ -6,6 +6,7 @@
 package aws.smithy.kotlin.runtime.util
 
 import aws.smithy.kotlin.runtime.InternalApi
+import aws.smithy.kotlin.runtime.PlannedRemoval
 import kotlin.jvm.JvmName
 
 /**
@@ -25,10 +26,12 @@ private constructor(
 ) : PlatformProvider,
     Filesystem by fs {
 
-    // TODO deprecate
+    @Deprecated("Use TestPlatformProvider.of() instead")
+    @PlannedRemoval(1, 8)
     public constructor() : this(emptyMap(), emptyMap(), MapFilesystem(), OperatingSystem(OsFamily.Linux, "test"))
 
-    // TODO deprecate
+    @Deprecated("Use TestPlatformProvider.of() instead")
+    @PlannedRemoval(1, 8)
     public constructor(
         env: Map<String, String> = emptyMap(),
         props: Map<String, String> = emptyMap(),

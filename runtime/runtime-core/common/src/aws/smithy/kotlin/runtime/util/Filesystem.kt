@@ -206,7 +206,8 @@ public interface Filesystem {
         /**
          * Construct a fake filesystem from a mapping of paths to contents
          */
-        // TODO deprecate
+        @Deprecated("Use fromMap(data: Map<String, TestFile>, filePathSeparator: String) instead")
+        @PlannedRemoval(1, 8)
         public fun fromMap(data: Map<String, ByteArray>, filePathSeparator: String = "/"): Filesystem = MapFilesystem(
             TestFile.transformMap(data).toMutableMap(),
             filePathSeparator,

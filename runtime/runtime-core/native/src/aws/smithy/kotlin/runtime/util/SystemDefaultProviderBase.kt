@@ -4,6 +4,7 @@
  */
 package aws.smithy.kotlin.runtime.util
 
+import aws.smithy.kotlin.runtime.PlannedRemoval
 import aws.smithy.kotlin.runtime.io.IOException
 import aws.smithy.kotlin.runtime.io.internal.SdkDispatchers
 import kotlinx.cinterop.*
@@ -16,6 +17,8 @@ import platform.posix.*
 public abstract class SystemDefaultProviderBase : PlatformProvider {
     override fun getenv(key: String): String? = platform.posix.getenv(key)?.toKString()
 
+    @Deprecated("Use readOrNull() instead", replaceWith = ReplaceWith("readOrNull(path, readAll = true)"))
+    @PlannedRemoval(1, 8)
     override suspend fun readFileOrNull(path: String): ByteArray? = withContext(SdkDispatchers.IO) {
         try {
             val size = memScoped {
@@ -41,6 +44,8 @@ public abstract class SystemDefaultProviderBase : PlatformProvider {
         }
     }
 
+    @Deprecated("Use write() instead", replaceWith = ReplaceWith("write(path, data, WriteType.OVERWRITE)"))
+    @PlannedRemoval(1, 8)
     override suspend fun writeFile(path: String, data: ByteArray): Unit = withContext(SdkDispatchers.IO) {
         val file = fopen(path, "wb") ?: throw IOException("Cannot open file for writing: $path")
         try {
@@ -53,6 +58,8 @@ public abstract class SystemDefaultProviderBase : PlatformProvider {
         }
     }
 
+    @Deprecated("Use exists() instead", replaceWith = ReplaceWith("exists(path)"))
+    @PlannedRemoval(1, 8)
     override fun fileExists(path: String): Boolean = access(path, F_OK) == 0
 
     override fun write(path: String, data: ByteArray, writeType: WriteType, mustExist: Boolean, permissions: String?) {
