@@ -17,8 +17,8 @@ import platform.posix.*
 public abstract class SystemDefaultProviderBase : PlatformProvider {
     override fun getenv(key: String): String? = platform.posix.getenv(key)?.toKString()
 
+    @OptIn(PlannedRemoval::class)
     @Deprecated("Use readOrNull() instead", replaceWith = ReplaceWith("readOrNull(path, readAll = true)"))
-    @PlannedRemoval(major = 1, minor = 8)
     override suspend fun readFileOrNull(path: String): ByteArray? = withContext(SdkDispatchers.IO) {
         try {
             val size = memScoped {
@@ -44,8 +44,8 @@ public abstract class SystemDefaultProviderBase : PlatformProvider {
         }
     }
 
+    @OptIn(PlannedRemoval::class)
     @Deprecated("Use write() instead", replaceWith = ReplaceWith("write(path, data, WriteType.OVERWRITE)"))
-    @PlannedRemoval(major = 1, minor = 8)
     override suspend fun writeFile(path: String, data: ByteArray): Unit = withContext(SdkDispatchers.IO) {
         val file = fopen(path, "wb") ?: throw IOException("Cannot open file for writing: $path")
         try {
@@ -58,8 +58,8 @@ public abstract class SystemDefaultProviderBase : PlatformProvider {
         }
     }
 
+    @OptIn(PlannedRemoval::class)
     @Deprecated("Use exists() instead", replaceWith = ReplaceWith("exists(path)"))
-    @PlannedRemoval(major = 1, minor = 8)
     override fun fileExists(path: String): Boolean = access(path, F_OK) == 0
 
     override fun write(path: String, data: ByteArray, writeType: WriteType, mustExist: Boolean, permissions: String?) {

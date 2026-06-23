@@ -20,7 +20,7 @@ class LogModeClientSettingTest {
     fun itResolvesLogModeFromEnvironmentVariables() = runTest {
         val expectedLogMode = LogMode.LogRequest
 
-        val platform = TestPlatformProvider.of(
+        val platform = TestPlatformProvider(
             env = mapOf(ClientSettings.LogMode.envVar to expectedLogMode.toString()),
         )
 
@@ -30,7 +30,7 @@ class LogModeClientSettingTest {
     @Test
     fun itResolvesLogModeFromSystemProperties() = runTest {
         val expectedLogMode = LogMode.LogRequestWithBody + LogMode.LogResponseWithBody
-        val platform = TestPlatformProvider.of(
+        val platform = TestPlatformProvider(
             props = mapOf(ClientSettings.LogMode.sysProp to "LogRequestWithBody|LogResponseWithBody"),
         )
 
@@ -39,7 +39,7 @@ class LogModeClientSettingTest {
 
     @Test
     fun itThrowsOnInvalidLogModeFromenvVar() = runTest {
-        val platform = TestPlatformProvider.of(
+        val platform = TestPlatformProvider(
             env = mapOf(ClientSettings.LogMode.envVar to "InvalidLogMode"),
         )
         assertFailsWith<ClientException> { ClientSettings.LogMode.resolve(platform) }
@@ -47,7 +47,7 @@ class LogModeClientSettingTest {
 
     @Test
     fun itThrowsOnInvalidLogModeFromSystemProperty() = runTest {
-        val platform = TestPlatformProvider.of(
+        val platform = TestPlatformProvider(
             props = mapOf(ClientSettings.LogMode.sysProp to "InvalidLogMode"),
         )
         assertFailsWith<ClientException> { ClientSettings.LogMode.resolve(platform) }
@@ -58,7 +58,7 @@ class LogModeClientSettingTest {
         val expectedLogMode = LogMode.LogRequest
         val nonLowercaseLogMode = "lOgReQUEST"
 
-        val platform = TestPlatformProvider.of(
+        val platform = TestPlatformProvider(
             env = mapOf(
                 ClientSettings.LogMode.envVar to nonLowercaseLogMode,
             ),
@@ -72,7 +72,7 @@ class LogModeClientSettingTest {
         val expectedLogMode = LogMode.allModes().reduce { acc, logMode -> acc + logMode }
         val nonLowercaseLogMode = "LOGREQUest|logReSponSe|logREQUESTwithBODY|LoGrEsPoNsEWitHBoDY"
 
-        val platform = TestPlatformProvider.of(
+        val platform = TestPlatformProvider(
             props = mapOf(
                 ClientSettings.LogMode.sysProp to nonLowercaseLogMode,
             ),
@@ -84,7 +84,7 @@ class LogModeClientSettingTest {
     @Test
     fun itResolvesWithenvVarPriority() = runTest {
         // set the system property and environment variable. resolution should prioritize system property
-        val platform = TestPlatformProvider.of(
+        val platform = TestPlatformProvider(
             env = mapOf(
                 ClientSettings.LogMode.envVar to "invalid-sdk-log-mode-should-be-ignored",
             ),
@@ -100,7 +100,7 @@ class LogModeClientSettingTest {
     fun itUsesDefaultLogModeWhenNoneAreConfigured() = runTest {
         val expectedLogMode = LogMode.Default
 
-        val platform = TestPlatformProvider.of() // no environment variables / system properties / profile
+        val platform = TestPlatformProvider() // no environment variables / system properties / profile
 
         assertEquals(expectedLogMode, ClientSettings.LogMode.resolve(platform))
     }

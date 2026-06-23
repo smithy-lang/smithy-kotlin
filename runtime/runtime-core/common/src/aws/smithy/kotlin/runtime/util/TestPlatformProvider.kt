@@ -26,12 +26,10 @@ private constructor(
 ) : PlatformProvider,
     Filesystem by fs {
 
-    @Deprecated("Use TestPlatformProvider.of() instead")
-    @PlannedRemoval(major = 1, minor = 8)
+    // TODO Deprecate
     public constructor() : this(emptyMap(), emptyMap(), MapFilesystem(), OperatingSystem(OsFamily.Linux, "test"))
 
-    @Deprecated("Use TestPlatformProvider.of() instead")
-    @PlannedRemoval(major = 1, minor = 8)
+    // TODO Deprecate
     public constructor(
         env: Map<String, String> = emptyMap(),
         props: Map<String, String> = emptyMap(),
