@@ -38,7 +38,7 @@ public interface Filesystem {
      * @return contents of file or null if error (file does not exist, etc.)
      */
     @Deprecated("Use readOrNull() instead", replaceWith = ReplaceWith("readOrNull(path, readAll = true)"))
-    @PlannedRemoval(1, 8)
+    @PlannedRemoval(major = 1, minor = 8)
     public suspend fun readFileOrNull(path: String): ByteArray?
 
     /**
@@ -47,7 +47,7 @@ public interface Filesystem {
      * @param data the file contents to write to disk
      */
     @Deprecated("Use write() instead", replaceWith = ReplaceWith("write(path, data, WriteType.OVERWRITE)"))
-    @PlannedRemoval(1, 8)
+    @PlannedRemoval(major = 1, minor = 8)
     public suspend fun writeFile(path: String, data: ByteArray)
 
     /**
@@ -55,7 +55,7 @@ public interface Filesystem {
      * @param path fully qualified path encoded specifically to the target platform's filesystem
      */
     @Deprecated("Use exists() instead", replaceWith = ReplaceWith("exists(path)"))
-    @PlannedRemoval(1, 8)
+    @PlannedRemoval(major = 1, minor = 8)
     public fun fileExists(path: String): Boolean
 
     /**
@@ -207,7 +207,7 @@ public interface Filesystem {
          * Construct a fake filesystem from a mapping of paths to contents
          */
         @Deprecated("Use fromMap(data: Map<String, TestFile>, filePathSeparator: String) instead")
-        @PlannedRemoval(1, 8)
+        @PlannedRemoval(major = 1, minor = 8)
         public fun fromMap(data: Map<String, ByteArray>, filePathSeparator: String = "/"): Filesystem = MapFilesystem(
             TestFile.transformMap(data).toMutableMap(),
             filePathSeparator,

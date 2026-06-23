@@ -27,11 +27,11 @@ private constructor(
     Filesystem by fs {
 
     @Deprecated("Use TestPlatformProvider.of() instead")
-    @PlannedRemoval(1, 8)
+    @PlannedRemoval(major = 1, minor = 8)
     public constructor() : this(emptyMap(), emptyMap(), MapFilesystem(), OperatingSystem(OsFamily.Linux, "test"))
 
     @Deprecated("Use TestPlatformProvider.of() instead")
-    @PlannedRemoval(1, 8)
+    @PlannedRemoval(major = 1, minor = 8)
     public constructor(
         env: Map<String, String> = emptyMap(),
         props: Map<String, String> = emptyMap(),
