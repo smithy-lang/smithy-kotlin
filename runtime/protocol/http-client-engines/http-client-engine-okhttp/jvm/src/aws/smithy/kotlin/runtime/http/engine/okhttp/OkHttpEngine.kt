@@ -20,8 +20,10 @@ import aws.smithy.kotlin.runtime.net.TlsVersion
 import aws.smithy.kotlin.runtime.operation.ExecutionContext
 import aws.smithy.kotlin.runtime.time.Instant
 import aws.smithy.kotlin.runtime.time.fromEpochMilliseconds
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.job
+import kotlin.coroutines.CoroutineContext
 import okhttp3.*
 import okhttp3.coroutines.executeAsync
 import java.util.concurrent.TimeUnit
@@ -39,6 +41,7 @@ public class OkHttpEngine private constructor(
     override val config: OkHttpEngineConfig,
     private val userProvidedClient: OkHttpClient?,
 ) : HttpClientEngineBase("OkHttp") {
+    override val coroutineContext: CoroutineContext = super.coroutineContext + Dispatchers.IO
     public constructor() : this(OkHttpEngineConfig.Default, null)
 
     public constructor(config: OkHttpEngineConfig) : this(config, null)
