@@ -127,6 +127,7 @@ public fun OkHttpEngineConfig.buildClient(
         config.hostnameVerifier?.let(::hostnameVerifier)
 
         retryOnConnectionFailure(config.retryOnConnectionFailure)
+        fastFallback(true)
 
         connectTimeout(config.connectTimeout.toJavaDuration())
         readTimeout(config.socketReadTimeout.toJavaDuration())
@@ -134,7 +135,7 @@ public fun OkHttpEngineConfig.buildClient(
 
         // use our own pool configured with the timeout settings taken from config
         val pool = ConnectionPool(
-            maxIdleConnections = 5, // The default from the no-arg ConnectionPool() constructor
+            maxIdleConnections = 50,
             keepAliveDuration = config.connectionIdleTimeout.inWholeMilliseconds,
             TimeUnit.MILLISECONDS,
         )
