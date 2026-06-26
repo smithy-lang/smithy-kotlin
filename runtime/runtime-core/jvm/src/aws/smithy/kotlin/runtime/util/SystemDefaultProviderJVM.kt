@@ -6,8 +6,6 @@
 package aws.smithy.kotlin.runtime.util
 
 import aws.smithy.kotlin.runtime.PlannedRemoval
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
 import java.io.File
 import java.io.IOException
 import java.io.RandomAccessFile
@@ -40,25 +38,15 @@ internal actual object SystemDefaultProvider : PlatformProvider {
      */
     @OptIn(PlannedRemoval::class)
     @Deprecated("Use readOrNull() instead", replaceWith = ReplaceWith("readOrNull(path, readAll = true)"))
-    actual override suspend fun readFileOrNull(path: String): ByteArray? = try {
-        withContext(Dispatchers.IO) {
-            File(path).readBytes()
-        }
-    } catch (e: IOException) {
-        null
-    }
+    actual override suspend fun readFileOrNull(path: String): ByteArray? = readOrNull(path, readAll = true, mustExist = false)
 
     @OptIn(PlannedRemoval::class)
     @Deprecated("Use write() instead", replaceWith = ReplaceWith("write(path, data, WriteType.OVERWRITE)"))
-    actual override suspend fun writeFile(path: String, data: ByteArray) {
-        withContext(Dispatchers.IO) {
-            File(path).writeBytes(data)
-        }
-    }
+    actual override suspend fun writeFile(path: String, data: ByteArray): Unit = write(path, data, WriteType.OVERWRITE)
 
     @OptIn(PlannedRemoval::class)
     @Deprecated("Use exists() instead", replaceWith = ReplaceWith("exists(path)"))
-    actual override fun fileExists(path: String): Boolean = File(path).exists()
+    actual override fun fileExists(path: String): Boolean = exists(path)
     actual override fun write(
         path: String,
         data: ByteArray,
