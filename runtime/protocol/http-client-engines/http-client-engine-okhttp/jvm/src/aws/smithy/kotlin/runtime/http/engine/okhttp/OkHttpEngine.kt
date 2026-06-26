@@ -41,7 +41,7 @@ public class OkHttpEngine private constructor(
     override val config: OkHttpEngineConfig,
     private val userProvidedClient: OkHttpClient?,
 ) : HttpClientEngineBase("OkHttp") {
-    override val coroutineContext: CoroutineContext = super.coroutineContext + Dispatchers.IO
+
     public constructor() : this(OkHttpEngineConfig.Default, null)
 
     public constructor(config: OkHttpEngineConfig) : this(config, null)
