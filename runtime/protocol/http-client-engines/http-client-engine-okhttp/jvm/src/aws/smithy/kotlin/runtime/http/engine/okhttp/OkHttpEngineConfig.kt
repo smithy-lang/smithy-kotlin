@@ -49,6 +49,15 @@ public class OkHttpEngineConfig private constructor(builder: Builder) : HttpClie
     public val connectionIdlePollingInterval: Duration? = builder.connectionIdlePollingInterval
 
     /**
+     * The maximum number of idle connections to retain in the connection pool.
+     * Idle connections beyond this limit will be evicted. A higher value allows more connection reuse
+     * (avoiding TCP+TLS handshake latency) at the cost of holding more sockets open.
+     *
+     * The default value is 50.
+     */
+    public val maxIdleConnections: Int = builder.maxIdleConnections
+
+    /**
      * The maximum number of requests to execute concurrently for a single host.
      */
     public val maxConcurrencyPerHost: UInt = builder.maxConcurrencyPerHost ?: builder.maxConcurrency
@@ -99,6 +108,7 @@ public class OkHttpEngineConfig private constructor(builder: Builder) : HttpClie
 
         if (this is Builder) {
             connectionIdlePollingInterval = this@OkHttpEngineConfig.connectionIdlePollingInterval
+            maxIdleConnections = this@OkHttpEngineConfig.maxIdleConnections
             maxConcurrencyPerHost = this@OkHttpEngineConfig.maxConcurrencyPerHost
             trustManager = this@OkHttpEngineConfig.trustManager
             keyManager = this@OkHttpEngineConfig.keyManager
@@ -127,6 +137,13 @@ public class OkHttpEngineConfig private constructor(builder: Builder) : HttpClie
          * encounter errors when they are acquired for a subsequent call.
          */
         public var connectionIdlePollingInterval: Duration? = null
+
+        /**
+         * The maximum number of idle connections to retain in the connection pool.
+         * Idle connections beyond this limit will be evicted. A higher value allows more connection reuse
+         * (avoiding TCP+TLS handshake latency) at the cost of holding more sockets open.
+         */
+        public var maxIdleConnections: Int = 50
 
         /**
          * The maximum number of requests to execute concurrently for a single host. Defaults to [maxConcurrency].
