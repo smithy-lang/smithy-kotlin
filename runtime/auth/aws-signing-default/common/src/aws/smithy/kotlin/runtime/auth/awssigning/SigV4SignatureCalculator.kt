@@ -9,6 +9,7 @@ import aws.smithy.kotlin.runtime.hashing.Sha256
 import aws.smithy.kotlin.runtime.hashing.hmac
 import aws.smithy.kotlin.runtime.text.encoding.encodeToHex
 import aws.smithy.kotlin.runtime.time.TimestampFormat
+import kotlin.concurrent.Volatile
 
 /**
  * [SignatureCalculator] for the SigV4 ("AWS4-HMAC-SHA256") algorithm
