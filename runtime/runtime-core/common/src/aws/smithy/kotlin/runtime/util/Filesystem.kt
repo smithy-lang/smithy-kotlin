@@ -208,7 +208,7 @@ public interface Filesystem {
          */
         @Deprecated("Use fromMap(Map<String, TestFile>) instead", replaceWith = ReplaceWith("fromMap(data.mapValues { (_, v) -> TestFile(v) }, filePathSeparator)"))
         @PlannedRemoval(major = 1, minor = 8)
-        public fun fromMap(data: Map<String, ByteArray>, filePathSeparator: String = "/"): Filesystem = MapFilesystem(
+        public fun fromMap(data: Map<String, ByteArray>, filePathSeparator: String = "/"): Filesystem = fromMap(
             TestFile.transformMap(data).toMutableMap(),
             filePathSeparator,
         )
