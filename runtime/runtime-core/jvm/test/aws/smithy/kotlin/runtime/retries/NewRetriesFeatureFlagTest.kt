@@ -16,9 +16,9 @@ import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.seconds
 
 class NewRetriesFeatureFlagTest {
-    private val flagOff = TestPlatformProvider()
-    private val flagOn = TestPlatformProvider(props = mapOf("smithy.newRetries2026" to "true"))
-    private val flagOnEnv = TestPlatformProvider(env = mapOf("SMITHY_NEW_RETRIES_2026" to "true"))
+    private val flagOff = TestPlatformProvider.of()
+    private val flagOn = TestPlatformProvider.of(props = mapOf("smithy.newRetries2026" to "true"))
+    private val flagOnEnv = TestPlatformProvider.of(env = mapOf("SMITHY_NEW_RETRIES_2026" to "true"))
 
     @Test
     fun testResolvesFlagOff() {
