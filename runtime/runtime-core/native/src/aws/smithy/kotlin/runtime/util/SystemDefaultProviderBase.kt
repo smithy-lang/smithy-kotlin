@@ -4,10 +4,9 @@
  */
 package aws.smithy.kotlin.runtime.util
 
+import aws.smithy.kotlin.runtime.PlannedRemoval
 import aws.smithy.kotlin.runtime.io.IOException
-import aws.smithy.kotlin.runtime.io.internal.SdkDispatchers
 import kotlinx.cinterop.*
-import kotlinx.coroutines.withContext
 import kotlinx.io.files.Path
 import kotlinx.io.files.SystemFileSystem
 import platform.posix.*
@@ -16,44 +15,17 @@ import platform.posix.*
 public abstract class SystemDefaultProviderBase : PlatformProvider {
     override fun getenv(key: String): String? = platform.posix.getenv(key)?.toKString()
 
-    override suspend fun readFileOrNull(path: String): ByteArray? = withContext(SdkDispatchers.IO) {
-        try {
-            val size = memScoped {
-                val statResult = alloc<stat>()
-                if (stat(path, statResult.ptr) != 0) return@withContext null
-                @OptIn(UnsafeNumber::class)
-                statResult.st_size.convert<Int>()
-            }
+    @OptIn(PlannedRemoval::class)
+    @Deprecated("Use readOrNull() instead", replaceWith = ReplaceWith("readOrNull(path, readAll = true)"))
+    override suspend fun readFileOrNull(path: String): ByteArray? = readOrNull(path, readAll = true, mustExist = false)
 
-            val file = fopen(path, "rb") ?: return@withContext null
+    @OptIn(PlannedRemoval::class)
+    @Deprecated("Use write() instead", replaceWith = ReplaceWith("write(path, data, WriteType.OVERWRITE)"))
+    override suspend fun writeFile(path: String, data: ByteArray): Unit = write(path, data, WriteType.OVERWRITE)
 
-            try {
-                // Read file content
-                ByteArray(size).usePinned { buffer ->
-                    val rc = fread(buffer.addressOf(0), 1uL, size.toULong(), file)
-                    if (rc == size.toULong()) buffer.get() else null
-                }
-            } finally {
-                fclose(file)
-            }
-        } catch (_: Exception) {
-            null
-        }
-    }
-
-    override suspend fun writeFile(path: String, data: ByteArray): Unit = withContext(SdkDispatchers.IO) {
-        val file = fopen(path, "wb") ?: throw IOException("Cannot open file for writing: $path")
-        try {
-            val wc = fwrite(data.refTo(0), 1uL, data.size.toULong(), file)
-            if (wc != data.size.toULong()) {
-                throw IOException("Failed to write all bytes to file $path, expected ${data.size.toLong()}, wrote $wc")
-            }
-        } finally {
-            fclose(file)
-        }
-    }
-
-    override fun fileExists(path: String): Boolean = access(path, F_OK) == 0
+    @OptIn(PlannedRemoval::class)
+    @Deprecated("Use exists() instead", replaceWith = ReplaceWith("exists(path)"))
+    override fun fileExists(path: String): Boolean = exists(path)
 
     override fun write(path: String, data: ByteArray, writeType: WriteType, mustExist: Boolean, permissions: String?) {
         val exists = SystemFileSystem.exists(Path(path))
