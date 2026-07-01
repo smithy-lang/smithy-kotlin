@@ -73,7 +73,7 @@ class SigV4aSignatureCalculatorTest {
     fun testStringToSign() = TESTS.forEach { testId ->
         runTest {
             val testDir = "$SIGV4A_RESOURCES_BASE/$testId/"
-            assertTrue(PlatformProvider.System.fileExists(testDir), "Failed to find test directory for $testId")
+            assertTrue(PlatformProvider.System.exists(testDir), "Failed to find test directory for $testId")
 
             val context = Json.parseToJsonElement(testDir.fileContents("context.json")).jsonObject
             val signingConfig = context.parseAwsSigningConfig()
@@ -113,7 +113,7 @@ class SigV4aSignatureCalculatorTest {
     }
 
     private suspend fun String.fileContents(path: String): String = checkNotNull(
-        PlatformProvider.System.readFileOrNull(this + path)
+        PlatformProvider.System.readOrNull(this + path, readAll = true)
             ?.decodeToString()
             ?.replace("\r\n", "\n"),
     ) {
