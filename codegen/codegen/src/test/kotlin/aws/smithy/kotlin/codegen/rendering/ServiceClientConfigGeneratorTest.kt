@@ -68,7 +68,7 @@ public class Config private constructor(builder: Builder) : HttpAuthConfig, Http
     override val idempotencyTokenProvider: IdempotencyTokenProvider = builder.idempotencyTokenProvider ?: IdempotencyTokenProvider.Default
     override val interceptors: kotlin.collections.List<aws.smithy.kotlin.runtime.http.interceptors.HttpInterceptor> = builder.interceptors
     override val logMode: LogMode = builder.logMode ?: LogMode.Default
-    override val logRedactedHeaders: kotlin.collections.Set<kotlin.String> = builder.logRedactedHeaders ?: emptySet()
+    override val logRedactedHeaders: kotlin.collections.Set<kotlin.String> = builder.logRedactedHeaders
     override val retryPolicy: RetryPolicy<Any?> = builder.retryPolicy ?: StandardRetryPolicy.Default
     override val telemetryProvider: TelemetryProvider = builder.telemetryProvider ?: TelemetryProvider.Global
 """
@@ -144,11 +144,12 @@ public class Config private constructor(builder: Builder) : HttpAuthConfig, Http
         override var logMode: LogMode? = null
 
         /**
-         * Set of HTTP header names whose values will be replaced with "<REDACTED>" in
+         * Set of HTTP header names whose values will be replaced with "*** Sensitive Data Redacted ***" in
          * request/response debug logging. Matching is case-insensitive. Empty by default
-         * (no headers are redacted).
+         * (no headers are redacted). See [PotentiallySensitiveHeaders][aws.smithy.kotlin.runtime.http.PotentiallySensitiveHeaders] for
+         * a pre-built set of commonly-sensitive headers.
          */
-        override var logRedactedHeaders: kotlin.collections.Set<kotlin.String>? = null
+        override var logRedactedHeaders: kotlin.collections.MutableSet<kotlin.String> = kotlin.collections.mutableSetOf()
 
         /**
          * The policy to use for evaluating operation results and determining whether/how to retry.
@@ -288,7 +289,7 @@ public class Config private constructor(builder: Builder) {
     override val idempotencyTokenProvider: IdempotencyTokenProvider = builder.idempotencyTokenProvider ?: IdempotencyTokenProvider.Default
     override val interceptors: kotlin.collections.List<aws.smithy.kotlin.runtime.http.interceptors.HttpInterceptor> = builder.interceptors
     override val logMode: LogMode = builder.logMode ?: LogMode.LogRequest
-    override val logRedactedHeaders: kotlin.collections.Set<kotlin.String> = builder.logRedactedHeaders ?: emptySet()
+    override val logRedactedHeaders: kotlin.collections.Set<kotlin.String> = builder.logRedactedHeaders
     override val retryPolicy: RetryPolicy<Any?> = builder.retryPolicy ?: StandardRetryPolicy.Default
     override val telemetryProvider: TelemetryProvider = builder.telemetryProvider ?: TelemetryProvider.Global"""
         contents.shouldContainWithDiff(expectedConfigValues)

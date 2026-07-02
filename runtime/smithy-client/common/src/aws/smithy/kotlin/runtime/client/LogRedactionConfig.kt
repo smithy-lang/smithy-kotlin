@@ -9,9 +9,11 @@ package aws.smithy.kotlin.runtime.client
  */
 public interface LogRedactionConfig {
     /**
-     * Set of HTTP header names whose values will be replaced with "<REDACTED>" in
-     * request/response debug logging. Matching is case-insensitive. Empty by default
-     * (no headers are redacted).
+     * Set of HTTP header names whose values will be replaced with `"*** Sensitive Data Redacted ***"`
+     * in request/response debug logging. Matching is case-insensitive. This parameter is empty by
+     * default, meaning no headers are redacted. You may choose a preselected set of headers such as
+     * [PotentiallySensitiveHeaders][aws.smithy.kotlin.runtime.http.PotentiallySensitiveHeaders] or
+     * provide your own custom set.
      */
     public val logRedactedHeaders: Set<String>
 
@@ -20,10 +22,12 @@ public interface LogRedactionConfig {
      */
     public interface Builder {
         /**
-         * Set of HTTP header names whose values will be replaced with "<REDACTED>" in
-         * request/response debug logging. Matching is case-insensitive. Empty by default
-         * (no headers are redacted).
+         * Set of HTTP header names whose values will be replaced with `"*** Sensitive Data Redacted ***"`
+         * in request/response debug logging. Matching is case-insensitive. This parameter is empty by
+         * default, meaning no headers are redacted. You may choose a preselected set of headers such as
+         * [PotentiallySensitiveHeaders][aws.smithy.kotlin.runtime.http.PotentiallySensitiveHeaders] or
+         * provide your own custom set.
          */
-        public var logRedactedHeaders: Set<String>?
+        public var logRedactedHeaders: MutableSet<String>
     }
 }

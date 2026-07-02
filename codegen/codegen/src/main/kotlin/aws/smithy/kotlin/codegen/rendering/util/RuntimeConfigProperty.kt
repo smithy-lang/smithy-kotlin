@@ -132,18 +132,19 @@ object RuntimeConfigProperty {
 
     val LogRedactedHeaders = ConfigProperty {
         name = "logRedactedHeaders"
+        val defaultValue = "${KotlinTypes.Collections.mutableSetOf.fullName}()"
         symbol = KotlinTypes.Collections.set(KotlinTypes.String, isNullable = false)
-        builderSymbol = KotlinTypes.Collections.set(KotlinTypes.String, isNullable = true)
-        toBuilderExpression = ""
-        propertyType = ConfigPropertyType.RequiredWithDefault("emptySet()")
+        builderSymbol = KotlinTypes.Collections.mutableSet(KotlinTypes.String, isNullable = false, default = defaultValue)
+        toBuilderExpression = ".toMutableSet()"
 
         baseClass = RuntimeTypes.SmithyClient.LogRedactionConfig
         useNestedBuilderBaseClass()
 
         documentation = """
-        Set of HTTP header names whose values will be replaced with "<REDACTED>" in
+        Set of HTTP header names whose values will be replaced with "*** Sensitive Data Redacted ***" in
         request/response debug logging. Matching is case-insensitive. Empty by default
-        (no headers are redacted).
+        (no headers are redacted). See [PotentiallySensitiveHeaders][aws.smithy.kotlin.runtime.http.PotentiallySensitiveHeaders] for
+        a pre-built set of commonly-sensitive headers.
         """.trimIndent()
     }
 
