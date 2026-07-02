@@ -91,11 +91,35 @@ public fun ProtocolResponse.statusCode(): HttpStatusCode? {
  * replaced.
  */
 @InternalApi
-public suspend fun dumpResponse(response: HttpResponse, dumpBody: Boolean): Pair<HttpResponse, String> {
+public suspend fun dumpResponse(
+    response: HttpResponse,
+    dumpBody: Boolean,
+): Pair<HttpResponse, String> = dumpResponse(response, dumpBody, emptySet())
+
+/**
+ * Dump a debug description of the response. Either the original response or a copy will be returned to the caller
+ * depending on if the body is consumed.
+ *
+ * @param dumpBody Flag controlling whether to also dump the body out. If true the body will be consumed and
+ * replaced.
+ * @param redactedHeaders Set of header names whose values will be replaced with "<REDACTED>" in the output.
+ * Matching is case-insensitive.
+ */
+@InternalApi
+public suspend fun dumpResponse(
+    response: HttpResponse,
+    dumpBody: Boolean,
+    redactedHeaders: Set<String>,
+): Pair<HttpResponse, String> {
     val buffer = SdkBuffer()
     buffer.writeUtf8("HTTP ${response.status}\r\n")
     response.headers.forEach { key, values ->
-        buffer.writeUtf8(values.joinToString(separator = ";", prefix = "$key: ", postfix = "\r\n"))
+        val headerValue = if (redactedHeaders.any { it.equals(key, ignoreCase = true) }) {
+            "<REDACTED>"
+        } else {
+            values.joinToString(separator = ";")
+        }
+        buffer.writeUtf8("$key: $headerValue\r\n")
     }
     buffer.writeUtf8("\r\n")
 

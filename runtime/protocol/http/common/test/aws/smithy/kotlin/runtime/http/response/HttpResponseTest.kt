@@ -63,4 +63,37 @@ class HttpResponseTest {
         val expected = "HTTP 200: OK\r\nx-foo: bar\r\n\r\n$content"
         assertEquals(expected, actual)
     }
+
+    @Test
+    fun testDumpResponseRedactsHeaders() = runTest {
+        val resp = HttpResponse(
+            HttpStatusCode.OK,
+            Headers {
+                append("x-amz-security-token", "secret-token")
+                append("x-request-id", "abc-123")
+            },
+            HttpBody.Empty,
+        )
+
+        val redacted = setOf("X-Amz-Security-Token")
+        val (_, actual) = dumpResponse(resp, false, redacted)
+        val expected = "HTTP 200: OK\r\nx-amz-security-token: <REDACTED>\r\nx-request-id: abc-123\r\n\r\n"
+        assertEquals(expected, actual)
+    }
+
+    @Test
+    fun testDumpResponseNoRedactionByDefault() = runTest {
+        val resp = HttpResponse(
+            HttpStatusCode.OK,
+            Headers {
+                // Appended as "Authorization" but stored lowercase by Headers (backed by CaseInsensitiveMap)
+                append("Authorization", "Bearer token123")
+            },
+            HttpBody.Empty,
+        )
+
+        val (_, actual) = dumpResponse(resp, false)
+        val expected = "HTTP 200: OK\r\nauthorization: Bearer token123\r\n\r\n"
+        assertEquals(expected, actual)
+    }
 }

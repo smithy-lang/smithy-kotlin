@@ -12,6 +12,7 @@ import aws.smithy.kotlin.runtime.businessmetrics.emitBusinessMetric
 import aws.smithy.kotlin.runtime.client.LogMode
 import aws.smithy.kotlin.runtime.client.endpoints.authOptions
 import aws.smithy.kotlin.runtime.client.logMode
+import aws.smithy.kotlin.runtime.client.logRedactedHeaders
 import aws.smithy.kotlin.runtime.collections.attributesOf
 import aws.smithy.kotlin.runtime.collections.emptyAttributes
 import aws.smithy.kotlin.runtime.collections.merge
@@ -383,17 +384,18 @@ private class HttpCallMiddleware : Middleware<SdkHttpRequest, HttpCall> {
  */
 private suspend fun httpTraceMiddleware(request: SdkHttpRequest, next: Handler<SdkHttpRequest, HttpCall>): HttpCall {
     val logMode = request.context.logMode
+    val redactedHeaders = request.context.logRedactedHeaders
     val logger = coroutineContext.logger("httpTraceMiddleware")
 
     if (logMode.isEnabled(LogMode.LogRequest) || logMode.isEnabled(LogMode.LogRequestWithBody)) {
-        val formattedReq = dumpRequest(request.subject, logMode.isEnabled(LogMode.LogRequestWithBody))
+        val formattedReq = dumpRequest(request.subject, logMode.isEnabled(LogMode.LogRequestWithBody), redactedHeaders)
         logger.debug { "HttpRequest:\n$formattedReq" }
     }
 
     var call = next.call(request)
 
     if (logMode.isEnabled(LogMode.LogResponse) || logMode.isEnabled(LogMode.LogResponseWithBody)) {
-        val (resp, formattedResp) = dumpResponse(call.response, logMode.isEnabled(LogMode.LogResponseWithBody))
+        val (resp, formattedResp) = dumpResponse(call.response, logMode.isEnabled(LogMode.LogResponseWithBody), redactedHeaders)
         call = call.copy(response = resp)
         logger.debug { "HttpResponse:\n$formattedResp" }
     } else {

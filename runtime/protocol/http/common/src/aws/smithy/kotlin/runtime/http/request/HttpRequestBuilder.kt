@@ -95,7 +95,25 @@ public fun HttpRequestBuilder.header(name: String, value: String): Unit = header
  * replaced.
  */
 @InternalApi
-public suspend fun dumpRequest(request: HttpRequestBuilder, dumpBody: Boolean): String {
+public suspend fun dumpRequest(
+    request: HttpRequestBuilder,
+    dumpBody: Boolean,
+): String = dumpRequest(request, dumpBody, emptySet())
+
+/**
+ * Dump a debug description of the request
+ *
+ * @param dumpBody Flag controlling whether to also dump the body out. If true the body will be consumed and
+ * replaced.
+ * @param redactedHeaders Set of header names whose values will be replaced with "<REDACTED>" in the output.
+ * Matching is case-insensitive.
+ */
+@InternalApi
+public suspend fun dumpRequest(
+    request: HttpRequestBuilder,
+    dumpBody: Boolean,
+    redactedHeaders: Set<String>,
+): String {
     val buffer = SdkBuffer()
 
     // TODO - we have no way to know the http version at this level to set HTTP/x.x
@@ -111,7 +129,12 @@ public suspend fun dumpRequest(request: HttpRequestBuilder, dumpBody: Boolean): 
     request.headers.entries()
         .filterNot { it.key in skip }
         .forEach { (key, values) ->
-            buffer.writeUtf8(values.joinToString(separator = ";", prefix = "$key: ", postfix = "\r\n"))
+            val headerValue = if (redactedHeaders.any { it.equals(key, ignoreCase = true) }) {
+                "<REDACTED>"
+            } else {
+                values.joinToString(separator = ";")
+            }
+            buffer.writeUtf8("$key: $headerValue\r\n")
         }
 
     buffer.writeUtf8("\r\n")

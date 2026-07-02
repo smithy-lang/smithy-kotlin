@@ -130,6 +130,23 @@ object RuntimeConfigProperty {
         """.trimIndent()
     }
 
+    val LogRedactedHeaders = ConfigProperty {
+        name = "logRedactedHeaders"
+        symbol = KotlinTypes.Collections.set(KotlinTypes.String, isNullable = false)
+        builderSymbol = KotlinTypes.Collections.set(KotlinTypes.String, isNullable = true)
+        toBuilderExpression = ""
+        propertyType = ConfigPropertyType.RequiredWithDefault("emptySet()")
+
+        baseClass = RuntimeTypes.SmithyClient.LogRedactionConfig
+        useNestedBuilderBaseClass()
+
+        documentation = """
+        Set of HTTP header names whose values will be replaced with "<REDACTED>" in
+        request/response debug logging. Matching is case-insensitive. Empty by default
+        (no headers are redacted).
+        """.trimIndent()
+    }
+
     var TelemetryProvider = ConfigProperty {
         symbol = RuntimeTypes.Observability.TelemetryApi.TelemetryProvider
         baseClass = RuntimeTypes.Observability.TelemetryApi.TelemetryConfig

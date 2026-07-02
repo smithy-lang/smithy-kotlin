@@ -1011,6 +1011,7 @@ public final class aws/smithy/kotlin/codegen/core/RuntimeTypes$SmithyClient : aw
 	public final fun getIdempotencyTokenProvider ()Lsoftware/amazon/smithy/codegen/core/Symbol;
 	public final fun getIdempotencyTokenProviderExt ()Lsoftware/amazon/smithy/codegen/core/Symbol;
 	public final fun getLogMode ()Lsoftware/amazon/smithy/codegen/core/Symbol;
+	public final fun getLogRedactionConfig ()Lsoftware/amazon/smithy/codegen/core/Symbol;
 	public final fun getProtocolRequestInterceptorContext ()Lsoftware/amazon/smithy/codegen/core/Symbol;
 	public final fun getRequestInterceptorContext ()Lsoftware/amazon/smithy/codegen/core/Symbol;
 	public final fun getRetryClientConfig ()Lsoftware/amazon/smithy/codegen/core/Symbol;
@@ -3077,6 +3078,7 @@ public final class aws/smithy/kotlin/codegen/rendering/util/RuntimeConfigPropert
 	public final fun getHttpInterceptors ()Laws/smithy/kotlin/codegen/rendering/util/ConfigProperty;
 	public final fun getIdempotencyTokenProvider ()Laws/smithy/kotlin/codegen/rendering/util/ConfigProperty;
 	public final fun getLogMode ()Laws/smithy/kotlin/codegen/rendering/util/ConfigProperty;
+	public final fun getLogRedactedHeaders ()Laws/smithy/kotlin/codegen/rendering/util/ConfigProperty;
 	public final fun getRetryPolicy ()Laws/smithy/kotlin/codegen/rendering/util/ConfigProperty;
 	public final fun getRetryStrategy ()Laws/smithy/kotlin/codegen/rendering/util/ConfigProperty;
 	public final fun getTelemetryProvider ()Laws/smithy/kotlin/codegen/rendering/util/ConfigProperty;

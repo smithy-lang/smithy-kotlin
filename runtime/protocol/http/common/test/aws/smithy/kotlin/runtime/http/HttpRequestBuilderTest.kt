@@ -100,4 +100,63 @@ class HttpRequestBuilderTest {
         val expected = "POST /debug/test?q1=foo\r\nHost: test.amazon.com\r\nContent-Length: 6\r\nx-baz: bar\r\nx-quux: qux\r\n\r\nfoobar"
         assertEquals(expected, actual)
     }
+
+    @Test
+    fun testDumpRequestRedactsHeaders() = runTest {
+        val builder = HttpRequestBuilder().apply {
+            url {
+                host = Host.Domain("test.amazon.com")
+                path.encoded = "/debug/test"
+            }
+            headers {
+                append("Authorization", "AWS4-HMAC-SHA256 Credential=...")
+                append("X-Amz-Security-Token", "secret-token")
+                append("x-safe-header", "visible-value")
+            }
+        }
+
+        // Header names are normalized to lowercase by HeadersBuilder (backed by CaseInsensitiveMap)
+        val redacted = setOf("Authorization", "X-Amz-Security-Token")
+        val actual = dumpRequest(builder, false, redacted)
+        val expected = "GET /debug/test\r\nHost: test.amazon.com\r\nauthorization: <REDACTED>\r\nx-amz-security-token: <REDACTED>\r\nx-safe-header: visible-value\r\n\r\n"
+        assertEquals(expected, actual)
+    }
+
+    @Test
+    fun testDumpRequestRedactsCaseInsensitive() = runTest {
+        val builder = HttpRequestBuilder().apply {
+            url {
+                host = Host.Domain("test.amazon.com")
+                path.encoded = "/test"
+            }
+            headers {
+                append("authorization", "secret")
+                append("x-custom", "visible")
+            }
+        }
+
+        // Redaction set uses mixed case but still matches lowercase keys from HeadersBuilder
+        val redacted = setOf("Authorization")
+        val actual = dumpRequest(builder, false, redacted)
+        val expected = "GET /test\r\nHost: test.amazon.com\r\nauthorization: <REDACTED>\r\nx-custom: visible\r\n\r\n"
+        assertEquals(expected, actual)
+    }
+
+    @Test
+    fun testDumpRequestNoRedactionByDefault() = runTest {
+        val builder = HttpRequestBuilder().apply {
+            url {
+                host = Host.Domain("test.amazon.com")
+                path.encoded = "/test"
+            }
+            headers {
+                // Appended as "Authorization" but stored lowercase by HeadersBuilder
+                append("Authorization", "AWS4-HMAC-SHA256 Credential=...")
+            }
+        }
+
+        val actual = dumpRequest(builder, false)
+        val expected = "GET /test\r\nHost: test.amazon.com\r\nauthorization: AWS4-HMAC-SHA256 Credential=...\r\n\r\n"
+        assertEquals(expected, actual)
+    }
 }

@@ -238,6 +238,7 @@ object RuntimeTypes {
         val IdempotencyTokenProvider = symbol("IdempotencyTokenProvider")
         val IdempotencyTokenConfig = symbol("IdempotencyTokenConfig")
         val IdempotencyTokenProviderExt = symbol("idempotencyTokenProvider")
+        val LogRedactionConfig = symbol("LogRedactionConfig")
 
         object Config : RuntimeTypePackage(KotlinDependency.SMITHY_CLIENT, "config") {
             val RequestCompressionConfig = symbol("RequestCompressionConfig")
