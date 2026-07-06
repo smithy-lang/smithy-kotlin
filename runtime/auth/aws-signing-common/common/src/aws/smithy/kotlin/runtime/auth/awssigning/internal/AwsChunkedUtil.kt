@@ -79,26 +79,6 @@ public fun HttpRequestBuilder.setAwsChunkedHeaders() {
 /**
  * Update the HTTP body to use aws-chunked content encoding
  */
-@Deprecated(
-    "This overload causes `runBlocking` to be called without a CoroutineContext which leads to forgetting logging " +
-        "context. This overload will be removed in minor version 1.7.",
-    ReplaceWith(
-        "AwsChunkedSource(delegate, signer, signingConfig, previousSignature, trailingHeaders, coroutineContext)",
-        "kotlin.coroutines.coroutineContext",
-    ),
-)
-@PlannedRemoval(major = 1, minor = 7)
-@InternalApi
-public fun HttpRequestBuilder.setAwsChunkedBody(
-    signer: AwsSigner,
-    signingConfig: AwsSigningConfig,
-    signature: ByteArray,
-    trailingHeaders: DeferredHeaders,
-): Unit = setAwsChunkedBody(signer, signingConfig, signature, trailingHeaders, EmptyCoroutineContext)
-
-/**
- * Update the HTTP body to use aws-chunked content encoding
- */
 @InternalApi
 public fun HttpRequestBuilder.setAwsChunkedBody(
     signer: AwsSigner,

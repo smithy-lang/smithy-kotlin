@@ -396,7 +396,7 @@ jobs:
       with:
         path: 'aws-kotlin-repo-tools'
         repository: 'aws/aws-kotlin-repo-tools'
-        ref: '0.2.3'
+        ref: '0.6.3' # FIXME: do not hardcode this, use the version set in libs.versions.toml
         sparse-checkout: |
           .github
 
