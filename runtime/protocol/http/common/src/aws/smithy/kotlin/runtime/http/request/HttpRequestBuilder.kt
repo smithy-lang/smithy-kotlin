@@ -5,9 +5,11 @@
 package aws.smithy.kotlin.runtime.http.request
 
 import aws.smithy.kotlin.runtime.InternalApi
+import aws.smithy.kotlin.runtime.PlannedRemoval
 import aws.smithy.kotlin.runtime.http.*
 import aws.smithy.kotlin.runtime.io.*
 import aws.smithy.kotlin.runtime.net.url.Url
+import aws.smithy.kotlin.runtime.operation.ExecutionContext
 import aws.smithy.kotlin.runtime.util.CanDeepCopy
 
 /**
@@ -94,8 +96,31 @@ public fun HttpRequestBuilder.header(name: String, value: String): Unit = header
  * @param dumpBody Flag controlling whether to also dump the body out. If true the body will be consumed and
  * replaced.
  */
+@Deprecated(
+    "Use the overload that accepts context parameter",
+    ReplaceWith("dumpRequest(request, context, dumpBody)"),
+)
+@PlannedRemoval(major = 1, minor = 8)
 @InternalApi
-public suspend fun dumpRequest(request: HttpRequestBuilder, dumpBody: Boolean): String {
+public suspend fun dumpRequest(
+    request: HttpRequestBuilder,
+    dumpBody: Boolean,
+): String = dumpRequest(request, ExecutionContext(), dumpBody)
+
+/**
+ * Dump a debug description of the request
+ *
+ * @param context The execution context containing configuration such as redacted headers.
+ * @param dumpBody Flag controlling whether to also dump the body out. If true the body will be consumed and
+ * replaced.
+ */
+@InternalApi
+public suspend fun dumpRequest(
+    request: HttpRequestBuilder,
+    context: ExecutionContext,
+    dumpBody: Boolean,
+): String {
+    val redactedHeaders = context.getOrNull(LOG_REDACTED_HEADERS_KEY) ?: emptySet()
     val buffer = SdkBuffer()
 
     // TODO - we have no way to know the http version at this level to set HTTP/x.x
@@ -111,7 +136,12 @@ public suspend fun dumpRequest(request: HttpRequestBuilder, dumpBody: Boolean): 
     request.headers.entries()
         .filterNot { it.key in skip }
         .forEach { (key, values) ->
-            buffer.writeUtf8(values.joinToString(separator = ";", prefix = "$key: ", postfix = "\r\n"))
+            val headerValue = if (redactedHeaders.any { it.equals(key, ignoreCase = true) }) {
+                SENSITIVE_DATA_REDACTED
+            } else {
+                values.joinToString(separator = ";")
+            }
+            buffer.writeUtf8("$key: $headerValue\r\n")
         }
 
     buffer.writeUtf8("\r\n")
