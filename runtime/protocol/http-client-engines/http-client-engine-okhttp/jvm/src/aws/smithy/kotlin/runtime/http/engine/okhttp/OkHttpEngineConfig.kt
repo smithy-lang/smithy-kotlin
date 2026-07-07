@@ -59,8 +59,6 @@ public class OkHttpEngineConfig private constructor(builder: Builder) : HttpClie
      * The maximum number of idle connections to retain in the connection pool.
      * Idle connections beyond this limit will be evicted. A higher value allows more connection reuse
      * (avoiding TCP+TLS handshake latency) at the cost of holding more sockets open.
-     *
-     * The default value is 50.
      */
     public val maxIdleConnections: Int = builder.maxIdleConnections
 
