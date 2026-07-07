@@ -1,9 +1,0 @@
-{
-  "id": "533f6dab-71fc-4e3e-8fac-32ac2f16f53e",
-  "type": "feature",
-  "description": "Add configurable header redaction for request/response debug logging via `logRedactedHeaders` client config property",
-  "issues": [
-    "aws/aws-sdk-kotlin#1460"
-  ],
-  "module": "runtime"
-}
