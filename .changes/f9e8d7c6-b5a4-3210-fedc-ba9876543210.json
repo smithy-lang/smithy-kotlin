@@ -1,6 +1,0 @@
-{
-    "id": "f9e8d7c6-b5a4-3210-fedc-ba9876543210",
-    "type": "misc",
-    "description": "**Breaking**: Deprecate `Filesystem.readFileOrNull`, `Filesystem.writeFile`, and `Filesystem.fileExists` for removal in 1.8",
-    "requiresMinorVersionBump": true
-}

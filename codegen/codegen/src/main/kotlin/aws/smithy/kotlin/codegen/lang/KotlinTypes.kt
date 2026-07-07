@@ -46,6 +46,8 @@ object KotlinTypes {
         val mutableListOf: Symbol = stdlibSymbol("mutableListOf")
         val mutableMapOf: Symbol = stdlibSymbol("mutableMapOf")
         val Set: Symbol = stdlibSymbol("Set")
+        val MutableSet: Symbol = stdlibSymbol("MutableSet")
+        val mutableSetOf: Symbol = stdlibSymbol("mutableSetOf")
 
         private fun listType(
             listType: Symbol,
@@ -101,6 +103,15 @@ object KotlinTypes {
             isNullable: Boolean = false,
             default: String? = null,
         ): Symbol = setType(Set, target, isNullable, default)
+
+        /**
+         * Convenience function to get a `MutableSet<target>` as a symbol
+         */
+        fun mutableSet(
+            target: Symbol,
+            isNullable: Boolean = false,
+            default: String? = null,
+        ): Symbol = setType(MutableSet, target, isNullable, default)
     }
 
     object Jvm : RuntimeTypePackage(KotlinDependency.KOTLIN_STDLIB, "jvm") {

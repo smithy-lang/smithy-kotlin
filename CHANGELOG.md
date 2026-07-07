@@ -1,5 +1,18 @@
 # Changelog
 
+## [1.7.1] - 07/07/2026
+
+### Features
+* [#1460](https://github.com/aws/aws-sdk-kotlin/issues/1460) (**runtime**) Add configurable header redaction for request/response debug logging via `logRedactedHeaders` client config property
+
+## [1.7.0] - 07/06/2026
+
+### Miscellaneous
+* **Breaking**: Remove deprecated `AwsChunkedSource` constructor overload, `HttpRequestBuilder.setAwsChunkedBody` overload, and `Flow<SdkBuffer>.asEventStreamHttpBody(CoroutineScope)` overload that were scheduled for removal in 1.7
+* **Breaking**: Update Kotlin version from 2.3.20 to 2.4.0
+* **Breaking**: Deprecate `Filesystem.readFileOrNull`, `Filesystem.writeFile`, and `Filesystem.fileExists` for removal in 1.8
+* ⚠️ **IMPORTANT**: Deprecate [`OkHttpEngineConfig.connectionIdlePollingInterval`](https://docs.aws.amazon.com/smithy-kotlin/api/latest/http-client-engine-okhttp/aws.smithy.kotlin.runtime.http.engine.okhttp/-ok-http-engine-config/connection-idle-polling-interval.html), which has been superseded by [`OkHttpEngineConfig.retryOnConnectionFailure`](https://docs.aws.amazon.com/smithy-kotlin/api/latest/http-client-engine-okhttp/aws.smithy.kotlin.runtime.http.engine.okhttp/-ok-http-engine-config/retry-on-connection-failure.html)
+
 ## [1.6.15] - 06/10/2026
 
 ### Features

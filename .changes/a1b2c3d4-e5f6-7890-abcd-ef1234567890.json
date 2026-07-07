@@ -1,6 +1,0 @@
-{
-    "id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
-    "type": "misc",
-    "description": "**Breaking**: Remove deprecated `AwsChunkedSource` constructor overload, `HttpRequestBuilder.setAwsChunkedBody` overload, and `Flow<SdkBuffer>.asEventStreamHttpBody(CoroutineScope)` overload that were scheduled for removal in 1.7",
-    "requiresMinorVersionBump": true
-}
