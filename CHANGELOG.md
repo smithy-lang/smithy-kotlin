@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.7.1] - 07/07/2026
+
+### Features
+* [#1460](https://github.com/aws/aws-sdk-kotlin/issues/1460) (**runtime**) Add configurable header redaction for request/response debug logging via `logRedactedHeaders` client config property
+
 ## [1.7.0] - 07/06/2026
 
 ### Miscellaneous
