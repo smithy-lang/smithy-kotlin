@@ -77,7 +77,7 @@ class WritePermissionsNativeTest {
 
         ps.write(path, "data".encodeToByteArray(), WriteType.OVERWRITE)
 
-        assertTrue(ps.fileExists(path))
+        assertTrue(ps.exists(path))
         assertContentEquals("data".encodeToByteArray(), ps.read(path, readAll = true))
     }
 }
