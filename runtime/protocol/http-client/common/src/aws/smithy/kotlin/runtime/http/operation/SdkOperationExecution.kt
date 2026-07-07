@@ -386,14 +386,14 @@ private suspend fun httpTraceMiddleware(request: SdkHttpRequest, next: Handler<S
     val logger = coroutineContext.logger("httpTraceMiddleware")
 
     if (logMode.isEnabled(LogMode.LogRequest) || logMode.isEnabled(LogMode.LogRequestWithBody)) {
-        val formattedReq = dumpRequest(request.subject, logMode.isEnabled(LogMode.LogRequestWithBody))
+        val formattedReq = dumpRequest(request.subject, request.context, logMode.isEnabled(LogMode.LogRequestWithBody))
         logger.debug { "HttpRequest:\n$formattedReq" }
     }
 
     var call = next.call(request)
 
     if (logMode.isEnabled(LogMode.LogResponse) || logMode.isEnabled(LogMode.LogResponseWithBody)) {
-        val (resp, formattedResp) = dumpResponse(call.response, logMode.isEnabled(LogMode.LogResponseWithBody))
+        val (resp, formattedResp) = dumpResponse(call.response, request.context, logMode.isEnabled(LogMode.LogResponseWithBody))
         call = call.copy(response = resp)
         logger.debug { "HttpResponse:\n$formattedResp" }
     } else {
