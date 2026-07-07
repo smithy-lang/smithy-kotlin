@@ -152,6 +152,23 @@ class SymbolProviderTest {
     }
 
     @Test
+    fun `scientific double default value does not get extra decimal appended`() {
+        val model = """
+        structure MyStruct {
+           @default(1.0e-8)
+           foo: MyFoo
+        }
+        
+        double MyFoo
+        """.prependNamespaceAndService().toSmithyModel()
+
+        val provider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(model)
+        val member = model.expectShape<MemberShape>("com.test#MyStruct\$foo")
+        val memberSymbol = provider.toSymbol(member)
+        assertEquals("1.0E-8", memberSymbol.defaultValue())
+    }
+
+    @Test
     fun `can read default trait from target`() {
         val modeledDefault = "2500"
         val expectedDefault = "2500L"
