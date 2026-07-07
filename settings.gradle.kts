@@ -20,7 +20,13 @@ pluginManagement {
 
 dependencyResolutionManagement {
     repositories {
-        mavenLocal()
+        mavenLocal {
+            content {
+                excludeGroupByRegex("""org\.jetbrains\.kotlin.*""")
+                excludeGroupByRegex("""org\.jetbrains\.kotlinx.*""")
+                excludeGroup("org.jetbrains")
+            }
+        }
         mavenCentral()
         google()
         maven {

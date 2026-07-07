@@ -10,7 +10,7 @@
     "io.opentelemetry:opentelemetry-api:1.*": "Maven-io-opentelemetry_opentelemetry-api-1.x",
     "io.opentelemetry:opentelemetry-extension-kotlin:1.*": "Maven-io-opentelemetry_opentelemetry-extension-kotlin-1.x",
     "org.slf4j:slf4j-api:2.*": "Maven-org-slf4j_slf4j-api-2.x",
-    "aws.sdk.kotlin.crt:aws-crt-kotlin:0.12.*": "AwsCrtKotlin-0.12.x",
+    "aws.sdk.kotlin.crt:aws-crt-kotlin:0.13.*": "AwsCrtKotlin-0.13.x",
     "com.squareup.okhttp3:okhttp:4.*": "OkHttp3-4.x",
     "org.jetbrains.kotlinx:kotlinx-datetime-jvm:0.*": "KotlinxDatetimeJvm-0.x",
     "org.jetbrains.kotlinx:kotlinx-io-core-jvm:0.*": "Maven-org-jetbrains-kotlinx_kotlinx-io-core-jvm-0.x",

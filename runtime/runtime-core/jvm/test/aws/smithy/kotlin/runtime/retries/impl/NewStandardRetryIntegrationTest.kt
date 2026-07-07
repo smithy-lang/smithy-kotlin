@@ -31,7 +31,7 @@ import kotlin.time.Duration.Companion.milliseconds
  * and use [ExponentialBackoffWithJitter] (initialDelay=50ms, scaleFactor=2.0).
  */
 class NewStandardRetryIntegrationTest {
-    private val platform = TestPlatformProvider(props = mapOf("smithy.newRetries2026" to "true"))
+    private val platform = TestPlatformProvider.of(props = mapOf("smithy.newRetries2026" to "true"))
     private val defaultDelayConfig = ExponentialBackoffWithJitter.Config(ExponentialBackoffWithJitter.Config.Builder(platform))
 
     private fun sepTokenBucket(maxCapacity: Int? = null): StandardRetryTokenBucket {
