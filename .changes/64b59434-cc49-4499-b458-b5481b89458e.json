@@ -1,5 +1,0 @@
-{
-    "id": "64b59434-cc49-4499-b458-b5481b89458e",
-    "type": "bugfix",
-    "description": "Correctly generate default values for floating point numbers given in scientific notation"
-}
