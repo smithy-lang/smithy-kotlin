@@ -13,6 +13,8 @@ import aws.smithy.kotlin.runtime.time.Instant
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertNotSame
+import kotlin.test.assertSame
 
 class SigV4SignatureCalculatorTest {
     // Test adapted from https://docs.aws.amazon.com/general/latest/gr/sigv4-calculate-signature.html
@@ -79,6 +81,90 @@ class SigV4SignatureCalculatorTest {
     }
 
     private data class ChunkStringToSignTest(val signatureType: AwsSignatureType, val expectedNonSignatureHeaderHash: String)
+
+    @Test
+    fun testSigningKeyCacheHit() {
+        val calculator = SigV4SignatureCalculator()
+        val config = AwsSigningConfig {
+            signingDate = Instant.fromIso8601("20150830")
+            region = "us-east-1"
+            service = "iam"
+            credentials = Credentials("AKID", "wJalrXUtnFEMI/K7MDENG+bPxRfiCYEXAMPLEKEY")
+        }
+
+        val first = calculator.signingKey(config)
+        val second = calculator.signingKey(config)
+        assertSame(first, second)
+    }
+
+    @Test
+    fun testSigningKeyCacheMissOnDateChange() {
+        val calculator = SigV4SignatureCalculator()
+        val config1 = AwsSigningConfig {
+            signingDate = Instant.fromIso8601("20150830")
+            region = "us-east-1"
+            service = "iam"
+            credentials = Credentials("AKID", "wJalrXUtnFEMI/K7MDENG+bPxRfiCYEXAMPLEKEY")
+        }
+        val config2 = AwsSigningConfig {
+            signingDate = Instant.fromIso8601("20150831")
+            region = "us-east-1"
+            service = "iam"
+            credentials = Credentials("AKID", "wJalrXUtnFEMI/K7MDENG+bPxRfiCYEXAMPLEKEY")
+        }
+
+        val key1 = calculator.signingKey(config1)
+        val key2 = calculator.signingKey(config2)
+        assertNotSame(key1, key2)
+        assertEquals(false, key1.contentEquals(key2))
+    }
+
+    @Test
+    fun testSigningKeyCacheMissOnCredentialChange() {
+        val calculator = SigV4SignatureCalculator()
+        val config1 = AwsSigningConfig {
+            signingDate = Instant.fromIso8601("20150830")
+            region = "us-east-1"
+            service = "iam"
+            credentials = Credentials("AKID1", "secretKey1")
+        }
+        val config2 = AwsSigningConfig {
+            signingDate = Instant.fromIso8601("20150830")
+            region = "us-east-1"
+            service = "iam"
+            credentials = Credentials("AKID2", "secretKey2")
+        }
+
+        val key1 = calculator.signingKey(config1)
+        val key2 = calculator.signingKey(config2)
+        assertEquals(false, key1.contentEquals(key2))
+    }
+
+    @Test
+    fun testSigningKeyCacheMultipleAccountsRetainEntries() {
+        val calculator = SigV4SignatureCalculator()
+        val configA = AwsSigningConfig {
+            signingDate = Instant.fromIso8601("20150830")
+            region = "us-east-1"
+            service = "iam"
+            credentials = Credentials("AKID_A", "secretKeyA")
+        }
+        val configB = AwsSigningConfig {
+            signingDate = Instant.fromIso8601("20150830")
+            region = "us-east-1"
+            service = "iam"
+            credentials = Credentials("AKID_B", "secretKeyB")
+        }
+
+        val keyA1 = calculator.signingKey(configA)
+        val keyB1 = calculator.signingKey(configB)
+        val keyA2 = calculator.signingKey(configA)
+        val keyB2 = calculator.signingKey(configB)
+
+        assertSame(keyA1, keyA2)
+        assertSame(keyB1, keyB2)
+        assertEquals(false, keyA1.contentEquals(keyB1))
+    }
 
     @Test
     fun testChunkStringToSign() {
