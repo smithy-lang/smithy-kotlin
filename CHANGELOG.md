@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.7.2] - 07/08/2026
+
+### Fixes
+* Correctly generate default values for floating point numbers given in scientific notation
+
 ## [1.7.1] - 07/07/2026
 
 ### Features
