@@ -1,6 +1,6 @@
 {
   "id": "42a1528b-1e7e-48a3-8896-7aa3962a23cd",
   "type": "feature",
-  "description": "Expose `maxIdleConnections` on `OkHttpEngineConfig` and change the default from 5 to 50 to better align with the SDK's default `maxConcurrency`, reducing connection churn and TLS re-establishment overhead under concurrent workloads",
+  "description": "Expose `maxIdleConnections` on `OkHttpEngineConfig` and change the default from 5 to `maxConcurrency` to align with the SDK's default, reducing connection churn and TLS re-establishment overhead under concurrent workloads",
   "module": "http-client-engine-okhttp"
 }
