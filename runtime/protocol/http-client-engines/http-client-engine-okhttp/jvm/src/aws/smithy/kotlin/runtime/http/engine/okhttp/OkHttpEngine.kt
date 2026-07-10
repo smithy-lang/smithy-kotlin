@@ -136,7 +136,7 @@ public fun OkHttpEngineConfig.buildClient(
 
         // use our own pool configured with the timeout settings taken from config
         val pool = ConnectionPool(
-            maxIdleConnections = config.maxIdleConnections,
+            maxIdleConnections = config.maxIdleConnections.toInt(),
             keepAliveDuration = config.connectionIdleTimeout.inWholeMilliseconds,
             TimeUnit.MILLISECONDS,
         )

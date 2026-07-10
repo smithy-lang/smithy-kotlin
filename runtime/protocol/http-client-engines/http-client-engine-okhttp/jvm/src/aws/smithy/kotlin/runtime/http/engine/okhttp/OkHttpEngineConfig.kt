@@ -58,8 +58,9 @@ public class OkHttpEngineConfig private constructor(builder: Builder) : HttpClie
     /**
      * The maximum number of idle connections to retain in the connection pool.
      * Idle connections beyond this limit will be evicted.
+     * Defaults to [maxConcurrency] if not explicitly set.
      */
-    public val maxIdleConnections: Int = builder.maxIdleConnections
+    public val maxIdleConnections: UInt = builder.maxIdleConnections ?: builder.maxConcurrency
 
     /**
      * The maximum number of requests to execute concurrently for a single host.
@@ -159,8 +160,9 @@ public class OkHttpEngineConfig private constructor(builder: Builder) : HttpClie
         /**
          * The maximum number of idle connections to retain in the connection pool.
          * Idle connections beyond this limit will be evicted.
+         * Defaults to [maxConcurrency] if not explicitly set.
          */
-        public var maxIdleConnections: Int = 50
+        public var maxIdleConnections: UInt? = null
 
         /**
          * The maximum number of requests to execute concurrently for a single host. Defaults to [maxConcurrency].
