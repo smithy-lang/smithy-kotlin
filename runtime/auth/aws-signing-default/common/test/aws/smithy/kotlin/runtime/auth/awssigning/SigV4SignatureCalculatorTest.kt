@@ -13,7 +13,7 @@ import aws.smithy.kotlin.runtime.time.Instant
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
-import kotlin.test.assertNotSame
+import kotlin.test.assertFalse
 import kotlin.test.assertSame
 
 class SigV4SignatureCalculatorTest {
@@ -115,8 +115,7 @@ class SigV4SignatureCalculatorTest {
 
         val key1 = calculator.signingKey(config1)
         val key2 = calculator.signingKey(config2)
-        assertNotSame(key1, key2)
-        assertEquals(false, key1.contentEquals(key2))
+        assertFalse(key1.contentEquals(key2))
     }
 
     @Test
@@ -137,7 +136,7 @@ class SigV4SignatureCalculatorTest {
 
         val key1 = calculator.signingKey(config1)
         val key2 = calculator.signingKey(config2)
-        assertEquals(false, key1.contentEquals(key2))
+        assertFalse(key1.contentEquals(key2))
     }
 
     @Test
@@ -163,7 +162,7 @@ class SigV4SignatureCalculatorTest {
 
         assertSame(keyA1, keyA2)
         assertSame(keyB1, keyB2)
-        assertEquals(false, keyA1.contentEquals(keyB1))
+        assertFalse(keyA1.contentEquals(keyB1))
     }
 
     @Test

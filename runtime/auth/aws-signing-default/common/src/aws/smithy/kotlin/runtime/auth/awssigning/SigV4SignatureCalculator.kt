@@ -12,7 +12,6 @@ import aws.smithy.kotlin.runtime.text.encoding.encodeToHex
 import aws.smithy.kotlin.runtime.time.Clock
 import aws.smithy.kotlin.runtime.time.TimestampFormat
 import aws.smithy.kotlin.runtime.util.ExpiringValue
-import kotlinx.coroutines.runBlocking
 import kotlin.time.Duration.Companion.hours
 
 /**
@@ -20,35 +19,41 @@ import kotlin.time.Duration.Companion.hours
  * @param sha256Provider the [HashSupplier] to use for computing SHA-256 hashes
  */
 internal class SigV4SignatureCalculator(override val sha256Provider: HashSupplier = ::Sha256) : BaseSigV4SignatureCalculator(AwsSigningAlgorithm.SIGV4, sha256Provider) {
-    private val signingKeyCache = PeriodicSweepCache<SigningKeyCacheKey, ByteArray>(
+    private val signingKeyCache = PeriodicSweepCache<SigningKey, ByteArray>(
         minimumSweepPeriod = 24.hours,
     )
 
     override fun calculate(signingKey: ByteArray, stringToSign: String): String = hmac(signingKey, stringToSign.encodeToByteArray(), sha256Provider).encodeToHex()
 
-    override fun signingKey(config: AwsSigningConfig): ByteArray = runBlocking {
-        val date = config.signingDate.format(TimestampFormat.ISO_8601_CONDENSED_DATE)
-        val cacheKey = SigningKeyCacheKey(config.credentials.secretAccessKey, config.region, config.service, date)
+    override fun signingKey(config: AwsSigningConfig): ByteArray {
+        val key = SigningKey(config)
 
-        signingKeyCache.get(cacheKey) {
-            ExpiringValue(deriveKey(it.secretKey, it.date, it.region, it.service), Clock.System.now() + 24.hours)
-        }
+        return signingKeyCache.tryGet(key) {
+            ExpiringValue(deriveKey(it), Clock.System.now() + 24.hours)
+        } ?: deriveKey(key)
     }
 
-    private fun deriveKey(secretKey: String, date: String, region: String, service: String): ByteArray {
+    private fun deriveKey(key: SigningKey): ByteArray {
         fun hmac(key: ByteArray, message: String) = hmac(key, message.encodeToByteArray(), sha256Provider)
 
-        val initialKey = ("AWS4$secretKey").encodeToByteArray()
-        val kDate = hmac(initialKey, date)
-        val kRegion = hmac(kDate, region)
-        val kService = hmac(kRegion, service)
+        val initialKey = ("AWS4${key.secretKey}").encodeToByteArray()
+        val kDate = hmac(initialKey, key.date)
+        val kRegion = hmac(kDate, key.region)
+        val kService = hmac(kRegion, key.service)
         return hmac(kService, "aws4_request")
     }
 }
 
-private data class SigningKeyCacheKey(
+private data class SigningKey(
     val secretKey: String,
     val region: String,
     val service: String,
     val date: String,
-)
+) {
+    constructor(config: AwsSigningConfig) : this(
+        secretKey = config.credentials.secretAccessKey,
+        region = config.region,
+        service = config.service,
+        date = config.signingDate.format(TimestampFormat.ISO_8601_CONDENSED_DATE),
+    )
+}
