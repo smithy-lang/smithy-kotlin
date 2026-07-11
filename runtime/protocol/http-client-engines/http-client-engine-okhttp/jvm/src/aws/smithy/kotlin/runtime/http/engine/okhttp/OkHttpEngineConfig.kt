@@ -56,6 +56,13 @@ public class OkHttpEngineConfig private constructor(builder: Builder) : HttpClie
     public val connectionIdlePollingInterval: Duration? = builder.connectionIdlePollingInterval
 
     /**
+     * The maximum number of idle connections to retain in the connection pool.
+     * Idle connections beyond this limit will be evicted.
+     * Defaults to [maxConcurrency] if not explicitly set.
+     */
+    public val maxIdleConnections: UInt = builder.maxIdleConnections ?: builder.maxConcurrency
+
+    /**
      * The maximum number of requests to execute concurrently for a single host.
      */
     public val maxConcurrencyPerHost: UInt = builder.maxConcurrencyPerHost ?: builder.maxConcurrency
@@ -114,7 +121,7 @@ public class OkHttpEngineConfig private constructor(builder: Builder) : HttpClie
             @Suppress("DEPRECATION")
             @OptIn(PlannedRemoval::class)
             connectionIdlePollingInterval = this@OkHttpEngineConfig.connectionIdlePollingInterval
-
+            maxIdleConnections = this@OkHttpEngineConfig.maxIdleConnections
             maxConcurrencyPerHost = this@OkHttpEngineConfig.maxConcurrencyPerHost
             trustManager = this@OkHttpEngineConfig.trustManager
             keyManager = this@OkHttpEngineConfig.keyManager
@@ -149,6 +156,13 @@ public class OkHttpEngineConfig private constructor(builder: Builder) : HttpClie
         @Deprecated("Connection idle polling is now deprecated. See https://github.com/aws/aws-sdk-kotlin/discussions/1797 for more details.")
         @PlannedRemoval(major = 1, minor = 8)
         public var connectionIdlePollingInterval: Duration? = null
+
+        /**
+         * The maximum number of idle connections to retain in the connection pool.
+         * Idle connections beyond this limit will be evicted.
+         * Defaults to [maxConcurrency] if not explicitly set.
+         */
+        public var maxIdleConnections: UInt? = null
 
         /**
          * The maximum number of requests to execute concurrently for a single host. Defaults to [maxConcurrency].
