@@ -148,13 +148,14 @@ public fun OkHttpEngineConfig.buildClient(
         }
         dispatcher(dispatcher)
 
-        // Log events coming from okhttp. Allocate a new listener per-call to facilitate dedicated trace spans.
+        val nonNullClientListeners = clientScopedEventListeners.filterNotNull()
+
         eventListenerFactory { call ->
             EventListenerChain(
-                listOfNotNull(
-                    HttpEngineEventListener(pool, config.hostResolver, dispatcher, metrics, call),
-                    *clientScopedEventListeners,
-                ),
+                buildList(1 + nonNullClientListeners.size) {
+                    add(HttpEngineEventListener(pool, config.hostResolver, dispatcher, metrics, call))
+                    addAll(nonNullClientListeners)
+                },
             )
         }
 

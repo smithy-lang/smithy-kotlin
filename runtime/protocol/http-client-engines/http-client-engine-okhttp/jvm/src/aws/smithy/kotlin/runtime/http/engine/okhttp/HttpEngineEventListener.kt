@@ -40,12 +40,13 @@ public class HttpEngineEventListener(
     private val metrics: HttpClientMetrics,
     call: Call,
 ) : EventListener() {
-    private val provider: TelemetryProvider = call.request().tag(SdkRequestTag::class.java)?.callContext?.telemetryProvider ?: TelemetryProvider.None
+    private val callContext = call.request().tag(SdkRequestTag::class.java)?.callContext
+    private val provider: TelemetryProvider = callContext?.telemetryProvider ?: TelemetryProvider.None
     private val traceSpan = provider.tracerProvider
         .getOrCreateTracer(TELEMETRY_SCOPE)
         .createSpan("HTTP")
 
-    private val logger = call.request().tag(SdkRequestTag::class.java)?.callContext?.logger<OkHttpEngine>() ?: LoggerProvider.None.getLogger<OkHttpEngine>()
+    private val logger = callContext?.logger<OkHttpEngine>() ?: LoggerProvider.None.getLogger<OkHttpEngine>()
 
     // callStart() is invoked immediately when enqueued, next success phase is either dnsStart() or connectionAcquired()
     //  see https://github.com/square/okhttp/blob/7c92ed0879477eddb2fce6b4066d151525d5687f/okhttp/src/jvmMain/kotlin/okhttp3/internal/connection/RealCall.kt#L167-L175

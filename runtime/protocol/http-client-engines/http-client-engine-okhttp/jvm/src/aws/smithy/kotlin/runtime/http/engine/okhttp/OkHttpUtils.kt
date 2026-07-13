@@ -40,6 +40,8 @@ import okhttp3.Response as OkHttpResponse
  */
 internal data class SdkRequestTag(val execContext: ExecutionContext, val callContext: CoroutineContext, val metrics: HttpClientMetrics)
 
+private val EMPTY_BODY = ByteArray(0).toRequestBody(null, 0, 0)
+
 /**
  * Convert SDK [HttpRequest] to an [okhttp3.Request] instance
  */
@@ -56,7 +58,7 @@ public fun HttpRequest.toOkHttpRequest(
 
     val engineBody = if (HttpMethod.permitsRequestBody(method.name)) {
         when (val body = body) {
-            is HttpBody.Empty -> ByteArray(0).toRequestBody(null, 0, 0)
+            is HttpBody.Empty -> EMPTY_BODY
             is HttpBody.Bytes -> body.bytes().let { it.toRequestBody(null, 0, it.size) }
             is HttpBody.SourceContent, is HttpBody.ChannelContent -> {
                 val updatedBody: HttpBody = headers["Content-Length"]?.let {
@@ -84,22 +86,33 @@ public fun HttpRequest.toOkHttpRequest(
 }
 
 @InternalApi
-public fun Headers.toOkHttpHeaders(): OkHttpHeaders = OkHttpHeaders.Builder().also { okHeaders ->
+public fun Headers.toOkHttpHeaders(): OkHttpHeaders {
+    val okHeaders = OkHttpHeaders.Builder()
+    var hasAcceptEncoding = false
     forEach { key, values ->
+        if (!hasAcceptEncoding && key.equals("Accept-Encoding", ignoreCase = true)) {
+            hasAcceptEncoding = true
+        }
         values.forEach { value ->
             assertValidHeader(key, value)
             okHeaders.addUnsafeNonAscii(key, value)
         }
     }
 
-    if ("Accept-Encoding" !in this) {
+    if (!hasAcceptEncoding) {
         // Disable OkHttp transparent response decompression. See https://github.com/smithy-lang/smithy-kotlin/issues/1041
         okHeaders.addUnsafeNonAscii("Accept-Encoding", "identity")
     }
-}.build()
+    return okHeaders.build()
+}
 
-private fun assertValidHeader(key: String, value: String) = require('\r' !in value && '\n' !in value) {
-    "Invalid header value for \"$key\": must not contain CR or LF characters"
+private fun assertValidHeader(key: String, value: String) {
+    for (i in value.indices) {
+        val c = value[i]
+        require(c != '\r' && c != '\n') {
+            "Invalid header value for \"$key\": must not contain CR or LF characters"
+        }
+    }
 }
 
 /**
