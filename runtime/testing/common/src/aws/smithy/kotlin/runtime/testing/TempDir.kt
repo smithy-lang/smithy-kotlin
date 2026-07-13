@@ -5,7 +5,7 @@
 package aws.smithy.kotlin.runtime.testing
 
 import aws.smithy.kotlin.runtime.InternalApi
-import aws.smithy.kotlin.runtime.util.Uuid
+import kotlin.uuid.Uuid
 import kotlinx.io.files.Path
 import kotlinx.io.files.SystemFileSystem
 import kotlinx.io.files.SystemTemporaryDirectory

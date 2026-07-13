@@ -6,6 +6,7 @@ package aws.smithy.kotlin.runtime.util
 
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
+import kotlin.uuid.Uuid
 import kotlin.test.assertContentEquals
 import kotlin.test.assertEquals
 import kotlin.test.assertFails

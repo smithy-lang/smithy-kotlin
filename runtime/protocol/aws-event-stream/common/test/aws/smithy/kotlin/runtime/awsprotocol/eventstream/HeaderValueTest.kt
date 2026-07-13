@@ -6,7 +6,7 @@
 package aws.smithy.kotlin.runtime.awsprotocol.eventstream
 
 import aws.smithy.kotlin.runtime.time.Instant
-import aws.smithy.kotlin.runtime.util.Uuid
+import kotlin.uuid.Uuid
 import io.kotest.matchers.string.shouldContain
 import kotlin.test.Test
 import kotlin.test.assertContentEquals

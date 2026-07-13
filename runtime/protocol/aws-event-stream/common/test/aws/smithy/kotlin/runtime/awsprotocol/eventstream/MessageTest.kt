@@ -8,7 +8,8 @@ package aws.smithy.kotlin.runtime.awsprotocol.eventstream
 import aws.smithy.kotlin.runtime.io.EOFException
 import aws.smithy.kotlin.runtime.io.SdkBuffer
 import aws.smithy.kotlin.runtime.time.Instant
-import aws.smithy.kotlin.runtime.util.Uuid
+import kotlin.uuid.Uuid
+
 import io.kotest.matchers.string.shouldContain
 import kotlin.test.*
 
@@ -104,7 +105,7 @@ class MessageTest {
             addHeader("bytes", HeaderValue.ByteArray("some bytes".encodeToByteArray()))
             addHeader("str", HeaderValue.String("some str"))
             addHeader("time", HeaderValue.Timestamp(Instant.fromEpochSeconds(5_000_000, 0)))
-            addHeader("uuid", HeaderValue.Uuid(Uuid(0xb79bc914de214e13u.toLong(), 0xb8b2bc47e85b7f0bu.toLong())))
+            addHeader("uuid", HeaderValue.Uuid(Uuid.fromLongs(0xb79bc914de214e13u.toLong(), 0xb8b2bc47e85b7f0bu.toLong())))
         }
 
         val dest = SdkBuffer()

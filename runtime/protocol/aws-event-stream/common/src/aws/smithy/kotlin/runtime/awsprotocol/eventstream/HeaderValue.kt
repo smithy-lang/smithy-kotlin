@@ -10,7 +10,6 @@ import aws.smithy.kotlin.runtime.io.*
 import aws.smithy.kotlin.runtime.time.Instant
 import aws.smithy.kotlin.runtime.time.epochMilliseconds
 import aws.smithy.kotlin.runtime.time.fromEpochMilliseconds
-import aws.smithy.kotlin.runtime.util.Uuid
 
 internal enum class HeaderType(val value: Byte) {
     TRUE(0),
@@ -76,7 +75,7 @@ public sealed class HeaderValue {
     public data class Timestamp(val value: Instant) : HeaderValue()
 
     @InternalApi
-    public data class Uuid(val value: aws.smithy.kotlin.runtime.util.Uuid) : HeaderValue()
+    public data class Uuid(val value: kotlin.uuid.Uuid) : HeaderValue()
 
     /**
      * Encode a header value to [dest]
@@ -121,8 +120,10 @@ public sealed class HeaderValue {
         }
         is Uuid -> {
             dest.writeHeader(HeaderType.UUID)
-            dest.writeLong(value.high)
-            dest.writeLong(value.low)
+            value.toLongs { msb, lsb ->
+                dest.writeLong(msb)
+                dest.writeLong(lsb)
+            }
         }
     }
 
@@ -151,9 +152,9 @@ public sealed class HeaderValue {
                     HeaderValue.Timestamp(Instant.fromEpochMilliseconds(epochMilli))
                 }
                 HeaderType.UUID -> {
-                    val high = source.readLong()
-                    val low = source.readLong()
-                    HeaderValue.Uuid(Uuid(high, low))
+                    val msb = source.readLong()
+                    val lsb = source.readLong()
+                    HeaderValue.Uuid(kotlin.uuid.Uuid.fromLongs(msb, lsb))
                 }
             }
         }
@@ -187,7 +188,7 @@ public fun HeaderValue.expectByteArray(): ByteArray = checkNotNull((this as? Hea
 public fun HeaderValue.expectTimestamp(): Instant = checkNotNull((this as? HeaderValue.Timestamp)?.value) { "expected HeaderValue.Bool, found: $this" }
 
 @InternalApi
-public fun HeaderValue.expectUuid(): Uuid = checkNotNull((this as? HeaderValue.Uuid)?.value) { "expected HeaderValue.Bool, found: $this" }
+public fun HeaderValue.expectUuid(): kotlin.uuid.Uuid = checkNotNull((this as? HeaderValue.Uuid)?.value) { "expected HeaderValue.Uuid, found: $this" }
 
 @InternalApi
 public fun <T> HeaderValue.expectEnumValue(fromValue: (String) -> T): T = fromValue(expectString())
