@@ -5,7 +5,7 @@
 package aws.smithy.kotlin.runtime.util
 
 import aws.smithy.kotlin.runtime.InternalApi
-import kotlin.random.Random
+import kotlin.uuid.Uuid as KotlinUuid
 
 /**
  * A KMP-compatible implementation of UUID, necessary because no cross-platform implementation exists yet.
@@ -15,24 +15,14 @@ public data class Uuid(val high: Long, val low: Long) {
     @InternalApi
     public companion object {
         private val nibbleChars = "0123456789abcdef".toCharArray()
-        private val random = Random
-
-        private val v4Mask = 0x00000000_0000_f000U.toLong()
-        private val v4Set = 0x00000000_0000_4000U.toLong()
-
-        private val type2Mask = 0xc000_000000000000U.toLong()
-        private val type2Set = 0x8000_000000000000U.toLong()
 
         /**
          * Generates a random [Uuid], specifically a
          * [UUID v4](https://en.wikipedia.org/wiki/Universally_unique_identifier#Version_4_.28random.29).
-         * UUIDs are not generated with a cryptographically-strong random number generator.
+         * Delegates to [kotlin.uuid.Uuid.random] which uses platform-appropriate secure randomness
          */
-        public fun random(): Uuid {
-            val high = random.nextLong() and v4Mask.inv() or v4Set
-            val low = random.nextLong() and type2Mask.inv() or type2Set
-            return Uuid(high, low)
-        }
+        public fun random(): Uuid =
+            KotlinUuid.random().toLongs { high, low -> Uuid(high, low) }
 
         /**
          * Generates a string representation of a UUID in the form of `xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx`, where `x`
