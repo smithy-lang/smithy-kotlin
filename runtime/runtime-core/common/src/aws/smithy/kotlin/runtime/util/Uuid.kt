@@ -17,8 +17,7 @@ public data class Uuid(val high: Long, val low: Long) {
     @InternalApi
     public companion object {
         @Suppress("DEPRECATION")
-        public fun random(): Uuid =
-            KotlinUuid.random().toLongs { high, low -> Uuid(high, low) }
+        public fun random(): Uuid = KotlinUuid.random().toLongs { high, low -> Uuid(high, low) }
     }
 
     override fun toString(): String = KotlinUuid.fromLongs(high, low).toString()

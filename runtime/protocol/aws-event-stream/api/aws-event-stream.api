@@ -143,6 +143,17 @@ public final class aws/smithy/kotlin/runtime/awsprotocol/eventstream/HeaderValue
 	public fun toString ()Ljava/lang/String;
 }
 
+public final class aws/smithy/kotlin/runtime/awsprotocol/eventstream/HeaderValue$Uuid4 : aws/smithy/kotlin/runtime/awsprotocol/eventstream/HeaderValue {
+	public fun <init> (Lkotlin/uuid/Uuid;)V
+	public final fun component1 ()Lkotlin/uuid/Uuid;
+	public final fun copy (Lkotlin/uuid/Uuid;)Laws/smithy/kotlin/runtime/awsprotocol/eventstream/HeaderValue$Uuid4;
+	public static synthetic fun copy$default (Laws/smithy/kotlin/runtime/awsprotocol/eventstream/HeaderValue$Uuid4;Lkotlin/uuid/Uuid;ILjava/lang/Object;)Laws/smithy/kotlin/runtime/awsprotocol/eventstream/HeaderValue$Uuid4;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getValue ()Lkotlin/uuid/Uuid;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
 public final class aws/smithy/kotlin/runtime/awsprotocol/eventstream/HeaderValueKt {
 	public static final fun expectBool (Laws/smithy/kotlin/runtime/awsprotocol/eventstream/HeaderValue;)Z
 	public static final fun expectByte (Laws/smithy/kotlin/runtime/awsprotocol/eventstream/HeaderValue;)B
@@ -155,6 +166,7 @@ public final class aws/smithy/kotlin/runtime/awsprotocol/eventstream/HeaderValue
 	public static final fun expectString (Laws/smithy/kotlin/runtime/awsprotocol/eventstream/HeaderValue;)Ljava/lang/String;
 	public static final fun expectTimestamp (Laws/smithy/kotlin/runtime/awsprotocol/eventstream/HeaderValue;)Laws/smithy/kotlin/runtime/time/Instant;
 	public static final fun expectUuid (Laws/smithy/kotlin/runtime/awsprotocol/eventstream/HeaderValue;)Laws/smithy/kotlin/runtime/util/Uuid;
+	public static final fun expectUuid4 (Laws/smithy/kotlin/runtime/awsprotocol/eventstream/HeaderValue;)Lkotlin/uuid/Uuid;
 }
 
 public final class aws/smithy/kotlin/runtime/awsprotocol/eventstream/Message {

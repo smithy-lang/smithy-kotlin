@@ -6,7 +6,6 @@ package aws.smithy.kotlin.runtime.util
 
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
-import kotlin.uuid.Uuid
 import kotlin.test.assertContentEquals
 import kotlin.test.assertEquals
 import kotlin.test.assertFails
@@ -15,6 +14,7 @@ import kotlin.test.assertNotEquals
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
+import kotlin.uuid.Uuid
 
 class SystemPlatformProviderTest {
     @Test

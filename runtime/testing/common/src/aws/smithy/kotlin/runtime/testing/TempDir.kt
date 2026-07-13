@@ -5,10 +5,10 @@
 package aws.smithy.kotlin.runtime.testing
 
 import aws.smithy.kotlin.runtime.InternalApi
-import kotlin.uuid.Uuid
 import kotlinx.io.files.Path
 import kotlinx.io.files.SystemFileSystem
 import kotlinx.io.files.SystemTemporaryDirectory
+import kotlin.uuid.Uuid
 
 /**
  * Cleanup behavior for temporary directories created by [withTempDir].
