@@ -85,7 +85,7 @@ internal class SdkStreamResponseHandler(
     }
 
     private fun createHttpResponseBody(contentLength: Long?): HttpBody {
-        val ch = SdkByteChannel(true)
+        val ch = SdkByteChannel(true, DEFAULT_WINDOW_SIZE_BYTES)
         val writerContext = callContext + callContext.derivedName("response-body-writer")
         val job = GlobalScope.launch(writerContext) {
             val result = runCatching {
