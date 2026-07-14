@@ -33,6 +33,7 @@ import kotlin.coroutines.CoroutineContext
 internal class SdkStreamResponseHandler(
     private val conn: HttpClientConnection,
     private val callContext: CoroutineContext,
+    private val windowSizeBytes: Int,
 ) : HttpStreamResponseHandler {
     // TODO - need to cancel the stream when the body is closed from the caller side early.
     // There is no great way to do that currently without either (1) closing the connection or (2) throwing an
@@ -85,7 +86,7 @@ internal class SdkStreamResponseHandler(
     }
 
     private fun createHttpResponseBody(contentLength: Long?): HttpBody {
-        val ch = SdkByteChannel(true, DEFAULT_WINDOW_SIZE_BYTES)
+        val ch = SdkByteChannel(true, windowSizeBytes)
         val writerContext = callContext + callContext.derivedName("response-body-writer")
         val job = GlobalScope.launch(writerContext) {
             val result = runCatching {

@@ -58,7 +58,7 @@ class SdkStreamResponseHandlerTest {
 
     @Test
     fun testWaitSuccessResponse() = runTest {
-        val handler = SdkStreamResponseHandler(mockConn, coroutineContext)
+        val handler = SdkStreamResponseHandler(mockConn, coroutineContext, DEFAULT_WINDOW_SIZE_BYTES)
         val stream = MockHttpStream(200)
         launch {
             val headers = listOf(
@@ -83,7 +83,7 @@ class SdkStreamResponseHandlerTest {
 
     @Test
     fun testWaitNoHeaders() = runTest {
-        val handler = SdkStreamResponseHandler(mockConn, coroutineContext)
+        val handler = SdkStreamResponseHandler(mockConn, coroutineContext, DEFAULT_WINDOW_SIZE_BYTES)
         val stream = MockHttpStream(200)
         launch {
             handler.onResponseComplete(stream, 0)
@@ -95,7 +95,7 @@ class SdkStreamResponseHandlerTest {
 
     @Test
     fun testResponseSignalledBeforeStreamClosed() = runTest {
-        val handler = SdkStreamResponseHandler(mockConn, coroutineContext)
+        val handler = SdkStreamResponseHandler(mockConn, coroutineContext, DEFAULT_WINDOW_SIZE_BYTES)
         val stream = MockHttpStream(204)
         launch {
             handler.onResponseComplete(stream, 0)
@@ -111,7 +111,7 @@ class SdkStreamResponseHandlerTest {
 
     @Test
     fun testWaitAbortedResponse() = runTest {
-        val handler = SdkStreamResponseHandler(mockConn, coroutineContext)
+        val handler = SdkStreamResponseHandler(mockConn, coroutineContext, DEFAULT_WINDOW_SIZE_BYTES)
         val stream = MockHttpStream(200)
         launch {
             handler.onResponseComplete(stream, -1)
@@ -125,7 +125,7 @@ class SdkStreamResponseHandlerTest {
 
     @Test
     fun testRespBodyCreated() = runTest {
-        val handler = SdkStreamResponseHandler(mockConn, coroutineContext)
+        val handler = SdkStreamResponseHandler(mockConn, coroutineContext, DEFAULT_WINDOW_SIZE_BYTES)
         val stream = MockHttpStream(200)
         launch {
             val headers = listOf(
@@ -152,7 +152,7 @@ class SdkStreamResponseHandlerTest {
 
     @Test
     fun testRespBody() = runTest {
-        val handler = SdkStreamResponseHandler(mockConn, coroutineContext)
+        val handler = SdkStreamResponseHandler(mockConn, coroutineContext, DEFAULT_WINDOW_SIZE_BYTES)
         val stream = MockHttpStream(200)
         val data = "Fool of a Took! Throw yourself in next time and rid us of your stupidity!"
         launch {
@@ -181,7 +181,7 @@ class SdkStreamResponseHandlerTest {
     @Test
     fun testStreamError() = runTest {
         CRT.initRuntime() // CRT needs to be initialized for human-readable error codes
-        val handler = SdkStreamResponseHandler(mockConn, coroutineContext)
+        val handler = SdkStreamResponseHandler(mockConn, coroutineContext, DEFAULT_WINDOW_SIZE_BYTES)
         val stream = MockHttpStream(200)
         val data = "foo bar"
         val socketClosedEc = 1051

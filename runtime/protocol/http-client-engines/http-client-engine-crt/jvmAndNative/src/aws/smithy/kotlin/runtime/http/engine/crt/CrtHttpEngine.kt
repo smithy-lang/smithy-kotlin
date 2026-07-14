@@ -21,7 +21,7 @@ import kotlinx.coroutines.sync.Semaphore
 import kotlinx.coroutines.sync.withPermit
 import kotlinx.coroutines.withContext
 
-internal const val DEFAULT_WINDOW_SIZE_BYTES: Int = 64 * 1024
+internal const val DEFAULT_WINDOW_SIZE_BYTES: Int = 16 * 1024
 internal const val CHUNK_BUFFER_SIZE: Long = 64 * 1024
 
 /**
@@ -64,7 +64,7 @@ public class CrtHttpEngine(public override val config: CrtHttpEngineConfig) : Ht
         val conn = connectionManager.acquire(request)
         logger.trace { "Acquired connection ${conn.id} (${conn.version})" }
 
-        val respHandler = SdkStreamResponseHandler(conn, callContext)
+        val respHandler = SdkStreamResponseHandler(conn, callContext, config.initialWindowSizeBytes)
         callContext.job.invokeOnCompletion {
             logger.trace { "completing handler; cause=$it" }
             // ensures the stream is driven to completion regardless of what the downstream consumer does
