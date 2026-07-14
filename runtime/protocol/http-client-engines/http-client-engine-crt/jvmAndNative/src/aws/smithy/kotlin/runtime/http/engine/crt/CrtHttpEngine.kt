@@ -21,7 +21,7 @@ import kotlinx.coroutines.sync.Semaphore
 import kotlinx.coroutines.sync.withPermit
 import kotlinx.coroutines.withContext
 
-internal const val DEFAULT_WINDOW_SIZE_BYTES: Int = 16 * 1024
+internal const val DEFAULT_WINDOW_SIZE_BYTES: Int = 64 * 1024
 internal const val CHUNK_BUFFER_SIZE: Long = 64 * 1024
 
 /**
