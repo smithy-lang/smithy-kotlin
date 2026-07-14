@@ -106,13 +106,8 @@ public fun Headers.toOkHttpHeaders(): OkHttpHeaders {
     return okHeaders.build()
 }
 
-private fun assertValidHeader(key: String, value: String) {
-    for (i in value.indices) {
-        val c = value[i]
-        require(c != '\r' && c != '\n') {
-            "Invalid header value for \"$key\": must not contain CR or LF characters"
-        }
-    }
+private fun assertValidHeader(key: String, value: String) = require('\r' !in value && '\n' !in value) {
+    "Invalid header value for \"$key\": must not contain CR or LF characters"
 }
 
 /**
