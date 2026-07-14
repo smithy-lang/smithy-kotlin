@@ -113,8 +113,10 @@ public class HttpEngineEventListener(
     }
 
     override fun connectionAcquired(call: Call, connection: Connection) {
-        metrics.acquiredConnections = pool.connectionCount().toLong()
-        metrics.idleConnections = pool.idleConnectionCount().toLong()
+        val totalConns = pool.connectionCount().toLong()
+        val idleConns = pool.idleConnectionCount().toLong()
+        metrics.acquiredConnections = totalConns
+        metrics.idleConnections = idleConns
 
         val callStarted = checkNotNull(callTimeStart)
         if (!signaledQueuedDuration) {
@@ -135,7 +137,7 @@ public class HttpEngineEventListener(
         }
 
         val connId = System.identityHashCode(connection)
-        trace { "connection acquired: conn(id=$connId)=$connection; connPool: total=${pool.connectionCount()}, idle=${pool.idleConnectionCount()}" }
+        trace { "connection acquired: conn(id=$connId)=$connection; connPool: total=$totalConns, idle=$idleConns" }
     }
 
     override fun requestHeadersStart(call: Call): Unit = trace { "sending request headers" }
@@ -177,10 +179,12 @@ public class HttpEngineEventListener(
     override fun responseFailed(call: Call, ioe: IOException): Unit = trace(ioe) { "response failed" }
 
     override fun connectionReleased(call: Call, connection: Connection) {
-        metrics.acquiredConnections = pool.connectionCount().toLong()
-        metrics.idleConnections = pool.idleConnectionCount().toLong()
+        val totalConns = pool.connectionCount().toLong()
+        val idleConns = pool.idleConnectionCount().toLong()
+        metrics.acquiredConnections = totalConns
+        metrics.idleConnections = idleConns
         val connId = System.identityHashCode(connection)
-        trace { "connection released: conn(id=$connId)=$connection; connPool: total=${pool.connectionCount()}, idle=${pool.idleConnectionCount()}" }
+        trace { "connection released: conn(id=$connId)=$connection; connPool: total=$totalConns, idle=$idleConns" }
     }
 
     override fun callEnd(call: Call) {
