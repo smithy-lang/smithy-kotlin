@@ -10,7 +10,7 @@ atomicfu-version = "0.33.0"
 okhttp-version = "5.4.0"
 okhttp4-version = "4.12.0"
 okio-version = "3.17.0"
-otel-version = "1.63.0"
+otel-version = "1.64.0"
 slf4j-version = "2.0.18"
 slf4j-v1x-version = "1.7.36"
 crt-kotlin-version = "0.13.0"
@@ -23,7 +23,7 @@ publish-plugin-version = "2.1.1"
 smithy-gradle-plugin-version = "1.4.0"
 
 # codegen
-smithy-version = "1.71.0"
+smithy-version = "1.72.0"
 
 # testing
 junit-version = "5.14.4"
