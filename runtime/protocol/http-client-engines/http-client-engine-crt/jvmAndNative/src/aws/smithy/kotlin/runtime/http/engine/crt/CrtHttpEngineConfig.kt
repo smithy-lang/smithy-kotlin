@@ -102,7 +102,7 @@ public class CrtHttpEngineConfig private constructor(builder: Builder) : HttpCli
          * Set the amount of data that can be buffered before reading from the socket will cease. Reading will
          * resume as data is consumed.
          */
-        public var initialWindowSizeBytes: Int = DEFAULT_WINDOW_SIZE_BYTES
+        public var initialWindowSizeBytes: Int = 64 * 1024
 
         /**
          * Set the [ClientBootstrap] to use for the engine. By default it is a shared instance.
