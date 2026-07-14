@@ -86,25 +86,19 @@ public fun HttpRequest.toOkHttpRequest(
 }
 
 @InternalApi
-public fun Headers.toOkHttpHeaders(): OkHttpHeaders {
-    val okHeaders = OkHttpHeaders.Builder()
-    var hasAcceptEncoding = false
+public fun Headers.toOkHttpHeaders(): OkHttpHeaders = OkHttpHeaders.Builder().also { okHeaders ->
     forEach { key, values ->
-        if (!hasAcceptEncoding && key.equals("Accept-Encoding", ignoreCase = true)) {
-            hasAcceptEncoding = true
-        }
         values.forEach { value ->
             assertValidHeader(key, value)
             okHeaders.addUnsafeNonAscii(key, value)
         }
     }
 
-    if (!hasAcceptEncoding) {
+    if ("Accept-Encoding" !in this) {
         // Disable OkHttp transparent response decompression. See https://github.com/smithy-lang/smithy-kotlin/issues/1041
         okHeaders.addUnsafeNonAscii("Accept-Encoding", "identity")
     }
-    return okHeaders.build()
-}
+}.build()
 
 private fun assertValidHeader(key: String, value: String) = require('\r' !in value && '\n' !in value) {
     "Invalid header value for \"$key\": must not contain CR or LF characters"

@@ -16,15 +16,13 @@ import okhttp3.Headers as OkHttpHeaders
 public class OkHttpHeadersAdapter(private val headers: OkHttpHeaders) : SdkHeaders {
     override val caseInsensitiveName: Boolean = true
 
-    private val multimap: Map<String, List<String>> = headers.toMultimap()
+    override fun getAll(name: String): List<String>? = headers.values(name).ifEmpty { null }
 
-    override fun getAll(name: String): List<String>? = multimap[name]
+    override fun names(): Set<String> = headers.names()
 
-    override fun names(): Set<String> = multimap.keys
+    override fun entries(): Set<Map.Entry<String, List<String>>> = headers.toMultimap().entries
 
-    override fun entries(): Set<Map.Entry<String, List<String>>> = multimap.entries
-
-    override fun contains(name: String): Boolean = name in multimap
+    override fun contains(name: String): Boolean = headers[name] != null
 
     override fun isEmpty(): Boolean = headers.size == 0
 }
