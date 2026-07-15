@@ -2,10 +2,14 @@
  * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
  * SPDX-License-Identifier: Apache-2.0
  */
+// https://github.com/gradle/gradle/issues/15383
+import org.gradle.accessors.dm.LibrariesForLibs
 
 plugins {
     id("org.jetbrains.dokka")
 }
+
+val libs = rootProject.the<LibrariesForLibs>()
 
 dokka {
     val sdkVersion: String by project
@@ -30,6 +34,16 @@ dokka {
 
         footerMessage.set("© ${java.time.LocalDate.now().year}, Amazon Web Services, Inc. or its affiliates. All rights reserved.")
         separateInheritedMembers.set(true)
+    }
+}
+
+val jacksonVersion = libs.jackson.bom.get().version!!
+
+configurations.matching { it.name.startsWith("dokka") }.configureEach {
+    resolutionStrategy.eachDependency {
+        if (requested.group.startsWith("com.fasterxml.jackson")) {
+            useVersion(jacksonVersion)
+        }
     }
 }
 

@@ -1,6 +1,7 @@
 [versions]
 kotlin-version = "2.4.0"
 dokka-version = "2.2.0"
+jackson-bom-version = "2.18.9"
 
 aws-kotlin-repo-tools-version = "0.6.3"
 
@@ -37,6 +38,7 @@ kaml-version = "0.55.0"
 jsoup-version = "1.22.2"
 
 [libraries]
+jackson-bom = { module = "com.fasterxml.jackson:jackson-bom", version.ref = "jackson-bom-version" }
 aws-kotlin-repo-tools-build-support = { module="aws.sdk.kotlin.gradle:build-support", version.ref = "aws-kotlin-repo-tools-version" }
 
 kotlin-gradle-plugin = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "kotlin-version" }
