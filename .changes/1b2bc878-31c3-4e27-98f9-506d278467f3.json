@@ -1,5 +1,5 @@
 {
-  "id": "b2c3d4e5-6f7a-8b9c-0d1e-unsignpayload",
+  "id": "1b2bc878-31c3-4e27-98f9-506d278467f3",
   "type": "feature",
   "description": "Add `PayloadSigningEnabled` signing attribute to allow services to skip SHA-256 payload hashing over HTTPS, reducing CPU overhead for large request bodies",
   "module": "aws-signing"
