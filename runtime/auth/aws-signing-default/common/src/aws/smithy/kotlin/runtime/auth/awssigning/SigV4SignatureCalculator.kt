@@ -20,7 +20,7 @@ internal class SigV4SignatureCalculator(override val sha256Provider: HashSupplie
         fun hmac(key: ByteArray, message: String) = hmac(key, message.encodeToByteArray(), sha256Provider)
 
         val initialKey = ("AWS4" + config.credentials.secretAccessKey).encodeToByteArray()
-        val kDate = hmac(initialKey, config.formattedSigningDateShort)
+        val kDate = hmac(initialKey, config.formattedSigningDateOnly)
         val kRegion = hmac(kDate, config.region)
         val kService = hmac(kRegion, config.service)
         return hmac(kService, "aws4_request")

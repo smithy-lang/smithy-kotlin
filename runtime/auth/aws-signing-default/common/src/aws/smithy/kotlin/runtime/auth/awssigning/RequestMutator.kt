@@ -61,8 +61,8 @@ internal class DefaultRequestMutator : RequestMutator {
  */
 internal val AwsSigningConfig.credentialScope: String
     get() = when (algorithm) {
-        AwsSigningAlgorithm.SIGV4 -> "$formattedSigningDateShort/$region/$service/aws4_request"
-        AwsSigningAlgorithm.SIGV4_ASYMMETRIC -> "$formattedSigningDateShort/$service/aws4_request"
+        AwsSigningAlgorithm.SIGV4 -> "$formattedSigningDateOnly/$region/$service/aws4_request"
+        AwsSigningAlgorithm.SIGV4_ASYMMETRIC -> "$formattedSigningDateOnly/$service/aws4_request"
     }
 
 /**

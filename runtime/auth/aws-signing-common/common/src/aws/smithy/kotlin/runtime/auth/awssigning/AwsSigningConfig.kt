@@ -104,7 +104,7 @@ public class AwsSigningConfig(builder: Builder) {
      * The signing date formatted as a condensed ISO-8601 date only (e.g., "20260714").
      * Pre-computed to avoid repeated formatting.
      */
-    public val formattedSigningDateShort: String = signingDate.format(TimestampFormat.ISO_8601_CONDENSED_DATE)
+    public val formattedSigningDateOnly: String = signingDate.format(TimestampFormat.ISO_8601_CONDENSED_DATE)
 
     /**
      * A predicate to control which headers are a part of the canonical request. Note that skipping auth-required
