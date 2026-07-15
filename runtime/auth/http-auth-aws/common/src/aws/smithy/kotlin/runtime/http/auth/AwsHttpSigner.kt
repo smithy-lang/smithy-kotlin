@@ -18,6 +18,7 @@ import aws.smithy.kotlin.runtime.http.HttpBody
 import aws.smithy.kotlin.runtime.http.operation.HttpOperationContext
 import aws.smithy.kotlin.runtime.http.request.HttpRequest
 import aws.smithy.kotlin.runtime.http.request.HttpRequestBuilder
+import aws.smithy.kotlin.runtime.net.Scheme
 import aws.smithy.kotlin.runtime.time.Instant
 import kotlin.coroutines.coroutineContext
 import kotlin.time.Duration
@@ -129,6 +130,7 @@ public class AwsHttpSigner(private val config: Config) : HttpSigner {
         val contextOmitSessionToken = attributes.getOrNull(AwsSigningAttributes.OmitSessionToken)
 
         val enableAwsChunked = attributes.getOrNull(AwsSigningAttributes.EnableAwsChunked) ?: false
+        val payloadSigningEnabled = attributes.getOrNull(AwsSigningAttributes.PayloadSigningEnabled) ?: true
 
         // operation signing config is baseConfig + operation specific config/overrides
         val signingConfig = AwsSigningConfig {
@@ -160,19 +162,22 @@ public class AwsHttpSigner(private val config: Config) : HttpSigner {
             logRequest = attributes.getOrNull(SdkClientOption.LogMode)?.isEnabled(LogMode.LogRequest) == true
 
             // SDKs are supposed to default to signed payload _always_ when possible (and when `unsignedPayload` trait
-            // isn't present). The only exception is when the customer explicitly disables signed payloads (via Config.isUnsignedPayload).
+            // isn't present). The only exception is when the customer explicitly disables signed payloads (via Config.isUnsignedPayload)
+            // or when payload signing is disabled at the client level (PayloadSigningEnabled = false) over HTTPS.
+            val effectiveUnsignedPayload = config.isUnsignedPayload ||
+                (!payloadSigningEnabled && request.url.scheme == Scheme.HTTPS)
 
             hashSpecification = when {
                 contextHashSpecification != null -> contextHashSpecification
                 body is HttpBody.Empty -> HashSpecification.EmptyBody
                 body.isEligibleForAwsChunkedStreaming && enableAwsChunked -> {
                     if (request.headers.contains("x-amz-trailer")) {
-                        if (config.isUnsignedPayload) HashSpecification.StreamingUnsignedPayloadWithTrailers else HashSpecification.StreamingAws4HmacSha256PayloadWithTrailers
+                        if (effectiveUnsignedPayload) HashSpecification.StreamingUnsignedPayloadWithTrailers else HashSpecification.StreamingAws4HmacSha256PayloadWithTrailers
                     } else {
                         HashSpecification.StreamingAws4HmacSha256Payload
                     }
                 }
-                config.isUnsignedPayload -> HashSpecification.UnsignedPayload
+                effectiveUnsignedPayload -> HashSpecification.UnsignedPayload
                 // use the payload to compute the hash
                 else -> HashSpecification.CalculateFromPayload
             }
