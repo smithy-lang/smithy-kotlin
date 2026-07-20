@@ -15,7 +15,6 @@ import aws.smithy.kotlin.runtime.http.response.HttpResponse
 import aws.smithy.kotlin.runtime.io.SdkBuffer
 import aws.smithy.kotlin.runtime.io.SdkByteChannel
 import aws.smithy.kotlin.runtime.io.SdkByteReadChannel
-import aws.smithy.kotlin.runtime.io.tryWrite
 import aws.smithy.kotlin.runtime.telemetry.logging.logger
 import kotlinx.atomicfu.locks.reentrantLock
 import kotlinx.atomicfu.locks.withLock
@@ -37,6 +36,13 @@ internal class SdkStreamResponseHandler(
     // TODO - need to cancel the stream when the body is closed from the caller side early.
     // There is no great way to do that currently without either (1) closing the connection or (2) throwing an
     // exception from a callback such that AWS_OP_ERROR is returned. Wait for HttpStream to have explicit cancellation
+
+    init {
+        // The non-suspending write path in onResponseBody is only safe if the channel buffer is at least as large as
+        // the CRT flow-control window (the two are sized from the same windowSizeBytes below). Guard the precondition
+        // at construction so a misconfiguration fails fast here rather than as a mid-stream body failure.
+        require(windowSizeBytes > 0) { "windowSizeBytes must be > 0, was $windowSizeBytes" }
+    }
 
     private val logger = callContext.logger<SdkStreamResponseHandler>()
     private val responseReady = Channel<HttpResponse>(1)
@@ -177,8 +183,26 @@ internal class SdkStreamResponseHandler(
         // room. Window credit is returned on the read side as the consumer drains the channel (see onDataConsumed).
         val wc = buffer.size
         val written = bodyChan.tryWrite(buffer, wc)
-        check(written == wc) {
-            "response body channel rejected $wc bytes (only accepted $written); CRT window exceeded channel capacity"
+
+        // INVARIANT: written == wc, because the channel buffer is sized to the CRT flow-control window and window
+        // credit is only returned after buffer space is freed (see WindowManagedReadChannel), so outstanding bytes
+        // never exceed capacity. If this is ever violated (e.g. buffer size and window size were decoupled) we would
+        // otherwise silently drop body bytes CRT considers delivered. Rather than throw out of this native callback,
+        // fail the stream deterministically: close the channel with a diagnostic cause so the consumer observes a
+        // clean error, and abort the stream so CRT stops delivering.
+        if (written != wc) {
+            val cause = IllegalStateException(
+                "response body channel accepted only $written of $wc bytes; the channel buffer " +
+                    "($windowSizeBytes) is smaller than the CRT flow-control window and body bytes would be lost",
+            )
+            logger.error(cause) { "flow-control invariant violated; failing response stream" }
+            bodyChan.close(cause)
+            lock.withLock {
+                crtStream?.close()
+                crtStream = null
+            }
+            stream.close()
+            return bodyBytesIn.len
         }
 
         // explicit window management is handled by `onDataConsumed` as data is read from the channel

@@ -102,10 +102,31 @@ class SdkByteChannelTest {
     }
 
     @Test
-    fun testTryWriteUnsupportedOnNonDefaultImpl() = runTest {
-        // tryWrite is only supported on the concrete RealSdkByteChannel; delegating wrappers hit the error path.
-        val chan = JobChannel()
-        assertFailsWith<IllegalStateException> {
+    fun testTryWriteForwardsThroughDelegatingWrapper() = runTest {
+        // tryWrite is an interface member, so a delegating wrapper (SdkByteChannel by delegate) forwards it to its
+        // RealSdkByteChannel delegate rather than hitting the unsupported default.
+        JobChannel().use { chan ->
+            val written = chan.tryWrite(SdkBuffer().apply { write(byteArrayOf(1, 2, 3)) })
+            assertEquals(3L, written)
+            assertEquals(3, chan.availableForRead)
+        }
+    }
+
+    @Test
+    fun testTryWriteDefaultIsUnsupported() {
+        // an implementation that does not override tryWrite falls back to the throwing default
+        val chan = object : SdkByteWriteChannel {
+            override val availableForWrite: Int = 0
+            override val isClosedForWrite: Boolean = false
+            override val closedCause: Throwable? = null
+            override val totalBytesWritten: Long = 0
+            override val autoFlush: Boolean = true
+            override suspend fun write(source: SdkBuffer, byteCount: Long) {}
+            override fun close(cause: Throwable?): Boolean = true
+            override fun close() {}
+            override fun flush() {}
+        }
+        assertFailsWith<UnsupportedOperationException> {
             chan.tryWrite(SdkBuffer().apply { write(byteArrayOf(1)) })
         }
     }

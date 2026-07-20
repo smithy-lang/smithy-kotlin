@@ -116,16 +116,7 @@ internal class RealSdkByteChannel(
         _readInProgress.compareAndSet(true, false)
     }
 
-    /**
-     * Attempts to append up to [byteCount] bytes from [source] **without suspending**, writing only as many bytes
-     * as currently fit within [availableForWrite]. Returns the number of bytes actually written.
-     *
-     * This is intended for producers that manage their own external flow control / backpressure and can therefore
-     * guarantee buffer capacity ahead of the write (e.g. a native reader gated by a flow-control window sized no
-     * larger than this channel's buffer). Like [write] this is a single-writer operation and must not be invoked
-     * concurrently with [write] or itself.
-     */
-    fun tryWrite(source: SdkBuffer, byteCount: Long): Long {
+    override fun tryWrite(source: SdkBuffer, byteCount: Long): Long {
         ensureNotClosed()
         if (byteCount == 0L) return 0L
 
