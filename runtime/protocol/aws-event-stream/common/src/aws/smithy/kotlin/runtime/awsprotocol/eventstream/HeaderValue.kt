@@ -6,6 +6,7 @@
 package aws.smithy.kotlin.runtime.awsprotocol.eventstream
 
 import aws.smithy.kotlin.runtime.InternalApi
+import aws.smithy.kotlin.runtime.PlannedRemoval
 import aws.smithy.kotlin.runtime.io.*
 import aws.smithy.kotlin.runtime.time.Instant
 import aws.smithy.kotlin.runtime.time.epochMilliseconds
@@ -78,6 +79,7 @@ public sealed class HeaderValue {
     @InternalApi
     @Suppress("DEPRECATION")
     @Deprecated("Use Uuid4 instead", ReplaceWith("Uuid4"))
+    @PlannedRemoval(1, 8)
     public data class Uuid(val value: aws.smithy.kotlin.runtime.util.Uuid) : HeaderValue()
 
     @InternalApi
@@ -86,6 +88,7 @@ public sealed class HeaderValue {
     /**
      * Encode a header value to [dest]
      */
+    @OptIn(PlannedRemoval::class)
     @Suppress("DEPRECATION")
     public fun encode(dest: SdkBufferedSink): Unit = when (this) {
         is Bool -> {
@@ -199,6 +202,7 @@ public fun HeaderValue.expectByteArray(): ByteArray = checkNotNull((this as? Hea
 @InternalApi
 public fun HeaderValue.expectTimestamp(): Instant = checkNotNull((this as? HeaderValue.Timestamp)?.value) { "expected HeaderValue.Bool, found: $this" }
 
+@OptIn(PlannedRemoval::class)
 @InternalApi
 @Suppress("DEPRECATION")
 @Deprecated("Use expectUuid4 instead", ReplaceWith("expectUuid4()"))

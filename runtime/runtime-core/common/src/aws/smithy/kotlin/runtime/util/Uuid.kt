@@ -5,6 +5,7 @@
 package aws.smithy.kotlin.runtime.util
 
 import aws.smithy.kotlin.runtime.InternalApi
+import aws.smithy.kotlin.runtime.PlannedRemoval
 import kotlin.uuid.Uuid as KotlinUuid
 
 /**
@@ -12,6 +13,7 @@ import kotlin.uuid.Uuid as KotlinUuid
  * Random generation delegates to [kotlin.uuid.Uuid] for platform-appropriate secure randomness.
  */
 @Deprecated("Use kotlin.uuid.Uuid directly", ReplaceWith("kotlin.uuid.Uuid"))
+@PlannedRemoval(1, 8)
 @InternalApi
 public data class Uuid(val high: Long, val low: Long) {
     @InternalApi
