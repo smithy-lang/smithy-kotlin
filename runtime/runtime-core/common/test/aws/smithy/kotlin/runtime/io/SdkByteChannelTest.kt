@@ -94,6 +94,20 @@ class SdkByteChannelTest {
     }
 
     @Test
+    fun testTryWriteOnChannelClosedWithCauseThrowsThatCause() = runTest {
+        // When a channel is closed with a cause, tryWrite rethrows that exact cause (not ClosedWriteChannelException).
+        // The CRT response handler relies on this: its write-path catch classifies by channel state rather than
+        // exception type precisely because the thrown type is arbitrary.
+        val chan = SdkByteChannel(true, maxBufferSize = 8)
+        val cause = RuntimeException("consumer went away")
+        chan.close(cause)
+        val thrown = assertFailsWith<RuntimeException> {
+            chan.tryWrite(SdkBuffer().apply { write(byteArrayOf(1)) })
+        }
+        assertEquals(cause, thrown)
+    }
+
+    @Test
     fun testTryWriteZeroByteCountIsNoOp() = runTest {
         SdkByteChannel(true, maxBufferSize = 8).use { chan ->
             assertEquals(0L, chan.tryWrite(SdkBuffer(), 0))

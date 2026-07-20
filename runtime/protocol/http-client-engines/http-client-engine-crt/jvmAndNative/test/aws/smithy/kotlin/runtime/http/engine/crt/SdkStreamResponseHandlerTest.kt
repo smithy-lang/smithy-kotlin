@@ -22,6 +22,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.withTimeout
 import kotlinx.coroutines.yield
+import kotlin.coroutines.EmptyCoroutineContext
 import kotlin.test.*
 
 class SdkStreamResponseHandlerTest {
@@ -339,5 +340,92 @@ class SdkStreamResponseHandlerTest {
         val discarded = handler.onResponseBody(stream, byteArrayBuffer("more data".encodeToByteArray()))
         assertEquals("more data".length, discarded)
         assertTrue(stream.closed)
+    }
+
+    @Test
+    fun testConsumerCancellingWithCauseDoesNotThrowFromCallback() = runTest {
+        // Consumer cancels the body with a specific cause. In a single-threaded test the isClosedForWrite guard
+        // handles this before the write is attempted; the write-path try/catch is the defensive backstop for the
+        // cross-thread race where the close lands between the guard and tryWrite (not deterministically reproducible
+        // here). Either way the callback must not throw out of the CRT native callback and must discard the bytes.
+        val handler = SdkStreamResponseHandler(mockConn, coroutineContext, DEFAULT_WINDOW_SIZE_BYTES)
+        val stream = MockHttpStream(200)
+
+        val headers = listOf(HttpHeader("Content-Length", "1024"))
+        handler.onResponseHeaders(stream, 200, HttpHeaderBlock.MAIN.blockType, headers)
+        handler.onResponseHeadersDone(stream, HttpHeaderBlock.MAIN.blockType)
+        handler.onResponseBody(stream, byteArrayBuffer("first".encodeToByteArray()))
+
+        val resp = handler.waitForResponse()
+        val respChan = (resp.body as HttpBody.ChannelContent).readFrom()
+
+        // consumer cancels with a specific cause -> the channel's closedCause is that exception
+        respChan.cancel(RuntimeException("consumer went away"))
+
+        val discarded = handler.onResponseBody(stream, byteArrayBuffer("more data".encodeToByteArray()))
+        assertEquals("more data".length, discarded)
+        assertTrue(stream.closed)
+    }
+
+    @Test
+    fun testWindowSmallerThanDeliveryFailsStreamDeterministically() = runTest {
+        // Exercises the written != wc safety net (:onResponseBody). The channel buffer is sized to windowSizeBytes;
+        // if CRT ever delivers more un-acked bytes than the window (i.e. buffer size and window size were decoupled),
+        // tryWrite can only accept `window` bytes and the rest would be silently lost. The handler must instead fail
+        // the stream deterministically: report the bytes consumed, close the stream, and fail the body channel with a
+        // diagnostic cause the consumer can observe.
+        val window = 8
+        val handler = SdkStreamResponseHandler(mockConn, coroutineContext, window)
+        val stream = MockHttpStream(200)
+
+        val body = ByteArray(20) { it.toByte() } // larger than the window, delivered before any read
+        val headers = listOf(HttpHeader("Content-Length", "${body.size}"))
+        handler.onResponseHeaders(stream, 200, HttpHeaderBlock.MAIN.blockType, headers)
+        handler.onResponseHeadersDone(stream, HttpHeaderBlock.MAIN.blockType)
+
+        val resp = handler.waitForResponse()
+        val respChan = (resp.body as HttpBody.ChannelContent).readFrom()
+
+        // callback must not throw out of the native callback; it reports all incoming bytes as consumed
+        val consumed = handler.onResponseBody(stream, byteArrayBuffer(body))
+        assertEquals(body.size, consumed)
+        assertTrue(stream.closed, "stream should be torn down when the invariant is violated")
+
+        // the consumer observes the diagnostic failure rather than silently truncated data
+        val ex = assertFailsWith<IllegalStateException> {
+            respChan.readAll(SdkSink.blackhole())
+        }
+        ex.message.shouldContain("smaller than the CRT flow-control window")
+    }
+
+    @Test
+    fun testBodyBytesDiscardedWhenResponseSignalledWithNoBody() = runTest {
+        // A 204 No Content response is signalled with HttpBody.Empty, so nothing ever drains bodyChan. If the server
+        // nonetheless sends body bytes, the handler must discard them (reporting them consumed so the window advances)
+        // rather than writing into the bounded buffer, which would stall the stream once the window filled.
+        val handler = SdkStreamResponseHandler(mockConn, coroutineContext, DEFAULT_WINDOW_SIZE_BYTES)
+        val stream = MockHttpStream(204)
+
+        launch {
+            handler.onResponseHeaders(stream, 204, HttpHeaderBlock.MAIN.blockType, emptyList())
+            handler.onResponseHeadersDone(stream, HttpHeaderBlock.MAIN.blockType)
+        }
+
+        val resp = handler.waitForResponse()
+        assertTrue(resp.body is HttpBody.Empty)
+
+        // unexpected body bytes must be discarded, not buffered
+        val consumed = handler.onResponseBody(stream, byteArrayBuffer("unexpected".encodeToByteArray()))
+        assertEquals("unexpected".length, consumed)
+    }
+
+    @Test
+    fun testNonPositiveWindowSizeIsRejected() {
+        assertFailsWith<IllegalArgumentException> {
+            SdkStreamResponseHandler(mockConn, EmptyCoroutineContext, 0)
+        }
+        assertFailsWith<IllegalArgumentException> {
+            SdkStreamResponseHandler(mockConn, EmptyCoroutineContext, -1)
+        }
     }
 }

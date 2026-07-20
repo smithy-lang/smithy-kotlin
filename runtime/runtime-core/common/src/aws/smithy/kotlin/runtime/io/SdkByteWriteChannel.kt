@@ -5,6 +5,8 @@
 
 package aws.smithy.kotlin.runtime.io
 
+import aws.smithy.kotlin.runtime.InternalApi
+
 /**
  * A channel for writing a sequence of bytes asynchronously. This is a **single writer channel**.
  */
@@ -59,16 +61,21 @@ public interface SdkByteWriteChannel : Closeable {
      * This is intended for producers that enforce their own external backpressure (for example a native reader
      * bounded by a flow-control window no larger than this channel's buffer) and therefore do not need the suspending
      * semantics of [write]. Like [write], this is a single-writer operation and must not be invoked concurrently with
-     * [write] or itself. Throws [ClosedWriteChannelException] if this channel was already closed.
+     * [write] or itself; doing so may throw [IllegalStateException] ("Write operation already in progress").
+     * Throws [ClosedWriteChannelException] if this channel was closed successfully, or the close cause if it was
+     * closed with one.
      *
      * The default implementation throws [UnsupportedOperationException]; implementations that can service a
      * non-suspending write override it. Because it is a regular interface member, delegating wrappers
      * (e.g. `SdkByteChannel by delegate`) forward it to their delegate automatically.
      *
+     * This is a low-level flow-control primitive intended for engine internals and is not part of the stable API.
+     *
      * @param source the buffer data will be read from and written to this channel
      * @param byteCount the number of bytes to read from source
      * @return the number of bytes actually written
      */
+    @InternalApi
     public fun tryWrite(source: SdkBuffer, byteCount: Long = source.size): Long = throw UnsupportedOperationException("${this::class.simpleName} does not support non-suspending writes")
 
     /**

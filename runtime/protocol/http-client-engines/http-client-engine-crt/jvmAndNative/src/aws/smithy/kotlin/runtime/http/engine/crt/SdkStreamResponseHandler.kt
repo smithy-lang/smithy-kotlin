@@ -71,6 +71,11 @@ internal class SdkStreamResponseHandler(
     private var streamCompleted = false
     private var receivedBodyData = false
 
+    // set true once a consumable body channel has been handed to the caller (see createHttpResponseBody). When the
+    // response was signalled with no body (HttpBody.Empty) nothing ever drains bodyChan, so any body bytes that still
+    // arrive must be discarded rather than written — otherwise the bounded buffer fills and the stream stalls.
+    private var bodyConsumable = false
+
     /**
      * Called by the response read channel as data is consumed
      * @param size the number of bytes consumed
@@ -99,6 +104,7 @@ internal class SdkStreamResponseHandler(
         // same number of bytes back to the flow-control window. This ties backpressure to actual consumption without
         // an intermediate writer coroutine — body bytes are written straight into the channel from onResponseBody.
         val ch = WindowManagedReadChannel(bodyChan, ::onDataConsumed)
+        bodyConsumable = true
         return object : HttpBody.ChannelContent() {
             override val contentLength: Long? = contentLength
             override fun readFrom(): SdkByteReadChannel = ch
@@ -152,6 +158,21 @@ internal class SdkStreamResponseHandler(
         signalResponse(stream)
     }
 
+    /**
+     * Abort the response stream and stop CRT delivering more body data. Optionally fails the body channel with
+     * [cause] so a downstream reader observes it. Returns [discardedLen] so the caller can report the incoming bytes
+     * as consumed to CRT (the sliding window advances but the bytes are dropped).
+     */
+    private fun abortStream(stream: HttpStream, discardedLen: Int, cause: Throwable? = null): Int {
+        if (cause != null) bodyChan.close(cause)
+        lock.withLock {
+            crtStream?.close()
+            crtStream = null
+        }
+        stream.close()
+        return discardedLen
+    }
+
     override fun onResponseBody(stream: HttpStream, bodyBytesIn: Buffer): Int {
         val isCancelled = lock.withLock {
             crtStream = stream
@@ -163,14 +184,19 @@ internal class SdkStreamResponseHandler(
         // discard the remaining bytes (returning them as "consumed" to CRT) rather than surfacing an exception from
         // this native callback.
         if (isCancelled || bodyChan.isClosedForWrite) {
-            crtStream?.close()
-            stream.close()
-            return bodyBytesIn.len
+            return abortStream(stream, bodyBytesIn.len)
         }
 
         if (!receivedBodyData) {
             receivedBodyData = true
             signalResponse(stream)
+        }
+
+        // The response was signalled with no consumable body (e.g. Content-Length: 0, 204/304, or an informational
+        // status) yet the server sent body bytes anyway. Nothing will ever drain bodyChan, so writing here would fill
+        // the bounded buffer and stall the stream. Discard the bytes and report them consumed so the window advances.
+        if (!bodyConsumable) {
+            return bodyBytesIn.len
         }
 
         val buffer = SdkBuffer().apply {
@@ -181,8 +207,26 @@ internal class SdkStreamResponseHandler(
         // Write directly into the channel buffer without suspending. CRT never has more than the flow-control
         // window of un-acked bytes outstanding and the channel buffer is sized to that window, so there is always
         // room. Window credit is returned on the read side as the consumer drains the channel (see onDataConsumed).
+        //
+        // PRECONDITION (single writer): this is the only writer to bodyChan and CRT delivers body callbacks
+        // sequentially per stream, so tryWrite is never called concurrently with itself. onResponseComplete/complete
+        // only ever close the channel (never write), which tryWrite tolerates.
         val wc = buffer.size
-        val written = bodyChan.tryWrite(buffer, wc)
+        val written = try {
+            bodyChan.tryWrite(buffer, wc)
+        } catch (e: Throwable) {
+            // The consumer may have closed/cancelled the body channel between the isClosedForWrite check above and
+            // here (they run on different threads). A write to a closed channel throws either
+            // ClosedWriteChannelException or the consumer's close cause (an arbitrary Throwable, e.g. the
+            // CancellationException from cancel(null) or a caller-supplied cause). We therefore classify by channel
+            // state, not exception type: if the channel is now closed, this is the expected consumer-went-away race,
+            // so discard the bytes rather than letting the exception escape into the CRT native callback. If the
+            // channel is still open the throwable is a genuine bug and is rethrown.
+            if (bodyChan.isClosedForWrite) {
+                return abortStream(stream, bodyBytesIn.len)
+            }
+            throw e
+        }
 
         // INVARIANT: written == wc, because the channel buffer is sized to the CRT flow-control window and window
         // credit is only returned after buffer space is freed (see WindowManagedReadChannel), so outstanding bytes
@@ -196,13 +240,7 @@ internal class SdkStreamResponseHandler(
                     "($windowSizeBytes) is smaller than the CRT flow-control window and body bytes would be lost",
             )
             logger.error(cause) { "flow-control invariant violated; failing response stream" }
-            bodyChan.close(cause)
-            lock.withLock {
-                crtStream?.close()
-                crtStream = null
-            }
-            stream.close()
-            return bodyBytesIn.len
+            return abortStream(stream, bodyBytesIn.len, cause)
         }
 
         // explicit window management is handled by `onDataConsumed` as data is read from the channel
@@ -275,6 +313,10 @@ private class WindowManagedReadChannel(
     private val onConsumed: (Int) -> Unit,
 ) : SdkByteReadChannel by delegate {
     override suspend fun read(sink: SdkBuffer, limit: Long): Long {
+        // INVARIANT (ordering): buffer space MUST be freed before window credit is returned. delegate.read
+        // completes the read (freeing availableForWrite) before we call onConsumed, which increments the CRT window
+        // and lets CRT deliver more. Returning credit first would let CRT write into a still-full buffer, breaking
+        // the "channel capacity == window" guarantee that onResponseBody's non-suspending tryWrite relies on.
         val rc = delegate.read(sink, limit)
         if (rc > 0) onConsumed(rc.toInt())
         return rc
