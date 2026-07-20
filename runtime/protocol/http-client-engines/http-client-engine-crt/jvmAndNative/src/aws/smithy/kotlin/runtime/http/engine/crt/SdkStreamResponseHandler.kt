@@ -15,15 +15,14 @@ import aws.smithy.kotlin.runtime.http.response.HttpResponse
 import aws.smithy.kotlin.runtime.io.SdkBuffer
 import aws.smithy.kotlin.runtime.io.SdkByteChannel
 import aws.smithy.kotlin.runtime.io.SdkByteReadChannel
+import aws.smithy.kotlin.runtime.io.tryWrite
 import aws.smithy.kotlin.runtime.telemetry.logging.logger
-import aws.smithy.kotlin.runtime.util.derivedName
 import kotlinx.atomicfu.locks.reentrantLock
 import kotlinx.atomicfu.locks.withLock
 import kotlinx.coroutines.DelicateCoroutinesApi
-import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.channels.Channel
-import kotlinx.coroutines.launch
 import kotlin.coroutines.CoroutineContext
+import kotlin.coroutines.cancellation.CancellationException
 
 /**
  * Implements the CRT stream response interface which proxies the response from the CRT to the SDK
@@ -43,8 +42,12 @@ internal class SdkStreamResponseHandler(
     private val responseReady = Channel<HttpResponse>(1)
     private val headers = HeadersBuilder()
 
-    // in practice only WINDOW_SIZE bytes will ever be in-flight
-    private val bodyChan = Channel<SdkBuffer>(Channel.UNLIMITED)
+    // Body bytes are written directly into this channel from onResponseBody (a non-suspending CRT callback).
+    // The channel buffer is sized to the CRT flow-control window, so no more than [windowSizeBytes] un-acked bytes
+    // are ever in-flight and the synchronous write always has room. The CRT window is replenished on the read side
+    // (see WindowManagedReadChannel) as the downstream consumer drains bytes, preserving consumption-driven
+    // backpressure without an intermediate writer coroutine.
+    private val bodyChan = SdkByteChannel(true, windowSizeBytes)
 
     private val lock = reentrantLock() // protects crtStream and cancelled state
     private var crtStream: HttpStream? = null
@@ -86,26 +89,10 @@ internal class SdkStreamResponseHandler(
     }
 
     private fun createHttpResponseBody(contentLength: Long?): HttpBody {
-        val ch = SdkByteChannel(true, windowSizeBytes)
-        val writerContext = callContext + callContext.derivedName("response-body-writer")
-        val job = GlobalScope.launch(writerContext) {
-            val result = runCatching {
-                for (buffer in bodyChan) {
-                    val wc = buffer.size.toInt()
-                    ch.write(buffer)
-                    // increment window
-                    onDataConsumed(wc)
-                }
-            }
-
-            // immediately close when done to signal end of body stream
-            ch.close(result.exceptionOrNull())
-        }
-
-        job.invokeOnCompletion { cause ->
-            // close is idempotent, if not previously closed then close with cause
-            ch.close(cause)
-        }
+        // Reads from [bodyChan] drive CRT window replenishment: as the downstream consumer drains bytes we hand the
+        // same number of bytes back to the flow-control window. This ties backpressure to actual consumption without
+        // an intermediate writer coroutine — body bytes are written straight into the channel from onResponseBody.
+        val ch = WindowManagedReadChannel(bodyChan, ::onDataConsumed)
         return object : HttpBody.ChannelContent() {
             override val contentLength: Long? = contentLength
             override fun readFrom(): SdkByteReadChannel = ch
@@ -165,8 +152,11 @@ internal class SdkStreamResponseHandler(
             cancelled
         }
 
-        // short circuit, stop buffering data and discard remaining incoming bytes
-        if (isCancelled) {
+        // short circuit, stop buffering data and discard remaining incoming bytes. This also covers the case where
+        // the downstream consumer closed/cancelled the body channel early: writing to it would throw, so instead we
+        // discard the remaining bytes (returning them as "consumed" to CRT) rather than surfacing an exception from
+        // this native callback.
+        if (isCancelled || bodyChan.isClosedForWrite) {
             crtStream?.close()
             stream.close()
             return bodyBytesIn.len
@@ -182,7 +172,14 @@ internal class SdkStreamResponseHandler(
             write(bytes)
         }
 
-        bodyChan.trySend(buffer).getOrThrow()
+        // Write directly into the channel buffer without suspending. CRT never has more than the flow-control
+        // window of un-acked bytes outstanding and the channel buffer is sized to that window, so there is always
+        // room. Window credit is returned on the read side as the consumer drains the channel (see onDataConsumed).
+        val wc = buffer.size
+        val written = bodyChan.tryWrite(buffer, wc)
+        check(written == wc) {
+            "response body channel rejected $wc bytes (only accepted $written); CRT window exceeded channel capacity"
+        }
 
         // explicit window management is handled by `onDataConsumed` as data is read from the channel
         return 0
@@ -231,11 +228,31 @@ internal class SdkStreamResponseHandler(
                 logger.debug { "stream did not complete before job, forcing connection shutdown! handler=$this; conn=$conn; conn.id=${conn.id}; stream=$crtStream" }
                 conn.shutdown()
                 cancelled = true
+                // wake any consumer suspended reading the body; onResponseComplete may never fire once we've
+                // force-shutdown the connection. close is idempotent so this is a no-op if already closed.
+                bodyChan.close(CancellationException("response stream did not complete before the call was finished"))
             }
 
             logger.trace { "Closing connection ${conn.id}" }
             // return to pool
             conn.close()
         }
+    }
+}
+
+/**
+ * Read-side decorator over [delegate] that returns CRT flow-control window credit as bytes are consumed.
+ * Every successful [read] hands the number of bytes read back to [onConsumed], which increments the CRT stream
+ * window. This ties backpressure to actual downstream consumption: CRT will not deliver more data until the
+ * consumer has drained (and thereby acknowledged) previously delivered bytes.
+ */
+private class WindowManagedReadChannel(
+    private val delegate: SdkByteChannel,
+    private val onConsumed: (Int) -> Unit,
+) : SdkByteReadChannel by delegate {
+    override suspend fun read(sink: SdkBuffer, limit: Long): Long {
+        val rc = delegate.read(sink, limit)
+        if (rc > 0) onConsumed(rc.toInt())
+        return rc
     }
 }

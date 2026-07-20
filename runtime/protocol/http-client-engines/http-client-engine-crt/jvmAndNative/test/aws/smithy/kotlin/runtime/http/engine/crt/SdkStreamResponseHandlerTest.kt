@@ -12,12 +12,15 @@ import aws.smithy.kotlin.runtime.http.HttpBody
 import aws.smithy.kotlin.runtime.http.HttpErrorCode
 import aws.smithy.kotlin.runtime.http.HttpException
 import aws.smithy.kotlin.runtime.http.HttpStatusCode
+import aws.smithy.kotlin.runtime.io.SdkBuffer
 import aws.smithy.kotlin.runtime.io.SdkSink
 import aws.smithy.kotlin.runtime.io.readAll
 import aws.smithy.kotlin.runtime.io.readToBuffer
 import io.kotest.matchers.string.shouldContain
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.runTest
+import kotlinx.coroutines.withTimeout
 import kotlinx.coroutines.yield
 import kotlin.test.*
 
@@ -25,6 +28,10 @@ class SdkStreamResponseHandlerTest {
     private class MockHttpStream(private val statusCode: Int) : HttpStream {
         var closed: Boolean = false
         var statusReadAfterClose: Boolean = false
+
+        // records every incrementWindow(size) call so tests can assert window replenishment
+        val windowIncrements = mutableListOf<Int>()
+        val totalWindowIncremented: Int get() = windowIncrements.sum()
 
         override val responseStatusCode: Int
             get() {
@@ -40,7 +47,9 @@ class SdkStreamResponseHandlerTest {
         override fun close() {
             closed = true
         }
-        override fun incrementWindow(size: Int) {}
+        override fun incrementWindow(size: Int) {
+            windowIncrements.add(size)
+        }
     }
 
     private class MockHttpClientConnection : HttpClientConnection {
@@ -208,5 +217,127 @@ class SdkStreamResponseHandlerTest {
 
         ex.message.shouldContain("socket is closed.; crtErrorCode=$socketClosedEc")
         assertEquals(HttpErrorCode.CONNECTION_CLOSED, ex.errorCode)
+    }
+
+    @Test
+    fun testRespBodyMultipleChunksReassembledInOrder() = runTest {
+        val handler = SdkStreamResponseHandler(mockConn, coroutineContext, DEFAULT_WINDOW_SIZE_BYTES)
+        val stream = MockHttpStream(200)
+        val chunks = listOf("Frodo ", "Sam ", "Merry ", "Pippin")
+        val full = chunks.joinToString("")
+        launch {
+            val headers = listOf(HttpHeader("Content-Length", "${full.length}"))
+            handler.onResponseHeaders(stream, 200, HttpHeaderBlock.MAIN.blockType, headers)
+            handler.onResponseHeadersDone(stream, HttpHeaderBlock.MAIN.blockType)
+            chunks.forEach { handler.onResponseBody(stream, byteArrayBuffer(it.encodeToByteArray())) }
+            handler.onResponseComplete(stream, 0)
+        }
+
+        val resp = handler.waitForResponse()
+        val respChan = (resp.body as HttpBody.ChannelContent).readFrom()
+        assertEquals(full, respChan.readToBuffer().readUtf8())
+    }
+
+    @Test
+    fun testWindowIsReplenishedAsBodyIsConsumed() = runTest {
+        val handler = SdkStreamResponseHandler(mockConn, coroutineContext, DEFAULT_WINDOW_SIZE_BYTES)
+        val stream = MockHttpStream(200)
+        val data = "Fool of a Took!".encodeToByteArray()
+        // deliver headers + a body chunk but leave the stream active (not yet complete) so the window is live
+        val headers = listOf(HttpHeader("Content-Length", "${data.size}"))
+        handler.onResponseHeaders(stream, 200, HttpHeaderBlock.MAIN.blockType, headers)
+        handler.onResponseHeadersDone(stream, HttpHeaderBlock.MAIN.blockType)
+        handler.onResponseBody(stream, byteArrayBuffer(data))
+
+        val resp = handler.waitForResponse()
+        val respChan = (resp.body as HttpBody.ChannelContent).readFrom()
+
+        // no window credit should be returned until bytes are actually consumed
+        assertEquals(0, stream.totalWindowIncremented)
+
+        // consume the buffered chunk while the stream is still active; window must be returned for the bytes read
+        val sink = SdkBuffer()
+        val rc = respChan.read(sink, data.size.toLong())
+        assertContentEquals(data, sink.readByteArray())
+        assertEquals(rc.toInt(), stream.totalWindowIncremented)
+        assertEquals(data.size, stream.totalWindowIncremented)
+    }
+
+    @Test
+    fun testWindowReplenishedIncrementallyOnPartialReads() = runTest {
+        val handler = SdkStreamResponseHandler(mockConn, coroutineContext, DEFAULT_WINDOW_SIZE_BYTES)
+        val stream = MockHttpStream(200)
+        val data = ByteArray(32) { it.toByte() }
+        // leave the stream active so window increments are delivered to it as the consumer reads
+        val headers = listOf(HttpHeader("Content-Length", "${data.size}"))
+        handler.onResponseHeaders(stream, 200, HttpHeaderBlock.MAIN.blockType, headers)
+        handler.onResponseHeadersDone(stream, HttpHeaderBlock.MAIN.blockType)
+        handler.onResponseBody(stream, byteArrayBuffer(data))
+
+        val resp = handler.waitForResponse()
+        val respChan = (resp.body as HttpBody.ChannelContent).readFrom()
+
+        val sink = SdkBuffer()
+        val firstRead = respChan.read(sink, 10)
+        assertTrue(firstRead > 0, "expected to read some bytes")
+        // window returned so far must equal exactly what was read (no more, no less)
+        assertEquals(firstRead.toInt(), stream.totalWindowIncremented)
+
+        // read the remainder; total window returned must equal total bytes read back
+        var total = firstRead
+        while (total < data.size) {
+            val rc = respChan.read(sink, data.size - total)
+            if (rc <= 0) break
+            total += rc
+        }
+        assertEquals(data.size.toLong(), total)
+        assertEquals(data.size, stream.totalWindowIncremented)
+    }
+
+    @Test
+    fun testForceCloseMidBodyWakesSuspendedReader() = runTest {
+        val handler = SdkStreamResponseHandler(mockConn, coroutineContext, DEFAULT_WINDOW_SIZE_BYTES)
+        val stream = MockHttpStream(200)
+        launch {
+            val headers = listOf(HttpHeader("Content-Length", "1024"))
+            handler.onResponseHeaders(stream, 200, HttpHeaderBlock.MAIN.blockType, headers)
+            handler.onResponseHeadersDone(stream, HttpHeaderBlock.MAIN.blockType)
+            handler.onResponseBody(stream, byteArrayBuffer("partial".encodeToByteArray()))
+            // stream never completes: simulate the request job finishing early (e.g. cancellation)
+            handler.complete()
+        }
+
+        val resp = handler.waitForResponse()
+        val respChan = (resp.body as HttpBody.ChannelContent).readFrom()
+
+        // reading past the buffered data must not hang; force-close wakes the reader with a failure
+        val ex = assertFails {
+            withTimeout(5000) {
+                respChan.readAll(SdkSink.blackhole())
+            }
+        }
+        assertTrue(ex is CancellationException, "expected reader to be woken with a CancellationException, got $ex")
+    }
+
+    @Test
+    fun testConsumerClosingBodyEarlyDoesNotThrowFromCallback() = runTest {
+        val handler = SdkStreamResponseHandler(mockConn, coroutineContext, DEFAULT_WINDOW_SIZE_BYTES)
+        val stream = MockHttpStream(200)
+
+        val headers = listOf(HttpHeader("Content-Length", "1024"))
+        handler.onResponseHeaders(stream, 200, HttpHeaderBlock.MAIN.blockType, headers)
+        handler.onResponseHeadersDone(stream, HttpHeaderBlock.MAIN.blockType)
+        handler.onResponseBody(stream, byteArrayBuffer("first".encodeToByteArray()))
+
+        val resp = handler.waitForResponse()
+        val respChan = (resp.body as HttpBody.ChannelContent).readFrom()
+
+        // consumer abandons the body early
+        respChan.cancel(null)
+
+        // subsequent body callbacks must not throw out of the CRT native callback; bytes are discarded
+        val discarded = handler.onResponseBody(stream, byteArrayBuffer("more data".encodeToByteArray()))
+        assertEquals("more data".length, discarded)
+        assertTrue(stream.closed)
     }
 }

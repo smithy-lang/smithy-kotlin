@@ -41,6 +41,25 @@ public fun SdkByteChannel(
 ): SdkByteChannel = RealSdkByteChannel(autoFlush, maxBufferSize)
 
 /**
+ * Appends up to [byteCount] bytes from [source] to this channel **without suspending**, writing only as many bytes
+ * as currently fit in the channel's buffer ([SdkByteWriteChannel.availableForWrite]). Returns the number of bytes
+ * actually written (which may be less than [byteCount], including `0` if the buffer is full).
+ *
+ * This is intended for producers that enforce their own external backpressure (e.g. a native reader bounded by a
+ * flow-control window no larger than the channel's buffer) and therefore do not need the suspending semantics of
+ * [SdkByteWriteChannel.write]. It is a single-writer operation and must not be invoked concurrently with
+ * [SdkByteWriteChannel.write] or itself.
+ *
+ * @throws IllegalStateException if invoked on a channel implementation that does not support non-suspending writes
+ */
+@InternalApi
+public fun SdkByteChannel.tryWrite(source: SdkBuffer, byteCount: Long = source.size): Long {
+    val real = this as? RealSdkByteChannel
+        ?: error("tryWrite is only supported on the default SdkByteChannel implementation, got ${this::class}")
+    return real.tryWrite(source, byteCount)
+}
+
+/**
  * Creates a channel for reading with the contents of the given byte array.
  *
  * NOTE: The returned channel will be closed.

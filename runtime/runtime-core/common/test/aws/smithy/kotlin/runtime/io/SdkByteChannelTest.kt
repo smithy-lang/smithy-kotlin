@@ -5,6 +5,7 @@
 
 package aws.smithy.kotlin.runtime.io
 
+import aws.smithy.kotlin.runtime.io.internal.JobChannel
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.yield
@@ -15,6 +16,98 @@ class SdkByteChannelTest {
     fun testCreateAndClose() {
         val chan = SdkByteChannel(false)
         chan.close()
+    }
+
+    @Test
+    fun testTryWriteWithinCapacity() = runTest {
+        SdkByteChannel(true, maxBufferSize = 16).use { chan ->
+            val source = SdkBuffer().apply { write(byteArrayOf(1, 2, 3, 4)) }
+            val written = chan.tryWrite(source)
+            assertEquals(4L, written)
+            assertEquals(4L, chan.totalBytesWritten)
+            assertEquals(4, chan.availableForRead)
+            assertEquals(0L, source.size)
+        }
+    }
+
+    @Test
+    fun testTryWritePartialWhenBufferNearlyFull() = runTest {
+        SdkByteChannel(true, maxBufferSize = 8).use { chan ->
+            // fill 6 of 8 bytes
+            chan.tryWrite(SdkBuffer().apply { write(ByteArray(6)) })
+            assertEquals(2, chan.availableForWrite)
+
+            // only 2 bytes fit without suspending; tryWrite writes what it can
+            val source = SdkBuffer().apply { write(ByteArray(5)) }
+            val written = chan.tryWrite(source)
+            assertEquals(2L, written)
+            assertEquals(0, chan.availableForWrite)
+            assertEquals(3L, source.size) // remaining bytes left in source
+        }
+    }
+
+    @Test
+    fun testTryWriteReturnsZeroWhenFull() = runTest {
+        SdkByteChannel(true, maxBufferSize = 4).use { chan ->
+            chan.tryWrite(SdkBuffer().apply { write(ByteArray(4)) })
+            assertEquals(0, chan.availableForWrite)
+
+            val written = chan.tryWrite(SdkBuffer().apply { write(ByteArray(4)) })
+            assertEquals(0L, written)
+        }
+    }
+
+    @Test
+    fun testTryWriteRoundTrip() = runTest {
+        SdkByteChannel(true, maxBufferSize = 64).use { chan ->
+            val data = "hello flow control".encodeToByteArray()
+            val written = chan.tryWrite(SdkBuffer().apply { write(data) })
+            assertEquals(data.size.toLong(), written)
+
+            val sink = SdkBuffer()
+            chan.read(sink, data.size.toLong())
+            assertContentEquals(data, sink.readByteArray())
+        }
+    }
+
+    @Test
+    fun testTryWriteReadFreesCapacityForSubsequentWrite() = runTest {
+        SdkByteChannel(true, maxBufferSize = 8).use { chan ->
+            assertEquals(8L, chan.tryWrite(SdkBuffer().apply { write(ByteArray(8)) }))
+            assertEquals(0, chan.availableForWrite)
+
+            // draining bytes must free capacity so the next tryWrite succeeds (models flow-control window replenish)
+            val sink = SdkBuffer()
+            chan.read(sink, 5)
+            assertEquals(5, chan.availableForWrite)
+            assertEquals(5L, chan.tryWrite(SdkBuffer().apply { write(ByteArray(5)) }))
+        }
+    }
+
+    @Test
+    fun testTryWriteOnClosedChannelThrows() = runTest {
+        val chan = SdkByteChannel(true, maxBufferSize = 8)
+        chan.close()
+        assertFailsWith<ClosedWriteChannelException> {
+            chan.tryWrite(SdkBuffer().apply { write(byteArrayOf(1)) })
+        }
+    }
+
+    @Test
+    fun testTryWriteZeroByteCountIsNoOp() = runTest {
+        SdkByteChannel(true, maxBufferSize = 8).use { chan ->
+            assertEquals(0L, chan.tryWrite(SdkBuffer(), 0))
+            assertEquals(0L, chan.totalBytesWritten)
+        }
+    }
+
+    @Test
+    fun testTryWriteUnsupportedOnNonDefaultImpl() = runTest {
+        // tryWrite is only supported on the concrete RealSdkByteChannel; delegating wrappers hit the error path.
+        val chan = JobChannel()
+        assertFailsWith<IllegalStateException> {
+            chan.tryWrite(SdkBuffer().apply { write(byteArrayOf(1)) })
+        }
     }
 
     @Test

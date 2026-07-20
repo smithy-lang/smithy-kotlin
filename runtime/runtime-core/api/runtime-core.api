@@ -1059,6 +1059,8 @@ public final class aws/smithy/kotlin/runtime/io/SdkByteChannelKt {
 	public static synthetic fun SdkByteChannel$default (ZIILjava/lang/Object;)Laws/smithy/kotlin/runtime/io/SdkByteChannel;
 	public static final fun SdkByteReadChannel ([BII)Laws/smithy/kotlin/runtime/io/SdkByteReadChannel;
 	public static synthetic fun SdkByteReadChannel$default ([BIIILjava/lang/Object;)Laws/smithy/kotlin/runtime/io/SdkByteReadChannel;
+	public static final fun tryWrite (Laws/smithy/kotlin/runtime/io/SdkByteChannel;Laws/smithy/kotlin/runtime/io/SdkBuffer;J)J
+	public static synthetic fun tryWrite$default (Laws/smithy/kotlin/runtime/io/SdkByteChannel;Laws/smithy/kotlin/runtime/io/SdkBuffer;JILjava/lang/Object;)J
 }
 
 public abstract interface class aws/smithy/kotlin/runtime/io/SdkByteReadChannel {
