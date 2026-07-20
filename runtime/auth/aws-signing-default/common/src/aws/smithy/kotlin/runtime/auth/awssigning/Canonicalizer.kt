@@ -217,6 +217,9 @@ internal fun Url.Builder.canonicalPath(config: AwsSigningConfig): String {
     val srcPath = path
     val srcSegments = srcPath.segments
 
+    // Fast path: "/" has no segments to encode or normalize
+    if (srcSegments.isEmpty()) return "/"
+
     val mapper: (Encodable) -> Encodable = when (config.useDoubleUriEncode) {
         true -> { existing ->
             // This is _double_ encoding so treat the existing encoded output as "decoded" for the purposes re-encoding
@@ -239,20 +242,24 @@ internal fun Url.Builder.canonicalPath(config: AwsSigningConfig): String {
  * Canonicalizes the query parameters from this [Url.Builder].
  * @return The canonicalized query parameters
  */
-internal fun Url.Builder.canonicalQueryParams(): String = QueryParameters {
-    parameters
-        .entries
-        .associate { (key, values) ->
-            val reencodedKey = key.reencode(PercentEncoding.SigV4)
-            val reencodedValues = values.map { it.reencode(PercentEncoding.SigV4) }
-            reencodedKey to reencodedValues
-        }
-        .entries
-        .sortedWith(compareBy { it.key.encoded }) // Sort keys
-        .associateTo(this) { (key, values) ->
-            key to values.sortedWith(compareBy { it.encoded }).toMutableList() // Sort values
-        }
-}.toString().removePrefix("?")
+internal fun Url.Builder.canonicalQueryParams(): String {
+    if (parameters.isEmpty()) return ""
+
+    return QueryParameters {
+        parameters
+            .entries
+            .associate { (key, values) ->
+                val reencodedKey = key.reencode(PercentEncoding.SigV4)
+                val reencodedValues = values.map { it.reencode(PercentEncoding.SigV4) }
+                reencodedKey to reencodedValues
+            }
+            .entries
+            .sortedWith(compareBy { it.key.encoded }) // Sort keys
+            .associateTo(this) { (key, values) ->
+                key to values.sortedWith(compareBy { it.encoded }).toMutableList() // Sort values
+            }
+    }.toString().removePrefix("?")
+}
 
 private fun Pair<String, List<String>>.canonicalLine(): String {
     val valuesString = second.joinToString(separator = ",") { it.trimAll() }
