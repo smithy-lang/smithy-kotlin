@@ -77,9 +77,9 @@ public sealed class HeaderValue {
     public data class Timestamp(val value: Instant) : HeaderValue()
 
     @InternalApi
-    @Suppress("DEPRECATION")
     @Deprecated("Use Uuid4 instead", ReplaceWith("Uuid4"))
     @PlannedRemoval(1, 8)
+    @Suppress("DEPRECATION")
     public data class Uuid(val value: aws.smithy.kotlin.runtime.util.Uuid) : HeaderValue()
 
     @InternalApi
@@ -202,10 +202,10 @@ public fun HeaderValue.expectByteArray(): ByteArray = checkNotNull((this as? Hea
 @InternalApi
 public fun HeaderValue.expectTimestamp(): Instant = checkNotNull((this as? HeaderValue.Timestamp)?.value) { "expected HeaderValue.Bool, found: $this" }
 
-@OptIn(PlannedRemoval::class)
 @InternalApi
-@Suppress("DEPRECATION")
 @Deprecated("Use expectUuid4 instead", ReplaceWith("expectUuid4()"))
+@PlannedRemoval(1, 8)
+@Suppress("DEPRECATION")
 public fun HeaderValue.expectUuid(): Uuid = checkNotNull((this as? HeaderValue.Uuid)?.value) { "expected HeaderValue.Uuid, found: $this" }
 
 @InternalApi
