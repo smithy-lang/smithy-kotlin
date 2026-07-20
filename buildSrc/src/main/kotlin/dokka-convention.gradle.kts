@@ -2,13 +2,13 @@
  * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
  * SPDX-License-Identifier: Apache-2.0
  */
-// https://github.com/gradle/gradle/issues/15383
 import org.gradle.accessors.dm.LibrariesForLibs
 
 plugins {
     id("org.jetbrains.dokka")
 }
 
+// https://github.com/gradle/gradle/issues/15383
 val libs = rootProject.the<LibrariesForLibs>()
 
 dokka {
