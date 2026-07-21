@@ -88,8 +88,8 @@ public sealed class HeaderValue {
     /**
      * Encode a header value to [dest]
      */
+
     @OptIn(PlannedRemoval::class)
-    @Suppress("DEPRECATION")
     public fun encode(dest: SdkBufferedSink): Unit = when (this) {
         is Bool -> {
             val type = if (value) HeaderType.TRUE else HeaderType.FALSE
@@ -128,7 +128,10 @@ public sealed class HeaderValue {
             dest.writeHeader(HeaderType.TIMESTAMP)
             dest.writeLong(value.epochMilliseconds)
         }
-        is Uuid -> {
+        is
+        @Suppress("DEPRECATION")
+        Uuid,
+        -> {
             dest.writeHeader(HeaderType.UUID)
             dest.writeLong(value.high)
             dest.writeLong(value.low)
