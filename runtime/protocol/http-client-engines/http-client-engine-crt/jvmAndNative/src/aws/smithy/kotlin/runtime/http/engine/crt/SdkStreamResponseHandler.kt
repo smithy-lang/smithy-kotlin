@@ -50,9 +50,7 @@ internal class SdkStreamResponseHandler(
 
     // Body bytes are written directly into this channel from onResponseBody (a non-suspending CRT callback).
     // The channel buffer is sized to the CRT flow-control window, so no more than [windowSizeBytes] un-acked bytes
-    // are ever in-flight and the synchronous write always has room. The CRT window is replenished on the read side
-    // (see WindowManagedReadChannel) as the downstream consumer drains bytes, preserving consumption-driven
-    // backpressure without an intermediate writer coroutine.
+    // are ever in-flight and the synchronous write always has room.
     private val bodyChan = SdkByteChannel(true, windowSizeBytes)
 
     private val lock = reentrantLock() // protects crtStream and cancelled state
