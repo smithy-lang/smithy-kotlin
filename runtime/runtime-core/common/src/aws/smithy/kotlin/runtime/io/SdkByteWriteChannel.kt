@@ -54,22 +54,18 @@ public interface SdkByteWriteChannel : Closeable {
     public suspend fun write(source: SdkBuffer, byteCount: Long = source.size)
 
     /**
-     * Attempts to append up to [byteCount] bytes from [source] to this channel **without suspending**, writing only
-     * as many bytes as currently fit within [availableForWrite]. Returns the number of bytes actually written, which
-     * may be less than [byteCount] (including `0` when the buffer is full).
+     * Appends up to [byteCount] bytes from [source] **without suspending**, writing only as many as currently fit
+     * within [availableForWrite]. Returns the number of bytes actually written, which may be less than [byteCount]
+     * (including `0` when the buffer is full).
      *
-     * This is intended for producers that enforce their own external backpressure (for example a native reader
-     * bounded by a flow-control window no larger than this channel's buffer) and therefore do not need the suspending
-     * semantics of [write]. Like [write], this is a single-writer operation and must not be invoked concurrently with
-     * [write] or itself; doing so may throw [IllegalStateException] ("Write operation already in progress").
-     * Throws [ClosedWriteChannelException] if this channel was closed successfully, or the close cause if it was
-     * closed with one.
+     * Intended for producers that enforce their own external backpressure and so don't need the suspending semantics
+     * of [write]. Like [write], this is single-writer: concurrent use with [write] or itself may throw
+     * [IllegalStateException]. Throws [ClosedWriteChannelException] if the channel was closed successfully, or the
+     * close cause if it was closed with one.
      *
      * The default implementation throws [UnsupportedOperationException]; implementations that can service a
-     * non-suspending write override it. Because it is a regular interface member, delegating wrappers
-     * (e.g. `SdkByteChannel by delegate`) forward it to their delegate automatically.
-     *
-     * This is a low-level flow-control primitive intended for engine internals and is not part of the stable API.
+     * non-suspending write override it (delegating wrappers forward it automatically). Low-level flow-control
+     * primitive for engine internals; not part of the stable API.
      *
      * @param source the buffer data will be read from and written to this channel
      * @param byteCount the number of bytes to read from source
