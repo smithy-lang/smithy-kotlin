@@ -120,18 +120,16 @@ internal class RealSdkByteChannel(
         ensureNotClosed()
         if (byteCount == 0L) return 0L
 
-        check(_writeInProgress.compareAndSet(false, true)) { "Write operation already in progress" }
-        try {
+        return writing {
             val wc = minOf(availableForWrite.toLong(), byteCount)
-            if (wc == 0L) return 0L
 
-            synchronized(lock) {
-                buffer.write(source, wc)
+            if (wc > 0L) {
+                synchronized(lock) {
+                    buffer.write(source, wc)
+                }
             }
-            afterWrite(wc.toInt())
-            return wc
-        } finally {
-            _writeInProgress.compareAndSet(true, false)
+
+            wc
         }
     }
 
@@ -160,10 +158,11 @@ internal class RealSdkByteChannel(
         }
     }
 
-    private inline fun writing(block: () -> Long) = try {
+    private inline fun writing(block: () -> Long): Long = try {
         check(_writeInProgress.compareAndSet(false, true)) { "Write operation already in progress" }
         val wc = block()
         afterWrite(wc.toInt())
+        wc
     } finally {
         _writeInProgress.compareAndSet(true, false)
     }

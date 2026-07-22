@@ -5,8 +5,6 @@
 
 package aws.smithy.kotlin.runtime.io
 
-import aws.smithy.kotlin.runtime.InternalApi
-
 /**
  * A channel for writing a sequence of bytes asynchronously. This is a **single writer channel**.
  */
@@ -71,7 +69,6 @@ public interface SdkByteWriteChannel : Closeable {
      * @param byteCount the number of bytes to read from source
      * @return the number of bytes actually written
      */
-    @InternalApi
     public fun tryWrite(source: SdkBuffer, byteCount: Long = source.size): Long = throw UnsupportedOperationException("${this::class.simpleName} does not support non-suspending writes")
 
     /**
