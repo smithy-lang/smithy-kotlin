@@ -8,6 +8,7 @@ import java.io.File
 import java.nio.file.Files
 import java.nio.file.attribute.PosixFilePermissions
 import kotlin.test.*
+import kotlin.uuid.Uuid
 
 class WritePermissionsJVMTest {
 
