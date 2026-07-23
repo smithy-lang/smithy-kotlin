@@ -1,6 +1,7 @@
 [versions]
 kotlin-version = "2.4.0"
 dokka-version = "2.2.0"
+jackson-bom-version = "2.21.5"
 
 aws-kotlin-repo-tools-version = "0.6.3"
 
@@ -23,7 +24,7 @@ publish-plugin-version = "2.1.1"
 smithy-gradle-plugin-version = "1.4.0"
 
 # codegen
-smithy-version = "1.72.0"
+smithy-version = "1.72.1"
 
 # testing
 junit-version = "5.14.4"
@@ -37,6 +38,7 @@ kaml-version = "0.55.0"
 jsoup-version = "1.22.2"
 
 [libraries]
+jackson-bom = { module = "com.fasterxml.jackson:jackson-bom", version.ref = "jackson-bom-version" }
 aws-kotlin-repo-tools-build-support = { module="aws.sdk.kotlin.gradle:build-support", version.ref = "aws-kotlin-repo-tools-version" }
 
 kotlin-gradle-plugin = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "kotlin-version" }
