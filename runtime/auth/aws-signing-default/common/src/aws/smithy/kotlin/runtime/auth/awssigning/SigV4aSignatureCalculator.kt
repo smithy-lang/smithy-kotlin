@@ -45,10 +45,9 @@ internal class SigV4aSignatureCalculator(override val sha256Provider: HashSuppli
      * https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_sigv-create-signed-request.html#derive-signing-key-sigv4a for
      * more information on the derivation process.
      */
-    override fun signingKey(config: AwsSigningConfig): ByteArray =
-        privateKeyCache.tryGet(config.credentials) {
-            ExpiringValue(deriveKey(it), Instant.MAX_VALUE)
-        } ?: deriveKey(config.credentials)
+    override fun signingKey(config: AwsSigningConfig): ByteArray = privateKeyCache.tryGet(config.credentials) {
+        ExpiringValue(deriveKey(it), Instant.MAX_VALUE)
+    } ?: deriveKey(config.credentials)
 
     private fun deriveKey(credentials: Credentials): ByteArray {
         var counter: Byte = 1
