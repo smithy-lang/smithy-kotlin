@@ -1,0 +1,6 @@
+{
+  "id": "c5bee5f8-7554-42c5-b695-214c7f5e3c32",
+  "type": "misc",
+  "description": "Reduce CPU and memory overhead of the CRT HTTP engine's response body handling by writing received bytes directly into a window-sized channel, eliminating the intermediate unbounded channel and per-response writer coroutine",
+  "module": "http-client-engine-crt"
+}
