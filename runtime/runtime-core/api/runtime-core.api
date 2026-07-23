@@ -262,6 +262,7 @@ public final class aws/smithy/kotlin/runtime/collections/PeriodicSweepCache : aw
 	public fun get (Ljava/lang/Object;Lkotlin/jvm/functions/Function2;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun getSize ()I
 	public fun invalidate (Ljava/lang/Object;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public final fun tryGet (Ljava/lang/Object;Lkotlin/jvm/functions/Function1;)Ljava/lang/Object;
 }
 
 public final class aws/smithy/kotlin/runtime/collections/StackKt {
