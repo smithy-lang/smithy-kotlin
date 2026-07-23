@@ -20,8 +20,6 @@ public final class aws/smithy/kotlin/runtime/auth/awssigning/AwsChunkedByteReadC
 }
 
 public final class aws/smithy/kotlin/runtime/auth/awssigning/AwsChunkedSource : aws/smithy/kotlin/runtime/io/SdkSource {
-	public fun <init> (Laws/smithy/kotlin/runtime/io/SdkSource;Laws/smithy/kotlin/runtime/auth/awssigning/AwsSigner;Laws/smithy/kotlin/runtime/auth/awssigning/AwsSigningConfig;[BLaws/smithy/kotlin/runtime/http/DeferredHeaders;)V
-	public synthetic fun <init> (Laws/smithy/kotlin/runtime/io/SdkSource;Laws/smithy/kotlin/runtime/auth/awssigning/AwsSigner;Laws/smithy/kotlin/runtime/auth/awssigning/AwsSigningConfig;[BLaws/smithy/kotlin/runtime/http/DeferredHeaders;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public fun <init> (Laws/smithy/kotlin/runtime/io/SdkSource;Laws/smithy/kotlin/runtime/auth/awssigning/AwsSigner;Laws/smithy/kotlin/runtime/auth/awssigning/AwsSigningConfig;[BLaws/smithy/kotlin/runtime/http/DeferredHeaders;Lkotlin/coroutines/CoroutineContext;)V
 	public synthetic fun <init> (Laws/smithy/kotlin/runtime/io/SdkSource;Laws/smithy/kotlin/runtime/auth/awssigning/AwsSigner;Laws/smithy/kotlin/runtime/auth/awssigning/AwsSigningConfig;[BLaws/smithy/kotlin/runtime/http/DeferredHeaders;Lkotlin/coroutines/CoroutineContext;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public fun close ()V
@@ -86,6 +84,8 @@ public final class aws/smithy/kotlin/runtime/auth/awssigning/AwsSigningConfig {
 	public final fun getAlgorithm ()Laws/smithy/kotlin/runtime/auth/awssigning/AwsSigningAlgorithm;
 	public final fun getCredentials ()Laws/smithy/kotlin/runtime/auth/awscredentials/Credentials;
 	public final fun getExpiresAfter-FghU774 ()Lkotlin/time/Duration;
+	public final fun getFormattedSigningDate ()Ljava/lang/String;
+	public final fun getFormattedSigningDateOnly ()Ljava/lang/String;
 	public final fun getHashSpecification ()Laws/smithy/kotlin/runtime/auth/awssigning/HashSpecification;
 	public final fun getLogRequest ()Z
 	public final fun getNormalizeUriPath ()Z
@@ -206,7 +206,6 @@ public final class aws/smithy/kotlin/runtime/auth/awssigning/internal/AwsChunked
 	public static final field CHUNK_SIZE_BYTES I
 	public static final fun getUseAwsChunkedEncoding (Laws/smithy/kotlin/runtime/auth/awssigning/AwsSigningConfig;)Z
 	public static final fun isEligibleForAwsChunkedStreaming (Laws/smithy/kotlin/runtime/http/HttpBody;)Z
-	public static final fun setAwsChunkedBody (Laws/smithy/kotlin/runtime/http/request/HttpRequestBuilder;Laws/smithy/kotlin/runtime/auth/awssigning/AwsSigner;Laws/smithy/kotlin/runtime/auth/awssigning/AwsSigningConfig;[BLaws/smithy/kotlin/runtime/http/DeferredHeaders;)V
 	public static final fun setAwsChunkedBody (Laws/smithy/kotlin/runtime/http/request/HttpRequestBuilder;Laws/smithy/kotlin/runtime/auth/awssigning/AwsSigner;Laws/smithy/kotlin/runtime/auth/awssigning/AwsSigningConfig;[BLaws/smithy/kotlin/runtime/http/DeferredHeaders;Lkotlin/coroutines/CoroutineContext;)V
 	public static final fun setAwsChunkedHeaders (Laws/smithy/kotlin/runtime/http/request/HttpRequestBuilder;)V
 }

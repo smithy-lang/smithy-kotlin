@@ -13,7 +13,6 @@ import aws.smithy.kotlin.runtime.text.encoding.encodeToHex
 import kotlinx.coroutines.*
 import kotlinx.coroutines.test.runTest
 import okio.Buffer
-import org.junit.jupiter.api.Test
 import kotlin.coroutines.EmptyCoroutineContext
 import kotlin.test.*
 import kotlin.time.Duration.Companion.milliseconds

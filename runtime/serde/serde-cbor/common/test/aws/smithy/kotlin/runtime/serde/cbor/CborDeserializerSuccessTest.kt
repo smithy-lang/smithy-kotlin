@@ -12,21 +12,10 @@ import aws.smithy.kotlin.runtime.serde.deserializeList
 import aws.smithy.kotlin.runtime.serde.deserializeMap
 import kotlin.test.*
 
-/**
- * Convert a string representation of a hexadecimal encoded byte sequence to a [ByteArray]
- */
-internal fun String.toByteArray(): ByteArray = this
-    .removePrefix("0x")
-    .replace(Regex("\\s"), "")
-    .padStart(length % 2, '0')
-    .chunked(2)
-    .map { hex -> hex.toUByte(16).toByte() }
-    .toByteArray()
-
 class CborDeserializerSuccessTest {
     @Test
     fun `atomic - undefined`() {
-        val payload = "0xf7".toByteArray()
+        val payload = "f7".hexToByteArray()
 
         val buffer = SdkBuffer().apply { write(payload) }
         val deserializer = CborPrimitiveDeserializer(buffer)
@@ -37,7 +26,7 @@ class CborDeserializerSuccessTest {
 
     @Test
     fun `atomic - float64 - 1dot625`() {
-        val payload = "0xfb3ffa000000000000".toByteArray()
+        val payload = "fb3ffa000000000000".hexToByteArray()
 
         val buffer = SdkBuffer().apply { write(payload) }
         val deserializer = CborPrimitiveDeserializer(buffer)
@@ -48,7 +37,7 @@ class CborDeserializerSuccessTest {
 
     @Test
     fun `atomic - uint - 0 - max`() {
-        val payload = "0x17".toByteArray()
+        val payload = "17".hexToByteArray()
 
         val buffer = SdkBuffer().apply { write(payload) }
         val deserializer = CborPrimitiveDeserializer(buffer)
@@ -59,7 +48,7 @@ class CborDeserializerSuccessTest {
 
     @Test
     fun `atomic - uint - 8 - min`() {
-        val payload = "0x1b0000000000000000".toByteArray()
+        val payload = "1b0000000000000000".hexToByteArray()
 
         val buffer = SdkBuffer().apply { write(payload) }
         val deserializer = CborPrimitiveDeserializer(buffer)
@@ -70,7 +59,7 @@ class CborDeserializerSuccessTest {
 
     @Test
     fun `atomic - uint - 8 - max`() {
-        val payload = "0x1bffffffffffffffff".toByteArray()
+        val payload = "1bffffffffffffffff".hexToByteArray()
 
         val buffer = SdkBuffer().apply { write(payload) }
         assertEquals(ULong.MAX_VALUE, aws.smithy.kotlin.runtime.serde.cbor.encoding.UInt.decode(buffer).value)
@@ -78,7 +67,7 @@ class CborDeserializerSuccessTest {
 
     @Test
     fun `atomic - negint - 8 - min`() {
-        val payload = "0x3b0000000000000000".toByteArray()
+        val payload = "3b0000000000000000".hexToByteArray()
 
         val buffer = SdkBuffer().apply { write(payload) }
         val deserializer = CborPrimitiveDeserializer(buffer)
@@ -89,7 +78,7 @@ class CborDeserializerSuccessTest {
 
     @Test
     fun `atomic - true`() {
-        val payload = "0xf5".toByteArray()
+        val payload = "f5".hexToByteArray()
 
         val buffer = SdkBuffer().apply { write(payload) }
         val deserializer = CborPrimitiveDeserializer(buffer)
@@ -100,7 +89,7 @@ class CborDeserializerSuccessTest {
 
     @Test
     fun `atomic - uint - 4 - min`() {
-        val payload = "0x1a00000000".toByteArray()
+        val payload = "1a00000000".hexToByteArray()
 
         val buffer = SdkBuffer().apply { write(payload) }
         val deserializer = CborPrimitiveDeserializer(buffer)
@@ -111,7 +100,7 @@ class CborDeserializerSuccessTest {
 
     @Test
     fun `atomic - uint - 4 - max`() {
-        val payload = "0x1affffffff".toByteArray()
+        val payload = "1affffffff".hexToByteArray()
 
         val buffer = SdkBuffer().apply { write(payload) }
 
@@ -120,7 +109,7 @@ class CborDeserializerSuccessTest {
 
     @Test
     fun `atomic - negint - 1 - min`() {
-        val payload = "0x3800".toByteArray()
+        val payload = "3800".hexToByteArray()
 
         val buffer = SdkBuffer().apply { write(payload) }
         val deserializer = CborPrimitiveDeserializer(buffer)
@@ -131,7 +120,7 @@ class CborDeserializerSuccessTest {
 
     @Test
     fun `atomic - float16 - subnormal`() {
-        val payload = "0xf90050".toByteArray()
+        val payload = "f90050".hexToByteArray()
 
         val buffer = SdkBuffer().apply { write(payload) }
         val deserializer = CborPrimitiveDeserializer(buffer)
@@ -142,7 +131,7 @@ class CborDeserializerSuccessTest {
 
     @Test
     fun `atomic - float16 - NaN - LSB`() {
-        val payload = "0xf97c01".toByteArray()
+        val payload = "f97c01".hexToByteArray()
 
         val buffer = SdkBuffer().apply { write(payload) }
         val deserializer = CborPrimitiveDeserializer(buffer)
@@ -153,7 +142,7 @@ class CborDeserializerSuccessTest {
 
     @Test
     fun `atomic - uint - 1 - min`() {
-        val payload = "0x1800".toByteArray()
+        val payload = "1800".hexToByteArray()
 
         val buffer = SdkBuffer().apply { write(payload) }
         val deserializer = CborPrimitiveDeserializer(buffer)
@@ -164,7 +153,7 @@ class CborDeserializerSuccessTest {
 
     @Test
     fun `atomic - negint - 0 - min`() {
-        val payload = "0x20".toByteArray()
+        val payload = "20".hexToByteArray()
 
         val buffer = SdkBuffer().apply { write(payload) }
         val deserializer = CborPrimitiveDeserializer(buffer)
@@ -175,7 +164,7 @@ class CborDeserializerSuccessTest {
 
     @Test
     fun `atomic - float16 - -Inf`() {
-        val payload = "0xf9fc00".toByteArray()
+        val payload = "f9fc00".hexToByteArray()
 
         val buffer = SdkBuffer().apply { write(payload) }
         val deserializer = CborPrimitiveDeserializer(buffer)
@@ -186,7 +175,7 @@ class CborDeserializerSuccessTest {
 
     @Test
     fun `atomic - negint - 8 - max`() {
-        val payload = "0x3bfffffffffffffffe".toByteArray()
+        val payload = "3bfffffffffffffffe".hexToByteArray()
         val buffer = SdkBuffer().apply { write(payload) }
         val result = NegInt.decode(buffer).value
         assertEquals(ULong.MAX_VALUE, result)
@@ -194,7 +183,7 @@ class CborDeserializerSuccessTest {
 
     @Test
     fun `atomic - uint - 0 - min`() {
-        val payload = "0x00".toByteArray()
+        val payload = "00".hexToByteArray()
 
         val buffer = SdkBuffer().apply { write(payload) }
         val deserializer = CborPrimitiveDeserializer(buffer)
@@ -205,7 +194,7 @@ class CborDeserializerSuccessTest {
 
     @Test
     fun `atomic - uint - 1 - max`() {
-        val payload = "0x18ff".toByteArray()
+        val payload = "18ff".hexToByteArray()
 
         val buffer = SdkBuffer().apply { write(payload) }
         assertEquals(255u, aws.smithy.kotlin.runtime.serde.cbor.encoding.UInt.decode(buffer).value)
@@ -213,7 +202,7 @@ class CborDeserializerSuccessTest {
 
     @Test
     fun `atomic - uint - 2 - min`() {
-        val payload = "0x190000".toByteArray()
+        val payload = "190000".hexToByteArray()
 
         val buffer = SdkBuffer().apply { write(payload) }
         val deserializer = CborPrimitiveDeserializer(buffer)
@@ -224,7 +213,7 @@ class CborDeserializerSuccessTest {
 
     @Test
     fun `atomic - negint - 1 - max`() {
-        val payload = "0x38ff".toByteArray()
+        val payload = "38ff".hexToByteArray()
 
         val buffer = SdkBuffer().apply { write(payload) }
         val deserializer = CborPrimitiveDeserializer(buffer)
@@ -235,7 +224,7 @@ class CborDeserializerSuccessTest {
 
     @Test
     fun `atomic - negint - 2 - min`() {
-        val payload = "0x390000".toByteArray()
+        val payload = "390000".hexToByteArray()
 
         val buffer = SdkBuffer().apply { write(payload) }
         val deserializer = CborPrimitiveDeserializer(buffer)
@@ -246,7 +235,7 @@ class CborDeserializerSuccessTest {
 
     @Test
     fun `atomic - float64 - +Inf`() {
-        val payload = "0xfb7ff0000000000000".toByteArray()
+        val payload = "fb7ff0000000000000".hexToByteArray()
 
         val buffer = SdkBuffer().apply { write(payload) }
         val deserializer = CborPrimitiveDeserializer(buffer)
@@ -257,7 +246,7 @@ class CborDeserializerSuccessTest {
 
     @Test
     fun `atomic - negint - 4 - min`() {
-        val payload = "0x3a00000000".toByteArray()
+        val payload = "3a00000000".hexToByteArray()
 
         val buffer = SdkBuffer().apply { write(payload) }
         val deserializer = CborPrimitiveDeserializer(buffer)
@@ -268,7 +257,7 @@ class CborDeserializerSuccessTest {
 
     @Test
     fun `atomic - negint - 4 - max`() {
-        val payload = "0x3affffffff".toByteArray()
+        val payload = "3affffffff".hexToByteArray()
 
         val buffer = SdkBuffer().apply { write(payload) }
         val deserializer = CborPrimitiveDeserializer(buffer)
@@ -280,7 +269,7 @@ class CborDeserializerSuccessTest {
 
     @Test
     fun `atomic - float16 - NaN - MSB`() {
-        val payload = "0xf97e00".toByteArray()
+        val payload = "f97e00".hexToByteArray()
 
         val buffer = SdkBuffer().apply { write(payload) }
         val deserializer = CborPrimitiveDeserializer(buffer)
@@ -291,7 +280,7 @@ class CborDeserializerSuccessTest {
 
     @Test
     fun `atomic - float32 - +Inf`() {
-        val payload = "0xfa7f800000".toByteArray()
+        val payload = "fa7f800000".hexToByteArray()
 
         val buffer = SdkBuffer().apply { write(payload) }
         val deserializer = CborPrimitiveDeserializer(buffer)
@@ -302,7 +291,7 @@ class CborDeserializerSuccessTest {
 
     @Test
     fun `atomic - uint - 2 - max`() {
-        val payload = "0x19ffff".toByteArray()
+        val payload = "19ffff".hexToByteArray()
 
         val buffer = SdkBuffer().apply { write(payload) }
         assertEquals(UShort.MAX_VALUE, aws.smithy.kotlin.runtime.serde.cbor.encoding.UInt.decode(buffer).value.toUShort())
@@ -310,7 +299,7 @@ class CborDeserializerSuccessTest {
 
     @Test
     fun `atomic - negint - 2 - max`() {
-        val payload = "0x39ffff".toByteArray()
+        val payload = "39ffff".hexToByteArray()
         val buffer = SdkBuffer().apply { write(payload) }
         val result = NegInt.decode(buffer).value
         assertEquals(65536u, result)
@@ -318,7 +307,7 @@ class CborDeserializerSuccessTest {
 
     @Test
     fun `atomic - false`() {
-        val payload = "0xf4".toByteArray()
+        val payload = "f4".hexToByteArray()
 
         val buffer = SdkBuffer().apply { write(payload) }
         val deserializer = CborPrimitiveDeserializer(buffer)
@@ -329,7 +318,7 @@ class CborDeserializerSuccessTest {
 
     @Test
     fun `atomic - null`() {
-        val payload = "0xf6".toByteArray()
+        val payload = "f6".hexToByteArray()
 
         val buffer = SdkBuffer().apply { write(payload) }
         val deserializer = CborPrimitiveDeserializer(buffer)
@@ -340,7 +329,7 @@ class CborDeserializerSuccessTest {
 
     @Test
     fun `atomic - negint - 0 - max`() {
-        val payload = "0x37".toByteArray()
+        val payload = "37".hexToByteArray()
 
         val buffer = SdkBuffer().apply { write(payload) }
         val deserializer = CborPrimitiveDeserializer(buffer)
@@ -351,7 +340,7 @@ class CborDeserializerSuccessTest {
 
     @Test
     fun `atomic - float16 - +Inf`() {
-        val payload = "0xf97c00".toByteArray()
+        val payload = "f97c00".hexToByteArray()
 
         val buffer = SdkBuffer().apply { write(payload) }
         val deserializer = CborPrimitiveDeserializer(buffer)
@@ -362,7 +351,7 @@ class CborDeserializerSuccessTest {
 
     @Test
     fun `atomic - float32 - 1dot625`() {
-        val payload = "0xfa3fd00000".toByteArray()
+        val payload = "fa3fd00000".hexToByteArray()
 
         val buffer = SdkBuffer().apply { write(payload) }
         val deserializer = CborPrimitiveDeserializer(buffer)
@@ -373,7 +362,7 @@ class CborDeserializerSuccessTest {
 
     @Test
     fun `definite slice - len = 0`() {
-        val payload = "0x40".toByteArray()
+        val payload = "40".hexToByteArray()
 
         val buffer = SdkBuffer().apply { write(payload) }
         val deserializer = CborPrimitiveDeserializer(buffer)
@@ -384,7 +373,7 @@ class CborDeserializerSuccessTest {
 
     @Test
     fun `definite slice - len greater than 0`() {
-        val payload = "0x43666f6f".toByteArray()
+        val payload = "43666f6f".hexToByteArray()
 
         val buffer = SdkBuffer().apply { write(payload) }
         val deserializer = CborPrimitiveDeserializer(buffer)
@@ -400,7 +389,7 @@ class CborDeserializerSuccessTest {
 
     @Test
     fun `definite string - len = 0`() {
-        val payload = "0x60".toByteArray()
+        val payload = "60".hexToByteArray()
 
         val buffer = SdkBuffer().apply { write(payload) }
         val deserializer = CborPrimitiveDeserializer(buffer)
@@ -411,7 +400,7 @@ class CborDeserializerSuccessTest {
 
     @Test
     fun `definite string - len greater than 0`() {
-        val payload = "0x63666f6f".toByteArray()
+        val payload = "63666f6f".hexToByteArray()
 
         val buffer = SdkBuffer().apply { write(payload) }
         val deserializer = CborPrimitiveDeserializer(buffer)
@@ -422,7 +411,7 @@ class CborDeserializerSuccessTest {
 
     @Test
     fun `indefinite slice - len greater than 0`() {
-        val payload = "0x5f43666f6f40ff".toByteArray()
+        val payload = "5f43666f6f40ff".hexToByteArray()
 
         val buffer = SdkBuffer().apply { write(payload) }
         val deserializer = CborPrimitiveDeserializer(buffer)
@@ -438,7 +427,7 @@ class CborDeserializerSuccessTest {
 
     @Test
     fun `indefinite slice - len greater than 0 - len greater than 0`() {
-        val payload = "0x5f43666f6f43666f6fff".toByteArray()
+        val payload = "5f43666f6f43666f6fff".hexToByteArray()
 
         val buffer = SdkBuffer().apply { write(payload) }
         val deserializer = CborPrimitiveDeserializer(buffer)
@@ -452,7 +441,7 @@ class CborDeserializerSuccessTest {
 
     @Test
     fun `indefinite slice - len = 0`() {
-        val payload = "0x5fff".toByteArray()
+        val payload = "5fff".hexToByteArray()
 
         val buffer = SdkBuffer().apply { write(payload) }
         val deserializer = CborPrimitiveDeserializer(buffer)
@@ -463,7 +452,7 @@ class CborDeserializerSuccessTest {
 
     @Test
     fun `indefinite slice - len = 0 explicit`() {
-        val payload = "0x5f40ff".toByteArray()
+        val payload = "5f40ff".hexToByteArray()
 
         val buffer = SdkBuffer().apply { write(payload) }
         val deserializer = CborPrimitiveDeserializer(buffer)
@@ -474,7 +463,7 @@ class CborDeserializerSuccessTest {
 
     @Test
     fun `indefinite slice - len = 0 - len greater than 0`() {
-        val payload = "0x5f4043666f6fff".toByteArray()
+        val payload = "5f4043666f6fff".hexToByteArray()
 
         val buffer = SdkBuffer().apply { write(payload) }
         val deserializer = CborPrimitiveDeserializer(buffer)
@@ -488,7 +477,7 @@ class CborDeserializerSuccessTest {
 
     @Test
     fun `indefinite string - len = 0`() {
-        val payload = "0x7fff".toByteArray()
+        val payload = "7fff".hexToByteArray()
 
         val buffer = SdkBuffer().apply { write(payload) }
         val deserializer = CborPrimitiveDeserializer(buffer)
@@ -499,7 +488,7 @@ class CborDeserializerSuccessTest {
 
     @Test
     fun `indefinite string - len = 0 - explicit`() {
-        val payload = "0x7f60ff".toByteArray()
+        val payload = "7f60ff".hexToByteArray()
 
         val buffer = SdkBuffer().apply { write(payload) }
         val deserializer = CborPrimitiveDeserializer(buffer)
@@ -510,7 +499,7 @@ class CborDeserializerSuccessTest {
 
     @Test
     fun `indefinite string - len = 0 - len greater than 0`() {
-        val payload = "0x7f6063666f6fff".toByteArray()
+        val payload = "7f6063666f6fff".hexToByteArray()
 
         val buffer = SdkBuffer().apply { write(payload) }
         val deserializer = CborPrimitiveDeserializer(buffer)
@@ -521,7 +510,7 @@ class CborDeserializerSuccessTest {
 
     @Test
     fun `indefinite string - len greater than 0 - len = 0`() {
-        val payload = "0x7f63666f6f60ff".toByteArray()
+        val payload = "7f63666f6f60ff".hexToByteArray()
 
         val buffer = SdkBuffer().apply { write(payload) }
         val deserializer = CborPrimitiveDeserializer(buffer)
@@ -532,7 +521,7 @@ class CborDeserializerSuccessTest {
 
     @Test
     fun `indefinite string - len greater than 0 - len greater than 0`() {
-        val payload = "0x7f63666f6f63666f6fff".toByteArray()
+        val payload = "7f63666f6f63666f6fff".hexToByteArray()
 
         val buffer = SdkBuffer().apply { write(payload) }
         val deserializer = CborPrimitiveDeserializer(buffer)
@@ -543,7 +532,7 @@ class CborDeserializerSuccessTest {
 
     @Test
     fun `list of one uint - 1 - max`() {
-        val payload = "0x8118ff".toByteArray()
+        val payload = "8118ff".hexToByteArray()
 
         val deserializer = CborDeserializer(payload)
         val actual = deserializer.deserializeList(SdkFieldDescriptor(SerialKind.List)) {
@@ -560,7 +549,7 @@ class CborDeserializerSuccessTest {
 
     @Test
     fun `list of one uint - 8 - min`() {
-        val payload = "0x811b0000000000000000".toByteArray()
+        val payload = "811b0000000000000000".hexToByteArray()
 
         val deserializer = CborDeserializer(payload)
         val actual = deserializer.deserializeList(SdkFieldDescriptor(SerialKind.List)) {
@@ -577,7 +566,7 @@ class CborDeserializerSuccessTest {
 
     @Test
     fun `indefinite list of uint - 1 - min`() {
-        val payload = "0x9f1800ff".toByteArray()
+        val payload = "9f1800ff".hexToByteArray()
 
         val deserializer = CborDeserializer(payload)
         val actual = deserializer.deserializeList(SdkFieldDescriptor(SerialKind.List)) {
@@ -594,7 +583,7 @@ class CborDeserializerSuccessTest {
 
     @Test
     fun `indefinite list of uint - 2 - max`() {
-        val payload = "0x9f19ffffff".toByteArray()
+        val payload = "9f19ffffff".hexToByteArray()
 
         val deserializer = CborDeserializer(payload)
         val actual = deserializer.deserializeList(SdkFieldDescriptor(SerialKind.List)) {
@@ -611,7 +600,7 @@ class CborDeserializerSuccessTest {
 
     @Test
     fun `indefinite list of negint - 2 - min`() {
-        val payload = "0x9f390000ff".toByteArray()
+        val payload = "9f390000ff".hexToByteArray()
 
         val deserializer = CborDeserializer(payload)
         val actual = deserializer.deserializeList(SdkFieldDescriptor(SerialKind.List)) {
@@ -628,7 +617,7 @@ class CborDeserializerSuccessTest {
 
     @Test
     fun `list of uint - 4 - max`() {
-        val payload = "0x811affffffff".toByteArray()
+        val payload = "811affffffff".hexToByteArray()
 
         val deserializer = CborDeserializer(payload)
         val actual = deserializer.deserializeList(SdkFieldDescriptor(SerialKind.List)) {
@@ -645,7 +634,7 @@ class CborDeserializerSuccessTest {
 
     @Test
     fun `indefinite list of uint - 8 - min`() {
-        val payload = "0x9f1b0000000000000000ff".toByteArray()
+        val payload = "9f1b0000000000000000ff".hexToByteArray()
 
         val deserializer = CborDeserializer(payload)
         val actual = deserializer.deserializeList(SdkFieldDescriptor(SerialKind.List)) {
@@ -662,7 +651,7 @@ class CborDeserializerSuccessTest {
 
     @Test
     fun `indefinite list of negint - 2 - max`() {
-        val payload = "0x9f39ffffff".toByteArray()
+        val payload = "9f39ffffff".hexToByteArray()
 
         val deserializer = CborDeserializer(payload)
         val actual = deserializer.deserializeList(SdkFieldDescriptor(SerialKind.List)) {
@@ -679,7 +668,7 @@ class CborDeserializerSuccessTest {
 
     @Test
     fun `indefinite list of float16 - NaN - LSB`() {
-        val payload = "0x9ff97c01ff".toByteArray()
+        val payload = "9ff97c01ff".hexToByteArray()
 
         val deserializer = CborDeserializer(payload)
         val actual = deserializer.deserializeList(SdkFieldDescriptor(SerialKind.List)) {
@@ -696,7 +685,7 @@ class CborDeserializerSuccessTest {
 
     @Test
     fun `list of negint - 1 - max`() {
-        val payload = "0x8138ff".toByteArray()
+        val payload = "8138ff".hexToByteArray()
 
         val deserializer = CborDeserializer(payload)
         val actual = deserializer.deserializeList(SdkFieldDescriptor(SerialKind.List)) {
@@ -713,7 +702,7 @@ class CborDeserializerSuccessTest {
 
     @Test
     fun `list of negint - 2 - min`() {
-        val payload = "0x81390000".toByteArray()
+        val payload = "81390000".hexToByteArray()
 
         val deserializer = CborDeserializer(payload)
         val actual = deserializer.deserializeList(SdkFieldDescriptor(SerialKind.List)) {
@@ -730,7 +719,7 @@ class CborDeserializerSuccessTest {
 
     @Test
     fun `list of null`() {
-        val payload = "0x81f6".toByteArray()
+        val payload = "81f6".hexToByteArray()
 
         val deserializer = CborDeserializer(payload)
         deserializer.deserializeList(SdkFieldDescriptor(SerialKind.List)) {
@@ -743,7 +732,7 @@ class CborDeserializerSuccessTest {
 
     @Test
     fun `list of float16 -Inf`() {
-        val payload = "0x81f9fc00".toByteArray()
+        val payload = "81f9fc00".hexToByteArray()
 
         val deserializer = CborDeserializer(payload)
         val actual = deserializer.deserializeList(SdkFieldDescriptor(SerialKind.List)) {
@@ -760,7 +749,7 @@ class CborDeserializerSuccessTest {
 
     @Test
     fun `indefinite list of uint - 4 - min`() {
-        val payload = "0x9f1a00000000ff".toByteArray()
+        val payload = "9f1a00000000ff".hexToByteArray()
 
         val deserializer = CborDeserializer(payload)
         val actual = deserializer.deserializeList(SdkFieldDescriptor(SerialKind.List)) {
@@ -777,7 +766,7 @@ class CborDeserializerSuccessTest {
 
     @Test
     fun `list of uint - 1 - min`() {
-        val payload = "0x811800".toByteArray()
+        val payload = "811800".hexToByteArray()
 
         val deserializer = CborDeserializer(payload)
         val actual = deserializer.deserializeList(SdkFieldDescriptor(SerialKind.List)) {
@@ -794,7 +783,7 @@ class CborDeserializerSuccessTest {
 
     @Test
     fun `indefinite list of uint - 0 - max`() {
-        val payload = "0x9f17ff".toByteArray()
+        val payload = "9f17ff".hexToByteArray()
 
         val deserializer = CborDeserializer(payload)
         val actual = deserializer.deserializeList(SdkFieldDescriptor(SerialKind.List)) {
@@ -811,7 +800,7 @@ class CborDeserializerSuccessTest {
 
     @Test
     fun `indefinite list of negint - 0 - min`() {
-        val payload = "0x9f20ff".toByteArray()
+        val payload = "9f20ff".hexToByteArray()
 
         val deserializer = CborDeserializer(payload)
         val actual = deserializer.deserializeList(SdkFieldDescriptor(SerialKind.List)) {
@@ -828,7 +817,7 @@ class CborDeserializerSuccessTest {
 
     @Test
     fun `indefinite list of negint - 1 - max`() {
-        val payload = "0x9f38ffff".toByteArray()
+        val payload = "9f38ffff".hexToByteArray()
 
         val deserializer = CborDeserializer(payload)
         val actual = deserializer.deserializeList(SdkFieldDescriptor(SerialKind.List)) {
@@ -845,7 +834,7 @@ class CborDeserializerSuccessTest {
 
     @Test
     fun `indefinite list of null`() {
-        val payload = "0x9ff6ff".toByteArray()
+        val payload = "9ff6ff".hexToByteArray()
 
         val deserializer = CborDeserializer(payload)
         deserializer.deserializeList(SdkFieldDescriptor(SerialKind.List)) {
@@ -858,7 +847,7 @@ class CborDeserializerSuccessTest {
 
     @Test
     fun `indefinite list of uint - 1 - max`() {
-        val payload = "0x9f18ffff".toByteArray()
+        val payload = "9f18ffff".hexToByteArray()
 
         val deserializer = CborDeserializer(payload)
         val actual = deserializer.deserializeList(SdkFieldDescriptor(SerialKind.List)) {
@@ -875,7 +864,7 @@ class CborDeserializerSuccessTest {
 
     @Test
     fun `indefinite list of uint - 4 - max`() {
-        val payload = "0x9f1affffffffff".toByteArray()
+        val payload = "9f1affffffffff".hexToByteArray()
 
         val deserializer = CborDeserializer(payload)
         val actual = deserializer.deserializeList(SdkFieldDescriptor(SerialKind.List)) {
@@ -892,7 +881,7 @@ class CborDeserializerSuccessTest {
 
     @Test
     fun `indefinite list of _ uint - 8 - max`() {
-        val payload = "0x9f1bffffffffffffffffff".toByteArray()
+        val payload = "9f1bffffffffffffffffff".hexToByteArray()
 
         val deserializer = CborDeserializer(payload)
         val actual = deserializer.deserializeList(SdkFieldDescriptor(SerialKind.List)) {
@@ -906,7 +895,7 @@ class CborDeserializerSuccessTest {
 
         assertEquals(1, actual.size)
 
-        val remainingBuffer = "0x1bffffffffffffffff".toByteArray()
+        val remainingBuffer = "1bffffffffffffffff".hexToByteArray()
         val buffer = SdkBuffer().apply { write(remainingBuffer) }
         val result = aws.smithy.kotlin.runtime.serde.cbor.encoding.UInt.decode(buffer).value
         assertEquals(ULong.MAX_VALUE, result)
@@ -914,7 +903,7 @@ class CborDeserializerSuccessTest {
 
     @Test
     fun `indefinite list of boolean true`() {
-        val payload = "0x9ff5ff".toByteArray()
+        val payload = "9ff5ff".hexToByteArray()
 
         val deserializer = CborDeserializer(payload)
         val actual = deserializer.deserializeList(SdkFieldDescriptor(SerialKind.List)) {
@@ -931,7 +920,7 @@ class CborDeserializerSuccessTest {
 
     @Test
     fun `indefinite list of undefined`() {
-        val payload = "0x9ff7ff".toByteArray()
+        val payload = "9ff7ff".hexToByteArray()
 
         val deserializer = CborDeserializer(payload)
         val actual = deserializer.deserializeList(SdkFieldDescriptor(SerialKind.List)) {
@@ -948,7 +937,7 @@ class CborDeserializerSuccessTest {
 
     @Test
     fun `list of uint - 0 - max`() {
-        val payload = "0x8117".toByteArray()
+        val payload = "8117".hexToByteArray()
 
         val deserializer = CborDeserializer(payload)
         val actual = deserializer.deserializeList(SdkFieldDescriptor(SerialKind.List)) {
@@ -965,7 +954,7 @@ class CborDeserializerSuccessTest {
 
     @Test
     fun `list of uint - 8 - max`() {
-        val payload = "0x811bffffffffffffffff".toByteArray()
+        val payload = "811bffffffffffffffff".hexToByteArray()
 
         val deserializer = CborDeserializer(payload)
         val actual = deserializer.deserializeList(SdkFieldDescriptor(SerialKind.List)) {
@@ -977,7 +966,7 @@ class CborDeserializerSuccessTest {
         }
         assertEquals(1, actual.size)
 
-        val remainingBuffer = "0x1bffffffffffffffff".toByteArray()
+        val remainingBuffer = "1bffffffffffffffff".hexToByteArray()
         val buffer = SdkBuffer().apply { write(remainingBuffer) }
         val result = aws.smithy.kotlin.runtime.serde.cbor.encoding.UInt.decode(buffer).value
         assertEquals(ULong.MAX_VALUE, result)
@@ -985,7 +974,7 @@ class CborDeserializerSuccessTest {
 
     @Test
     fun `list of negint - 0 - min`() {
-        val payload = "0x8120".toByteArray()
+        val payload = "8120".hexToByteArray()
 
         val deserializer = CborDeserializer(payload)
         val actual = deserializer.deserializeList(SdkFieldDescriptor(SerialKind.List)) {
@@ -1002,7 +991,7 @@ class CborDeserializerSuccessTest {
 
     @Test
     fun `list of negint - 0 - max`() {
-        val payload = "0x8137".toByteArray()
+        val payload = "8137".hexToByteArray()
 
         val deserializer = CborDeserializer(payload)
         val actual = deserializer.deserializeList(SdkFieldDescriptor(SerialKind.List)) {
@@ -1019,7 +1008,7 @@ class CborDeserializerSuccessTest {
 
     @Test
     fun `list of negint - 4 - min`() {
-        val payload = "0x813a00000000".toByteArray()
+        val payload = "813a00000000".hexToByteArray()
 
         val deserializer = CborDeserializer(payload)
         val actual = deserializer.deserializeList(SdkFieldDescriptor(SerialKind.List)) {
@@ -1036,7 +1025,7 @@ class CborDeserializerSuccessTest {
 
     @Test
     fun `list of boolean true`() {
-        val payload = "0x81f5".toByteArray()
+        val payload = "81f5".hexToByteArray()
 
         val deserializer = CborDeserializer(payload)
         val actual = deserializer.deserializeList(SdkFieldDescriptor(SerialKind.List)) {
@@ -1053,7 +1042,7 @@ class CborDeserializerSuccessTest {
 
     @Test
     fun `list of float32`() {
-        val payload = "0x81fa7f800000".toByteArray()
+        val payload = "81fa7f800000".hexToByteArray()
 
         val deserializer = CborDeserializer(payload)
         val actual = deserializer.deserializeList(SdkFieldDescriptor(SerialKind.List)) {
@@ -1070,7 +1059,7 @@ class CborDeserializerSuccessTest {
 
     @Test
     fun `list of float64`() {
-        val payload = "0x81fb7ff0000000000000".toByteArray()
+        val payload = "81fb7ff0000000000000".hexToByteArray()
 
         val deserializer = CborDeserializer(payload)
         val actual = deserializer.deserializeList(SdkFieldDescriptor(SerialKind.List)) {
@@ -1087,7 +1076,7 @@ class CborDeserializerSuccessTest {
 
     @Test
     fun `indefinite list of uint - 2 - min`() {
-        val payload = "0x9f190000ff".toByteArray()
+        val payload = "9f190000ff".hexToByteArray()
 
         val deserializer = CborDeserializer(payload)
         val actual = deserializer.deserializeList(SdkFieldDescriptor(SerialKind.List)) {
@@ -1104,7 +1093,7 @@ class CborDeserializerSuccessTest {
 
     @Test
     fun `indefinite list of float16 - NaN - MSB`() {
-        val payload = "0x9ff97e00ff".toByteArray()
+        val payload = "9ff97e00ff".hexToByteArray()
 
         val deserializer = CborDeserializer(payload)
         val actual = deserializer.deserializeList(SdkFieldDescriptor(SerialKind.List)) {
@@ -1121,7 +1110,7 @@ class CborDeserializerSuccessTest {
 
     @Test
     fun `indefinite list of negint - 0 - max`() {
-        val payload = "0x9f37ff".toByteArray()
+        val payload = "9f37ff".hexToByteArray()
 
         val deserializer = CborDeserializer(payload)
         val actual = deserializer.deserializeList(SdkFieldDescriptor(SerialKind.List)) {
@@ -1138,7 +1127,7 @@ class CborDeserializerSuccessTest {
 
     @Test
     fun `indefinite list of negint - 1 - min`() {
-        val payload = "0x9f3800ff".toByteArray()
+        val payload = "9f3800ff".hexToByteArray()
 
         val deserializer = CborDeserializer(payload)
         val actual = deserializer.deserializeList(SdkFieldDescriptor(SerialKind.List)) {
@@ -1155,7 +1144,7 @@ class CborDeserializerSuccessTest {
 
     @Test
     fun `indefinite list of negint - 8 - min`() {
-        val payload = "0x9f3b0000000000000000ff".toByteArray()
+        val payload = "9f3b0000000000000000ff".hexToByteArray()
 
         val deserializer = CborDeserializer(payload)
         val actual = deserializer.deserializeList(SdkFieldDescriptor(SerialKind.List)) {
@@ -1172,7 +1161,7 @@ class CborDeserializerSuccessTest {
 
     @Test
     fun `indefinite list of negint - 8 - max`() {
-        val payload = "0x9f3bfffffffffffffffeff".toByteArray()
+        val payload = "9f3bfffffffffffffffeff".hexToByteArray()
 
         val deserializer = CborDeserializer(payload)
         val actual = deserializer.deserializeList(SdkFieldDescriptor(SerialKind.List)) {
@@ -1185,7 +1174,7 @@ class CborDeserializerSuccessTest {
         }
         assertEquals(1, actual.size)
 
-        val remainingBuffer = "0x3bfffffffffffffffe".toByteArray()
+        val remainingBuffer = "3bfffffffffffffffe".hexToByteArray()
         val buffer = SdkBuffer().apply { write(remainingBuffer) }
         val result = NegInt.decode(buffer).value
         assertEquals(ULong.MAX_VALUE, result)
@@ -1193,7 +1182,7 @@ class CborDeserializerSuccessTest {
 
     @Test
     fun `list of boolean false`() {
-        val payload = "0x81f4".toByteArray()
+        val payload = "81f4".hexToByteArray()
 
         val deserializer = CborDeserializer(payload)
         val actual = deserializer.deserializeList(SdkFieldDescriptor(SerialKind.List)) {
@@ -1210,7 +1199,7 @@ class CborDeserializerSuccessTest {
 
     @Test
     fun `indefinite list of uint - 0 - min`() {
-        val payload = "0x9f00ff".toByteArray()
+        val payload = "9f00ff".hexToByteArray()
 
         val deserializer = CborDeserializer(payload)
         val actual = deserializer.deserializeList(SdkFieldDescriptor(SerialKind.List)) {
@@ -1227,7 +1216,7 @@ class CborDeserializerSuccessTest {
 
     @Test
     fun `indefinite list of negint - 4 - min`() {
-        val payload = "0x9f3a00000000ff".toByteArray()
+        val payload = "9f3a00000000ff".hexToByteArray()
 
         val deserializer = CborDeserializer(payload)
         val actual = deserializer.deserializeList(SdkFieldDescriptor(SerialKind.List)) {
@@ -1244,7 +1233,7 @@ class CborDeserializerSuccessTest {
 
     @Test
     fun `indefinite list of negint - 4 - max`() {
-        val payload = "0x9f3affffffffff".toByteArray()
+        val payload = "9f3affffffffff".hexToByteArray()
 
         val deserializer = CborDeserializer(payload)
         val actual = deserializer.deserializeList(SdkFieldDescriptor(SerialKind.List)) {
@@ -1261,7 +1250,7 @@ class CborDeserializerSuccessTest {
 
     @Test
     fun `indefinite list of float16 - +Inf`() {
-        val payload = "0x9ff97c00ff".toByteArray()
+        val payload = "9ff97c00ff".hexToByteArray()
 
         val deserializer = CborDeserializer(payload)
         val actual = deserializer.deserializeList(SdkFieldDescriptor(SerialKind.List)) {
@@ -1278,7 +1267,7 @@ class CborDeserializerSuccessTest {
 
     @Test
     fun `list of uint - 0 - min`() {
-        val payload = "0x8100".toByteArray()
+        val payload = "8100".hexToByteArray()
 
         val deserializer = CborDeserializer(payload)
         val actual = deserializer.deserializeList(SdkFieldDescriptor(SerialKind.List)) {
@@ -1295,7 +1284,7 @@ class CborDeserializerSuccessTest {
 
     @Test
     fun `list of negint - 1 - min`() {
-        val payload = "0x813800".toByteArray()
+        val payload = "813800".hexToByteArray()
 
         val deserializer = CborDeserializer(payload)
         val actual = deserializer.deserializeList(SdkFieldDescriptor(SerialKind.List)) {
@@ -1312,7 +1301,7 @@ class CborDeserializerSuccessTest {
 
     @Test
     fun `indefinite list of float16 - -Inf`() {
-        val payload = "0x9ff9fc00ff".toByteArray()
+        val payload = "9ff9fc00ff".hexToByteArray()
 
         val deserializer = CborDeserializer(payload)
         val actual = deserializer.deserializeList(SdkFieldDescriptor(SerialKind.List)) {
@@ -1329,7 +1318,7 @@ class CborDeserializerSuccessTest {
 
     @Test
     fun `indefinite list of float32`() {
-        val payload = "0x9ffa7f800000ff".toByteArray()
+        val payload = "9ffa7f800000ff".hexToByteArray()
 
         val deserializer = CborDeserializer(payload)
         val actual = deserializer.deserializeList(SdkFieldDescriptor(SerialKind.List)) {
@@ -1346,7 +1335,7 @@ class CborDeserializerSuccessTest {
 
     @Test
     fun `list of uint - 2 - min`() {
-        val payload = "0x81190000".toByteArray()
+        val payload = "81190000".hexToByteArray()
 
         val deserializer = CborDeserializer(payload)
         val actual = deserializer.deserializeList(SdkFieldDescriptor(SerialKind.List)) {
@@ -1363,7 +1352,7 @@ class CborDeserializerSuccessTest {
 
     @Test
     fun `list of uint - 4 - min`() {
-        val payload = "0x811a00000000".toByteArray()
+        val payload = "811a00000000".hexToByteArray()
 
         val deserializer = CborDeserializer(payload)
         val actual = deserializer.deserializeList(SdkFieldDescriptor(SerialKind.List)) {
@@ -1380,7 +1369,7 @@ class CborDeserializerSuccessTest {
 
     @Test
     fun `list of float16 - +Inf`() {
-        val payload = "0x81f97c00".toByteArray()
+        val payload = "81f97c00".hexToByteArray()
 
         val deserializer = CborDeserializer(payload)
         val actual = deserializer.deserializeList(SdkFieldDescriptor(SerialKind.List)) {
@@ -1397,7 +1386,7 @@ class CborDeserializerSuccessTest {
 
     @Test
     fun `indefinite list of float64`() {
-        val payload = "0x9ffb7ff0000000000000ff".toByteArray()
+        val payload = "9ffb7ff0000000000000ff".hexToByteArray()
 
         val deserializer = CborDeserializer(payload)
         val actual = deserializer.deserializeList(SdkFieldDescriptor(SerialKind.List)) {
@@ -1414,7 +1403,7 @@ class CborDeserializerSuccessTest {
 
     @Test
     fun `list of float16 - NaN - MSB`() {
-        val payload = "0x81f97e00".toByteArray()
+        val payload = "81f97e00".hexToByteArray()
 
         val deserializer = CborDeserializer(payload)
         val actual = deserializer.deserializeList(SdkFieldDescriptor(SerialKind.List)) {
@@ -1431,7 +1420,7 @@ class CborDeserializerSuccessTest {
 
     @Test
     fun `list of float16 - NaN - LSB`() {
-        val payload = "0x81f97c01".toByteArray()
+        val payload = "81f97c01".hexToByteArray()
 
         val deserializer = CborDeserializer(payload)
         val actual = deserializer.deserializeList(SdkFieldDescriptor(SerialKind.List)) {
@@ -1448,7 +1437,7 @@ class CborDeserializerSuccessTest {
 
     @Test
     fun `indefinite list of boolean false`() {
-        val payload = "0x9ff4ff".toByteArray()
+        val payload = "9ff4ff".hexToByteArray()
 
         val deserializer = CborDeserializer(payload)
         val actual = deserializer.deserializeList(SdkFieldDescriptor(SerialKind.List)) {
@@ -1465,7 +1454,7 @@ class CborDeserializerSuccessTest {
 
     @Test
     fun `list of negint - 8 - min`() {
-        val payload = "0x813b0000000000000000".toByteArray()
+        val payload = "813b0000000000000000".hexToByteArray()
 
         val deserializer = CborDeserializer(payload)
         val actual = deserializer.deserializeList(SdkFieldDescriptor(SerialKind.List)) {
@@ -1482,7 +1471,7 @@ class CborDeserializerSuccessTest {
 
     @Test
     fun `list of negint - 8 - max`() {
-        val payload = "0x813bfffffffffffffffe".toByteArray()
+        val payload = "813bfffffffffffffffe".hexToByteArray()
 
         val deserializer = CborDeserializer(payload)
         val actual = deserializer.deserializeList(SdkFieldDescriptor(SerialKind.List)) {
@@ -1495,7 +1484,7 @@ class CborDeserializerSuccessTest {
         }
         assertEquals(1, actual.size)
 
-        val remainingBuffer = "0x3bfffffffffffffffe".toByteArray()
+        val remainingBuffer = "3bfffffffffffffffe".hexToByteArray()
         val buffer = SdkBuffer().apply { write(remainingBuffer) }
         val result = NegInt.decode(buffer).value
         assertEquals(ULong.MAX_VALUE, result)
@@ -1503,7 +1492,7 @@ class CborDeserializerSuccessTest {
 
     @Test
     fun `list of undefined`() {
-        val payload = "0x81f7".toByteArray()
+        val payload = "81f7".hexToByteArray()
 
         val deserializer = CborDeserializer(payload)
         deserializer.deserializeList(SdkFieldDescriptor(SerialKind.List)) {
@@ -1516,7 +1505,7 @@ class CborDeserializerSuccessTest {
 
     @Test
     fun `list of uint - 2 - max`() {
-        val payload = "0x8119ffff".toByteArray()
+        val payload = "8119ffff".hexToByteArray()
 
         val deserializer = CborDeserializer(payload)
         val actual = deserializer.deserializeList(SdkFieldDescriptor(SerialKind.List)) {
@@ -1533,7 +1522,7 @@ class CborDeserializerSuccessTest {
 
     @Test
     fun `list of negint - 2 - max`() {
-        val payload = "0x8139ffff".toByteArray()
+        val payload = "8139ffff".hexToByteArray()
 
         val deserializer = CborDeserializer(payload)
         val actual = deserializer.deserializeList(SdkFieldDescriptor(SerialKind.List)) {
@@ -1550,7 +1539,7 @@ class CborDeserializerSuccessTest {
 
     @Test
     fun `list of negint - 4 - max`() {
-        val payload = "0x813affffffff".toByteArray()
+        val payload = "813affffffff".hexToByteArray()
 
         val deserializer = CborDeserializer(payload)
         val actual = deserializer.deserializeList(SdkFieldDescriptor(SerialKind.List)) {
@@ -1567,7 +1556,7 @@ class CborDeserializerSuccessTest {
 
     @Test
     fun `map - _ uint - 8 - max`() {
-        val payload = "0xbf63666f6f1bffffffffffffffffff".toByteArray()
+        val payload = "bf63666f6f1bffffffffffffffffff".hexToByteArray()
 
         val deserializer = CborDeserializer(payload)
         val actual = deserializer.deserializeMap(SdkFieldDescriptor(SerialKind.Map)) {
@@ -1582,7 +1571,7 @@ class CborDeserializerSuccessTest {
         assertEquals(1, actual.size)
         assertEquals("foo", actual.entries.first().key)
 
-        val remainingBuffer = "0x1bffffffffffffffffff".toByteArray()
+        val remainingBuffer = "1bffffffffffffffffff".hexToByteArray()
         val buffer = SdkBuffer().apply { write(remainingBuffer) }
         val result = aws.smithy.kotlin.runtime.serde.cbor.encoding.UInt.decode(buffer).value
         assertEquals(ULong.MAX_VALUE, result)
@@ -1590,7 +1579,7 @@ class CborDeserializerSuccessTest {
 
     @Test
     fun `map of null`() {
-        val payload = "0xa163666f6ff6".toByteArray()
+        val payload = "a163666f6ff6".hexToByteArray()
 
         val deserializer = CborDeserializer(payload)
         val actual = deserializer.deserializeMap(SdkFieldDescriptor(SerialKind.Map)) {
@@ -1608,7 +1597,7 @@ class CborDeserializerSuccessTest {
 
     @Test
     fun `map - _ negint - 4 - max`() {
-        val payload = "0xbf63666f6f3affffffffff".toByteArray()
+        val payload = "bf63666f6f3affffffffff".hexToByteArray()
 
         val deserializer = CborDeserializer(payload)
         val actual = deserializer.deserializeMap(SdkFieldDescriptor(SerialKind.Map)) {
@@ -1626,7 +1615,7 @@ class CborDeserializerSuccessTest {
 
     @Test
     fun `map - _ float16 - -Inf`() {
-        val payload = "0xbf63666f6ff9fc00ff".toByteArray()
+        val payload = "bf63666f6ff9fc00ff".hexToByteArray()
 
         val deserializer = CborDeserializer(payload)
         val actual = deserializer.deserializeMap(SdkFieldDescriptor(SerialKind.Map)) {
@@ -1644,7 +1633,7 @@ class CborDeserializerSuccessTest {
 
     @Test
     fun `map - uint - 2 - max`() {
-        val payload = "0xa163666f6f19ffff".toByteArray()
+        val payload = "a163666f6f19ffff".hexToByteArray()
 
         val deserializer = CborDeserializer(payload)
         val actual = deserializer.deserializeMap(SdkFieldDescriptor(SerialKind.Map)) {
@@ -1662,7 +1651,7 @@ class CborDeserializerSuccessTest {
 
     @Test
     fun `map - negint - 1 - min`() {
-        val payload = "0xa163666f6f3800".toByteArray()
+        val payload = "a163666f6f3800".hexToByteArray()
 
         val deserializer = CborDeserializer(payload)
         val actual = deserializer.deserializeMap(SdkFieldDescriptor(SerialKind.Map)) {
@@ -1680,7 +1669,7 @@ class CborDeserializerSuccessTest {
 
     @Test
     fun `indefinite map of undefined`() {
-        val payload = "0xbf63666f6ff7ff".toByteArray()
+        val payload = "bf63666f6ff7ff".hexToByteArray()
 
         val deserializer = CborDeserializer(payload)
         val actual = deserializer.deserializeMap(SdkFieldDescriptor(SerialKind.Map)) {
@@ -1698,7 +1687,7 @@ class CborDeserializerSuccessTest {
 
     @Test
     fun `map - uint - 0 - max`() {
-        val payload = "0xa163666f6f17".toByteArray()
+        val payload = "a163666f6f17".hexToByteArray()
 
         val deserializer = CborDeserializer(payload)
         val actual = deserializer.deserializeMap(SdkFieldDescriptor(SerialKind.Map)) {
@@ -1716,7 +1705,7 @@ class CborDeserializerSuccessTest {
 
     @Test
     fun `indefinite map of uint - 0 - max`() {
-        val payload = "0xbf63666f6f17ff".toByteArray()
+        val payload = "bf63666f6f17ff".hexToByteArray()
 
         val deserializer = CborDeserializer(payload)
         val actual = deserializer.deserializeMap(SdkFieldDescriptor(SerialKind.Map)) {
@@ -1734,7 +1723,7 @@ class CborDeserializerSuccessTest {
 
     @Test
     fun `indefinite map of uint - 1 - min`() {
-        val payload = "0xbf63666f6f1800ff".toByteArray()
+        val payload = "bf63666f6f1800ff".hexToByteArray()
 
         val deserializer = CborDeserializer(payload)
         val actual = deserializer.deserializeMap(SdkFieldDescriptor(SerialKind.Map)) {
@@ -1752,7 +1741,7 @@ class CborDeserializerSuccessTest {
 
     @Test
     fun `indefinite map of uint - 8 - min`() {
-        val payload = "0xbf63666f6f1b0000000000000000ff".toByteArray()
+        val payload = "bf63666f6f1b0000000000000000ff".hexToByteArray()
 
         val deserializer = CborDeserializer(payload)
         val actual = deserializer.deserializeMap(SdkFieldDescriptor(SerialKind.Map)) {
@@ -1770,7 +1759,7 @@ class CborDeserializerSuccessTest {
 
     @Test
     fun `indefinite map of negint - 8 - max`() {
-        val payload = "0xbf63666f6f3bfffffffffffffffeff".toByteArray()
+        val payload = "bf63666f6f3bfffffffffffffffeff".hexToByteArray()
 
         val deserializer = CborDeserializer(payload)
 
@@ -1785,7 +1774,7 @@ class CborDeserializerSuccessTest {
         assertEquals(1, actual.size)
         assertEquals("foo", actual.entries.first().key)
 
-        val remainingBuffer = "0x3bfffffffffffffffe".toByteArray()
+        val remainingBuffer = "3bfffffffffffffffe".hexToByteArray()
         val buffer = SdkBuffer().apply { write(remainingBuffer) }
         val result = NegInt.decode(buffer).value
         assertEquals(ULong.MAX_VALUE, result)
@@ -1793,7 +1782,7 @@ class CborDeserializerSuccessTest {
 
     @Test
     fun `map - uint - 2 - min`() {
-        val payload = "0xa163666f6f190000".toByteArray()
+        val payload = "a163666f6f190000".hexToByteArray()
 
         val deserializer = CborDeserializer(payload)
         val actual = deserializer.deserializeMap(SdkFieldDescriptor(SerialKind.Map)) {
@@ -1811,7 +1800,7 @@ class CborDeserializerSuccessTest {
 
     @Test
     fun `indefinite map of float16 - NaN - MSB`() {
-        val payload = "0xbf63666f6ff97e00ff".toByteArray()
+        val payload = "bf63666f6ff97e00ff".hexToByteArray()
 
         val deserializer = CborDeserializer(payload)
         val actual = deserializer.deserializeMap(SdkFieldDescriptor(SerialKind.Map)) {
@@ -1829,7 +1818,7 @@ class CborDeserializerSuccessTest {
 
     @Test
     fun `map - negint - 0 - min`() {
-        val payload = "0xa163666f6f20".toByteArray()
+        val payload = "a163666f6f20".hexToByteArray()
 
         val deserializer = CborDeserializer(payload)
         val actual = deserializer.deserializeMap(SdkFieldDescriptor(SerialKind.Map)) {
@@ -1847,7 +1836,7 @@ class CborDeserializerSuccessTest {
 
     @Test
     fun `map - float16 - -Inf`() {
-        val payload = "0xa163666f6ff9fc00".toByteArray()
+        val payload = "a163666f6ff9fc00".hexToByteArray()
 
         val deserializer = CborDeserializer(payload)
         val actual = deserializer.deserializeMap(SdkFieldDescriptor(SerialKind.Map)) {
@@ -1865,7 +1854,7 @@ class CborDeserializerSuccessTest {
 
     @Test
     fun `indefinite map of negint - 1 - max`() {
-        val payload = "0xbf63666f6f38ffff".toByteArray()
+        val payload = "bf63666f6f38ffff".hexToByteArray()
 
         val deserializer = CborDeserializer(payload)
         val actual = deserializer.deserializeMap(SdkFieldDescriptor(SerialKind.Map)) {
@@ -1883,7 +1872,7 @@ class CborDeserializerSuccessTest {
 
     @Test
     fun `indefinite map of negint - 8 - min`() {
-        val payload = "0xbf63666f6f3b0000000000000000ff".toByteArray()
+        val payload = "bf63666f6f3b0000000000000000ff".hexToByteArray()
 
         val deserializer = CborDeserializer(payload)
         val actual = deserializer.deserializeMap(SdkFieldDescriptor(SerialKind.Map)) {
@@ -1901,7 +1890,7 @@ class CborDeserializerSuccessTest {
 
     @Test
     fun `map - uint - 1 - min`() {
-        val payload = "0xa163666f6f1800".toByteArray()
+        val payload = "a163666f6f1800".hexToByteArray()
 
         val deserializer = CborDeserializer(payload)
         val actual = deserializer.deserializeMap(SdkFieldDescriptor(SerialKind.Map)) {
@@ -1919,7 +1908,7 @@ class CborDeserializerSuccessTest {
 
     @Test
     fun `indefinite map of uint - 2 - min`() {
-        val payload = "0xbf63666f6f190000ff".toByteArray()
+        val payload = "bf63666f6f190000ff".hexToByteArray()
 
         val deserializer = CborDeserializer(payload)
         val actual = deserializer.deserializeMap(SdkFieldDescriptor(SerialKind.Map)) {
@@ -1937,7 +1926,7 @@ class CborDeserializerSuccessTest {
 
     @Test
     fun `indefinite map of uint - 2 - max`() {
-        val payload = "0xbf63666f6f19ffffff".toByteArray()
+        val payload = "bf63666f6f19ffffff".hexToByteArray()
 
         val deserializer = CborDeserializer(payload)
         val actual = deserializer.deserializeMap(SdkFieldDescriptor(SerialKind.Map)) {
@@ -1955,7 +1944,7 @@ class CborDeserializerSuccessTest {
 
     @Test
     fun `indefinite map of negint - 0 - max`() {
-        val payload = "0xbf63666f6f37ff".toByteArray()
+        val payload = "bf63666f6f37ff".hexToByteArray()
 
         val deserializer = CborDeserializer(payload)
         val actual = deserializer.deserializeMap(SdkFieldDescriptor(SerialKind.Map)) {
@@ -1973,7 +1962,7 @@ class CborDeserializerSuccessTest {
 
     @Test
     fun `indefinite map of negint - 2 - max`() {
-        val payload = "0xbf63666f6f39ffffff".toByteArray()
+        val payload = "bf63666f6f39ffffff".hexToByteArray()
 
         val deserializer = CborDeserializer(payload)
         val actual = deserializer.deserializeMap(SdkFieldDescriptor(SerialKind.Map)) {
@@ -1991,7 +1980,7 @@ class CborDeserializerSuccessTest {
 
     @Test
     fun `map of boolean true`() {
-        val payload = "0xa163666f6ff5".toByteArray()
+        val payload = "a163666f6ff5".hexToByteArray()
 
         val deserializer = CborDeserializer(payload)
         val actual = deserializer.deserializeMap(SdkFieldDescriptor(SerialKind.Map)) {
@@ -2009,7 +1998,7 @@ class CborDeserializerSuccessTest {
 
     @Test
     fun `indefinite map of boolean true`() {
-        val payload = "0xbf63666f6ff5ff".toByteArray()
+        val payload = "bf63666f6ff5ff".hexToByteArray()
 
         val deserializer = CborDeserializer(payload)
         val actual = deserializer.deserializeMap(SdkFieldDescriptor(SerialKind.Map)) {
@@ -2027,7 +2016,7 @@ class CborDeserializerSuccessTest {
 
     @Test
     fun `indefinite map of boolean false`() {
-        val payload = "0xbf63666f6ff4ff".toByteArray()
+        val payload = "bf63666f6ff4ff".hexToByteArray()
 
         val deserializer = CborDeserializer(payload)
         val actual = deserializer.deserializeMap(SdkFieldDescriptor(SerialKind.Map)) {
@@ -2045,7 +2034,7 @@ class CborDeserializerSuccessTest {
 
     @Test
     fun `map - uint - 8 - max`() {
-        val payload = "0xa163666f6f1bffffffffffffffff".toByteArray()
+        val payload = "a163666f6f1bffffffffffffffff".hexToByteArray()
 
         val deserializer = CborDeserializer(payload)
         val actual = deserializer.deserializeMap(SdkFieldDescriptor(SerialKind.Map)) {
@@ -2060,7 +2049,7 @@ class CborDeserializerSuccessTest {
         assertEquals(1, actual.size)
         assertEquals("foo", actual.entries.first().key)
 
-        val remainingBuffer = "0x1bffffffffffffffff".toByteArray()
+        val remainingBuffer = "1bffffffffffffffff".hexToByteArray()
         val buffer = SdkBuffer().apply { write(remainingBuffer) }
         val result = aws.smithy.kotlin.runtime.serde.cbor.encoding.UInt.decode(buffer).value
         assertEquals(ULong.MAX_VALUE, result)
@@ -2068,7 +2057,7 @@ class CborDeserializerSuccessTest {
 
     @Test
     fun `map - float16 - NaN - LSB`() {
-        val payload = "0xa163666f6ff97c01".toByteArray()
+        val payload = "a163666f6ff97c01".hexToByteArray()
 
         val deserializer = CborDeserializer(payload)
         val actual = deserializer.deserializeMap(SdkFieldDescriptor(SerialKind.Map)) {
@@ -2086,7 +2075,7 @@ class CborDeserializerSuccessTest {
 
     @Test
     fun `indefinite map of uint - 0 - min`() {
-        val payload = "0xbf63666f6f00ff".toByteArray()
+        val payload = "bf63666f6f00ff".hexToByteArray()
 
         val deserializer = CborDeserializer(payload)
         val actual = deserializer.deserializeMap(SdkFieldDescriptor(SerialKind.Map)) {
@@ -2104,7 +2093,7 @@ class CborDeserializerSuccessTest {
 
     @Test
     fun `indefinite map of negint - 4 - min`() {
-        val payload = "0xbf63666f6f3a00000000ff".toByteArray()
+        val payload = "bf63666f6f3a00000000ff".hexToByteArray()
 
         val deserializer = CborDeserializer(payload)
         val actual = deserializer.deserializeMap(SdkFieldDescriptor(SerialKind.Map)) {
@@ -2122,7 +2111,7 @@ class CborDeserializerSuccessTest {
 
     @Test
     fun `indefinite map of float32`() {
-        val payload = "0xbf63666f6ffa7f800000ff".toByteArray()
+        val payload = "bf63666f6ffa7f800000ff".hexToByteArray()
 
         val deserializer = CborDeserializer(payload)
         val actual = deserializer.deserializeMap(SdkFieldDescriptor(SerialKind.Map)) {
@@ -2140,7 +2129,7 @@ class CborDeserializerSuccessTest {
 
     @Test
     fun `map of uint - 0 - min`() {
-        val payload = "0xa163666f6f00".toByteArray()
+        val payload = "a163666f6f00".hexToByteArray()
 
         val deserializer = CborDeserializer(payload)
         val actual = deserializer.deserializeMap(SdkFieldDescriptor(SerialKind.Map)) {
@@ -2158,7 +2147,7 @@ class CborDeserializerSuccessTest {
 
     @Test
     fun `map - negint - 1 - max`() {
-        val payload = "0xa163666f6f38ff".toByteArray()
+        val payload = "a163666f6f38ff".hexToByteArray()
 
         val deserializer = CborDeserializer(payload)
         val actual = deserializer.deserializeMap(SdkFieldDescriptor(SerialKind.Map)) {
@@ -2176,7 +2165,7 @@ class CborDeserializerSuccessTest {
 
     @Test
     fun `map - float64`() {
-        val payload = "0xa163666f6ffb7ff0000000000000".toByteArray()
+        val payload = "a163666f6ffb7ff0000000000000".hexToByteArray()
 
         val deserializer = CborDeserializer(payload)
         val actual = deserializer.deserializeMap(SdkFieldDescriptor(SerialKind.Map)) {
@@ -2194,7 +2183,7 @@ class CborDeserializerSuccessTest {
 
     @Test
     fun `indefinite map of float16 - NaN - LSB`() {
-        val payload = "0xbf63666f6ff97c01ff".toByteArray()
+        val payload = "bf63666f6ff97c01ff".hexToByteArray()
 
         val deserializer = CborDeserializer(payload)
         val actual = deserializer.deserializeMap(SdkFieldDescriptor(SerialKind.Map)) {
@@ -2212,7 +2201,7 @@ class CborDeserializerSuccessTest {
 
     @Test
     fun `map - uint - 8 - min`() {
-        val payload = "0xa163666f6f1b0000000000000000".toByteArray()
+        val payload = "a163666f6f1b0000000000000000".hexToByteArray()
 
         val deserializer = CborDeserializer(payload)
         val actual = deserializer.deserializeMap(SdkFieldDescriptor(SerialKind.Map)) {
@@ -2230,7 +2219,7 @@ class CborDeserializerSuccessTest {
 
     @Test
     fun `map - negint - 8 - max`() {
-        val payload = "0xa163666f6f3bfffffffffffffffe".toByteArray()
+        val payload = "a163666f6f3bfffffffffffffffe".hexToByteArray()
 
         val deserializer = CborDeserializer(payload)
 
@@ -2245,7 +2234,7 @@ class CborDeserializerSuccessTest {
         assertEquals(1, actual.size)
         assertEquals("foo", actual.entries.first().key)
 
-        val remainingBuffer = "0x3bfffffffffffffffe".toByteArray()
+        val remainingBuffer = "3bfffffffffffffffe".hexToByteArray()
         val buffer = SdkBuffer().apply { write(remainingBuffer) }
         val result = NegInt.decode(buffer).value
         assertEquals(ULong.MAX_VALUE, result)
@@ -2253,7 +2242,7 @@ class CborDeserializerSuccessTest {
 
     @Test
     fun `map of undefined`() {
-        val payload = "0xa163666f6ff7".toByteArray()
+        val payload = "a163666f6ff7".hexToByteArray()
 
         val deserializer = CborDeserializer(payload)
         val actual = deserializer.deserializeMap(SdkFieldDescriptor(SerialKind.Map)) {
@@ -2271,7 +2260,7 @@ class CborDeserializerSuccessTest {
 
     @Test
     fun `map of float16 - NaN - MSB`() {
-        val payload = "0xa163666f6ff97e00".toByteArray()
+        val payload = "a163666f6ff97e00".hexToByteArray()
 
         val deserializer = CborDeserializer(payload)
         val actual = deserializer.deserializeMap(SdkFieldDescriptor(SerialKind.Map)) {
@@ -2289,7 +2278,7 @@ class CborDeserializerSuccessTest {
 
     @Test
     fun `map of negint - 8 - min`() {
-        val payload = "0xa163666f6f3b0000000000000000".toByteArray()
+        val payload = "a163666f6f3b0000000000000000".hexToByteArray()
 
         val deserializer = CborDeserializer(payload)
         val actual = deserializer.deserializeMap(SdkFieldDescriptor(SerialKind.Map)) {
@@ -2307,7 +2296,7 @@ class CborDeserializerSuccessTest {
 
     @Test
     fun `indefinite map of uint - 4 - max`() {
-        val payload = "0xbf63666f6f1affffffffff".toByteArray()
+        val payload = "bf63666f6f1affffffffff".hexToByteArray()
 
         val deserializer = CborDeserializer(payload)
         val actual = deserializer.deserializeMap(SdkFieldDescriptor(SerialKind.Map)) {
@@ -2325,7 +2314,7 @@ class CborDeserializerSuccessTest {
 
     @Test
     fun `indefinite map of negint - 1 - min`() {
-        val payload = "0xbf63666f6f3800ff".toByteArray()
+        val payload = "bf63666f6f3800ff".hexToByteArray()
 
         val deserializer = CborDeserializer(payload)
         val actual = deserializer.deserializeMap(SdkFieldDescriptor(SerialKind.Map)) {
@@ -2343,7 +2332,7 @@ class CborDeserializerSuccessTest {
 
     @Test
     fun `indefinite map of float16 - +Inf`() {
-        val payload = "0xbf63666f6ff97c00ff".toByteArray()
+        val payload = "bf63666f6ff97c00ff".hexToByteArray()
 
         val deserializer = CborDeserializer(payload)
         val actual = deserializer.deserializeMap(SdkFieldDescriptor(SerialKind.Map)) {
@@ -2361,7 +2350,7 @@ class CborDeserializerSuccessTest {
 
     @Test
     fun `map - negint - 2 - min`() {
-        val payload = "0xa163666f6f390000".toByteArray()
+        val payload = "a163666f6f390000".hexToByteArray()
 
         val deserializer = CborDeserializer(payload)
         val actual = deserializer.deserializeMap(SdkFieldDescriptor(SerialKind.Map)) {
@@ -2379,7 +2368,7 @@ class CborDeserializerSuccessTest {
 
     @Test
     fun `map of false`() {
-        val payload = "0xa163666f6ff4".toByteArray()
+        val payload = "a163666f6ff4".hexToByteArray()
 
         val deserializer = CborDeserializer(payload)
         val actual = deserializer.deserializeMap(SdkFieldDescriptor(SerialKind.Map)) {
@@ -2397,7 +2386,7 @@ class CborDeserializerSuccessTest {
 
     @Test
     fun `map of float32`() {
-        val payload = "0xa163666f6ffa7f800000".toByteArray()
+        val payload = "a163666f6ffa7f800000".hexToByteArray()
 
         val deserializer = CborDeserializer(payload)
         val actual = deserializer.deserializeMap(SdkFieldDescriptor(SerialKind.Map)) {
@@ -2415,7 +2404,7 @@ class CborDeserializerSuccessTest {
 
     @Test
     fun `indefinite map of uint - 1 - max`() {
-        val payload = "0xbf63666f6f18ffff".toByteArray()
+        val payload = "bf63666f6f18ffff".hexToByteArray()
 
         val deserializer = CborDeserializer(payload)
         val actual = deserializer.deserializeMap(SdkFieldDescriptor(SerialKind.Map)) {
@@ -2433,7 +2422,7 @@ class CborDeserializerSuccessTest {
 
     @Test
     fun `map of negint - 0 - max`() {
-        val payload = "0xa163666f6f37".toByteArray()
+        val payload = "a163666f6f37".hexToByteArray()
 
         val deserializer = CborDeserializer(payload)
         val actual = deserializer.deserializeMap(SdkFieldDescriptor(SerialKind.Map)) {
@@ -2451,7 +2440,7 @@ class CborDeserializerSuccessTest {
 
     @Test
     fun `map of negint - 4 - max`() {
-        val payload = "0xa163666f6f3affffffff".toByteArray()
+        val payload = "a163666f6f3affffffff".hexToByteArray()
 
         val deserializer = CborDeserializer(payload)
         val actual = deserializer.deserializeMap(SdkFieldDescriptor(SerialKind.Map)) {
@@ -2469,7 +2458,7 @@ class CborDeserializerSuccessTest {
 
     @Test
     fun `map of float16 - +Inf`() {
-        val payload = "0xa163666f6ff97c00".toByteArray()
+        val payload = "a163666f6ff97c00".hexToByteArray()
 
         val deserializer = CborDeserializer(payload)
         val actual = deserializer.deserializeMap(SdkFieldDescriptor(SerialKind.Map)) {
@@ -2487,7 +2476,7 @@ class CborDeserializerSuccessTest {
 
     @Test
     fun `indefinite map of float64`() {
-        val payload = "0xbf63666f6ffb7ff0000000000000ff".toByteArray()
+        val payload = "bf63666f6ffb7ff0000000000000ff".hexToByteArray()
 
         val deserializer = CborDeserializer(payload)
         val actual = deserializer.deserializeMap(SdkFieldDescriptor(SerialKind.Map)) {
@@ -2505,7 +2494,7 @@ class CborDeserializerSuccessTest {
 
     @Test
     fun `map of uint - 1 - max`() {
-        val payload = "0xa163666f6f18ff".toByteArray()
+        val payload = "a163666f6f18ff".hexToByteArray()
 
         val deserializer = CborDeserializer(payload)
         val actual = deserializer.deserializeMap(SdkFieldDescriptor(SerialKind.Map)) {
@@ -2523,7 +2512,7 @@ class CborDeserializerSuccessTest {
 
     @Test
     fun `map - uint - 4 - max`() {
-        val payload = "0xa163666f6f1affffffff".toByteArray()
+        val payload = "a163666f6f1affffffff".hexToByteArray()
 
         val deserializer = CborDeserializer(payload)
         val actual = deserializer.deserializeMap(SdkFieldDescriptor(SerialKind.Map)) {
@@ -2541,7 +2530,7 @@ class CborDeserializerSuccessTest {
 
     @Test
     fun `map of negint - 2 - max`() {
-        val payload = "0xa163666f6f39ffff".toByteArray()
+        val payload = "a163666f6f39ffff".hexToByteArray()
 
         val deserializer = CborDeserializer(payload)
         val actual = deserializer.deserializeMap(SdkFieldDescriptor(SerialKind.Map)) {
@@ -2559,7 +2548,7 @@ class CborDeserializerSuccessTest {
 
     @Test
     fun `indefinite map of uint - 4 - min`() {
-        val payload = "0xbf63666f6f1a00000000ff".toByteArray()
+        val payload = "bf63666f6f1a00000000ff".hexToByteArray()
 
         val deserializer = CborDeserializer(payload)
         val actual = deserializer.deserializeMap(SdkFieldDescriptor(SerialKind.Map)) {
@@ -2577,7 +2566,7 @@ class CborDeserializerSuccessTest {
 
     @Test
     fun `indefinite map of negint - 0 - min`() {
-        val payload = "0xbf63666f6f20ff".toByteArray()
+        val payload = "bf63666f6f20ff".hexToByteArray()
 
         val deserializer = CborDeserializer(payload)
         val actual = deserializer.deserializeMap(SdkFieldDescriptor(SerialKind.Map)) {
@@ -2595,7 +2584,7 @@ class CborDeserializerSuccessTest {
 
     @Test
     fun `indefinite map of null`() {
-        val payload = "0xbf63666f6ff6ff".toByteArray()
+        val payload = "bf63666f6ff6ff".hexToByteArray()
 
         val deserializer = CborDeserializer(payload)
         val actual = deserializer.deserializeMap(SdkFieldDescriptor(SerialKind.Map)) {
@@ -2613,7 +2602,7 @@ class CborDeserializerSuccessTest {
 
     @Test
     fun `map of uint - 4 - min`() {
-        val payload = "0xa163666f6f1a00000000".toByteArray()
+        val payload = "a163666f6f1a00000000".hexToByteArray()
 
         val deserializer = CborDeserializer(payload)
         val actual = deserializer.deserializeMap(SdkFieldDescriptor(SerialKind.Map)) {
@@ -2631,7 +2620,7 @@ class CborDeserializerSuccessTest {
 
     @Test
     fun `map of negint - 4 - min`() {
-        val payload = "0xa163666f6f3a00000000".toByteArray()
+        val payload = "a163666f6f3a00000000".hexToByteArray()
 
         val deserializer = CborDeserializer(payload)
         val actual = deserializer.deserializeMap(SdkFieldDescriptor(SerialKind.Map)) {
@@ -2649,7 +2638,7 @@ class CborDeserializerSuccessTest {
 
     @Test
     fun `indefinite map of negint - 2 - min`() {
-        val payload = "0xbf63666f6f390000ff".toByteArray()
+        val payload = "bf63666f6f390000ff".hexToByteArray()
 
         val deserializer = CborDeserializer(payload)
         val actual = deserializer.deserializeMap(SdkFieldDescriptor(SerialKind.Map)) {

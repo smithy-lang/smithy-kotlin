@@ -1,0 +1,7 @@
+{
+  "id": "a1b2c3d4-5e6f-7a8b-9c0d-e1f2a3b4c5d6",
+  "type": "bugfix",
+  "description": "Use `kotlin.uuid.Uuid` for UUID generation instead of `kotlin.random.Random` which is unsafe with Lambda SnapStart due to deterministic PRNG state being captured in snapshots",
+  "issues": ["https://github.com/smithy-lang/smithy-kotlin/issues/1656"],
+  "module": "runtime-core"
+}

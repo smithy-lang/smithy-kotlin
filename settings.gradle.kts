@@ -20,7 +20,13 @@ pluginManagement {
 
 dependencyResolutionManagement {
     repositories {
-        mavenLocal()
+        mavenLocal {
+            content {
+                excludeGroupByRegex("""org\.jetbrains\.kotlin.*""")
+                excludeGroupByRegex("""org\.jetbrains\.kotlinx.*""")
+                excludeGroup("org.jetbrains")
+            }
+        }
         mavenCentral()
         google()
         maven {
@@ -123,6 +129,7 @@ include(":tests:benchmarks:channel-benchmarks")
 include(":tests:benchmarks:http-benchmarks")
 include(":tests:benchmarks:serde-benchmarks")
 include(":tests:compile")
+include(":tests:codegen:enum-tests")
 include(":tests:codegen:nullability-tests")
 include(":tests:codegen:paginator-tests")
 include(":tests:codegen:serde-tests")
