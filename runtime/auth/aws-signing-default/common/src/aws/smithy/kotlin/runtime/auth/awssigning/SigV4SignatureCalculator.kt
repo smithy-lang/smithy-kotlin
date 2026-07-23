@@ -19,16 +19,19 @@ import kotlin.time.Duration.Companion.hours
  * @param sha256Provider the [HashSupplier] to use for computing SHA-256 hashes
  */
 internal class SigV4SignatureCalculator(override val sha256Provider: HashSupplier = ::Sha256) : BaseSigV4SignatureCalculator(AwsSigningAlgorithm.SIGV4, sha256Provider) {
+    private val signingKeyTtl = 4.hours
+
     private val signingKeyCache = PeriodicSweepCache<SigningKey, ByteArray>(
-        minimumSweepPeriod = 4.hours,
+        minimumSweepPeriod = signingKeyTtl,
     )
 
     override fun calculate(signingKey: ByteArray, stringToSign: String): String = hmac(signingKey, stringToSign.encodeToByteArray(), sha256Provider).encodeToHex()
 
     override fun signingKey(config: AwsSigningConfig): ByteArray {
         val key = SigningKey(config)
-        val expiration = config.credentials.expiration?.let { minOf(it, Clock.System.now() + 4.hours) }
-            ?: (Clock.System.now() + 4.hours)
+        val maxExpiration = Clock.System.now() + signingKeyTtl
+        val expiration = config.credentials.expiration?.let { minOf(it, maxExpiration) }
+            ?: maxExpiration
 
         return signingKeyCache.tryGet(key) {
             ExpiringValue(deriveKey(it), expiration)

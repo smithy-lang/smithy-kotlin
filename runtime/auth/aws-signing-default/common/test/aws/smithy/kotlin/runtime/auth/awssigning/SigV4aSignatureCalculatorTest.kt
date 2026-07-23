@@ -13,6 +13,8 @@ import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.jsonObject
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
+import kotlin.test.assertSame
 import kotlin.test.assertTrue
 
 private const val SIGV4A_RESOURCES_BASE = "../aws-signing-tests/common/resources/aws-signing-test-suite/v4a"
@@ -84,6 +86,73 @@ class SigV4aSignatureCalculatorTest {
 
             assertEquals(expectedStringToSign, actualStringToSign, "$testId failed")
         }
+    }
+
+    @Test
+    fun testSigningKeyCacheHit() {
+        val calculator = SigV4aSignatureCalculator()
+        val config = AwsSigningConfig {
+            algorithm = AwsSigningAlgorithm.SIGV4_ASYMMETRIC
+            signingDate = Instant.fromIso8601("20150830")
+            region = "us-east-1"
+            service = "iam"
+            credentials = Credentials("AKID", "wJalrXUtnFEMI/K7MDENG+bPxRfiCYEXAMPLEKEY")
+        }
+
+        val first = calculator.signingKey(config)
+        val second = calculator.signingKey(config)
+        assertSame(first, second)
+    }
+
+    @Test
+    fun testSigningKeyCacheMissOnCredentialChange() {
+        val calculator = SigV4aSignatureCalculator()
+        val config1 = AwsSigningConfig {
+            algorithm = AwsSigningAlgorithm.SIGV4_ASYMMETRIC
+            signingDate = Instant.fromIso8601("20150830")
+            region = "us-east-1"
+            service = "iam"
+            credentials = Credentials("AKID1", "secretKey1")
+        }
+        val config2 = AwsSigningConfig {
+            algorithm = AwsSigningAlgorithm.SIGV4_ASYMMETRIC
+            signingDate = Instant.fromIso8601("20150830")
+            region = "us-east-1"
+            service = "iam"
+            credentials = Credentials("AKID2", "secretKey2")
+        }
+
+        val key1 = calculator.signingKey(config1)
+        val key2 = calculator.signingKey(config2)
+        assertFalse(key1.contentEquals(key2))
+    }
+
+    @Test
+    fun testSigningKeyCacheMultipleAccountsRetainEntries() {
+        val calculator = SigV4aSignatureCalculator()
+        val configA = AwsSigningConfig {
+            algorithm = AwsSigningAlgorithm.SIGV4_ASYMMETRIC
+            signingDate = Instant.fromIso8601("20150830")
+            region = "us-east-1"
+            service = "iam"
+            credentials = Credentials("AKID_A", "secretKeyA")
+        }
+        val configB = AwsSigningConfig {
+            algorithm = AwsSigningAlgorithm.SIGV4_ASYMMETRIC
+            signingDate = Instant.fromIso8601("20150830")
+            region = "us-east-1"
+            service = "iam"
+            credentials = Credentials("AKID_B", "secretKeyB")
+        }
+
+        val keyA1 = calculator.signingKey(configA)
+        val keyB1 = calculator.signingKey(configB)
+        val keyA2 = calculator.signingKey(configA)
+        val keyB2 = calculator.signingKey(configB)
+
+        assertSame(keyA1, keyA2)
+        assertSame(keyB1, keyB2)
+        assertFalse(keyA1.contentEquals(keyB1))
     }
 
     private fun JsonObject.parseAwsSigningConfig(): AwsSigningConfig {

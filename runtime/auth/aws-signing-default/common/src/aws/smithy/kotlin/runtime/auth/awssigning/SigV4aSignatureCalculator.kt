@@ -15,7 +15,6 @@ import aws.smithy.kotlin.runtime.text.encoding.decodeHexBytes
 import aws.smithy.kotlin.runtime.text.encoding.encodeToHex
 import aws.smithy.kotlin.runtime.time.Instant
 import aws.smithy.kotlin.runtime.util.ExpiringValue
-import kotlinx.coroutines.runBlocking
 import kotlin.time.Duration.Companion.hours
 
 /**
@@ -46,28 +45,31 @@ internal class SigV4aSignatureCalculator(override val sha256Provider: HashSuppli
      * https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_sigv-create-signed-request.html#derive-signing-key-sigv4a for
      * more information on the derivation process.
      */
-    override fun signingKey(config: AwsSigningConfig): ByteArray = runBlocking {
-        privateKeyCache.get(config.credentials) {
-            var counter: Byte = 1
-            var privateKey: ByteArray
+    override fun signingKey(config: AwsSigningConfig): ByteArray =
+        privateKeyCache.tryGet(config.credentials) {
+            ExpiringValue(deriveKey(it), Instant.MAX_VALUE)
+        } ?: deriveKey(config.credentials)
 
-            val inputKey = ("AWS4A" + config.credentials.secretAccessKey).encodeToByteArray()
+    private fun deriveKey(credentials: Credentials): ByteArray {
+        var counter: Byte = 1
+        var privateKey: ByteArray
 
-            do {
-                val k0 = hmac(inputKey, fixedInputString(config.credentials.accessKeyId, counter), sha256Provider)
+        val inputKey = ("AWS4A" + credentials.secretAccessKey).encodeToByteArray()
 
-                val c = k0.toPositiveBigInteger()
-                privateKey = (c + BigInteger("1")).toByteArray()
+        do {
+            val k0 = hmac(inputKey, fixedInputString(credentials.accessKeyId, counter), sha256Provider)
 
-                if (counter == MAX_KDF_COUNTER_ITERATIONS && c > N_MINUS_TWO) {
-                    throw IllegalStateException("Counter exceeded maximum length")
-                } else {
-                    counter++
-                }
-            } while (c > N_MINUS_TWO)
+            val c = k0.toPositiveBigInteger()
+            privateKey = (c + BigInteger("1")).toByteArray()
 
-            ExpiringValue<ByteArray>(privateKey, Instant.MAX_VALUE)
-        }
+            if (counter == MAX_KDF_COUNTER_ITERATIONS && c > N_MINUS_TWO) {
+                throw IllegalStateException("Counter exceeded maximum length")
+            } else {
+                counter++
+            }
+        } while (c > N_MINUS_TWO)
+
+        return privateKey
     }
 
     /**
