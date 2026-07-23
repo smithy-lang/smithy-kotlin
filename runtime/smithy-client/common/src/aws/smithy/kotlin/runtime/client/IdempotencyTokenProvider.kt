@@ -4,7 +4,7 @@
  */
 package aws.smithy.kotlin.runtime.client
 
-import aws.smithy.kotlin.runtime.util.Uuid
+import kotlin.uuid.Uuid
 
 /**
  * User-accessible configuration for client-side token generation.

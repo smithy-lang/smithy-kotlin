@@ -59,6 +59,6 @@ private data class SigningKey(
         secretKey = config.credentials.secretAccessKey,
         region = config.region,
         service = config.service,
-        date = config.signingDate.format(TimestampFormat.ISO_8601_CONDENSED_DATE),
+        date = config.formattedSigningDateOnly,
     )
 }
