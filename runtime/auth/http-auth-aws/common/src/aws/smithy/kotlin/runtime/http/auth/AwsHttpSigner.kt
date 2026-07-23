@@ -161,9 +161,10 @@ public class AwsHttpSigner(private val config: Config) : HttpSigner {
             signedBodyHeader = contextSignedBodyHeader ?: config.signedBodyHeader
             logRequest = attributes.getOrNull(SdkClientOption.LogMode)?.isEnabled(LogMode.LogRequest) == true
 
-            // SDKs are supposed to default to signed payload _always_ when possible (and when `unsignedPayload` trait
-            // isn't present). The only exception is when the customer explicitly disables signed payloads (via Config.isUnsignedPayload)
-            // or when payload signing is disabled at the client level (PayloadSigningEnabled = false) over HTTPS.
+            // SDKs are supposed to default to signed payload _always_ when possible, unless:
+            //   - the `unsignedPayload` trait is present
+            //   - the customer explicitly disables signed payloads (via Config.isUnsignedPayload)
+            //   - payload signing is disabled at the client level (PayloadSigningEnabled = false) over HTTPS
             val effectiveUnsignedPayload = config.isUnsignedPayload ||
                 (!payloadSigningEnabled && request.url.scheme == Scheme.HTTPS)
 
