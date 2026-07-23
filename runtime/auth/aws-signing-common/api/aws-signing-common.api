@@ -85,6 +85,8 @@ public final class aws/smithy/kotlin/runtime/auth/awssigning/AwsSigningConfig {
 	public final fun getAlgorithm ()Laws/smithy/kotlin/runtime/auth/awssigning/AwsSigningAlgorithm;
 	public final fun getCredentials ()Laws/smithy/kotlin/runtime/auth/awscredentials/Credentials;
 	public final fun getExpiresAfter-FghU774 ()Lkotlin/time/Duration;
+	public final fun getFormattedSigningDate ()Ljava/lang/String;
+	public final fun getFormattedSigningDateOnly ()Ljava/lang/String;
 	public final fun getHashSpecification ()Laws/smithy/kotlin/runtime/auth/awssigning/HashSpecification;
 	public final fun getLogRequest ()Z
 	public final fun getNormalizeUriPath ()Z

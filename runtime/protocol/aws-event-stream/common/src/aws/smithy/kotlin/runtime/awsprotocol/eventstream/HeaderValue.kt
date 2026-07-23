@@ -6,6 +6,7 @@
 package aws.smithy.kotlin.runtime.awsprotocol.eventstream
 
 import aws.smithy.kotlin.runtime.InternalApi
+import aws.smithy.kotlin.runtime.PlannedRemoval
 import aws.smithy.kotlin.runtime.io.*
 import aws.smithy.kotlin.runtime.time.Instant
 import aws.smithy.kotlin.runtime.time.epochMilliseconds
@@ -76,11 +77,19 @@ public sealed class HeaderValue {
     public data class Timestamp(val value: Instant) : HeaderValue()
 
     @InternalApi
+    @Deprecated("Use Uuid4 instead", ReplaceWith("Uuid4"))
+    @PlannedRemoval(1, 8)
+    @Suppress("DEPRECATION")
     public data class Uuid(val value: aws.smithy.kotlin.runtime.util.Uuid) : HeaderValue()
+
+    @InternalApi
+    public data class Uuid4(val value: kotlin.uuid.Uuid) : HeaderValue()
 
     /**
      * Encode a header value to [dest]
      */
+
+    @OptIn(PlannedRemoval::class)
     public fun encode(dest: SdkBufferedSink): Unit = when (this) {
         is Bool -> {
             val type = if (value) HeaderType.TRUE else HeaderType.FALSE
@@ -119,10 +128,20 @@ public sealed class HeaderValue {
             dest.writeHeader(HeaderType.TIMESTAMP)
             dest.writeLong(value.epochMilliseconds)
         }
-        is Uuid -> {
+        is
+        @Suppress("DEPRECATION")
+        Uuid,
+        -> {
             dest.writeHeader(HeaderType.UUID)
             dest.writeLong(value.high)
             dest.writeLong(value.low)
+        }
+        is Uuid4 -> {
+            dest.writeHeader(HeaderType.UUID)
+            value.toLongs { msb, lsb ->
+                dest.writeLong(msb)
+                dest.writeLong(lsb)
+            }
         }
     }
 
@@ -151,9 +170,9 @@ public sealed class HeaderValue {
                     HeaderValue.Timestamp(Instant.fromEpochMilliseconds(epochMilli))
                 }
                 HeaderType.UUID -> {
-                    val high = source.readLong()
-                    val low = source.readLong()
-                    HeaderValue.Uuid(Uuid(high, low))
+                    val msb = source.readLong()
+                    val lsb = source.readLong()
+                    HeaderValue.Uuid4(kotlin.uuid.Uuid.fromLongs(msb, lsb))
                 }
             }
         }
@@ -187,7 +206,13 @@ public fun HeaderValue.expectByteArray(): ByteArray = checkNotNull((this as? Hea
 public fun HeaderValue.expectTimestamp(): Instant = checkNotNull((this as? HeaderValue.Timestamp)?.value) { "expected HeaderValue.Bool, found: $this" }
 
 @InternalApi
-public fun HeaderValue.expectUuid(): Uuid = checkNotNull((this as? HeaderValue.Uuid)?.value) { "expected HeaderValue.Bool, found: $this" }
+@Deprecated("Use expectUuid4 instead", ReplaceWith("expectUuid4()"))
+@PlannedRemoval(1, 8)
+@Suppress("DEPRECATION")
+public fun HeaderValue.expectUuid(): Uuid = checkNotNull((this as? HeaderValue.Uuid)?.value) { "expected HeaderValue.Uuid, found: $this" }
+
+@InternalApi
+public fun HeaderValue.expectUuid4(): kotlin.uuid.Uuid = checkNotNull((this as? HeaderValue.Uuid4)?.value) { "expected HeaderValue.Uuid4, found: $this" }
 
 @InternalApi
 public fun <T> HeaderValue.expectEnumValue(fromValue: (String) -> T): T = fromValue(expectString())

@@ -19,7 +19,6 @@ import aws.smithy.kotlin.runtime.net.url.UrlPath
 import aws.smithy.kotlin.runtime.text.encoding.Encodable
 import aws.smithy.kotlin.runtime.text.encoding.PercentEncoding
 import aws.smithy.kotlin.runtime.text.encoding.encodeToHex
-import aws.smithy.kotlin.runtime.time.TimestampFormat
 import kotlinx.coroutines.withContext
 
 /**
@@ -127,7 +126,7 @@ internal class DefaultCanonicalizer(private val sha256Supplier: HashSupplier = :
         param("X-Amz-Algorithm", config.algorithm.signingName, signViaQueryParams)
         param("X-Amz-Credential", credentialValue(config), signViaQueryParams)
         param("X-Amz-Content-Sha256", hash, addHashHeader)
-        param("X-Amz-Date", config.signingDate.format(TimestampFormat.ISO_8601_CONDENSED))
+        param("X-Amz-Date", config.formattedSigningDate)
         param("X-Amz-Expires", config.expiresAfter?.inWholeSeconds?.toString(), signViaQueryParams)
         param("X-Amz-Security-Token", sessionToken, !config.omitSessionToken) // Add pre-sig if omitSessionToken=false
         param("X-Amz-Region-Set", config.region, config.algorithm == AwsSigningAlgorithm.SIGV4_ASYMMETRIC)
@@ -217,6 +216,9 @@ internal fun Url.Builder.canonicalPath(config: AwsSigningConfig): String {
     val srcPath = path
     val srcSegments = srcPath.segments
 
+    // Fast path: "/" has no segments to encode or normalize
+    if (srcSegments.isEmpty()) return "/"
+
     val mapper: (Encodable) -> Encodable = when (config.useDoubleUriEncode) {
         true -> { existing ->
             // This is _double_ encoding so treat the existing encoded output as "decoded" for the purposes re-encoding
@@ -239,20 +241,24 @@ internal fun Url.Builder.canonicalPath(config: AwsSigningConfig): String {
  * Canonicalizes the query parameters from this [Url.Builder].
  * @return The canonicalized query parameters
  */
-internal fun Url.Builder.canonicalQueryParams(): String = QueryParameters {
-    parameters
-        .entries
-        .associate { (key, values) ->
-            val reencodedKey = key.reencode(PercentEncoding.SigV4)
-            val reencodedValues = values.map { it.reencode(PercentEncoding.SigV4) }
-            reencodedKey to reencodedValues
-        }
-        .entries
-        .sortedWith(compareBy { it.key.encoded }) // Sort keys
-        .associateTo(this) { (key, values) ->
-            key to values.sortedWith(compareBy { it.encoded }).toMutableList() // Sort values
-        }
-}.toString().removePrefix("?")
+internal fun Url.Builder.canonicalQueryParams(): String {
+    if (parameters.isEmpty()) return ""
+
+    return QueryParameters {
+        parameters
+            .entries
+            .associate { (key, values) ->
+                val reencodedKey = key.reencode(PercentEncoding.SigV4)
+                val reencodedValues = values.map { it.reencode(PercentEncoding.SigV4) }
+                reencodedKey to reencodedValues
+            }
+            .entries
+            .sortedWith(compareBy { it.key.encoded }) // Sort keys
+            .associateTo(this) { (key, values) ->
+                key to values.sortedWith(compareBy { it.encoded }).toMutableList() // Sort values
+            }
+    }.toString().removePrefix("?")
+}
 
 private fun Pair<String, List<String>>.canonicalLine(): String {
     val valuesString = second.joinToString(separator = ",") { it.trimAll() }
