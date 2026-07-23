@@ -1051,6 +1051,7 @@ public abstract interface class aws/smithy/kotlin/runtime/io/SdkByteChannel : aw
 
 public final class aws/smithy/kotlin/runtime/io/SdkByteChannel$DefaultImpls {
 	public static fun close (Laws/smithy/kotlin/runtime/io/SdkByteChannel;)V
+	public static fun tryWrite (Laws/smithy/kotlin/runtime/io/SdkByteChannel;Laws/smithy/kotlin/runtime/io/SdkBuffer;J)J
 }
 
 public final class aws/smithy/kotlin/runtime/io/SdkByteChannelKt {
@@ -1092,11 +1093,15 @@ public abstract interface class aws/smithy/kotlin/runtime/io/SdkByteWriteChannel
 	public abstract fun getClosedCause ()Ljava/lang/Throwable;
 	public abstract fun getTotalBytesWritten ()J
 	public abstract fun isClosedForWrite ()Z
+	public fun tryWrite (Laws/smithy/kotlin/runtime/io/SdkBuffer;J)J
+	public static synthetic fun tryWrite$default (Laws/smithy/kotlin/runtime/io/SdkByteWriteChannel;Laws/smithy/kotlin/runtime/io/SdkBuffer;JILjava/lang/Object;)J
 	public abstract fun write (Laws/smithy/kotlin/runtime/io/SdkBuffer;JLkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public static synthetic fun write$default (Laws/smithy/kotlin/runtime/io/SdkByteWriteChannel;Laws/smithy/kotlin/runtime/io/SdkBuffer;JLkotlin/coroutines/Continuation;ILjava/lang/Object;)Ljava/lang/Object;
 }
 
 public final class aws/smithy/kotlin/runtime/io/SdkByteWriteChannel$DefaultImpls {
+	public static fun tryWrite (Laws/smithy/kotlin/runtime/io/SdkByteWriteChannel;Laws/smithy/kotlin/runtime/io/SdkBuffer;J)J
+	public static synthetic fun tryWrite$default (Laws/smithy/kotlin/runtime/io/SdkByteWriteChannel;Laws/smithy/kotlin/runtime/io/SdkBuffer;JILjava/lang/Object;)J
 	public static synthetic fun write$default (Laws/smithy/kotlin/runtime/io/SdkByteWriteChannel;Laws/smithy/kotlin/runtime/io/SdkBuffer;JLkotlin/coroutines/Continuation;ILjava/lang/Object;)Ljava/lang/Object;
 }
 
@@ -1190,6 +1195,7 @@ public final class aws/smithy/kotlin/runtime/io/internal/JobChannel : aws/smithy
 	public fun isClosedForRead ()Z
 	public fun isClosedForWrite ()Z
 	public fun read (Laws/smithy/kotlin/runtime/io/SdkBuffer;JLkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun tryWrite (Laws/smithy/kotlin/runtime/io/SdkBuffer;J)J
 	public fun write (Laws/smithy/kotlin/runtime/io/SdkBuffer;JLkotlin/coroutines/Continuation;)Ljava/lang/Object;
 }
 
