@@ -128,7 +128,7 @@ jobs:
       # On push (branch testing) use fixed defaults; on dispatch use inputs.
       # TEST_FILTER has no sensible default -- set it to a real, known-flaky
       # test before pushing to the test branch.
-      GRADLE_TASK: ${{ github.event_name == 'push' && ':runtime:protocol:http-client-engines:test-suite:macOsTest' || inputs.gradle_task }}
+      GRADLE_TASK: ${{ github.event_name == 'push' && ':runtime:protocol:http-client-engines:test-suite:jvmTest' || inputs.gradle_task }}
       TEST_FILTER: ${{ github.event_name == 'push' && 'aws.smithy.kotlin.runtime.http.test.DownloadTest.testReadFullyIntegrity' || inputs.test_filter }}
       ITERATIONS: ${{ github.event_name == 'push' && '5' || inputs.iterations_per_shard }}
       JAVA_VERSION: ${{ github.event_name == 'push' && '17' || inputs.java_version }}
@@ -181,11 +181,24 @@ jobs:
           set -uo pipefail
 
           task="$GRADLE_TASK"
-          # Derive the matching clean task (e.g. jvmTest -> cleanJvmTest) portably
-          # (macOS ships bash 3.2 / BSD sed, so avoid ${var^} and GNU-only sed).
-          first=$(printf '%s' "$task" | cut -c1 | tr '[:lower:]' '[:upper:]')
-          rest=$(printf '%s' "$task" | cut -c2-)
-          clean_task="clean${first}${rest}"
+          # Derive the matching clean-rule task for the SAME task in the SAME
+          # module. `clean<TaskName>` deletes only that task's outputs, forcing
+          # the test to re-run without wiping compiled classes (build once, loop
+          # many). Split off any module path prefix so we only capitalize/prefix
+          # the final task-name segment:
+          #   :runtime:runtime-core:jvmTest -> :runtime:runtime-core:cleanJvmTest
+          #   jvmTest                       -> cleanJvmTest
+          # (POSIX parameter expansion + cut/tr keep this portable to macOS
+          # bash 3.2 and Git bash on Windows.)
+          name="${task##*:}"        # final segment (the task name)
+          if [ "$name" = "$task" ]; then
+            prefix=""               # no ':' -> unqualified task
+          else
+            prefix="${task%:*}:"    # module path, separator re-appended
+          fi
+          first=$(printf '%s' "$name" | cut -c1 | tr '[:lower:]' '[:upper:]')
+          rest=$(printf '%s' "$name" | cut -c2-)
+          clean_task="${prefix}clean${first}${rest}"
 
           results_root="flaky-results"
           mkdir -p "$results_root"
