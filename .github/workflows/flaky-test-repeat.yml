@@ -89,7 +89,7 @@ jobs:
           RUN_MACOS_ARM: ${{ github.event_name == 'push' && 'false' || inputs.run_macos_arm }}
           RUN_MACOS_X64: ${{ github.event_name == 'push' && 'false' || inputs.run_macos_x64 }}
           RUN_WINDOWS: ${{ github.event_name == 'push' && 'false' || inputs.run_windows }}
-          SHARDS: ${{ github.event_name == 'push' && '2' || inputs.shards }}
+          SHARDS: ${{ github.event_name == 'push' && '10' || inputs.shards }}
         run: |
           set -euo pipefail
           os_list=()
@@ -130,7 +130,7 @@ jobs:
       # test before pushing to the test branch.
       GRADLE_TASK: ${{ github.event_name == 'push' && ':runtime:protocol:http-client-engines:test-suite:jvmTest' || inputs.gradle_task }}
       TEST_FILTER: ${{ github.event_name == 'push' && 'aws.smithy.kotlin.runtime.http.test.DownloadTest.testReadFullyIntegrity' || inputs.test_filter }}
-      ITERATIONS: ${{ github.event_name == 'push' && '5' || inputs.iterations_per_shard }}
+      ITERATIONS: ${{ github.event_name == 'push' && '20' || inputs.iterations_per_shard }}
       JAVA_VERSION: ${{ github.event_name == 'push' && '17' || inputs.java_version }}
       EXTRA_ARGS: ${{ github.event_name == 'push' && '' || inputs.extra_gradle_args }}
     steps:
