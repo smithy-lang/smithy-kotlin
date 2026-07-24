@@ -1,0 +1,6 @@
+{
+  "id": "0be35766-2b6a-41ab-aa66-251af5ffd7bf",
+  "type": "feature",
+  "description": "Cache SigV4 signing key derivation to avoid redundant HMAC computations when credentials, region, service, and date are unchanged",
+  "module": "aws-signing-default"
+}
