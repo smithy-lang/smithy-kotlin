@@ -10,6 +10,9 @@ out/
 *.klib
 .kotlin/
 
+# Python build files
+__pycache__
+
 # Log file
 *.log
 

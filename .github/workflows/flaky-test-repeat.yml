@@ -1,0 +1,246 @@
+# Manually-dispatched harness to hunt flaky tests by running a specific test
+# many times, in parallel, across the same runner OSes CI uses.
+#
+# It reproduces failures in the *real* CI environment (same runner images,
+# same `setup-build` action, same JDK / Gradle flags) rather than a local or
+# containerized approximation, which is important because many flakes are
+# OS- and resource-specific.
+#
+# Scale model: total iterations = (selected OSes) x shards x iterations_per_shard.
+# Each shard is an independent parallel job. Each job builds once, then loops
+# the test, defeating Gradle's up-to-date caching so the test actually re-runs.
+#
+# NOTE: a shard job stays green even when the test fails -- failures are counted,
+# not gated. The `aggregate` job reports the real flake rate in the run summary.
+name: Flaky Test Repeat
+
+on:
+  # TEMPORARY (do not merge): workflow_dispatch only works once the file is on
+  # the default branch. This push trigger lets you prove the harness out from a
+  # feature branch first. Push your work to the `flaky-harness-test` branch and
+  # it runs automatically using the test defaults wired into the env blocks
+  # below. Remove this push trigger (and revert the test defaults) before
+  # merging to mainline.
+  push:
+    branches:
+      - flaky-harness-test
+  workflow_dispatch:
+    inputs:
+      gradle_task:
+        description: "Gradle test task to run (e.g. jvmTest, test)"
+        type: string
+        default: "jvmTest"
+      test_filter:
+        description: "Test filter passed to --tests (e.g. com.example.FooTest or com.example.FooTest.someMethod)"
+        type: string
+        required: true
+      iterations_per_shard:
+        description: "How many times each shard runs the test"
+        type: number
+        default: 20
+      shards:
+        description: "Number of parallel shards per OS"
+        type: number
+        default: 10
+      java_version:
+        description: "Test JVM version (-Ptest.java.version)"
+        type: string
+        default: "17"
+      run_linux:
+        description: "Run on ubuntu-latest"
+        type: boolean
+        default: true
+      run_macos_arm:
+        description: "Run on macos-15-xlarge (ARM)"
+        type: boolean
+        default: false
+      run_macos_x64:
+        description: "Run on macos-15-large (x64)"
+        type: boolean
+        default: false
+      run_windows:
+        description: "Run on windows-2022"
+        type: boolean
+        default: false
+      extra_gradle_args:
+        description: "Extra args appended to the gradle invocation"
+        type: string
+        default: ""
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  # Build the OS and shard matrices dynamically from the boolean/number inputs.
+  prepare:
+    runs-on: ubuntu-latest
+    outputs:
+      os_json: ${{ steps.build.outputs.os_json }}
+      shard_json: ${{ steps.build.outputs.shard_json }}
+    steps:
+      - id: build
+        shell: bash
+        env:
+          # On push (branch testing) use fixed defaults; on dispatch use inputs.
+          # Note: `inputs.x || default` is unsafe for booleans (an explicit
+          # `false` is falsy and would be overridden), so gate on event name.
+          RUN_LINUX: ${{ github.event_name == 'push' && 'true' || inputs.run_linux }}
+          RUN_MACOS_ARM: ${{ github.event_name == 'push' && 'false' || inputs.run_macos_arm }}
+          RUN_MACOS_X64: ${{ github.event_name == 'push' && 'false' || inputs.run_macos_x64 }}
+          RUN_WINDOWS: ${{ github.event_name == 'push' && 'false' || inputs.run_windows }}
+          SHARDS: ${{ github.event_name == 'push' && '2' || inputs.shards }}
+        run: |
+          set -euo pipefail
+          os_list=()
+          [ "$RUN_LINUX" = "true" ]     && os_list+=("\"ubuntu-latest\"")
+          [ "$RUN_MACOS_ARM" = "true" ] && os_list+=("\"macos-15-xlarge\"")
+          [ "$RUN_MACOS_X64" = "true" ] && os_list+=("\"macos-15-large\"")
+          [ "$RUN_WINDOWS" = "true" ]   && os_list+=("\"windows-2022\"")
+          if [ ${#os_list[@]} -eq 0 ]; then
+            echo "No OS selected; enable at least one run_* input." >&2
+            exit 1
+          fi
+          os_json="[$(IFS=,; echo "${os_list[*]}")]"
+          shard_json="[$(seq -s, 1 "$SHARDS")]"
+          echo "os_json=$os_json"       >> "$GITHUB_OUTPUT"
+          echo "shard_json=$shard_json" >> "$GITHUB_OUTPUT"
+          echo "OS matrix: $os_json"
+          echo "Shard matrix: $shard_json"
+
+  repeat:
+    needs: prepare
+    strategy:
+      fail-fast: false
+      matrix:
+        os: ${{ fromJSON(needs.prepare.outputs.os_json) }}
+        shard: ${{ fromJSON(needs.prepare.outputs.shard_json) }}
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 360
+    defaults:
+      run:
+        # bash is available on all three runner OSes (Git bash on Windows),
+        # which keeps the loop portable.
+        shell: bash
+    env:
+      # Match the JVM CI job's Gradle configuration.
+      GRADLE_OPTS: "-Dorg.gradle.daemon=false -Dkotlin.incremental=false"
+      # On push (branch testing) use fixed defaults; on dispatch use inputs.
+      # TEST_FILTER has no sensible default -- set it to a real, known-flaky
+      # test before pushing to the test branch.
+      GRADLE_TASK: ${{ github.event_name == 'push' && ':runtime:protocol:http-client-engines:test-suite:macOsTest' || inputs.gradle_task }}
+      TEST_FILTER: ${{ github.event_name == 'push' && 'aws.smithy.kotlin.runtime.http.test.DownloadTest.testReadFullyIntegrity' || inputs.test_filter }}
+      ITERATIONS: ${{ github.event_name == 'push' && '5' || inputs.iterations_per_shard }}
+      JAVA_VERSION: ${{ github.event_name == 'push' && '17' || inputs.java_version }}
+      EXTRA_ARGS: ${{ github.event_name == 'push' && '' || inputs.extra_gradle_args }}
+    steps:
+      - name: Checkout sources
+        uses: actions/checkout@v4
+        with:
+          path: 'smithy-kotlin'
+
+      - name: Setup build
+        uses: ./smithy-kotlin/.github/actions/setup-build
+
+      - name: Configure JDK
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'corretto'
+          java-version: 17
+          cache: 'gradle'
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.CI_AWS_ROLE_ARN }}
+          aws-region: us-west-2
+
+      - name: Setup kat
+        uses: aws/aws-kotlin-repo-tools/.github/actions/setup-kat@main
+
+      - name: Configure Gradle
+        uses: aws/aws-kotlin-repo-tools/.github/actions/configure-gradle@main
+        with:
+          working-directory: 'smithy-kotlin'
+
+      - name: Bump Kotlin daemon memory on macOS
+        if: startsWith(matrix.os, 'macos')
+        working-directory: ./smithy-kotlin
+        run: |
+          # Mirror the macOS CI job's gradle.properties memory profile.
+          sed -r 's/-Xmx[0-9]+G/-Xmx6G/g; s/-XX:MaxMetaspaceSize=[0-9]+G/-XX:MaxMetaspaceSize=2G/g' \
+            gradle.properties > gradle.properties2
+          mv gradle.properties2 gradle.properties
+
+      - name: Repeat test
+        working-directory: ./smithy-kotlin
+        env:
+          OS_NAME: ${{ matrix.os }}
+          SHARD: ${{ matrix.shard }}
+        run: |
+          set -uo pipefail
+
+          task="$GRADLE_TASK"
+          # Derive the matching clean task (e.g. jvmTest -> cleanJvmTest) portably
+          # (macOS ships bash 3.2 / BSD sed, so avoid ${var^} and GNU-only sed).
+          first=$(printf '%s' "$task" | cut -c1 | tr '[:lower:]' '[:upper:]')
+          rest=$(printf '%s' "$task" | cut -c2-)
+          clean_task="clean${first}${rest}"
+
+          results_root="flaky-results"
+          mkdir -p "$results_root"
+          : > "$results_root/manifest.csv"   # iteration,exit_code
+
+          pass=0
+          fail=0
+          echo "OS=$OS_NAME shard=$SHARD task=$task clean=$clean_task filter=$TEST_FILTER iterations=$ITERATIONS"
+
+          for i in $(seq 1 "$ITERATIONS"); do
+            echo "::group::Iteration $i / $ITERATIONS"
+            # cleanJvmTest removes only the test task outputs so compilation stays
+            # cached (build once, loop many) while the test genuinely re-runs.
+            ./gradlew -Paws.kotlin.native=false -Ptest.java.version="$JAVA_VERSION" \
+              "$clean_task" "$task" --tests "$TEST_FILTER" --stacktrace $EXTRA_ARGS
+            rc=$?
+            if [ "$rc" -eq 0 ]; then pass=$((pass+1)); else fail=$((fail+1)); fi
+            echo "$i,$rc" >> "$results_root/manifest.csv"
+
+            # Collect JUnit XML for this iteration for detailed grouping later.
+            dest="$results_root/iter-$i"
+            mkdir -p "$dest"
+            find . -path '*/build/test-results/*' -name '*.xml' -exec cp {} "$dest/" \; 2>/dev/null || true
+
+            echo "::endgroup::"
+            echo "Iteration $i exit=$rc (running totals: pass=$pass fail=$fail)"
+          done
+
+          echo "Shard summary: pass=$pass fail=$fail of $ITERATIONS"
+
+      - name: Upload results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: flaky-results-${{ matrix.os }}-shard-${{ matrix.shard }}
+          path: smithy-kotlin/flaky-results
+          if-no-files-found: warn
+
+  aggregate:
+    needs: repeat
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout sources
+        uses: actions/checkout@v4
+
+      - name: Download all shard results
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+
+      - name: Aggregate flakiness report
+        run: python3 .github/scripts/aggregate_flaky.py artifacts
