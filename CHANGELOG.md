@@ -1,5 +1,17 @@
 # Changelog
 
+## [1.7.3] - 07/27/2026
+
+### Features
+* (**aws-signing-default**) Cache SigV4 signing key derivation to avoid redundant HMAC computations when credentials, region, service, and date are unchanged
+* (**http-client-engine-okhttp**) Expose `maxIdleConnections` on `OkHttpEngineConfig` and change the default from 5 to `maxConcurrency` to align with the SDK's default, reducing connection churn and TLS re-establishment overhead under concurrent workloads
+
+### Fixes
+* [#1656](https://github.com/smithy-lang/smithy-kotlin/issues/1656) (**runtime-core**) Use `kotlin.uuid.Uuid` for UUID generation instead of `kotlin.random.Random` which is unsafe with Lambda SnapStart due to deterministic PRNG state being captured in snapshots
+
+### Miscellaneous
+* (**http-client-engine-crt**) Reduce CPU and memory overhead of the CRT HTTP engine's response body handling by writing received bytes directly into a window-sized channel, eliminating the intermediate unbounded channel and per-response writer coroutine
+
 ## [1.7.2] - 07/08/2026
 
 ### Fixes
