@@ -1,0 +1,9 @@
+{
+  "id": "f47ac10b-58cc-4372-a567-0e02b2c3d479",
+  "type": "feature",
+  "description": "Add EMF telemetry provider for emitting SDK operational metrics in CloudWatch Embedded Metric Format",
+  "issues": [
+    "https://github.com/aws/aws-sdk-kotlin/issues/1638"
+  ],
+  "module": "telemetry-provider-emf"
+}
