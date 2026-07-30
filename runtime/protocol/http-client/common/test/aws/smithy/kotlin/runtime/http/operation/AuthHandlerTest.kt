@@ -5,8 +5,10 @@
 
 package aws.smithy.kotlin.runtime.http.operation
 
+import aws.smithy.kotlin.runtime.ExperimentalApi
 import aws.smithy.kotlin.runtime.auth.AuthOption
 import aws.smithy.kotlin.runtime.auth.AuthSchemeId
+import aws.smithy.kotlin.runtime.client.SdkClientOption
 import aws.smithy.kotlin.runtime.client.endpoints.Endpoint
 import aws.smithy.kotlin.runtime.collections.AttributeKey
 import aws.smithy.kotlin.runtime.collections.Attributes
@@ -15,6 +17,7 @@ import aws.smithy.kotlin.runtime.collections.get
 import aws.smithy.kotlin.runtime.http.auth.*
 import aws.smithy.kotlin.runtime.http.interceptors.InterceptorExecutor
 import aws.smithy.kotlin.runtime.http.request.HttpRequestBuilder
+import aws.smithy.kotlin.runtime.http.util.RecordingTelemetryProvider
 import aws.smithy.kotlin.runtime.identity.Identity
 import aws.smithy.kotlin.runtime.identity.IdentityProvider
 import aws.smithy.kotlin.runtime.identity.IdentityProviderConfig
@@ -69,7 +72,7 @@ class HttpAuthHandlerTest {
 
         val schemes = listOf(scheme).associateBy(AuthScheme::schemeId)
         val authConfig = OperationAuthConfig(resolver, schemes, idpConfig)
-        val op = AuthHandler<Unit, Unit>(inner, interceptorExec, authConfig)
+        val op = AuthHandler<Unit, Unit>(inner, interceptorExec, authConfig, ctx)
         val request = SdkHttpRequest(ctx, HttpRequestBuilder())
         op.call(request)
 
@@ -92,11 +95,48 @@ class HttpAuthHandlerTest {
             Endpoint("https://localhost")
         }
 
-        val op = AuthHandler<Unit, Unit>(inner, interceptorExec, OperationAuthConfig.Anonymous, endpointResolver)
+        val op = AuthHandler<Unit, Unit>(inner, interceptorExec, OperationAuthConfig.Anonymous, ctx, endpointResolver)
         val request = SdkHttpRequest(ctx, HttpRequestBuilder())
         op.call(request)
 
         assertEquals(Scheme.HTTPS, request.subject.url.scheme)
         assertEquals(Host.Domain("localhost"), request.subject.url.host)
+    }
+
+    @OptIn(ExperimentalApi::class)
+    @Test
+    fun testAuthMetricsCarryRpcAttributes() = runTest {
+        // verify identity-resolution and signing metrics are tagged with rpc.service/rpc.method
+        val rpcServiceKey = AttributeKey<String>("rpc.service")
+        val rpcMethodKey = AttributeKey<String>("rpc.method")
+
+        val inner = object : Handler<SdkHttpRequest, Unit> {
+            override suspend fun call(request: SdkHttpRequest) = Unit
+        }
+
+        val provider = RecordingTelemetryProvider()
+        val ctx = ExecutionContext()
+        ctx[SdkClientOption.ServiceName] = "TestService"
+        ctx[SdkClientOption.OperationName] = "TestOperation"
+        ctx[HttpOperationContext.OperationMetrics] = OperationMetrics("TestService", provider)
+
+        val interceptorExec = InterceptorExecutor<Unit, Unit>(ctx, emptyList(), OperationTypeInfo(Unit::class, Unit::class))
+        // seed internal state required
+        interceptorExec.readBeforeExecution(Unit)
+
+        val op = AuthHandler<Unit, Unit>(inner, interceptorExec, OperationAuthConfig.Anonymous, ctx)
+        val request = SdkHttpRequest(ctx, HttpRequestBuilder())
+        op.call(request)
+
+        listOf(
+            "smithy.client.call.auth.resolve_identity_duration",
+            "smithy.client.call.auth.signing_duration",
+        ).forEach { name ->
+            val records = provider.recordsFor(name)
+            assertEquals(1, records.size, "expected exactly one $name measurement")
+            val attrs = records.single().attributes
+            assertEquals("TestService", attrs.getOrNull(rpcServiceKey), "$name missing rpc.service attribute")
+            assertEquals("TestOperation", attrs.getOrNull(rpcMethodKey), "$name missing rpc.method attribute")
+        }
     }
 }

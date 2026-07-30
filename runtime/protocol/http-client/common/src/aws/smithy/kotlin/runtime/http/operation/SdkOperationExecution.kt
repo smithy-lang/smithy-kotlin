@@ -10,6 +10,7 @@ import aws.smithy.kotlin.runtime.businessmetrics.BusinessMetrics
 import aws.smithy.kotlin.runtime.businessmetrics.SmithyBusinessMetric
 import aws.smithy.kotlin.runtime.businessmetrics.emitBusinessMetric
 import aws.smithy.kotlin.runtime.client.LogMode
+import aws.smithy.kotlin.runtime.client.SdkClientOption
 import aws.smithy.kotlin.runtime.client.endpoints.authOptions
 import aws.smithy.kotlin.runtime.client.logMode
 import aws.smithy.kotlin.runtime.collections.attributesOf
@@ -176,7 +177,7 @@ internal fun <Request, Response> SdkOperationExecution<Request, Response>.decora
     val receiveHandler = decorateHandler(handler, receive)
     val deserializeHandler = op.deserializer.decorate(receiveHandler, interceptors)
 
-    val authHandler = AuthHandler(deserializeHandler, interceptors, auth, endpointResolver)
+    val authHandler = AuthHandler(deserializeHandler, interceptors, auth, op.context, endpointResolver)
     val onEachAttemptHandler = decorateHandler(authHandler, onEachAttempt)
     val retryHandler = decorateHandler(onEachAttemptHandler, RetryMiddleware(retryStrategy, retryPolicy, interceptors))
 
@@ -269,6 +270,7 @@ internal class AuthHandler<Input, Output>(
     private val inner: Handler<SdkHttpRequest, Output>,
     private val interceptors: InterceptorExecutor<Input, Output>,
     private val authConfig: OperationAuthConfig,
+    private val opContext: ExecutionContext,
     private val endpointResolver: EndpointResolver? = null,
 ) : Handler<SdkHttpRequest, Output> {
 
@@ -281,6 +283,8 @@ internal class AuthHandler<Input, Output>(
 
         val schemeAttr = attributesOf {
             "auth.scheme_id" to authScheme.schemeId.id
+            opContext.getOrNull(SdkClientOption.ServiceName)?.let { "rpc.service" to it }
+            opContext.getOrNull(SdkClientOption.OperationName)?.let { "rpc.method" to it }
         }
 
         // properties need to propagate from AuthOption to signer and identity provider
