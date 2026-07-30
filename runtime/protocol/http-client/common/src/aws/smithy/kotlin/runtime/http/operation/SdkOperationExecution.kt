@@ -5,6 +5,7 @@
 
 package aws.smithy.kotlin.runtime.http.operation
 
+import aws.smithy.kotlin.runtime.ExperimentalApi
 import aws.smithy.kotlin.runtime.InternalApi
 import aws.smithy.kotlin.runtime.businessmetrics.BusinessMetrics
 import aws.smithy.kotlin.runtime.businessmetrics.SmithyBusinessMetric
@@ -286,12 +287,15 @@ internal class AuthHandler<Input, Output>(
             request.context.getOrNull(SdkClientOption.OperationName)?.let { "rpc.method" to it }
         }
 
+        @OptIn(ExperimentalApi::class)
+        val telemetryCtx = request.context.operationMetrics.provider.contextManager.current()
+
         // properties need to propagate from AuthOption to signer and identity provider
         request.context.merge(authOption.attributes)
 
         // resolve identity from the selected auth scheme
         val identityProvider = authScheme.identityProvider(authConfig.identityProviderConfig)
-        val identity = request.context.operationMetrics.resolveIdentityDuration.measureSeconds(schemeAttr) {
+        val identity = request.context.operationMetrics.resolveIdentityDuration.measureSeconds(schemeAttr, telemetryCtx) {
             identityProvider.resolve(request.context)
         }
 
@@ -301,7 +305,7 @@ internal class AuthHandler<Input, Output>(
         val resolveEndpointReq = ResolveEndpointRequest(request.context, request.subject.immutableView(), identity)
 
         if (endpointResolver != null) {
-            val endpoint = request.context.operationMetrics.resolveEndpointDuration.measureSeconds(request.context.operationAttributes) {
+            val endpoint = request.context.operationMetrics.resolveEndpointDuration.measureSeconds(schemeAttr, telemetryCtx) {
                 endpointResolver.resolve(resolveEndpointReq)
             }
             coroutineContext.debug<AuthHandler<*, *>> { "resolved endpoint: $endpoint" }
@@ -321,7 +325,7 @@ internal class AuthHandler<Input, Output>(
 
         val signingRequest = SignHttpRequest(modified.subject, identity, modified.context)
 
-        request.context.operationMetrics.signingDuration.measureSeconds(schemeAttr) {
+        request.context.operationMetrics.signingDuration.measureSeconds(schemeAttr, telemetryCtx) {
             authScheme.signer.sign(signingRequest)
         }
 
