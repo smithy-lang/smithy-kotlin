@@ -6,6 +6,7 @@ package aws.smithy.kotlin.runtime.telemetry.emf
 
 import aws.smithy.kotlin.runtime.collections.AttributeKey
 import aws.smithy.kotlin.runtime.collections.Attributes
+import aws.smithy.kotlin.runtime.serde.json.JsonStreamWriter
 import aws.smithy.kotlin.runtime.serde.json.jsonStreamWriter
 import aws.smithy.kotlin.runtime.time.Instant
 import aws.smithy.kotlin.runtime.time.epochMilliseconds
@@ -23,64 +24,69 @@ internal object EmfJsonWriter {
         metricUnit: CloudWatchUnit,
         attributes: Attributes,
     ): String {
-        val writer = jsonStreamWriter()
-
-        writer.beginObject()
-
-        writer.writeName(EmfConstants.AWS_METADATA_KEY)
-        writer.beginObject()
-
-        writer.writeName(EmfConstants.TIMESTAMP_KEY)
-        writer.writeValue(Instant.now().epochMilliseconds)
-
-        if (logGroupName != null) {
-            writer.writeName(EmfConstants.LOG_GROUP_NAME_KEY)
-            writer.writeValue(logGroupName)
-        }
-
-        writer.writeName(EmfConstants.CLOUDWATCH_METRICS_KEY)
-        writer.beginArray()
-        writer.beginObject()
-
-        writer.writeName(EmfConstants.NAMESPACE_KEY)
-        writer.writeValue(namespace)
-
-        writer.writeName(EmfConstants.DIMENSIONS_KEY)
-        writer.beginArray()
-        writer.beginArray()
         val dimensionKeys = attributes.keys.take(EmfConstants.MAX_DIMENSIONS_PER_SET)
-        for (key in dimensionKeys) {
-            writer.writeValue(key.name)
+
+        val writer = jsonStreamWriter()
+        writer.withObject {
+            writeMetadata(logGroupName, namespace, metricName, metricUnit, dimensionKeys)
+            writeDimensionValues(attributes, dimensionKeys)
+            writeEntry(metricName, metricValue)
         }
-        writer.endArray()
-        writer.endArray()
-
-        writer.writeName(EmfConstants.METRICS_KEY)
-        writer.beginArray()
-        writer.beginObject()
-        writer.writeName(EmfConstants.METRIC_NAME_KEY)
-        writer.writeValue(metricName)
-        writer.writeName(EmfConstants.METRIC_UNIT_KEY)
-        writer.writeValue(metricUnit.value)
-        writer.endObject()
-        writer.endArray()
-
-        writer.endObject()
-        writer.endArray()
-        writer.endObject()
-
-        @Suppress("UNCHECKED_CAST")
-        for (key in dimensionKeys) {
-            val attributeKey = key as? AttributeKey<Any> ?: continue
-            writer.writeName(key.name)
-            writer.writeValue(attributes.getOrNull(attributeKey).toString())
-        }
-
-        writer.writeName(metricName)
-        writer.writeValue(metricValue)
-
-        writer.endObject()
 
         return writer.bytes!!.decodeToString()
+    }
+
+    /**
+     * Writes the `_aws` metadata node, which tells CloudWatch how to extract metrics from the
+     * remainder of the document.
+     */
+    private fun JsonStreamWriter.writeMetadata(
+        logGroupName: String?,
+        namespace: String,
+        metricName: String,
+        metricUnit: CloudWatchUnit,
+        dimensionKeys: List<AttributeKey<*>>,
+    ) = withObject(EmfConstants.AWS_METADATA_KEY) {
+        writeEntry(EmfConstants.TIMESTAMP_KEY, Instant.now().epochMilliseconds)
+        writeEntryIfNotNull(EmfConstants.LOG_GROUP_NAME_KEY, logGroupName)
+
+        withArray(EmfConstants.CLOUDWATCH_METRICS_KEY) {
+            withObject {
+                writeEntry(EmfConstants.NAMESPACE_KEY, namespace)
+                writeDimensionKeys(dimensionKeys)
+                writeMetricDefinition(metricName, metricUnit)
+            }
+        }
+    }
+
+    /**
+     * Writes the `Dimensions` node, a list of dimension sets. A single set containing every
+     * dimension is emitted.
+     */
+    private fun JsonStreamWriter.writeDimensionKeys(dimensionKeys: List<AttributeKey<*>>) = withArray(EmfConstants.DIMENSIONS_KEY) {
+        withArray {
+            dimensionKeys.forEach { writeValue(it.name) }
+        }
+    }
+
+    /**
+     * Writes the `Metrics` node, declaring the name and unit of the single metric in this document.
+     */
+    private fun JsonStreamWriter.writeMetricDefinition(metricName: String, metricUnit: CloudWatchUnit) = withArray(EmfConstants.METRICS_KEY) {
+        withObject {
+            writeEntry(EmfConstants.METRIC_NAME_KEY, metricName)
+            writeEntry(EmfConstants.METRIC_UNIT_KEY, metricUnit.value)
+        }
+    }
+
+    /**
+     * Writes the target members referenced by the dimension keys declared in [writeDimensionKeys].
+     */
+    private fun JsonStreamWriter.writeDimensionValues(attributes: Attributes, dimensionKeys: List<AttributeKey<*>>) {
+        dimensionKeys.forEach { key ->
+            @Suppress("UNCHECKED_CAST")
+            val attributeKey = key as? AttributeKey<Any> ?: return@forEach
+            writeEntry(key.name, attributes.getOrNull(attributeKey).toString())
+        }
     }
 }
