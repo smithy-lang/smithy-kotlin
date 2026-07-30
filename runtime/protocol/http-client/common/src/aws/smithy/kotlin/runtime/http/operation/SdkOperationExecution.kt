@@ -177,7 +177,7 @@ internal fun <Request, Response> SdkOperationExecution<Request, Response>.decora
     val receiveHandler = decorateHandler(handler, receive)
     val deserializeHandler = op.deserializer.decorate(receiveHandler, interceptors)
 
-    val authHandler = AuthHandler(deserializeHandler, interceptors, auth, op.context, endpointResolver)
+    val authHandler = AuthHandler(deserializeHandler, interceptors, auth, endpointResolver)
     val onEachAttemptHandler = decorateHandler(authHandler, onEachAttempt)
     val retryHandler = decorateHandler(onEachAttemptHandler, RetryMiddleware(retryStrategy, retryPolicy, interceptors))
 
@@ -270,7 +270,6 @@ internal class AuthHandler<Input, Output>(
     private val inner: Handler<SdkHttpRequest, Output>,
     private val interceptors: InterceptorExecutor<Input, Output>,
     private val authConfig: OperationAuthConfig,
-    private val opContext: ExecutionContext,
     private val endpointResolver: EndpointResolver? = null,
 ) : Handler<SdkHttpRequest, Output> {
 
@@ -283,8 +282,8 @@ internal class AuthHandler<Input, Output>(
 
         val schemeAttr = attributesOf {
             "auth.scheme_id" to authScheme.schemeId.id
-            opContext.getOrNull(SdkClientOption.ServiceName)?.let { "rpc.service" to it }
-            opContext.getOrNull(SdkClientOption.OperationName)?.let { "rpc.method" to it }
+            request.context.getOrNull(SdkClientOption.ServiceName)?.let { "rpc.service" to it }
+            request.context.getOrNull(SdkClientOption.OperationName)?.let { "rpc.method" to it }
         }
 
         // properties need to propagate from AuthOption to signer and identity provider

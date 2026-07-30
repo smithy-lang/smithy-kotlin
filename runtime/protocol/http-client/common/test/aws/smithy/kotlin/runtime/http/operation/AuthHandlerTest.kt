@@ -72,7 +72,7 @@ class HttpAuthHandlerTest {
 
         val schemes = listOf(scheme).associateBy(AuthScheme::schemeId)
         val authConfig = OperationAuthConfig(resolver, schemes, idpConfig)
-        val op = AuthHandler<Unit, Unit>(inner, interceptorExec, authConfig, ctx)
+        val op = AuthHandler<Unit, Unit>(inner, interceptorExec, authConfig)
         val request = SdkHttpRequest(ctx, HttpRequestBuilder())
         op.call(request)
 
@@ -95,7 +95,7 @@ class HttpAuthHandlerTest {
             Endpoint("https://localhost")
         }
 
-        val op = AuthHandler<Unit, Unit>(inner, interceptorExec, OperationAuthConfig.Anonymous, ctx, endpointResolver)
+        val op = AuthHandler<Unit, Unit>(inner, interceptorExec, OperationAuthConfig.Anonymous, endpointResolver)
         val request = SdkHttpRequest(ctx, HttpRequestBuilder())
         op.call(request)
 
@@ -124,7 +124,7 @@ class HttpAuthHandlerTest {
         // seed internal state required
         interceptorExec.readBeforeExecution(Unit)
 
-        val op = AuthHandler<Unit, Unit>(inner, interceptorExec, OperationAuthConfig.Anonymous, ctx)
+        val op = AuthHandler<Unit, Unit>(inner, interceptorExec, OperationAuthConfig.Anonymous)
         val request = SdkHttpRequest(ctx, HttpRequestBuilder())
         op.call(request)
 
