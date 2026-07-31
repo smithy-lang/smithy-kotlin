@@ -14,18 +14,19 @@ internal object EmfConstants {
     const val METRICS_KEY = "Metrics"
     const val METRIC_NAME_KEY = "Name"
     const val METRIC_UNIT_KEY = "Unit"
-    const val METRIC_STORAGE_RESOLUTION_KEY = "StorageResolution"
 
     const val DEFAULT_NAMESPACE = "AwsSdk/KotlinSdk"
-    const val EMF_LOGGER_NAME = "aws.sdk.kotlin.metrics.emf"
     const val ENV_LAMBDA_LOG_GROUP = "AWS_LAMBDA_LOG_GROUP_NAME"
 
-    const val MAX_METRICS_PER_DOCUMENT = 100
-    const val MAX_DIMENSIONS_PER_SET = 30
-    const val MAX_VALUES_PER_METRIC = 100
+    // EMF document constraints, per the JSON schema in
+    // https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/CloudWatch_Embedded_Metric_Format_Specification.html
     const val MAX_NAMESPACE_LENGTH = 1024
-    const val MAX_LOG_GROUP_NAME_LENGTH = 512
     const val MAX_METRIC_NAME_LENGTH = 1024
+    const val MAX_DIMENSIONS_PER_SET = 30
     const val MAX_DIMENSION_KEY_LENGTH = 250
     const val MAX_DIMENSION_VALUE_LENGTH = 1024
+
+    // CloudWatch Logs service constraint: log group names are 1–512 characters
+    // https://docs.aws.amazon.com/AmazonCloudWatchLogs/latest/APIReference/API_CreateLogGroup.html
+    const val MAX_LOG_GROUP_NAME_LENGTH = 512
 }
