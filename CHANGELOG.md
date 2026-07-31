@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.7.4] - 07/31/2026
+
+### Features
+* (**aws-signing**) Add `PayloadSigningEnabled` signing attribute to allow services to skip SigV4 payload signing over HTTPS, reducing CPU overhead for large request bodies
+
+### Fixes
+* [#1667](https://github.com/smithy-lang/smithy-kotlin/issues/1667) Update operation metrics to properly include RPC attributes and telemetry context
+
 ## [1.7.3] - 07/27/2026
 
 ### Features

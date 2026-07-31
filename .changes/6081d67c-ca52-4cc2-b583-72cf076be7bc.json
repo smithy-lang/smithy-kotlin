@@ -1,8 +1,0 @@
-{
-    "id": "6081d67c-ca52-4cc2-b583-72cf076be7bc",
-    "type": "bugfix",
-    "description": "Update operation metrics to properly include RPC attributes and telemetry context",
-    "issues": [
-        "https://github.com/smithy-lang/smithy-kotlin/issues/1667"
-    ]
-}
