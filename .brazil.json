@@ -29,11 +29,7 @@
   },
   "packageHandlingRules": {
     "versioning": {
-      "defaultVersionLayout": "{MAJOR}.0.x",
-      "overrides": {
-        "aws.smithy.kotlin:aws-codegen": "{MAJOR}.x",
-        "aws.smithy.kotlin:codegen": "{MAJOR}.x"
-      }
+      "defaultVersionLayout": "{MAJOR}.0.x"
     },
     "rename": {
         "aws.smithy.kotlin:aws-codegen": "AwsSmithyAwsKotlinCodegen",
