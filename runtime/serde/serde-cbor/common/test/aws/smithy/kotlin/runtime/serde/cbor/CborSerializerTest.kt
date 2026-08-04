@@ -201,7 +201,7 @@ class CborSerializerTest {
 
     @Test
     fun testBigDecimal() {
-        val tests = listOf<BigDecimal>(
+        val tests = listOf(
             BigDecimal("-123453450934503474823945734895.4563458734895738978902384902384908"),
             BigDecimal("-123.456"),
             BigDecimal("-0.000000000000000000000000000000000000000000000000000000000000000000000000000000000001"),
@@ -229,7 +229,8 @@ class CborSerializerTest {
         val deserializer = CborPrimitiveDeserializer(buffer)
 
         tests.forEach {
-            assertEquals(it, deserializer.deserializeBigDecimal())
+            val actual = deserializer.deserializeBigDecimal()
+            assertEquals(it, actual)
         }
         assertEquals(0, buffer.size)
 

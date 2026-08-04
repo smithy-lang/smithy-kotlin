@@ -183,7 +183,7 @@ private class CborFieldIterator(
     PrimitiveDeserializer by CborPrimitiveDeserializer(buffer) {
     var currentLength: ULong = 0uL
 
-    override fun findNextFieldIndex(): Int? {
+    override tailrec fun findNextFieldIndex(): Int? {
         if (buffer.exhausted() && expectedLength != currentLength) {
             throw DeserializationException("Buffer is unexpectedly exhausted, expected $expectedLength elements, got $currentLength")
         } else if (expectedLength == currentLength) {

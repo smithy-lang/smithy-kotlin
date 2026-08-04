@@ -20,7 +20,13 @@ pluginManagement {
 
 dependencyResolutionManagement {
     repositories {
-        mavenLocal()
+        mavenLocal {
+            content {
+                excludeGroupByRegex("""org\.jetbrains\.kotlin.*""")
+                excludeGroupByRegex("""org\.jetbrains\.kotlinx.*""")
+                excludeGroup("org.jetbrains")
+            }
+        }
         mavenCentral()
         google()
         maven {
@@ -89,6 +95,7 @@ include(":runtime:observability:telemetry-api")
 include(":runtime:observability:telemetry-defaults")
 include(":runtime:observability:telemetry-provider-otel")
 include(":runtime:observability:telemetry-provider-micrometer")
+include(":runtime:observability:telemetry-provider-emf")
 include(":runtime:protocol:aws-protocol-core")
 include(":runtime:protocol:aws-event-stream")
 include(":runtime:protocol:aws-json-protocols")
@@ -123,6 +130,7 @@ include(":tests:benchmarks:channel-benchmarks")
 include(":tests:benchmarks:http-benchmarks")
 include(":tests:benchmarks:serde-benchmarks")
 include(":tests:compile")
+include(":tests:codegen:enum-tests")
 include(":tests:codegen:nullability-tests")
 include(":tests:codegen:paginator-tests")
 include(":tests:codegen:serde-tests")

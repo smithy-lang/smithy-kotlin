@@ -11,6 +11,7 @@ import aws.smithy.kotlin.runtime.content.Document
 import aws.smithy.kotlin.runtime.serde.*
 import aws.smithy.kotlin.runtime.text.encoding.decodeBase64Bytes
 import aws.smithy.kotlin.runtime.time.Instant
+import aws.smithy.kotlin.runtime.time.ParseException
 import aws.smithy.kotlin.runtime.time.TimestampFormat
 
 /**
@@ -144,11 +145,15 @@ public class JsonDeserializer(payload: ByteArray) :
 
     override fun deserializeByteArray(): ByteArray = deserializeString().decodeBase64Bytes()
 
-    override fun deserializeInstant(format: TimestampFormat): Instant = when (format) {
-        TimestampFormat.EPOCH_SECONDS -> deserializeString().let { Instant.fromEpochSeconds(it) }
-        TimestampFormat.ISO_8601 -> deserializeString().let { Instant.fromIso8601(it) }
-        TimestampFormat.RFC_5322 -> deserializeString().let { Instant.fromRfc5322(it) }
-        else -> throw DeserializationException("unknown timestamp format: $format")
+    override fun deserializeInstant(format: TimestampFormat): Instant = try {
+        when (format) {
+            TimestampFormat.EPOCH_SECONDS -> deserializeString().let { Instant.fromEpochSeconds(it) }
+            TimestampFormat.ISO_8601 -> deserializeString().let { Instant.fromIso8601(it) }
+            TimestampFormat.RFC_5322 -> deserializeString().let { Instant.fromRfc5322(it) }
+            else -> throw DeserializationException("unknown timestamp format: $format")
+        }
+    } catch (pe: ParseException) {
+        throw DeserializationException("Cannot deserialize timestamp value", pe)
     }
 
     override fun nextHasValue(): Boolean = reader.peek() != JsonToken.Null
@@ -195,41 +200,43 @@ private class JsonFieldIterator(
     PrimitiveDeserializer by deserializer {
 
     override fun findNextFieldIndex(): Int? {
-        val candidate = when (reader.peek()) {
-            JsonToken.EndObject -> {
-                // consume the token
-                reader.nextTokenOf<JsonToken.EndObject>()
-                null
-            }
-            JsonToken.EndDocument -> null
-            JsonToken.Null -> {
-                reader.nextTokenOf<JsonToken.Null>()
-                null
-            }
-            else -> {
-                val token = reader.nextTokenOf<JsonToken.Name>()
-                val propertyName = token.value
-                val field = descriptor.fields.find { it.serialName == propertyName }
+        while (true) {
+            val candidate = when (reader.peek()) {
+                JsonToken.EndObject -> {
+                    // consume the token
+                    reader.nextTokenOf<JsonToken.EndObject>()
+                    null
+                }
+                JsonToken.EndDocument -> null
+                JsonToken.Null -> {
+                    reader.nextTokenOf<JsonToken.Null>()
+                    null
+                }
+                else -> {
+                    val token = reader.nextTokenOf<JsonToken.Name>()
+                    val propertyName = token.value
+                    val field = descriptor.fields.find { it.serialName == propertyName }
 
-                if (IgnoreKey(propertyName) in descriptor.traits) {
-                    reader.skipNext() // the value of the ignored key
-                    return findNextFieldIndex()
-                } else {
-                    field?.index ?: Deserializer.FieldIterator.UNKNOWN_FIELD
+                    if (IgnoreKey(propertyName) in descriptor.traits) {
+                        reader.skipNext() // the value of the ignored key
+                        continue
+                    } else {
+                        field?.index ?: Deserializer.FieldIterator.UNKNOWN_FIELD
+                    }
                 }
             }
-        }
 
-        if (candidate != null) {
-            // found a field
-            if (reader.peek() == JsonToken.Null) {
-                // skip explicit nulls
-                reader.nextTokenOf<JsonToken.Null>()
-                return findNextFieldIndex()
+            if (candidate != null) {
+                // found a field
+                if (reader.peek() == JsonToken.Null) {
+                    // skip explicit nulls
+                    reader.nextTokenOf<JsonToken.Null>()
+                    continue
+                }
             }
-        }
 
-        return candidate
+            return candidate
+        }
     }
 
     override fun skipValue() {

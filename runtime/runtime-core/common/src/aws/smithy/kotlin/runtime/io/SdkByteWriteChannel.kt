@@ -52,6 +52,26 @@ public interface SdkByteWriteChannel : Closeable {
     public suspend fun write(source: SdkBuffer, byteCount: Long = source.size)
 
     /**
+     * Appends up to [byteCount] bytes from [source] **without suspending**, writing only as many as currently fit
+     * within [availableForWrite]. Returns the number of bytes actually written, which may be less than [byteCount]
+     * (including `0` when the buffer is full).
+     *
+     * Intended for producers that enforce their own external backpressure and so don't need the suspending semantics
+     * of [write]. Like [write], this is single-writer: concurrent use with [write] or itself may throw
+     * [IllegalStateException]. Throws [ClosedWriteChannelException] if the channel was closed successfully, or the
+     * close cause if it was closed with one.
+     *
+     * The default implementation throws [UnsupportedOperationException]; implementations that can service a
+     * non-suspending write override it (delegating wrappers forward it automatically). Low-level flow-control
+     * primitive for engine internals; not part of the stable API.
+     *
+     * @param source the buffer data will be read from and written to this channel
+     * @param byteCount the number of bytes to read from source
+     * @return the number of bytes actually written
+     */
+    public fun tryWrite(source: SdkBuffer, byteCount: Long = source.size): Long = throw UnsupportedOperationException("${this::class.simpleName} does not support non-suspending writes")
+
+    /**
      * Closes this channel with an optional exceptional [cause]. All pending bytes are flushed.
      * This is an idempotent operation — subsequent invocations of this function have no effect and return false
      *

@@ -1,5 +1,91 @@
 # Changelog
 
+## [1.7.6] - 08/04/2026
+
+### Features
+* [#1638](https://github.com/aws/aws-sdk-kotlin/issues/1638) (**telemetry-provider-emf**) Add EMF telemetry provider for emitting SDK operational metrics in CloudWatch Embedded Metric Format
+
+## [1.7.5] - 08/03/2026
+
+## [1.7.4] - 07/31/2026
+
+### Features
+* (**aws-signing**) Add `PayloadSigningEnabled` signing attribute to allow services to skip SigV4 payload signing over HTTPS, reducing CPU overhead for large request bodies
+
+### Fixes
+* [#1667](https://github.com/smithy-lang/smithy-kotlin/issues/1667) Update operation metrics to properly include RPC attributes and telemetry context
+
+## [1.7.3] - 07/27/2026
+
+### Features
+* (**aws-signing-default**) Cache SigV4 signing key derivation to avoid redundant HMAC computations when credentials, region, service, and date are unchanged
+* (**http-client-engine-okhttp**) Expose `maxIdleConnections` on `OkHttpEngineConfig` and change the default from 5 to `maxConcurrency` to align with the SDK's default, reducing connection churn and TLS re-establishment overhead under concurrent workloads
+
+### Fixes
+* [#1656](https://github.com/smithy-lang/smithy-kotlin/issues/1656) (**runtime-core**) Use `kotlin.uuid.Uuid` for UUID generation instead of `kotlin.random.Random` which is unsafe with Lambda SnapStart due to deterministic PRNG state being captured in snapshots
+
+### Miscellaneous
+* (**http-client-engine-crt**) Reduce CPU and memory overhead of the CRT HTTP engine's response body handling by writing received bytes directly into a window-sized channel, eliminating the intermediate unbounded channel and per-response writer coroutine
+
+## [1.7.2] - 07/08/2026
+
+### Fixes
+* Correctly generate default values for floating point numbers given in scientific notation
+
+## [1.7.1] - 07/07/2026
+
+### Features
+* [#1460](https://github.com/aws/aws-sdk-kotlin/issues/1460) (**runtime**) Add configurable header redaction for request/response debug logging via `logRedactedHeaders` client config property
+
+## [1.7.0] - 07/06/2026
+
+### Miscellaneous
+* **Breaking**: Remove deprecated `AwsChunkedSource` constructor overload, `HttpRequestBuilder.setAwsChunkedBody` overload, and `Flow<SdkBuffer>.asEventStreamHttpBody(CoroutineScope)` overload that were scheduled for removal in 1.7
+* **Breaking**: Update Kotlin version from 2.3.20 to 2.4.0
+* **Breaking**: Deprecate `Filesystem.readFileOrNull`, `Filesystem.writeFile`, and `Filesystem.fileExists` for removal in 1.8
+* ⚠️ **IMPORTANT**: Deprecate [`OkHttpEngineConfig.connectionIdlePollingInterval`](https://docs.aws.amazon.com/smithy-kotlin/api/latest/http-client-engine-okhttp/aws.smithy.kotlin.runtime.http.engine.okhttp/-ok-http-engine-config/connection-idle-polling-interval.html), which has been superseded by [`OkHttpEngineConfig.retryOnConnectionFailure`](https://docs.aws.amazon.com/smithy-kotlin/api/latest/http-client-engine-okhttp/aws.smithy.kotlin.runtime.http.engine.okhttp/-ok-http-engine-config/retry-on-connection-failure.html)
+
+## [1.6.15] - 06/10/2026
+
+### Features
+* [#363](https://github.com/smithy-lang/smithy-kotlin/issues/363) Add support for Smithy's [`@requiresLength`](https://smithy.io/2.0/spec/streaming.html#smithy-api-requireslength-trait) and verify that annotated blob shapes include a `Content-Length`
+
+### Fixes
+* Validate that OkHttp header values do not contain CR or LF
+* Limit exponent scale to prevent OOM errors when expanding exponents
+* Limit serde parsing depth to 1,000 levels of nesting to prevent `StackOverflowError`
+
+## [1.6.14] - 05/08/2026
+
+### Features
+* Add standard retry strategy with updated exponential backoff, retry quotas, `x-amz-retry-after` header support, and service-specific behavior for DynamoDB. Gated behind the `SMITHY_NEW_RETRIES_2026` feature flag. See the [announcement](https://github.com/aws/aws-sdk-kotlin/discussions/1885) for more details.
+* Add retry logic for long polling operations. See the [announcement](https://github.com/aws/aws-sdk-kotlin/discussions/1885) for more details.
+
+### Fixes
+* Erase empty file if setting permissions fails
+
+## [1.6.13] - 04/28/2026
+
+### Miscellaneous
+* Bumping Kotlin version to 2.3.20
+
+## [1.6.12] - 04/20/2026
+
+## [1.6.11] - 04/17/2026
+
+### Fixes
+* Fix codegen for `getAttr` returning boolean in endpoint rule conditions
+
+## [1.6.10] - 04/13/2026
+
+## [1.6.9] - 03/31/2026
+
+### Fixes
+* Fix code generation of negative default values for doubles
+* Sleep outside of lock in adaptive rate limiter
+
+## [1.6.8] - 03/30/2026
+
 ## [1.6.7] - 03/24/2026
 
 ## [1.6.6] - 03/13/2026

@@ -36,7 +36,7 @@ public class SdkObjectDescriptor private constructor(builder: Builder) :
             traits.add(trait)
         }
 
-        @PublishedApi
-        internal fun build(): SdkObjectDescriptor = SdkObjectDescriptor(this)
+        @InternalApi
+        public fun build(): SdkObjectDescriptor = SdkObjectDescriptor(this)
     }
 }

@@ -5,32 +5,20 @@
 package aws.smithy.kotlin.runtime.util
 
 import kotlin.test.Test
-import kotlin.test.assertEquals
 import kotlin.test.assertTrue
+import kotlin.uuid.Uuid
 
 class UuidTest {
     @Test
-    fun `it should generate random UUIDs`() {
-        var seenUuids = mutableSetOf<Uuid>()
+    fun `it should generate a valid V4 UUID`() {
+        val uuid = Uuid.random()
 
-        repeat(100) {
-            // randomness is unpredictable so do this a bunch to lower risk of false positive
-            val uuid = Uuid.random()
+        uuid.toLongs { msb, lsb ->
+            val version = (msb ushr 12) and 0xF
+            assertTrue(version == 4L, "Expected UUID v4, got version $version")
 
-            // Check that v4 flag is set
-            assertEquals(0x00000000_0000_4000U.toLong(), uuid.high and 0x00000000_0000_f000U.toLong())
-
-            // Check that type 2 is set
-            assertEquals(0x8000_000000000000U.toLong(), uuid.low and 0xc000_000000000000U.toLong())
-
-            // Check that the UUID is truly random
-            assertTrue(seenUuids.add(uuid), """Generated UUID "$uuid" is not unique""")
+            val variant = (lsb ushr 62) and 0x3
+            assertTrue(variant == 2L, "Expected variant 2 (RFC 9562), got variant $variant")
         }
-    }
-
-    @Test
-    fun `it should yield valid UUID strings`() {
-        val uuid = Uuid(0x12345678_90ab_cdef, 0x2143_658709badcfe)
-        assertEquals("12345678-90ab-cdef-2143-658709badcfe", uuid.toString())
     }
 }

@@ -10,8 +10,7 @@ import aws.smithy.kotlin.codegen.test.codegenDeserializerForShape
 import aws.smithy.kotlin.codegen.test.prependNamespaceAndService
 import aws.smithy.kotlin.codegen.test.shouldContainOnlyOnceWithDiff
 import aws.smithy.kotlin.codegen.test.toSmithyModel
-import org.junit.jupiter.params.ParameterizedTest
-import org.junit.jupiter.params.provider.ValueSource
+import aws.smithy.kotlin.runtime.testing.parameterized
 import kotlin.test.Test
 
 class DeserializeStructGeneratorTest {
@@ -25,9 +24,10 @@ class DeserializeStructGeneratorTest {
         operations = listOf("Foo"),
     ).trimIndent()
 
-    @ParameterizedTest
-    @ValueSource(strings = ["String", "Boolean", "Byte", "Short", "Integer", "Long", "Float", "Double", "BigInteger", "BigDecimal"])
-    fun `it deserializes a structure with a simple fields`(memberType: String) {
+    @Test
+    fun `it deserializes a structure with a simple fields`() = parameterized(
+        listOf("String", "Boolean", "Byte", "Short", "Integer", "Long", "Float", "Double", "BigInteger", "BigDecimal"),
+    ) { memberType ->
         val model = (
             modelPrefix + """            
             structure FooResponse { 
