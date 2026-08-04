@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.7.6] - 08/04/2026
+
+### Features
+* [#1638](https://github.com/aws/aws-sdk-kotlin/issues/1638) (**telemetry-provider-emf**) Add EMF telemetry provider for emitting SDK operational metrics in CloudWatch Embedded Metric Format
+
 ## [1.7.5] - 08/03/2026
 
 ## [1.7.4] - 07/31/2026
