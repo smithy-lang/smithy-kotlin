@@ -312,3 +312,216 @@ public abstract interface class aws/smithy/kotlin/runtime/serde/StructSerializer
 	public abstract fun structField (Laws/smithy/kotlin/runtime/serde/SdkFieldDescriptor;Lkotlin/jvm/functions/Function1;)V
 }
 
+public final class aws/smithy/kotlin/runtime/serde/schema/DocumentTrait : aws/smithy/kotlin/runtime/serde/schema/Trait {
+	public fun <init> (Laws/smithy/kotlin/runtime/serde/schema/ShapeId;Laws/smithy/kotlin/runtime/content/Document;)V
+	public fun getId ()Laws/smithy/kotlin/runtime/serde/schema/ShapeId;
+	public final fun getValue ()Laws/smithy/kotlin/runtime/content/Document;
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class aws/smithy/kotlin/runtime/serde/schema/JsonNameTrait : aws/smithy/kotlin/runtime/serde/schema/Trait {
+	public static final field Companion Laws/smithy/kotlin/runtime/serde/schema/JsonNameTrait$Companion;
+	public fun <init> (Ljava/lang/String;)V
+	public fun getId ()Laws/smithy/kotlin/runtime/serde/schema/ShapeId;
+	public final fun getValue ()Ljava/lang/String;
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class aws/smithy/kotlin/runtime/serde/schema/JsonNameTrait$Companion {
+	public final fun getID ()Laws/smithy/kotlin/runtime/serde/schema/ShapeId;
+}
+
+public abstract interface class aws/smithy/kotlin/runtime/serde/schema/ListSchema : aws/smithy/kotlin/runtime/serde/schema/Schema {
+	public abstract fun getElement ()Laws/smithy/kotlin/runtime/serde/schema/MemberSchema;
+}
+
+public final class aws/smithy/kotlin/runtime/serde/schema/ListSchemaBuilder {
+	public final fun element (Laws/smithy/kotlin/runtime/serde/schema/Schema;[Laws/smithy/kotlin/runtime/serde/schema/Trait;)V
+	public final fun element (Lkotlin/Lazy;[Laws/smithy/kotlin/runtime/serde/schema/Trait;)V
+	public final fun trait (Laws/smithy/kotlin/runtime/serde/schema/Trait;)V
+}
+
+public abstract interface class aws/smithy/kotlin/runtime/serde/schema/MapSchema : aws/smithy/kotlin/runtime/serde/schema/Schema {
+	public abstract fun getKey ()Laws/smithy/kotlin/runtime/serde/schema/MemberSchema;
+	public abstract fun getValue ()Laws/smithy/kotlin/runtime/serde/schema/MemberSchema;
+}
+
+public final class aws/smithy/kotlin/runtime/serde/schema/MapSchemaBuilder {
+	public final fun key (Laws/smithy/kotlin/runtime/serde/schema/Schema;[Laws/smithy/kotlin/runtime/serde/schema/Trait;)V
+	public final fun key (Lkotlin/Lazy;[Laws/smithy/kotlin/runtime/serde/schema/Trait;)V
+	public final fun trait (Laws/smithy/kotlin/runtime/serde/schema/Trait;)V
+	public final fun value (Laws/smithy/kotlin/runtime/serde/schema/Schema;[Laws/smithy/kotlin/runtime/serde/schema/Trait;)V
+	public final fun value (Lkotlin/Lazy;[Laws/smithy/kotlin/runtime/serde/schema/Trait;)V
+}
+
+public abstract interface class aws/smithy/kotlin/runtime/serde/schema/MemberSchema : aws/smithy/kotlin/runtime/serde/schema/Schema {
+	public abstract fun getMemberIndex ()I
+	public abstract fun getMemberName ()Ljava/lang/String;
+	public abstract fun getTarget ()Laws/smithy/kotlin/runtime/serde/schema/Schema;
+}
+
+public final class aws/smithy/kotlin/runtime/serde/schema/PreludeSchemas {
+	public static final field INSTANCE Laws/smithy/kotlin/runtime/serde/schema/PreludeSchemas;
+	public final fun getBigDecimal ()Laws/smithy/kotlin/runtime/serde/schema/SimpleSchema;
+	public final fun getBigInteger ()Laws/smithy/kotlin/runtime/serde/schema/SimpleSchema;
+	public final fun getBlob ()Laws/smithy/kotlin/runtime/serde/schema/SimpleSchema;
+	public final fun getBoolean ()Laws/smithy/kotlin/runtime/serde/schema/SimpleSchema;
+	public final fun getByte ()Laws/smithy/kotlin/runtime/serde/schema/SimpleSchema;
+	public final fun getDocument ()Laws/smithy/kotlin/runtime/serde/schema/SimpleSchema;
+	public final fun getDouble ()Laws/smithy/kotlin/runtime/serde/schema/SimpleSchema;
+	public final fun getFloat ()Laws/smithy/kotlin/runtime/serde/schema/SimpleSchema;
+	public final fun getInteger ()Laws/smithy/kotlin/runtime/serde/schema/SimpleSchema;
+	public final fun getLong ()Laws/smithy/kotlin/runtime/serde/schema/SimpleSchema;
+	public final fun getShort ()Laws/smithy/kotlin/runtime/serde/schema/SimpleSchema;
+	public final fun getString ()Laws/smithy/kotlin/runtime/serde/schema/SimpleSchema;
+	public final fun getTimestamp ()Laws/smithy/kotlin/runtime/serde/schema/SimpleSchema;
+}
+
+public final class aws/smithy/kotlin/runtime/serde/schema/RequiredTrait : aws/smithy/kotlin/runtime/serde/schema/Trait {
+	public static final field INSTANCE Laws/smithy/kotlin/runtime/serde/schema/RequiredTrait;
+	public final fun getID ()Laws/smithy/kotlin/runtime/serde/schema/ShapeId;
+	public fun getId ()Laws/smithy/kotlin/runtime/serde/schema/ShapeId;
+	public fun toString ()Ljava/lang/String;
+}
+
+public abstract interface class aws/smithy/kotlin/runtime/serde/schema/Schema {
+	public abstract fun getShapeId ()Laws/smithy/kotlin/runtime/serde/schema/ShapeId;
+	public abstract fun getTraits ()Ljava/util/Collection;
+	public abstract fun getType ()Laws/smithy/kotlin/runtime/serde/schema/ShapeType;
+}
+
+public final class aws/smithy/kotlin/runtime/serde/schema/SchemaBuildersKt {
+	public static final fun ListSchema (Laws/smithy/kotlin/runtime/serde/schema/ShapeId;Lkotlin/jvm/functions/Function1;)Laws/smithy/kotlin/runtime/serde/schema/ListSchema;
+	public static final fun MapSchema (Laws/smithy/kotlin/runtime/serde/schema/ShapeId;Lkotlin/jvm/functions/Function1;)Laws/smithy/kotlin/runtime/serde/schema/MapSchema;
+	public static final fun SimpleSchema (Laws/smithy/kotlin/runtime/serde/schema/ShapeId;Laws/smithy/kotlin/runtime/serde/schema/ShapeType;[Laws/smithy/kotlin/runtime/serde/schema/Trait;)Laws/smithy/kotlin/runtime/serde/schema/SimpleSchema;
+	public static final fun StructureSchema (Laws/smithy/kotlin/runtime/serde/schema/ShapeId;Lkotlin/jvm/functions/Function1;)Laws/smithy/kotlin/runtime/serde/schema/StructureSchema;
+	public static final fun UnionSchema (Laws/smithy/kotlin/runtime/serde/schema/ShapeId;Lkotlin/jvm/functions/Function1;)Laws/smithy/kotlin/runtime/serde/schema/UnionSchema;
+}
+
+public abstract interface annotation class aws/smithy/kotlin/runtime/serde/schema/SchemaDsl : java/lang/annotation/Annotation {
+}
+
+public final class aws/smithy/kotlin/runtime/serde/schema/SchemaKt {
+	public static final fun getTrait (Laws/smithy/kotlin/runtime/serde/schema/Schema;Laws/smithy/kotlin/runtime/serde/schema/ShapeId;)Laws/smithy/kotlin/runtime/serde/schema/Trait;
+	public static final fun hasTrait (Laws/smithy/kotlin/runtime/serde/schema/Schema;Laws/smithy/kotlin/runtime/serde/schema/ShapeId;)Z
+}
+
+public final class aws/smithy/kotlin/runtime/serde/schema/ShapeId {
+	public static final field Companion Laws/smithy/kotlin/runtime/serde/schema/ShapeId$Companion;
+	public synthetic fun <init> (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Lkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getAbsoluteId ()Ljava/lang/String;
+	public final fun getMember ()Ljava/lang/String;
+	public final fun getName ()Ljava/lang/String;
+	public final fun getNamespace ()Ljava/lang/String;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+	public final fun withMember (Ljava/lang/String;)Laws/smithy/kotlin/runtime/serde/schema/ShapeId;
+}
+
+public final class aws/smithy/kotlin/runtime/serde/schema/ShapeId$Companion {
+	public final fun from (Ljava/lang/String;)Laws/smithy/kotlin/runtime/serde/schema/ShapeId;
+	public final fun from (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)Laws/smithy/kotlin/runtime/serde/schema/ShapeId;
+	public static synthetic fun from$default (Laws/smithy/kotlin/runtime/serde/schema/ShapeId$Companion;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;ILjava/lang/Object;)Laws/smithy/kotlin/runtime/serde/schema/ShapeId;
+}
+
+public final class aws/smithy/kotlin/runtime/serde/schema/ShapeType : java/lang/Enum {
+	public static final field BIG_DECIMAL Laws/smithy/kotlin/runtime/serde/schema/ShapeType;
+	public static final field BIG_INTEGER Laws/smithy/kotlin/runtime/serde/schema/ShapeType;
+	public static final field BLOB Laws/smithy/kotlin/runtime/serde/schema/ShapeType;
+	public static final field BOOLEAN Laws/smithy/kotlin/runtime/serde/schema/ShapeType;
+	public static final field BYTE Laws/smithy/kotlin/runtime/serde/schema/ShapeType;
+	public static final field DOCUMENT Laws/smithy/kotlin/runtime/serde/schema/ShapeType;
+	public static final field DOUBLE Laws/smithy/kotlin/runtime/serde/schema/ShapeType;
+	public static final field ENUM Laws/smithy/kotlin/runtime/serde/schema/ShapeType;
+	public static final field FLOAT Laws/smithy/kotlin/runtime/serde/schema/ShapeType;
+	public static final field INTEGER Laws/smithy/kotlin/runtime/serde/schema/ShapeType;
+	public static final field INT_ENUM Laws/smithy/kotlin/runtime/serde/schema/ShapeType;
+	public static final field LIST Laws/smithy/kotlin/runtime/serde/schema/ShapeType;
+	public static final field LONG Laws/smithy/kotlin/runtime/serde/schema/ShapeType;
+	public static final field MAP Laws/smithy/kotlin/runtime/serde/schema/ShapeType;
+	public static final field MEMBER Laws/smithy/kotlin/runtime/serde/schema/ShapeType;
+	public static final field OPERATION Laws/smithy/kotlin/runtime/serde/schema/ShapeType;
+	public static final field SERVICE Laws/smithy/kotlin/runtime/serde/schema/ShapeType;
+	public static final field SHORT Laws/smithy/kotlin/runtime/serde/schema/ShapeType;
+	public static final field STRING Laws/smithy/kotlin/runtime/serde/schema/ShapeType;
+	public static final field STRUCTURE Laws/smithy/kotlin/runtime/serde/schema/ShapeType;
+	public static final field TIMESTAMP Laws/smithy/kotlin/runtime/serde/schema/ShapeType;
+	public static final field UNION Laws/smithy/kotlin/runtime/serde/schema/ShapeType;
+	public static fun getEntries ()Lkotlin/enums/EnumEntries;
+	public final fun isSimple ()Z
+	public static fun valueOf (Ljava/lang/String;)Laws/smithy/kotlin/runtime/serde/schema/ShapeType;
+	public static fun values ()[Laws/smithy/kotlin/runtime/serde/schema/ShapeType;
+}
+
+public abstract interface class aws/smithy/kotlin/runtime/serde/schema/SimpleSchema : aws/smithy/kotlin/runtime/serde/schema/Schema {
+}
+
+public final class aws/smithy/kotlin/runtime/serde/schema/SparseTrait : aws/smithy/kotlin/runtime/serde/schema/Trait {
+	public static final field INSTANCE Laws/smithy/kotlin/runtime/serde/schema/SparseTrait;
+	public final fun getID ()Laws/smithy/kotlin/runtime/serde/schema/ShapeId;
+	public fun getId ()Laws/smithy/kotlin/runtime/serde/schema/ShapeId;
+	public fun toString ()Ljava/lang/String;
+}
+
+public abstract interface class aws/smithy/kotlin/runtime/serde/schema/StructureSchema : aws/smithy/kotlin/runtime/serde/schema/Schema {
+	public abstract fun getMembers ()Ljava/util/List;
+	public abstract fun member (I)Laws/smithy/kotlin/runtime/serde/schema/MemberSchema;
+	public abstract fun member (Ljava/lang/String;)Laws/smithy/kotlin/runtime/serde/schema/MemberSchema;
+}
+
+public final class aws/smithy/kotlin/runtime/serde/schema/StructureSchemaBuilder {
+	public final fun member (Ljava/lang/String;Laws/smithy/kotlin/runtime/serde/schema/Schema;[Laws/smithy/kotlin/runtime/serde/schema/Trait;)V
+	public final fun member (Ljava/lang/String;Lkotlin/Lazy;[Laws/smithy/kotlin/runtime/serde/schema/Trait;)V
+	public final fun trait (Laws/smithy/kotlin/runtime/serde/schema/Trait;)V
+}
+
+public final class aws/smithy/kotlin/runtime/serde/schema/TimestampFormat : java/lang/Enum {
+	public static final field DATE_TIME Laws/smithy/kotlin/runtime/serde/schema/TimestampFormat;
+	public static final field EPOCH_SECONDS Laws/smithy/kotlin/runtime/serde/schema/TimestampFormat;
+	public static final field HTTP_DATE Laws/smithy/kotlin/runtime/serde/schema/TimestampFormat;
+	public static fun getEntries ()Lkotlin/enums/EnumEntries;
+	public static fun valueOf (Ljava/lang/String;)Laws/smithy/kotlin/runtime/serde/schema/TimestampFormat;
+	public static fun values ()[Laws/smithy/kotlin/runtime/serde/schema/TimestampFormat;
+}
+
+public final class aws/smithy/kotlin/runtime/serde/schema/TimestampFormatTrait : aws/smithy/kotlin/runtime/serde/schema/Trait {
+	public static final field Companion Laws/smithy/kotlin/runtime/serde/schema/TimestampFormatTrait$Companion;
+	public fun <init> (Laws/smithy/kotlin/runtime/serde/schema/TimestampFormat;)V
+	public final fun getFormat ()Laws/smithy/kotlin/runtime/serde/schema/TimestampFormat;
+	public fun getId ()Laws/smithy/kotlin/runtime/serde/schema/ShapeId;
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class aws/smithy/kotlin/runtime/serde/schema/TimestampFormatTrait$Companion {
+	public final fun getID ()Laws/smithy/kotlin/runtime/serde/schema/ShapeId;
+}
+
+public abstract interface class aws/smithy/kotlin/runtime/serde/schema/Trait {
+	public abstract fun getId ()Laws/smithy/kotlin/runtime/serde/schema/ShapeId;
+}
+
+public abstract interface class aws/smithy/kotlin/runtime/serde/schema/UnionSchema : aws/smithy/kotlin/runtime/serde/schema/Schema {
+	public abstract fun getMembers ()Ljava/util/List;
+	public abstract fun member (I)Laws/smithy/kotlin/runtime/serde/schema/MemberSchema;
+	public abstract fun member (Ljava/lang/String;)Laws/smithy/kotlin/runtime/serde/schema/MemberSchema;
+}
+
+public final class aws/smithy/kotlin/runtime/serde/schema/UnionSchemaBuilder {
+	public final fun member (Ljava/lang/String;Laws/smithy/kotlin/runtime/serde/schema/Schema;[Laws/smithy/kotlin/runtime/serde/schema/Trait;)V
+	public final fun member (Ljava/lang/String;Lkotlin/Lazy;[Laws/smithy/kotlin/runtime/serde/schema/Trait;)V
+	public final fun trait (Laws/smithy/kotlin/runtime/serde/schema/Trait;)V
+}
+
+public final class aws/smithy/kotlin/runtime/serde/schema/XmlNameTrait : aws/smithy/kotlin/runtime/serde/schema/Trait {
+	public static final field Companion Laws/smithy/kotlin/runtime/serde/schema/XmlNameTrait$Companion;
+	public fun <init> (Ljava/lang/String;)V
+	public fun getId ()Laws/smithy/kotlin/runtime/serde/schema/ShapeId;
+	public final fun getValue ()Ljava/lang/String;
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class aws/smithy/kotlin/runtime/serde/schema/XmlNameTrait$Companion {
+	public final fun getID ()Laws/smithy/kotlin/runtime/serde/schema/ShapeId;
+}
+
