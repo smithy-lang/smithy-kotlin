@@ -4,10 +4,6 @@
  */
 package aws.smithy.kotlin.runtime.serde.schema
 
-/**
- * The kind of a Smithy shape. Mirrors the Smithy data model: simple shapes, aggregate shapes,
- * the member relationship, and the service/operation service-model shapes.
- */
 public enum class ShapeType {
     // simple
     BLOB,
@@ -38,9 +34,6 @@ public enum class ShapeType {
     OPERATION,
     ;
 
-    /**
-     * True if this type is one of the Smithy simple shapes (not an aggregate, member, or service shape).
-     */
     public val isSimple: Boolean
         get() = when (this) {
             BLOB, BOOLEAN, STRING, TIMESTAMP, BYTE, SHORT, INTEGER, LONG,
