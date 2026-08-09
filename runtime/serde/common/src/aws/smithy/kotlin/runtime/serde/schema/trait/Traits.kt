@@ -2,14 +2,17 @@
  * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
  * SPDX-License-Identifier: Apache-2.0
  */
-package aws.smithy.kotlin.runtime.serde.schema
+package aws.smithy.kotlin.runtime.serde.schema.trait
+
+import aws.smithy.kotlin.runtime.serde.schema.ShapeId
+import aws.smithy.kotlin.runtime.serde.schema.shapeId
 
 /**
  * `smithy.api#jsonName` — the wire name to use for a member under JSON protocols that honor it (restJson1).
  */
 public class JsonNameTrait(public val value: String) : Trait {
     public companion object {
-        public val ID: ShapeId = ShapeId.from("smithy.api#jsonName")
+        public val ID: ShapeId = shapeId("smithy.api#jsonName")
     }
     override val id: ShapeId get() = ID
     override fun toString(): String = "JsonName($value)"
@@ -20,7 +23,7 @@ public class JsonNameTrait(public val value: String) : Trait {
  */
 public class XmlNameTrait(public val value: String) : Trait {
     public companion object {
-        public val ID: ShapeId = ShapeId.from("smithy.api#xmlName")
+        public val ID: ShapeId = shapeId("smithy.api#xmlName")
     }
     override val id: ShapeId get() = ID
     override fun toString(): String = "XmlName($value)"
@@ -40,7 +43,7 @@ public enum class TimestampFormat {
  */
 public class TimestampFormatTrait(public val format: TimestampFormat) : Trait {
     public companion object {
-        public val ID: ShapeId = ShapeId.from("smithy.api#timestampFormat")
+        public val ID: ShapeId = shapeId("smithy.api#timestampFormat")
     }
     override val id: ShapeId get() = ID
     override fun toString(): String = "TimestampFormat($format)"
@@ -50,7 +53,7 @@ public class TimestampFormatTrait(public val format: TimestampFormat) : Trait {
  * `smithy.api#required` — the member must be present. Modeled as a valueless annotation trait.
  */
 public object RequiredTrait : Trait {
-    public val ID: ShapeId = ShapeId.from("smithy.api#required")
+    public val ID: ShapeId = shapeId("smithy.api#required")
     override val id: ShapeId get() = ID
     override fun toString(): String = "Required"
 }
@@ -59,7 +62,7 @@ public object RequiredTrait : Trait {
  * `smithy.api#sparse` — a list/map may contain null values (and they must be preserved on the wire).
  */
 public object SparseTrait : Trait {
-    public val ID: ShapeId = ShapeId.from("smithy.api#sparse")
+    public val ID: ShapeId = shapeId("smithy.api#sparse")
     override val id: ShapeId get() = ID
     override fun toString(): String = "Sparse"
 }

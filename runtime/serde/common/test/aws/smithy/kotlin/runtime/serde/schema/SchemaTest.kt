@@ -4,6 +4,10 @@
  */
 package aws.smithy.kotlin.runtime.serde.schema
 
+import aws.smithy.kotlin.runtime.serde.schema.trait.JsonNameTrait
+import aws.smithy.kotlin.runtime.serde.schema.trait.TimestampFormat
+import aws.smithy.kotlin.runtime.serde.schema.trait.TimestampFormatTrait
+import aws.smithy.kotlin.runtime.serde.schema.trait.XmlNameTrait
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
@@ -15,11 +19,11 @@ import kotlin.test.assertTrue
 
 class SchemaTest {
     // com.example#Bird { name: String @jsonName("bird_name"), colors: ColorList }
-    private val birdSchema: StructureSchema = StructureSchema(ShapeId.from("com.example#Bird")) {
+    private val birdSchema: StructureSchema = StructureSchema(shapeId("com.example#Bird")) {
         member("name", PreludeSchemas.String, JsonNameTrait("bird_name"))
         member(
             "colors",
-            ListSchema(ShapeId.from("com.example#ColorList")) {
+            ListSchema(shapeId("com.example#ColorList")) {
                 element(PreludeSchemas.String)
             },
         )
@@ -42,15 +46,6 @@ class SchemaTest {
     }
 
     @Test
-    fun testMemberLookupByIndex() {
-        assertEquals("name", birdSchema.member(0)?.memberName)
-        assertEquals("colors", birdSchema.member(1)?.memberName)
-        assertNull(birdSchema.member(2))
-        assertEquals(0, birdSchema.member("name")?.memberIndex)
-        assertEquals(1, birdSchema.member("colors")?.memberIndex)
-    }
-
-    @Test
     fun testListElementNavigation() {
         val colors = assertNotNull(birdSchema.member("colors"))
         val list = colors.target as ListSchema
@@ -69,22 +64,23 @@ class SchemaTest {
     }
 
     @Test
-    fun testMemberTraitsMergeOverTarget() {
-        // target string schema carries @sparse (contrived), member overrides jsonName
-        val target = SimpleSchema(ShapeId.from("com.example#Named"), ShapeType.STRING, TimestampFormatTrait(TimestampFormat.DATE_TIME))
-        val schema = StructureSchema(ShapeId.from("com.example#Holder")) {
+    fun testMemberCarriesOnlyItsOwnTraits() {
+        // the target carries a trait; the member declares its own — a member reports ONLY its own
+        val target = SimpleSchema(shapeId("com.example#Named"), ShapeType.STRING, TimestampFormatTrait(TimestampFormat.DATE_TIME))
+        val schema = StructureSchema(shapeId("com.example#Holder")) {
             member("field", target, JsonNameTrait("f"))
         }
         val field = assertNotNull(schema.member("field"))
-        // effective traits include both the member's own and the target's
         assertTrue(field.hasTrait(JsonNameTrait.ID))
-        assertTrue(field.hasTrait(TimestampFormatTrait.ID))
-        assertEquals(2, field.traits.size)
+        assertFalse(field.hasTrait(TimestampFormatTrait.ID)) // target traits are NOT merged in
+        assertEquals(1, field.traits.size)
+        // the target still carries its own trait
+        assertTrue(field.target.hasTrait(TimestampFormatTrait.ID))
     }
 
     @Test
     fun testMapSchemaNavigation() {
-        val schema = MapSchema(ShapeId.from("com.example#StringMap")) {
+        val schema = MapSchema(shapeId("com.example#StringMap")) {
             key(PreludeSchemas.String)
             value(PreludeSchemas.Integer)
         }
@@ -95,7 +91,7 @@ class SchemaTest {
 
     @Test
     fun testUnionSchema() {
-        val schema = UnionSchema(ShapeId.from("com.example#Shape")) {
+        val schema = UnionSchema(shapeId("com.example#Shape")) {
             member("circle", PreludeSchemas.Double)
             member("square", PreludeSchemas.Double)
         }
@@ -108,10 +104,10 @@ class SchemaTest {
     fun testRecursiveSchemaViaLazyMember() {
         // com.example#RecursiveValue { m: Map<String, RecursiveValue> }
         lateinit var schema: StructureSchema
-        schema = StructureSchema(ShapeId.from("com.example#RecursiveValue")) {
+        schema = StructureSchema(shapeId("com.example#RecursiveValue")) {
             member(
                 "m",
-                MapSchema(ShapeId.from("com.example#RecursiveValueMap")) {
+                MapSchema(shapeId("com.example#RecursiveValueMap")) {
                     key(PreludeSchemas.String)
                     value(lazy { schema })
                 },
@@ -134,18 +130,7 @@ class SchemaTest {
     @Test
     fun testSimpleSchemaRejectsNonSimpleType() {
         assertFailsWith<IllegalArgumentException> {
-            SimpleSchema(ShapeId.from("com.example#Nope"), ShapeType.STRUCTURE)
+            SimpleSchema(shapeId("com.example#Nope"), ShapeType.STRUCTURE)
         }
-    }
-
-    @Test
-    fun testDocumentTraitEnumerable() {
-        val custom = ShapeId.from("com.example#customTrait")
-        val schema = StructureSchema(ShapeId.from("com.example#Tagged")) {
-            member("x", PreludeSchemas.String, DocumentTrait(custom, null))
-        }
-        val x = assertNotNull(schema.member("x"))
-        assertTrue(x.hasTrait(custom))
-        assertNotNull(x.getTrait<DocumentTrait>(custom))
     }
 }

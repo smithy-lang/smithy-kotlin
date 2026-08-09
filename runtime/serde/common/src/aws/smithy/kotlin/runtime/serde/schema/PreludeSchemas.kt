@@ -11,8 +11,7 @@ package aws.smithy.kotlin.runtime.serde.schema
  * fresh simple schema per use, keeping generated schema code small and load-time allocation low.
  */
 public object PreludeSchemas {
-    private fun prelude(name: String, type: ShapeType): SimpleSchema =
-        SimpleSchemaImpl(ShapeId.from("smithy.api", name), type, lazyOf(emptyList()))
+    private fun prelude(name: String, type: ShapeType): SimpleSchema = SimpleSchemaImpl(shapeId("smithy.api", name), type, emptyList())
 
     public val Blob: SimpleSchema = prelude("Blob", ShapeType.BLOB)
     public val Boolean: SimpleSchema = prelude("Boolean", ShapeType.BOOLEAN)
