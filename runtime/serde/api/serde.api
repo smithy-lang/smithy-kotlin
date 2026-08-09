@@ -360,6 +360,10 @@ public abstract interface class aws/smithy/kotlin/runtime/serde/schema/MemberSch
 	public abstract fun getTarget ()Laws/smithy/kotlin/runtime/serde/schema/Schema;
 }
 
+public abstract interface class aws/smithy/kotlin/runtime/serde/schema/MemberShapeId : aws/smithy/kotlin/runtime/serde/schema/ShapeId {
+	public abstract fun getMember ()Ljava/lang/String;
+}
+
 public final class aws/smithy/kotlin/runtime/serde/schema/PreludeSchemas {
 	public static final field INSTANCE Laws/smithy/kotlin/runtime/serde/schema/PreludeSchemas;
 	public final fun getBigDecimal ()Laws/smithy/kotlin/runtime/serde/schema/SimpleSchema;
@@ -406,23 +410,17 @@ public final class aws/smithy/kotlin/runtime/serde/schema/SchemaKt {
 	public static final fun hasTrait (Laws/smithy/kotlin/runtime/serde/schema/Schema;Laws/smithy/kotlin/runtime/serde/schema/ShapeId;)Z
 }
 
-public final class aws/smithy/kotlin/runtime/serde/schema/ShapeId {
-	public static final field Companion Laws/smithy/kotlin/runtime/serde/schema/ShapeId$Companion;
-	public synthetic fun <init> (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Lkotlin/jvm/internal/DefaultConstructorMarker;)V
-	public fun equals (Ljava/lang/Object;)Z
-	public final fun getAbsoluteId ()Ljava/lang/String;
-	public final fun getMember ()Ljava/lang/String;
-	public final fun getName ()Ljava/lang/String;
-	public final fun getNamespace ()Ljava/lang/String;
-	public fun hashCode ()I
-	public fun toString ()Ljava/lang/String;
-	public final fun withMember (Ljava/lang/String;)Laws/smithy/kotlin/runtime/serde/schema/ShapeId;
+public abstract interface class aws/smithy/kotlin/runtime/serde/schema/ShapeId {
+	public abstract fun getAbsoluteId ()Ljava/lang/String;
+	public abstract fun getName ()Ljava/lang/String;
+	public abstract fun getNamespace ()Ljava/lang/String;
 }
 
-public final class aws/smithy/kotlin/runtime/serde/schema/ShapeId$Companion {
-	public final fun from (Ljava/lang/String;)Laws/smithy/kotlin/runtime/serde/schema/ShapeId;
-	public final fun from (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)Laws/smithy/kotlin/runtime/serde/schema/ShapeId;
-	public static synthetic fun from$default (Laws/smithy/kotlin/runtime/serde/schema/ShapeId$Companion;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;ILjava/lang/Object;)Laws/smithy/kotlin/runtime/serde/schema/ShapeId;
+public final class aws/smithy/kotlin/runtime/serde/schema/ShapeIdKt {
+	public static final fun shapeId (Ljava/lang/String;)Laws/smithy/kotlin/runtime/serde/schema/ShapeId;
+	public static final fun shapeId (Ljava/lang/String;Ljava/lang/String;)Laws/smithy/kotlin/runtime/serde/schema/ShapeId;
+	public static final fun shapeId (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)Laws/smithy/kotlin/runtime/serde/schema/MemberShapeId;
+	public static final fun withMember (Laws/smithy/kotlin/runtime/serde/schema/ShapeId;Ljava/lang/String;)Laws/smithy/kotlin/runtime/serde/schema/MemberShapeId;
 }
 
 public final class aws/smithy/kotlin/runtime/serde/schema/ShapeType : java/lang/Enum {
