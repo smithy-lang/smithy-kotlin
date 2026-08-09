@@ -7,46 +7,67 @@ package aws.smithy.kotlin.runtime.serde.schema
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
-import kotlin.test.assertNull
+import kotlin.test.assertIs
+import kotlin.test.assertNotEquals
 
 class ShapeIdTest {
     @Test
-    fun testParsesShapeId() {
-        val id = ShapeId.from("com.example#Bird")
+    fun testConstructsShapeId() {
+        val id = shapeId("com.example", "Bird")
         assertEquals("com.example", id.namespace)
         assertEquals("Bird", id.name)
-        assertNull(id.member)
+        assertEquals("com.example#Bird", id.absoluteId)
+    }
+
+    @Test
+    fun testParsesShapeId() {
+        val id = shapeId("com.example#Bird")
+        assertEquals("com.example", id.namespace)
+        assertEquals("Bird", id.name)
         assertEquals("com.example#Bird", id.absoluteId)
     }
 
     @Test
     fun testParsesMemberShapeId() {
-        val id = ShapeId.from("com.example#Bird\$name")
-        assertEquals("com.example", id.namespace)
-        assertEquals("Bird", id.name)
-        assertEquals("name", id.member)
-        assertEquals("com.example#Bird\$name", id.absoluteId)
+        val id = shapeId("com.example#Bird\$name")
+        val member = assertIs<MemberShapeId>(id)
+        assertEquals("com.example", member.namespace)
+        assertEquals("Bird", member.name)
+        assertEquals("name", member.member)
+        assertEquals("com.example#Bird\$name", member.absoluteId)
     }
 
     @Test
     fun testWithMember() {
-        val id = ShapeId.from("com.example#Bird").withMember("colors")
+        val id = shapeId("com.example", "Bird").withMember("colors")
         assertEquals("colors", id.member)
         assertEquals("com.example#Bird\$colors", id.absoluteId)
     }
 
     @Test
-    fun testEqualityAndHashCode() {
-        val a = ShapeId.from("com.example#Bird")
-        val b = ShapeId.from("com.example", "Bird")
-        assertEquals(a, b)
-        assertEquals(a.hashCode(), b.hashCode())
+    fun testWithMemberReplacesExisting() {
+        val id = shapeId("com.example#Bird\$name").withMember("colors")
+        assertEquals("colors", id.member)
+        assertEquals("com.example#Bird\$colors", id.absoluteId)
+    }
+
+    @Test
+    fun testEquality() {
+        assertEquals(shapeId("com.example#Bird"), shapeId("com.example", "Bird"))
+        assertEquals(
+            shapeId("com.example#Bird\$name"),
+            shapeId("com.example", "Bird").withMember("name"),
+        )
+        // a plain shape id and a member id never compare equal
+        assertNotEquals<ShapeId>(shapeId("com.example#Bird"), shapeId("com.example#Bird\$name"))
     }
 
     @Test
     fun testRejectsMalformedId() {
-        assertFailsWith<IllegalArgumentException> { ShapeId.from("no-hash") }
-        assertFailsWith<IllegalArgumentException> { ShapeId.from("#Bird") }
-        assertFailsWith<IllegalArgumentException> { ShapeId.from("com.example#") }
+        assertFailsWith<IllegalArgumentException> { shapeId("no-hash") }
+        assertFailsWith<IllegalArgumentException> { shapeId("#Bird") }
+        assertFailsWith<IllegalArgumentException> { shapeId("com.example#") }
+        assertFailsWith<IllegalArgumentException> { shapeId("com.example#Bird\$") }
+        assertFailsWith<IllegalArgumentException> { shapeId("", "Bird") }
     }
 }
