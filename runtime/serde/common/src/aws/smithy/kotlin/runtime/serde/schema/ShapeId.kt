@@ -23,7 +23,7 @@ public sealed interface MemberShapeId : ShapeId {
 }
 
 /** The [MemberShapeId] for [member] of this shape, replacing any existing member component. */
-public fun ShapeId.withMember(member: String): MemberShapeId = shapeId(namespace, name, member)
+public fun ShapeId.withMember(member: String): MemberShapeId = MemberShapeIdImpl(namespace, name, member)
 
 private data class ShapeIdImpl(
     override val namespace: String,
@@ -63,15 +63,16 @@ public fun shapeId(absoluteId: String): ShapeId {
         "invalid shape id '$absoluteId': expected 'namespace#name' or 'namespace#name\$member'"
     }
     val namespace = absoluteId.substring(0, hash)
-    val rest = absoluteId.substring(hash + 1)
-    val dollar = rest.indexOf('$')
-    return if (dollar < 0) {
-        shapeId(namespace, rest)
+
+    // scan '$' in the original string (after '#') to avoid allocating an intermediate substring
+    val dollar = absoluteId.indexOf('$', hash + 1)
+    if (dollar < 0) {
+        return ShapeIdImpl(namespace, absoluteId.substring(hash + 1))
     } else {
-        require(dollar in 1 until rest.length - 1) {
+        require(dollar > hash + 1 && dollar < absoluteId.length - 1) {
             "invalid member shape id '$absoluteId': member name must be non-empty"
         }
-        shapeId(namespace, rest.substring(0, dollar), rest.substring(dollar + 1))
+        return MemberShapeIdImpl(namespace, absoluteId.substring(hash + 1, dollar), absoluteId.substring(dollar + 1))
     }
 }
 
