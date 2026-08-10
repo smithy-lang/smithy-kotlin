@@ -63,11 +63,35 @@ class ShapeIdTest {
     }
 
     @Test
+    fun testConstructsMemberShapeIdFromParts() {
+        val id = shapeId("com.example", "Bird", "name")
+        assertEquals("com.example", id.namespace)
+        assertEquals("Bird", id.name)
+        assertEquals("name", id.member)
+        assertEquals("com.example#Bird\$name", id.absoluteId)
+    }
+
+    @Test
+    fun testEqualHashCodes() {
+        assertEquals(shapeId("com.example#Bird").hashCode(), shapeId("com.example", "Bird").hashCode())
+        assertEquals(
+            shapeId("com.example#Bird\$name").hashCode(),
+            shapeId("com.example", "Bird", "name").hashCode(),
+        )
+    }
+
+    @Test
     fun testRejectsMalformedId() {
         assertFailsWith<IllegalArgumentException> { shapeId("no-hash") }
         assertFailsWith<IllegalArgumentException> { shapeId("#Bird") }
         assertFailsWith<IllegalArgumentException> { shapeId("com.example#") }
         assertFailsWith<IllegalArgumentException> { shapeId("com.example#Bird\$") }
+    }
+
+    @Test
+    fun testRejectsEmptyParts() {
         assertFailsWith<IllegalArgumentException> { shapeId("", "Bird") }
+        assertFailsWith<IllegalArgumentException> { shapeId("com.example", "") }
+        assertFailsWith<IllegalArgumentException> { shapeId("com.example", "Bird", "") }
     }
 }

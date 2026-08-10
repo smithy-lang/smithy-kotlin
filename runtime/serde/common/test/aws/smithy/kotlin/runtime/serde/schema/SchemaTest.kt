@@ -133,4 +133,91 @@ class SchemaTest {
             SimpleSchema(shapeId("com.example#Nope"), ShapeType.STRUCTURE)
         }
     }
+
+    @Test
+    fun testAllPreludeSchemas() {
+        val expected = mapOf(
+            PreludeSchemas.Blob to ("smithy.api#Blob" to ShapeType.BLOB),
+            PreludeSchemas.Boolean to ("smithy.api#Boolean" to ShapeType.BOOLEAN),
+            PreludeSchemas.String to ("smithy.api#String" to ShapeType.STRING),
+            PreludeSchemas.Timestamp to ("smithy.api#Timestamp" to ShapeType.TIMESTAMP),
+            PreludeSchemas.Byte to ("smithy.api#Byte" to ShapeType.BYTE),
+            PreludeSchemas.Short to ("smithy.api#Short" to ShapeType.SHORT),
+            PreludeSchemas.Integer to ("smithy.api#Integer" to ShapeType.INTEGER),
+            PreludeSchemas.Long to ("smithy.api#Long" to ShapeType.LONG),
+            PreludeSchemas.Float to ("smithy.api#Float" to ShapeType.FLOAT),
+            PreludeSchemas.Double to ("smithy.api#Double" to ShapeType.DOUBLE),
+            PreludeSchemas.BigInteger to ("smithy.api#BigInteger" to ShapeType.BIG_INTEGER),
+            PreludeSchemas.BigDecimal to ("smithy.api#BigDecimal" to ShapeType.BIG_DECIMAL),
+            PreludeSchemas.Document to ("smithy.api#Document" to ShapeType.DOCUMENT),
+        )
+        for ((schema, idAndType) in expected) {
+            val (id, type) = idAndType
+            assertEquals(id, schema.shapeId.absoluteId)
+            assertEquals(type, schema.type)
+            assertTrue(schema.traits.isEmpty())
+        }
+    }
+
+    @Test
+    fun testContainerLevelTraits() {
+        val schema = StructureSchema(shapeId("com.example#S")) {
+            trait(JsonNameTrait("s"))
+            member("x", PreludeSchemas.String)
+        }
+        assertTrue(schema.hasTrait(JsonNameTrait.ID))
+        assertEquals("s", schema.getTrait<JsonNameTrait>(JsonNameTrait.ID)?.value)
+        // the member did not inherit the container's trait
+        assertFalse(schema.member("x")!!.hasTrait(JsonNameTrait.ID))
+    }
+
+    @Test
+    fun testMapKeyAndValueMemberNames() {
+        val schema = MapSchema(shapeId("com.example#M")) {
+            key(PreludeSchemas.String)
+            value(PreludeSchemas.Integer)
+        }
+        assertEquals("key", schema.key.memberName)
+        assertEquals("value", schema.value.memberName)
+    }
+
+    @Test
+    fun testListElementMemberName() {
+        val schema = ListSchema(shapeId("com.example#L")) {
+            element(PreludeSchemas.String)
+        }
+        assertEquals("member", schema.element.memberName)
+    }
+
+    @Test
+    fun testUnionMemberNotFound() {
+        val schema = UnionSchema(shapeId("com.example#U")) {
+            member("a", PreludeSchemas.String)
+        }
+        assertNull(schema.member("missing"))
+    }
+
+    @Test
+    fun testListMissingElementFails() {
+        assertFailsWith<IllegalArgumentException> {
+            ListSchema(shapeId("com.example#L")) { /* no element */ }
+        }
+    }
+
+    @Test
+    fun testMapMissingKeyOrValueFails() {
+        assertFailsWith<IllegalArgumentException> {
+            MapSchema(shapeId("com.example#M")) { value(PreludeSchemas.String) } // no key
+        }
+        assertFailsWith<IllegalArgumentException> {
+            MapSchema(shapeId("com.example#M")) { key(PreludeSchemas.String) } // no value
+        }
+    }
+
+    @Test
+    fun testMemberShapeIdIsScopedToContainer() {
+        val name = assertNotNull(birdSchema.member("name"))
+        assertEquals("com.example#Bird\$name", name.shapeId.absoluteId)
+        assertEquals("name", name.shapeId.member)
+    }
 }
