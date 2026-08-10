@@ -20,12 +20,17 @@ import software.amazon.smithy.model.shapes.Shape
 import software.amazon.smithy.model.shapes.ShapeType
 import software.amazon.smithy.model.shapes.StructureShape
 import software.amazon.smithy.model.shapes.UnionShape
+import software.amazon.smithy.model.traits.HttpHeaderTrait
+import software.amazon.smithy.model.traits.HttpPrefixHeadersTrait
+import software.amazon.smithy.model.traits.HttpQueryTrait
 import software.amazon.smithy.model.traits.JsonNameTrait
-import software.amazon.smithy.model.traits.RequiredTrait
-import software.amazon.smithy.model.traits.SparseTrait
+import software.amazon.smithy.model.traits.MediaTypeTrait
 import software.amazon.smithy.model.traits.TimestampFormatTrait
 import software.amazon.smithy.model.traits.Trait
 import software.amazon.smithy.model.traits.XmlNameTrait
+import software.amazon.smithy.model.traits.XmlNamespaceTrait
+import software.amazon.smithy.aws.traits.protocols.AwsQueryErrorTrait
+import software.amazon.smithy.rulesengine.traits.ContextParamTrait
 
 private fun String.screamingSnake(): String = replace(Regex("([a-z0-9])([A-Z])"), "$1_$2").uppercase()
 
@@ -45,12 +50,37 @@ private val preludeSchemaByType = mapOf(
     ShapeType.DOCUMENT to "Document",
 )
 
-private val renderableTraitIds = setOf(
+// valueless annotation traits: shape id -> the runtime trait `object` to reference (rendered as `#T`)
+private val annotationTraits: Map<String, Symbol> = mapOf(
+    "smithy.api#required" to Schema.Traits.RequiredTrait,
+    "smithy.api#sparse" to Schema.Traits.SparseTrait,
+    "smithy.api#sensitive" to Schema.Traits.SensitiveTrait,
+    "smithy.api#idempotencyToken" to Schema.Traits.IdempotencyTokenTrait,
+    "smithy.api#streaming" to Schema.Traits.StreamingTrait,
+    "smithy.api#requiresLength" to Schema.Traits.RequiresLengthTrait,
+    "smithy.api#eventHeader" to Schema.Traits.EventHeaderTrait,
+    "smithy.api#eventPayload" to Schema.Traits.EventPayloadTrait,
+    "smithy.api#xmlAttribute" to Schema.Traits.XmlAttributeTrait,
+    "smithy.api#xmlFlattened" to Schema.Traits.XmlFlattenedTrait,
+    "smithy.api#httpLabel" to Schema.Traits.HttpLabelTrait,
+    "smithy.api#httpPayload" to Schema.Traits.HttpPayloadTrait,
+    "smithy.api#httpQueryParams" to Schema.Traits.HttpQueryParamsTrait,
+    "smithy.api#httpResponseCode" to Schema.Traits.HttpResponseCodeTrait,
+    "smithy.api#hostLabel" to Schema.Traits.HostLabelTrait,
+)
+
+// all serde-relevant trait ids the generator can render (annotation + value-carrying)
+private val renderableTraitIds: Set<String> = annotationTraits.keys + setOf(
     "smithy.api#jsonName",
     "smithy.api#xmlName",
-    "smithy.api#required",
-    "smithy.api#sparse",
+    "smithy.api#xmlNamespace",
+    "smithy.api#mediaType",
     "smithy.api#timestampFormat",
+    "smithy.api#httpHeader",
+    "smithy.api#httpQuery",
+    "smithy.api#httpPrefixHeaders",
+    "smithy.rules#contextParam",
+    "aws.protocols#awsQueryError",
 )
 
 private val String.timestampFormatEnum: String
@@ -93,7 +123,7 @@ class SchemaGenerator(
     private fun KotlinWriter.renderMemberDecl(member: MemberShape) {
         writeInline("member(#S, ", member.memberName)
         renderTargetSchema(member)
-        renderMemberTraitArgs(member)
+        renderTraitArgs(member)
         writeInline(")")
         ensureNewline()
     }
@@ -113,7 +143,6 @@ class SchemaGenerator(
     }
 
     private fun KotlinWriter.renderListSchema(shape: ListShape) {
-        // withInlineBlock closes with "}" and NO trailing newline, so the caller's ")" attaches: "})"
         withInlineBlock("#T(#W) {", "}", Schema.ListSchema, shapeIdWritable(shape)) {
             renderContainerTraits(shape)
             renderMemberEntry("element", shape.member)
@@ -129,14 +158,16 @@ class SchemaGenerator(
     }
 
     private fun KotlinWriter.renderSimpleSchema(shape: Shape) {
-        writeInline("#T(#W, #T.#L)", Schema.SimpleSchema, shapeIdWritable(shape), Schema.ShapeType, shape.type.name)
+        writeInline("#T(#W, #T.#L", Schema.SimpleSchema, shapeIdWritable(shape), Schema.ShapeType, shape.type.name)
+        renderTraitArgs(shape)
+        writeInline(")")
     }
 
     private fun KotlinWriter.renderMemberEntry(entry: String, member: MemberShape) {
         ensureNewline()
         writeInline("#L(", entry)
         renderTargetSchema(member)
-        renderMemberTraitArgs(member)
+        renderTraitArgs(member)
         writeInline(")")
     }
 
@@ -163,8 +194,8 @@ class SchemaGenerator(
         }
     }
 
-    private fun KotlinWriter.renderMemberTraitArgs(member: MemberShape) {
-        member.eligibleTraits.forEach { trait ->
+    private fun KotlinWriter.renderTraitArgs(shape: Shape) {
+        shape.eligibleTraits.forEach { trait ->
             writeInline(", #W", traitWritable(trait))
         }
     }
@@ -176,16 +207,35 @@ class SchemaGenerator(
     }
 
     private fun traitWritable(trait: Trait): InlineKotlinWriter = {
-        when (trait) {
-            is JsonNameTrait -> writeInline("#T(#S)", Schema.Traits.JsonNameTrait, trait.value)
-            is XmlNameTrait -> writeInline("#T(#S)", Schema.Traits.XmlNameTrait, trait.value)
-            is RequiredTrait -> writeInline("#T", Schema.Traits.RequiredTrait)
-            is SparseTrait -> writeInline("#T", Schema.Traits.SparseTrait)
-            is TimestampFormatTrait -> writeInline(
+        val annotation = annotationTraits[trait.toShapeId().toString()]
+        when {
+            annotation != null -> writeInline("#T", annotation)
+            trait is JsonNameTrait -> writeInline("#T(#S)", Schema.Traits.JsonNameTrait, trait.value)
+            trait is XmlNameTrait -> writeInline("#T(#S)", Schema.Traits.XmlNameTrait, trait.value)
+            trait is MediaTypeTrait -> writeInline("#T(#S)", Schema.Traits.MediaTypeTrait, trait.value)
+            trait is HttpHeaderTrait -> writeInline("#T(#S)", Schema.Traits.HttpHeaderTrait, trait.value)
+            trait is HttpQueryTrait -> writeInline("#T(#S)", Schema.Traits.HttpQueryTrait, trait.value)
+            trait is HttpPrefixHeadersTrait -> writeInline("#T(#S)", Schema.Traits.HttpPrefixHeadersTrait, trait.value)
+            trait is ContextParamTrait -> writeInline("#T(#S)", Schema.Traits.ContextParamTrait, trait.name)
+            trait is XmlNamespaceTrait -> {
+                val prefix = trait.prefix.orElse(null)
+                if (prefix != null) {
+                    writeInline("#T(#S, #S)", Schema.Traits.XmlNamespaceTrait, trait.uri, prefix)
+                } else {
+                    writeInline("#T(#S)", Schema.Traits.XmlNamespaceTrait, trait.uri)
+                }
+            }
+            trait is TimestampFormatTrait -> writeInline(
                 "#T(#T.#L)",
                 Schema.Traits.TimestampFormatTrait,
                 Schema.Traits.TimestampFormat,
                 trait.value.timestampFormatEnum,
+            )
+            trait is AwsQueryErrorTrait -> writeInline(
+                "#T(#S, #L)",
+                Schema.Traits.AwsQueryErrorTrait,
+                trait.code,
+                trait.httpResponseCode,
             )
             else -> error("no schema renderer for trait ${trait.toShapeId()}")
         }
