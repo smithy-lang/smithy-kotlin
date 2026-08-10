@@ -7,6 +7,7 @@ package aws.smithy.kotlin.codegen.rendering
 import aws.smithy.kotlin.codegen.core.KotlinWriter
 import aws.smithy.kotlin.codegen.core.unionVariantName
 import aws.smithy.kotlin.codegen.core.withBlock
+import aws.smithy.kotlin.codegen.rendering.serde.SchemaGenerator
 import aws.smithy.kotlin.codegen.lang.KotlinTypes
 import aws.smithy.kotlin.codegen.model.filterEventStreamErrors
 import aws.smithy.kotlin.codegen.model.hasTrait
@@ -102,6 +103,11 @@ class UnionGenerator(
                 symbol,
                 variantName,
             )
+        }
+
+        writer.write("")
+        writer.withBlock("public companion object {", "}") {
+            SchemaGenerator(model, symbolProvider, shape).render(this)
         }
 
         writer.closeBlock("}").write("")

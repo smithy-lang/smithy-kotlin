@@ -137,7 +137,6 @@ class UnionGeneratorTest {
                  * Casts this [MyUnion] as a [MyStruct] and retrieves its [test.model.MyStruct] value. Returns null if the [MyUnion] is not a [MyStruct].
                  */
                 public fun asMyStructOrNull(): test.model.MyStruct? = (this as? MyUnion.MyStruct)?.value
-            }
         """.trimIndent()
 
         contents.shouldContainWithDiff(expectedClassDecl)
@@ -245,7 +244,6 @@ class UnionGeneratorTest {
                  * Casts this [MyUnion] as a [Foo] and retrieves its [test.model.MyStruct] value. Returns null if the [MyUnion] is not a [Foo].
                  */
                 public fun asFooOrNull(): test.model.MyStruct? = (this as? MyUnion.Foo)?.value
-            }
         """.trimIndent()
 
         contents.shouldContainWithDiff(expectedClassDecl)
@@ -318,7 +316,6 @@ class UnionGeneratorTest {
                  * Casts this [MyUnion] as a [Foo] and retrieves its [kotlin.String] value. Returns null if the [MyUnion] is not a [Foo].
                  */
                 public fun asFooOrNull(): kotlin.String? = (this as? MyUnion.Foo)?.value
-            }
         """.trimIndent()
 
         contents.shouldContainWithDiff(expectedClassDecl)

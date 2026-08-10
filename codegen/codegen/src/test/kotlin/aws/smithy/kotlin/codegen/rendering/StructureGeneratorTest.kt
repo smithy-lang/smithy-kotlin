@@ -113,9 +113,16 @@ class StructureGeneratorTest {
         val expected = """
             public companion object {
                 public operator fun invoke(block: Builder.() -> kotlin.Unit): com.test.model.MyStruct = Builder().apply(block).build()
-            }
         """.formatForTest()
         commonTestContents.shouldContainOnlyOnceWithDiff(expected)
+    }
+
+    @Test
+    fun `it renders a schema on the companion`() {
+        commonTestContents.shouldContainOnlyOnceWithDiff(
+            "public val SCHEMA: StructureSchema = StructureSchema(shapeId(\"com.test#MyStruct\")) {",
+        )
+        commonTestContents.shouldContainOnlyOnceWithDiff("public val REQUIRED_INT: MemberSchema = SCHEMA.member(\"requiredInt\")!!")
     }
 
     @Test

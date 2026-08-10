@@ -8,6 +8,7 @@ import aws.smithy.kotlin.codegen.core.RenderingContext
 import aws.smithy.kotlin.codegen.core.RuntimeTypes
 import aws.smithy.kotlin.codegen.core.defaultName
 import aws.smithy.kotlin.codegen.core.withBlock
+import aws.smithy.kotlin.codegen.rendering.serde.SchemaGenerator
 import aws.smithy.kotlin.codegen.lang.KotlinTypes
 import aws.smithy.kotlin.codegen.model.*
 import aws.smithy.kotlin.codegen.model.expectTrait
@@ -115,6 +116,10 @@ class StructureGenerator(
     private fun renderCompanionObject() {
         writer.withBlock("public companion object {", "}") {
             write("public operator fun invoke(block: Builder.() -> #Q): #Q = Builder().apply(block).build()", KotlinTypes.Unit, symbol)
+            if (!shape.isError) {
+                write("")
+                SchemaGenerator(model, symbolProvider, shape).render(this)
+            }
         }
     }
 

@@ -300,6 +300,27 @@ object RuntimeTypes {
         val parseBigInteger = symbol("parseBigInteger")
         val parseBigDecimal = symbol("parseBigDecimal")
 
+        object Schema : RuntimeTypePackage(KotlinDependency.SERDE, "schema") {
+            val ShapeType = symbol("ShapeType")
+            val shapeId = symbol("shapeId")
+            val PreludeSchemas = symbol("PreludeSchemas")
+            val SimpleSchema = symbol("SimpleSchema")
+            val ListSchema = symbol("ListSchema")
+            val MapSchema = symbol("MapSchema")
+            val MemberSchema = symbol("MemberSchema")
+            val StructureSchema = symbol("StructureSchema")
+            val UnionSchema = symbol("UnionSchema")
+
+            object Traits : RuntimeTypePackage(KotlinDependency.SERDE, "schema.trait") {
+                val JsonNameTrait = symbol("JsonNameTrait")
+                val XmlNameTrait = symbol("XmlNameTrait")
+                val TimestampFormatTrait = symbol("TimestampFormatTrait")
+                val TimestampFormat = symbol("TimestampFormat")
+                val RequiredTrait = symbol("RequiredTrait")
+                val SparseTrait = symbol("SparseTrait")
+            }
+        }
+
         object SerdeJson : RuntimeTypePackage(KotlinDependency.SERDE_JSON) {
             val JsonSerialName = symbol("JsonSerialName")
             val JsonSerializer = symbol("JsonSerializer")
