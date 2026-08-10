@@ -26,9 +26,7 @@ import software.amazon.smithy.model.traits.TimestampFormatTrait
 import software.amazon.smithy.model.traits.Trait
 import software.amazon.smithy.model.traits.XmlNameTrait
 
-
-private fun String.screamingSnake(): String =
-    replace(Regex("([a-z0-9])([A-Z])"), "$1_$2").uppercase()
+private fun String.screamingSnake(): String = replace(Regex("([a-z0-9])([A-Z])"), "$1_$2").uppercase()
 
 private val preludeSchemaByType = mapOf(
     ShapeType.BLOB to "Blob",
@@ -188,7 +186,6 @@ class SchemaGenerator(
             else -> error("no schema renderer for trait ${trait.toShapeId()}")
         }
     }
-
 
     private val MemberShape.constName: String
         get() = memberName.toCamelCase().screamingSnake()

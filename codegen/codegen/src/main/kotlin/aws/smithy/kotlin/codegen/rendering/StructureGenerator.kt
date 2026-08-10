@@ -8,7 +8,6 @@ import aws.smithy.kotlin.codegen.core.RenderingContext
 import aws.smithy.kotlin.codegen.core.RuntimeTypes
 import aws.smithy.kotlin.codegen.core.defaultName
 import aws.smithy.kotlin.codegen.core.withBlock
-import aws.smithy.kotlin.codegen.rendering.serde.SchemaGenerator
 import aws.smithy.kotlin.codegen.lang.KotlinTypes
 import aws.smithy.kotlin.codegen.model.*
 import aws.smithy.kotlin.codegen.model.expectTrait
@@ -21,6 +20,7 @@ import aws.smithy.kotlin.codegen.model.isStreaming
 import aws.smithy.kotlin.codegen.model.nullable
 import aws.smithy.kotlin.codegen.model.targetOrSelf
 import aws.smithy.kotlin.codegen.rendering.serde.ClientErrorCorrection
+import aws.smithy.kotlin.codegen.rendering.serde.SchemaGenerator
 import aws.smithy.kotlin.codegen.utils.toCamelCase
 import software.amazon.smithy.codegen.core.CodegenException
 import software.amazon.smithy.codegen.core.Symbol
