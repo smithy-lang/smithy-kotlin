@@ -160,6 +160,7 @@ public final class aws/smithy/kotlin/codegen/ProtocolGeneratorSupplier : aws/smi
 	public fun authSchemes (Laws/smithy/kotlin/codegen/rendering/protocol/ProtocolGenerator$GenerationContext;)Ljava/util/List;
 	public fun customizeEndpointResolution (Laws/smithy/kotlin/codegen/rendering/protocol/ProtocolGenerator$GenerationContext;)Laws/smithy/kotlin/codegen/rendering/endpoints/EndpointCustomization;
 	public fun customizeMiddleware (Laws/smithy/kotlin/codegen/rendering/protocol/ProtocolGenerator$GenerationContext;Ljava/util/List;)Ljava/util/List;
+	public fun customizeSchemaTraits (Laws/smithy/kotlin/codegen/rendering/serde/SchemaTraitExtension;)V
 	public fun decorateSymbolProvider (Laws/smithy/kotlin/codegen/KotlinSettings;Lsoftware/amazon/smithy/model/Model;Lsoftware/amazon/smithy/codegen/core/SymbolProvider;)Lsoftware/amazon/smithy/codegen/core/SymbolProvider;
 	public fun enabledForService (Lsoftware/amazon/smithy/model/Model;Laws/smithy/kotlin/codegen/KotlinSettings;)Z
 	public fun getOrder ()B
@@ -972,12 +973,32 @@ public final class aws/smithy/kotlin/codegen/core/RuntimeTypes$Serde$Schema : aw
 
 public final class aws/smithy/kotlin/codegen/core/RuntimeTypes$Serde$Schema$Traits : aws/smithy/kotlin/codegen/core/RuntimeTypePackage {
 	public static final field INSTANCE Laws/smithy/kotlin/codegen/core/RuntimeTypes$Serde$Schema$Traits;
+	public final fun getAwsQueryErrorTrait ()Lsoftware/amazon/smithy/codegen/core/Symbol;
+	public final fun getContextParamTrait ()Lsoftware/amazon/smithy/codegen/core/Symbol;
+	public final fun getEventHeaderTrait ()Lsoftware/amazon/smithy/codegen/core/Symbol;
+	public final fun getEventPayloadTrait ()Lsoftware/amazon/smithy/codegen/core/Symbol;
+	public final fun getHostLabelTrait ()Lsoftware/amazon/smithy/codegen/core/Symbol;
+	public final fun getHttpHeaderTrait ()Lsoftware/amazon/smithy/codegen/core/Symbol;
+	public final fun getHttpLabelTrait ()Lsoftware/amazon/smithy/codegen/core/Symbol;
+	public final fun getHttpPayloadTrait ()Lsoftware/amazon/smithy/codegen/core/Symbol;
+	public final fun getHttpPrefixHeadersTrait ()Lsoftware/amazon/smithy/codegen/core/Symbol;
+	public final fun getHttpQueryParamsTrait ()Lsoftware/amazon/smithy/codegen/core/Symbol;
+	public final fun getHttpQueryTrait ()Lsoftware/amazon/smithy/codegen/core/Symbol;
+	public final fun getHttpResponseCodeTrait ()Lsoftware/amazon/smithy/codegen/core/Symbol;
+	public final fun getIdempotencyTokenTrait ()Lsoftware/amazon/smithy/codegen/core/Symbol;
 	public final fun getJsonNameTrait ()Lsoftware/amazon/smithy/codegen/core/Symbol;
+	public final fun getMediaTypeTrait ()Lsoftware/amazon/smithy/codegen/core/Symbol;
 	public final fun getRequiredTrait ()Lsoftware/amazon/smithy/codegen/core/Symbol;
+	public final fun getRequiresLengthTrait ()Lsoftware/amazon/smithy/codegen/core/Symbol;
+	public final fun getSensitiveTrait ()Lsoftware/amazon/smithy/codegen/core/Symbol;
 	public final fun getSparseTrait ()Lsoftware/amazon/smithy/codegen/core/Symbol;
+	public final fun getStreamingTrait ()Lsoftware/amazon/smithy/codegen/core/Symbol;
 	public final fun getTimestampFormat ()Lsoftware/amazon/smithy/codegen/core/Symbol;
 	public final fun getTimestampFormatTrait ()Lsoftware/amazon/smithy/codegen/core/Symbol;
+	public final fun getXmlAttributeTrait ()Lsoftware/amazon/smithy/codegen/core/Symbol;
+	public final fun getXmlFlattenedTrait ()Lsoftware/amazon/smithy/codegen/core/Symbol;
 	public final fun getXmlNameTrait ()Lsoftware/amazon/smithy/codegen/core/Symbol;
+	public final fun getXmlNamespaceTrait ()Lsoftware/amazon/smithy/codegen/core/Symbol;
 }
 
 public final class aws/smithy/kotlin/codegen/core/RuntimeTypes$Serde$SerdeCbor : aws/smithy/kotlin/codegen/core/RuntimeTypePackage {
@@ -1132,6 +1153,7 @@ public abstract interface class aws/smithy/kotlin/codegen/integration/KotlinInte
 	public fun authSchemes (Laws/smithy/kotlin/codegen/rendering/protocol/ProtocolGenerator$GenerationContext;)Ljava/util/List;
 	public fun customizeEndpointResolution (Laws/smithy/kotlin/codegen/rendering/protocol/ProtocolGenerator$GenerationContext;)Laws/smithy/kotlin/codegen/rendering/endpoints/EndpointCustomization;
 	public fun customizeMiddleware (Laws/smithy/kotlin/codegen/rendering/protocol/ProtocolGenerator$GenerationContext;Ljava/util/List;)Ljava/util/List;
+	public fun customizeSchemaTraits (Laws/smithy/kotlin/codegen/rendering/serde/SchemaTraitExtension;)V
 	public fun decorateSymbolProvider (Laws/smithy/kotlin/codegen/KotlinSettings;Lsoftware/amazon/smithy/model/Model;Lsoftware/amazon/smithy/codegen/core/SymbolProvider;)Lsoftware/amazon/smithy/codegen/core/SymbolProvider;
 	public fun enabledForService (Lsoftware/amazon/smithy/model/Model;Laws/smithy/kotlin/codegen/KotlinSettings;)Z
 	public fun getOrder ()B
@@ -1146,6 +1168,7 @@ public final class aws/smithy/kotlin/codegen/integration/KotlinIntegration$Defau
 	public static fun authSchemes (Laws/smithy/kotlin/codegen/integration/KotlinIntegration;Laws/smithy/kotlin/codegen/rendering/protocol/ProtocolGenerator$GenerationContext;)Ljava/util/List;
 	public static fun customizeEndpointResolution (Laws/smithy/kotlin/codegen/integration/KotlinIntegration;Laws/smithy/kotlin/codegen/rendering/protocol/ProtocolGenerator$GenerationContext;)Laws/smithy/kotlin/codegen/rendering/endpoints/EndpointCustomization;
 	public static fun customizeMiddleware (Laws/smithy/kotlin/codegen/integration/KotlinIntegration;Laws/smithy/kotlin/codegen/rendering/protocol/ProtocolGenerator$GenerationContext;Ljava/util/List;)Ljava/util/List;
+	public static fun customizeSchemaTraits (Laws/smithy/kotlin/codegen/integration/KotlinIntegration;Laws/smithy/kotlin/codegen/rendering/serde/SchemaTraitExtension;)V
 	public static fun decorateSymbolProvider (Laws/smithy/kotlin/codegen/integration/KotlinIntegration;Laws/smithy/kotlin/codegen/KotlinSettings;Lsoftware/amazon/smithy/model/Model;Lsoftware/amazon/smithy/codegen/core/SymbolProvider;)Lsoftware/amazon/smithy/codegen/core/SymbolProvider;
 	public static fun enabledForService (Laws/smithy/kotlin/codegen/integration/KotlinIntegration;Lsoftware/amazon/smithy/model/Model;Laws/smithy/kotlin/codegen/KotlinSettings;)Z
 	public static fun getOrder (Laws/smithy/kotlin/codegen/integration/KotlinIntegration;)B
@@ -1192,6 +1215,7 @@ public final class aws/smithy/kotlin/codegen/lang/BuiltinPreprocessor : aws/smit
 	public fun authSchemes (Laws/smithy/kotlin/codegen/rendering/protocol/ProtocolGenerator$GenerationContext;)Ljava/util/List;
 	public fun customizeEndpointResolution (Laws/smithy/kotlin/codegen/rendering/protocol/ProtocolGenerator$GenerationContext;)Laws/smithy/kotlin/codegen/rendering/endpoints/EndpointCustomization;
 	public fun customizeMiddleware (Laws/smithy/kotlin/codegen/rendering/protocol/ProtocolGenerator$GenerationContext;Ljava/util/List;)Ljava/util/List;
+	public fun customizeSchemaTraits (Laws/smithy/kotlin/codegen/rendering/serde/SchemaTraitExtension;)V
 	public fun decorateSymbolProvider (Laws/smithy/kotlin/codegen/KotlinSettings;Lsoftware/amazon/smithy/model/Model;Lsoftware/amazon/smithy/codegen/core/SymbolProvider;)Lsoftware/amazon/smithy/codegen/core/SymbolProvider;
 	public fun enabledForService (Lsoftware/amazon/smithy/model/Model;Laws/smithy/kotlin/codegen/KotlinSettings;)Z
 	public fun getOrder ()B
@@ -1207,6 +1231,7 @@ public final class aws/smithy/kotlin/codegen/lang/DocumentationPreprocessor : aw
 	public fun authSchemes (Laws/smithy/kotlin/codegen/rendering/protocol/ProtocolGenerator$GenerationContext;)Ljava/util/List;
 	public fun customizeEndpointResolution (Laws/smithy/kotlin/codegen/rendering/protocol/ProtocolGenerator$GenerationContext;)Laws/smithy/kotlin/codegen/rendering/endpoints/EndpointCustomization;
 	public fun customizeMiddleware (Laws/smithy/kotlin/codegen/rendering/protocol/ProtocolGenerator$GenerationContext;Ljava/util/List;)Ljava/util/List;
+	public fun customizeSchemaTraits (Laws/smithy/kotlin/codegen/rendering/serde/SchemaTraitExtension;)V
 	public fun decorateSymbolProvider (Laws/smithy/kotlin/codegen/KotlinSettings;Lsoftware/amazon/smithy/model/Model;Lsoftware/amazon/smithy/codegen/core/SymbolProvider;)Lsoftware/amazon/smithy/codegen/core/SymbolProvider;
 	public fun enabledForService (Lsoftware/amazon/smithy/model/Model;Laws/smithy/kotlin/codegen/KotlinSettings;)Z
 	public fun getOrder ()B
@@ -1326,6 +1351,7 @@ public final class aws/smithy/kotlin/codegen/model/SetRefactorPreprocessor : aws
 	public fun authSchemes (Laws/smithy/kotlin/codegen/rendering/protocol/ProtocolGenerator$GenerationContext;)Ljava/util/List;
 	public fun customizeEndpointResolution (Laws/smithy/kotlin/codegen/rendering/protocol/ProtocolGenerator$GenerationContext;)Laws/smithy/kotlin/codegen/rendering/endpoints/EndpointCustomization;
 	public fun customizeMiddleware (Laws/smithy/kotlin/codegen/rendering/protocol/ProtocolGenerator$GenerationContext;Ljava/util/List;)Ljava/util/List;
+	public fun customizeSchemaTraits (Laws/smithy/kotlin/codegen/rendering/serde/SchemaTraitExtension;)V
 	public fun decorateSymbolProvider (Laws/smithy/kotlin/codegen/KotlinSettings;Lsoftware/amazon/smithy/model/Model;Lsoftware/amazon/smithy/codegen/core/SymbolProvider;)Lsoftware/amazon/smithy/codegen/core/SymbolProvider;
 	public fun enabledForService (Lsoftware/amazon/smithy/model/Model;Laws/smithy/kotlin/codegen/KotlinSettings;)Z
 	public fun getOrder ()B
@@ -1697,6 +1723,7 @@ public final class aws/smithy/kotlin/codegen/rendering/PaginatorGenerator : aws/
 	public fun authSchemes (Laws/smithy/kotlin/codegen/rendering/protocol/ProtocolGenerator$GenerationContext;)Ljava/util/List;
 	public fun customizeEndpointResolution (Laws/smithy/kotlin/codegen/rendering/protocol/ProtocolGenerator$GenerationContext;)Laws/smithy/kotlin/codegen/rendering/endpoints/EndpointCustomization;
 	public fun customizeMiddleware (Laws/smithy/kotlin/codegen/rendering/protocol/ProtocolGenerator$GenerationContext;Ljava/util/List;)Ljava/util/List;
+	public fun customizeSchemaTraits (Laws/smithy/kotlin/codegen/rendering/serde/SchemaTraitExtension;)V
 	public fun decorateSymbolProvider (Laws/smithy/kotlin/codegen/KotlinSettings;Lsoftware/amazon/smithy/model/Model;Lsoftware/amazon/smithy/codegen/core/SymbolProvider;)Lsoftware/amazon/smithy/codegen/core/SymbolProvider;
 	public fun enabledForService (Lsoftware/amazon/smithy/model/Model;Laws/smithy/kotlin/codegen/KotlinSettings;)Z
 	public fun getOrder ()B
@@ -1767,7 +1794,8 @@ public final class aws/smithy/kotlin/codegen/rendering/StructureGenerator {
 }
 
 public final class aws/smithy/kotlin/codegen/rendering/UnionGenerator {
-	public fun <init> (Lsoftware/amazon/smithy/model/Model;Lsoftware/amazon/smithy/codegen/core/SymbolProvider;Laws/smithy/kotlin/codegen/core/KotlinWriter;Lsoftware/amazon/smithy/model/shapes/UnionShape;)V
+	public fun <init> (Lsoftware/amazon/smithy/model/Model;Lsoftware/amazon/smithy/codegen/core/SymbolProvider;Laws/smithy/kotlin/codegen/core/KotlinWriter;Lsoftware/amazon/smithy/model/shapes/UnionShape;Ljava/util/List;)V
+	public synthetic fun <init> (Lsoftware/amazon/smithy/model/Model;Lsoftware/amazon/smithy/codegen/core/SymbolProvider;Laws/smithy/kotlin/codegen/core/KotlinWriter;Lsoftware/amazon/smithy/model/shapes/UnionShape;Ljava/util/List;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public final fun getModel ()Lsoftware/amazon/smithy/model/Model;
 	public final fun getSymbol ()Lsoftware/amazon/smithy/codegen/core/Symbol;
 	public final fun render ()V
@@ -1789,6 +1817,7 @@ public final class aws/smithy/kotlin/codegen/rendering/auth/AnonymousAuthSchemeI
 	public fun authSchemes (Laws/smithy/kotlin/codegen/rendering/protocol/ProtocolGenerator$GenerationContext;)Ljava/util/List;
 	public fun customizeEndpointResolution (Laws/smithy/kotlin/codegen/rendering/protocol/ProtocolGenerator$GenerationContext;)Laws/smithy/kotlin/codegen/rendering/endpoints/EndpointCustomization;
 	public fun customizeMiddleware (Laws/smithy/kotlin/codegen/rendering/protocol/ProtocolGenerator$GenerationContext;Ljava/util/List;)Ljava/util/List;
+	public fun customizeSchemaTraits (Laws/smithy/kotlin/codegen/rendering/serde/SchemaTraitExtension;)V
 	public fun decorateSymbolProvider (Laws/smithy/kotlin/codegen/KotlinSettings;Lsoftware/amazon/smithy/model/Model;Lsoftware/amazon/smithy/codegen/core/SymbolProvider;)Lsoftware/amazon/smithy/codegen/core/SymbolProvider;
 	public fun enabledForService (Lsoftware/amazon/smithy/model/Model;Laws/smithy/kotlin/codegen/KotlinSettings;)Z
 	public fun getOrder ()B
@@ -1840,6 +1869,7 @@ public final class aws/smithy/kotlin/codegen/rendering/auth/AuthSchemeProviderCo
 	public fun authSchemes (Laws/smithy/kotlin/codegen/rendering/protocol/ProtocolGenerator$GenerationContext;)Ljava/util/List;
 	public fun customizeEndpointResolution (Laws/smithy/kotlin/codegen/rendering/protocol/ProtocolGenerator$GenerationContext;)Laws/smithy/kotlin/codegen/rendering/endpoints/EndpointCustomization;
 	public fun customizeMiddleware (Laws/smithy/kotlin/codegen/rendering/protocol/ProtocolGenerator$GenerationContext;Ljava/util/List;)Ljava/util/List;
+	public fun customizeSchemaTraits (Laws/smithy/kotlin/codegen/rendering/serde/SchemaTraitExtension;)V
 	public fun decorateSymbolProvider (Laws/smithy/kotlin/codegen/KotlinSettings;Lsoftware/amazon/smithy/model/Model;Lsoftware/amazon/smithy/codegen/core/SymbolProvider;)Lsoftware/amazon/smithy/codegen/core/SymbolProvider;
 	public fun enabledForService (Lsoftware/amazon/smithy/model/Model;Laws/smithy/kotlin/codegen/KotlinSettings;)Z
 	public fun getOrder ()B
@@ -1876,6 +1906,7 @@ public final class aws/smithy/kotlin/codegen/rendering/auth/BearerTokenAuthSchem
 	public fun authSchemes (Laws/smithy/kotlin/codegen/rendering/protocol/ProtocolGenerator$GenerationContext;)Ljava/util/List;
 	public fun customizeEndpointResolution (Laws/smithy/kotlin/codegen/rendering/protocol/ProtocolGenerator$GenerationContext;)Laws/smithy/kotlin/codegen/rendering/endpoints/EndpointCustomization;
 	public fun customizeMiddleware (Laws/smithy/kotlin/codegen/rendering/protocol/ProtocolGenerator$GenerationContext;Ljava/util/List;)Ljava/util/List;
+	public fun customizeSchemaTraits (Laws/smithy/kotlin/codegen/rendering/serde/SchemaTraitExtension;)V
 	public fun decorateSymbolProvider (Laws/smithy/kotlin/codegen/KotlinSettings;Lsoftware/amazon/smithy/model/Model;Lsoftware/amazon/smithy/codegen/core/SymbolProvider;)Lsoftware/amazon/smithy/codegen/core/SymbolProvider;
 	public fun enabledForService (Lsoftware/amazon/smithy/model/Model;Laws/smithy/kotlin/codegen/KotlinSettings;)Z
 	public fun getOrder ()B
@@ -1901,6 +1932,7 @@ public final class aws/smithy/kotlin/codegen/rendering/auth/SigV4AsymmetricAuthS
 	public fun authSchemes (Laws/smithy/kotlin/codegen/rendering/protocol/ProtocolGenerator$GenerationContext;)Ljava/util/List;
 	public fun customizeEndpointResolution (Laws/smithy/kotlin/codegen/rendering/protocol/ProtocolGenerator$GenerationContext;)Laws/smithy/kotlin/codegen/rendering/endpoints/EndpointCustomization;
 	public fun customizeMiddleware (Laws/smithy/kotlin/codegen/rendering/protocol/ProtocolGenerator$GenerationContext;Ljava/util/List;)Ljava/util/List;
+	public fun customizeSchemaTraits (Laws/smithy/kotlin/codegen/rendering/serde/SchemaTraitExtension;)V
 	public fun decorateSymbolProvider (Laws/smithy/kotlin/codegen/KotlinSettings;Lsoftware/amazon/smithy/model/Model;Lsoftware/amazon/smithy/codegen/core/SymbolProvider;)Lsoftware/amazon/smithy/codegen/core/SymbolProvider;
 	public fun enabledForService (Lsoftware/amazon/smithy/model/Model;Laws/smithy/kotlin/codegen/KotlinSettings;)Z
 	public fun getOrder ()B
@@ -1926,6 +1958,7 @@ public final class aws/smithy/kotlin/codegen/rendering/auth/SigV4AuthSchemeInteg
 	public fun authSchemes (Laws/smithy/kotlin/codegen/rendering/protocol/ProtocolGenerator$GenerationContext;)Ljava/util/List;
 	public fun customizeEndpointResolution (Laws/smithy/kotlin/codegen/rendering/protocol/ProtocolGenerator$GenerationContext;)Laws/smithy/kotlin/codegen/rendering/endpoints/EndpointCustomization;
 	public fun customizeMiddleware (Laws/smithy/kotlin/codegen/rendering/protocol/ProtocolGenerator$GenerationContext;Ljava/util/List;)Ljava/util/List;
+	public fun customizeSchemaTraits (Laws/smithy/kotlin/codegen/rendering/serde/SchemaTraitExtension;)V
 	public fun decorateSymbolProvider (Laws/smithy/kotlin/codegen/KotlinSettings;Lsoftware/amazon/smithy/model/Model;Lsoftware/amazon/smithy/codegen/core/SymbolProvider;)Lsoftware/amazon/smithy/codegen/core/SymbolProvider;
 	public fun enabledForService (Lsoftware/amazon/smithy/model/Model;Laws/smithy/kotlin/codegen/KotlinSettings;)Z
 	public fun getOrder ()B
@@ -1941,6 +1974,7 @@ public final class aws/smithy/kotlin/codegen/rendering/checksums/HttpChecksumReq
 	public fun authSchemes (Laws/smithy/kotlin/codegen/rendering/protocol/ProtocolGenerator$GenerationContext;)Ljava/util/List;
 	public fun customizeEndpointResolution (Laws/smithy/kotlin/codegen/rendering/protocol/ProtocolGenerator$GenerationContext;)Laws/smithy/kotlin/codegen/rendering/endpoints/EndpointCustomization;
 	public fun customizeMiddleware (Laws/smithy/kotlin/codegen/rendering/protocol/ProtocolGenerator$GenerationContext;Ljava/util/List;)Ljava/util/List;
+	public fun customizeSchemaTraits (Laws/smithy/kotlin/codegen/rendering/serde/SchemaTraitExtension;)V
 	public fun decorateSymbolProvider (Laws/smithy/kotlin/codegen/KotlinSettings;Lsoftware/amazon/smithy/model/Model;Lsoftware/amazon/smithy/codegen/core/SymbolProvider;)Lsoftware/amazon/smithy/codegen/core/SymbolProvider;
 	public fun enabledForService (Lsoftware/amazon/smithy/model/Model;Laws/smithy/kotlin/codegen/KotlinSettings;)Z
 	public fun getOrder ()B
@@ -1956,6 +1990,7 @@ public final class aws/smithy/kotlin/codegen/rendering/compression/RequestCompre
 	public fun authSchemes (Laws/smithy/kotlin/codegen/rendering/protocol/ProtocolGenerator$GenerationContext;)Ljava/util/List;
 	public fun customizeEndpointResolution (Laws/smithy/kotlin/codegen/rendering/protocol/ProtocolGenerator$GenerationContext;)Laws/smithy/kotlin/codegen/rendering/endpoints/EndpointCustomization;
 	public fun customizeMiddleware (Laws/smithy/kotlin/codegen/rendering/protocol/ProtocolGenerator$GenerationContext;Ljava/util/List;)Ljava/util/List;
+	public fun customizeSchemaTraits (Laws/smithy/kotlin/codegen/rendering/serde/SchemaTraitExtension;)V
 	public fun decorateSymbolProvider (Laws/smithy/kotlin/codegen/KotlinSettings;Lsoftware/amazon/smithy/model/Model;Lsoftware/amazon/smithy/codegen/core/SymbolProvider;)Lsoftware/amazon/smithy/codegen/core/SymbolProvider;
 	public fun enabledForService (Lsoftware/amazon/smithy/model/Model;Laws/smithy/kotlin/codegen/KotlinSettings;)Z
 	public fun getOrder ()B
@@ -2132,6 +2167,7 @@ public final class aws/smithy/kotlin/codegen/rendering/endpoints/SdkEndpointBuil
 	public fun authSchemes (Laws/smithy/kotlin/codegen/rendering/protocol/ProtocolGenerator$GenerationContext;)Ljava/util/List;
 	public fun customizeEndpointResolution (Laws/smithy/kotlin/codegen/rendering/protocol/ProtocolGenerator$GenerationContext;)Laws/smithy/kotlin/codegen/rendering/endpoints/EndpointCustomization;
 	public fun customizeMiddleware (Laws/smithy/kotlin/codegen/rendering/protocol/ProtocolGenerator$GenerationContext;Ljava/util/List;)Ljava/util/List;
+	public fun customizeSchemaTraits (Laws/smithy/kotlin/codegen/rendering/serde/SchemaTraitExtension;)V
 	public fun decorateSymbolProvider (Laws/smithy/kotlin/codegen/KotlinSettings;Lsoftware/amazon/smithy/model/Model;Lsoftware/amazon/smithy/codegen/core/SymbolProvider;)Lsoftware/amazon/smithy/codegen/core/SymbolProvider;
 	public fun enabledForService (Lsoftware/amazon/smithy/model/Model;Laws/smithy/kotlin/codegen/KotlinSettings;)Z
 	public fun getOrder ()B
@@ -2174,6 +2210,7 @@ public final class aws/smithy/kotlin/codegen/rendering/endpoints/discovery/Endpo
 	public fun authSchemes (Laws/smithy/kotlin/codegen/rendering/protocol/ProtocolGenerator$GenerationContext;)Ljava/util/List;
 	public fun customizeEndpointResolution (Laws/smithy/kotlin/codegen/rendering/protocol/ProtocolGenerator$GenerationContext;)Laws/smithy/kotlin/codegen/rendering/endpoints/EndpointCustomization;
 	public fun customizeMiddleware (Laws/smithy/kotlin/codegen/rendering/protocol/ProtocolGenerator$GenerationContext;Ljava/util/List;)Ljava/util/List;
+	public fun customizeSchemaTraits (Laws/smithy/kotlin/codegen/rendering/serde/SchemaTraitExtension;)V
 	public fun decorateSymbolProvider (Laws/smithy/kotlin/codegen/KotlinSettings;Lsoftware/amazon/smithy/model/Model;Lsoftware/amazon/smithy/codegen/core/SymbolProvider;)Lsoftware/amazon/smithy/codegen/core/SymbolProvider;
 	public fun enabledForService (Lsoftware/amazon/smithy/model/Model;Laws/smithy/kotlin/codegen/KotlinSettings;)Z
 	public fun getOrder ()B
@@ -2194,6 +2231,7 @@ public final class aws/smithy/kotlin/codegen/rendering/longpoll/LongPollingInteg
 	public fun authSchemes (Laws/smithy/kotlin/codegen/rendering/protocol/ProtocolGenerator$GenerationContext;)Ljava/util/List;
 	public fun customizeEndpointResolution (Laws/smithy/kotlin/codegen/rendering/protocol/ProtocolGenerator$GenerationContext;)Laws/smithy/kotlin/codegen/rendering/endpoints/EndpointCustomization;
 	public fun customizeMiddleware (Laws/smithy/kotlin/codegen/rendering/protocol/ProtocolGenerator$GenerationContext;Ljava/util/List;)Ljava/util/List;
+	public fun customizeSchemaTraits (Laws/smithy/kotlin/codegen/rendering/serde/SchemaTraitExtension;)V
 	public fun decorateSymbolProvider (Laws/smithy/kotlin/codegen/KotlinSettings;Lsoftware/amazon/smithy/model/Model;Lsoftware/amazon/smithy/codegen/core/SymbolProvider;)Lsoftware/amazon/smithy/codegen/core/SymbolProvider;
 	public fun enabledForService (Lsoftware/amazon/smithy/model/Model;Laws/smithy/kotlin/codegen/KotlinSettings;)Z
 	public fun getOrder ()B
@@ -2589,6 +2627,7 @@ public final class aws/smithy/kotlin/codegen/rendering/protocol/RequiresLengthIn
 	public fun authSchemes (Laws/smithy/kotlin/codegen/rendering/protocol/ProtocolGenerator$GenerationContext;)Ljava/util/List;
 	public fun customizeEndpointResolution (Laws/smithy/kotlin/codegen/rendering/protocol/ProtocolGenerator$GenerationContext;)Laws/smithy/kotlin/codegen/rendering/endpoints/EndpointCustomization;
 	public fun customizeMiddleware (Laws/smithy/kotlin/codegen/rendering/protocol/ProtocolGenerator$GenerationContext;Ljava/util/List;)Ljava/util/List;
+	public fun customizeSchemaTraits (Laws/smithy/kotlin/codegen/rendering/serde/SchemaTraitExtension;)V
 	public fun decorateSymbolProvider (Laws/smithy/kotlin/codegen/KotlinSettings;Lsoftware/amazon/smithy/model/Model;Lsoftware/amazon/smithy/codegen/core/SymbolProvider;)Lsoftware/amazon/smithy/codegen/core/SymbolProvider;
 	public fun enabledForService (Lsoftware/amazon/smithy/model/Model;Laws/smithy/kotlin/codegen/KotlinSettings;)Z
 	public fun getOrder ()B
@@ -2631,6 +2670,7 @@ public final class aws/smithy/kotlin/codegen/rendering/samples/KDocSamplesGenera
 	public fun authSchemes (Laws/smithy/kotlin/codegen/rendering/protocol/ProtocolGenerator$GenerationContext;)Ljava/util/List;
 	public fun customizeEndpointResolution (Laws/smithy/kotlin/codegen/rendering/protocol/ProtocolGenerator$GenerationContext;)Laws/smithy/kotlin/codegen/rendering/endpoints/EndpointCustomization;
 	public fun customizeMiddleware (Laws/smithy/kotlin/codegen/rendering/protocol/ProtocolGenerator$GenerationContext;Ljava/util/List;)Ljava/util/List;
+	public fun customizeSchemaTraits (Laws/smithy/kotlin/codegen/rendering/serde/SchemaTraitExtension;)V
 	public fun decorateSymbolProvider (Laws/smithy/kotlin/codegen/KotlinSettings;Lsoftware/amazon/smithy/model/Model;Lsoftware/amazon/smithy/codegen/core/SymbolProvider;)Lsoftware/amazon/smithy/codegen/core/SymbolProvider;
 	public fun enabledForService (Lsoftware/amazon/smithy/model/Model;Laws/smithy/kotlin/codegen/KotlinSettings;)Z
 	public fun getOrder ()B
@@ -2743,8 +2783,20 @@ public class aws/smithy/kotlin/codegen/rendering/serde/JsonSerializerGenerator :
 }
 
 public final class aws/smithy/kotlin/codegen/rendering/serde/SchemaGenerator {
-	public fun <init> (Lsoftware/amazon/smithy/model/Model;Lsoftware/amazon/smithy/codegen/core/SymbolProvider;Lsoftware/amazon/smithy/model/shapes/Shape;)V
+	public fun <init> (Lsoftware/amazon/smithy/model/Model;Lsoftware/amazon/smithy/codegen/core/SymbolProvider;Lsoftware/amazon/smithy/model/shapes/Shape;Laws/smithy/kotlin/codegen/rendering/serde/SchemaTraitExtension;)V
+	public synthetic fun <init> (Lsoftware/amazon/smithy/model/Model;Lsoftware/amazon/smithy/codegen/core/SymbolProvider;Lsoftware/amazon/smithy/model/shapes/Shape;Laws/smithy/kotlin/codegen/rendering/serde/SchemaTraitExtension;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public final fun render (Laws/smithy/kotlin/codegen/core/KotlinWriter;)V
+}
+
+public final class aws/smithy/kotlin/codegen/rendering/serde/SchemaTraitExtension {
+	public static final field Companion Laws/smithy/kotlin/codegen/rendering/serde/SchemaTraitExtension$Companion;
+	public final fun add (Lsoftware/amazon/smithy/model/shapes/ShapeId;Laws/smithy/kotlin/codegen/rendering/serde/TraitRenderer;)V
+	public final fun remove (Lsoftware/amazon/smithy/model/shapes/ShapeId;)V
+}
+
+public final class aws/smithy/kotlin/codegen/rendering/serde/SchemaTraitExtension$Companion {
+	public final fun default ()Laws/smithy/kotlin/codegen/rendering/serde/SchemaTraitExtension;
+	public final fun fromIntegrations (Ljava/util/List;)Laws/smithy/kotlin/codegen/rendering/serde/SchemaTraitExtension;
 }
 
 public final class aws/smithy/kotlin/codegen/rendering/serde/SdkFieldDescriptorTrait {
@@ -2847,6 +2899,10 @@ public final class aws/smithy/kotlin/codegen/rendering/serde/StructuredDataSeria
 	public static synthetic fun payloadSerializer$default (Laws/smithy/kotlin/codegen/rendering/serde/StructuredDataSerializerGenerator;Laws/smithy/kotlin/codegen/rendering/protocol/ProtocolGenerator$GenerationContext;Lsoftware/amazon/smithy/model/shapes/Shape;Ljava/util/Collection;ILjava/lang/Object;)Lsoftware/amazon/smithy/codegen/core/Symbol;
 }
 
+public abstract interface class aws/smithy/kotlin/codegen/rendering/serde/TraitRenderer {
+	public abstract fun render (Lsoftware/amazon/smithy/model/traits/Trait;)Lkotlin/jvm/functions/Function1;
+}
+
 public class aws/smithy/kotlin/codegen/rendering/serde/XmlParserGenerator : aws/smithy/kotlin/codegen/rendering/serde/StructuredDataParserGenerator {
 	public fun <init> (Lsoftware/amazon/smithy/model/traits/TimestampFormatTrait$Format;)V
 	protected final fun addNestedDocumentDeserializers (Laws/smithy/kotlin/codegen/rendering/protocol/ProtocolGenerator$GenerationContext;Lsoftware/amazon/smithy/model/shapes/Shape;Laws/smithy/kotlin/codegen/core/KotlinWriter;)V
@@ -2932,6 +2988,7 @@ public final class aws/smithy/kotlin/codegen/rendering/smoketests/SmokeTestsInte
 	public fun authSchemes (Laws/smithy/kotlin/codegen/rendering/protocol/ProtocolGenerator$GenerationContext;)Ljava/util/List;
 	public fun customizeEndpointResolution (Laws/smithy/kotlin/codegen/rendering/protocol/ProtocolGenerator$GenerationContext;)Laws/smithy/kotlin/codegen/rendering/endpoints/EndpointCustomization;
 	public fun customizeMiddleware (Laws/smithy/kotlin/codegen/rendering/protocol/ProtocolGenerator$GenerationContext;Ljava/util/List;)Ljava/util/List;
+	public fun customizeSchemaTraits (Laws/smithy/kotlin/codegen/rendering/serde/SchemaTraitExtension;)V
 	public fun decorateSymbolProvider (Laws/smithy/kotlin/codegen/KotlinSettings;Lsoftware/amazon/smithy/model/Model;Lsoftware/amazon/smithy/codegen/core/SymbolProvider;)Lsoftware/amazon/smithy/codegen/core/SymbolProvider;
 	public fun enabledForService (Lsoftware/amazon/smithy/model/Model;Laws/smithy/kotlin/codegen/KotlinSettings;)Z
 	public fun getOrder ()B
@@ -3166,6 +3223,7 @@ public final class aws/smithy/kotlin/codegen/rendering/waiters/ServiceWaitersGen
 	public fun authSchemes (Laws/smithy/kotlin/codegen/rendering/protocol/ProtocolGenerator$GenerationContext;)Ljava/util/List;
 	public fun customizeEndpointResolution (Laws/smithy/kotlin/codegen/rendering/protocol/ProtocolGenerator$GenerationContext;)Laws/smithy/kotlin/codegen/rendering/endpoints/EndpointCustomization;
 	public fun customizeMiddleware (Laws/smithy/kotlin/codegen/rendering/protocol/ProtocolGenerator$GenerationContext;Ljava/util/List;)Ljava/util/List;
+	public fun customizeSchemaTraits (Laws/smithy/kotlin/codegen/rendering/serde/SchemaTraitExtension;)V
 	public fun decorateSymbolProvider (Laws/smithy/kotlin/codegen/KotlinSettings;Lsoftware/amazon/smithy/model/Model;Lsoftware/amazon/smithy/codegen/core/SymbolProvider;)Lsoftware/amazon/smithy/codegen/core/SymbolProvider;
 	public fun enabledForService (Lsoftware/amazon/smithy/model/Model;Laws/smithy/kotlin/codegen/KotlinSettings;)Z
 	public fun getOrder ()B

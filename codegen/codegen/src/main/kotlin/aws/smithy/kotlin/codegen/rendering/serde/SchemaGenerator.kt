@@ -20,17 +20,7 @@ import software.amazon.smithy.model.shapes.Shape
 import software.amazon.smithy.model.shapes.ShapeType
 import software.amazon.smithy.model.shapes.StructureShape
 import software.amazon.smithy.model.shapes.UnionShape
-import software.amazon.smithy.model.traits.HttpHeaderTrait
-import software.amazon.smithy.model.traits.HttpPrefixHeadersTrait
-import software.amazon.smithy.model.traits.HttpQueryTrait
-import software.amazon.smithy.model.traits.JsonNameTrait
-import software.amazon.smithy.model.traits.MediaTypeTrait
-import software.amazon.smithy.model.traits.TimestampFormatTrait
 import software.amazon.smithy.model.traits.Trait
-import software.amazon.smithy.model.traits.XmlNameTrait
-import software.amazon.smithy.model.traits.XmlNamespaceTrait
-import software.amazon.smithy.aws.traits.protocols.AwsQueryErrorTrait
-import software.amazon.smithy.rulesengine.traits.ContextParamTrait
 
 private fun String.screamingSnake(): String = replace(Regex("([a-z0-9])([A-Z])"), "$1_$2").uppercase()
 
@@ -50,47 +40,6 @@ private val preludeSchemaByType = mapOf(
     ShapeType.DOCUMENT to "Document",
 )
 
-// valueless annotation traits: shape id -> the runtime trait `object` to reference (rendered as `#T`)
-private val annotationTraits: Map<String, Symbol> = mapOf(
-    "smithy.api#required" to Schema.Traits.RequiredTrait,
-    "smithy.api#sparse" to Schema.Traits.SparseTrait,
-    "smithy.api#sensitive" to Schema.Traits.SensitiveTrait,
-    "smithy.api#idempotencyToken" to Schema.Traits.IdempotencyTokenTrait,
-    "smithy.api#streaming" to Schema.Traits.StreamingTrait,
-    "smithy.api#requiresLength" to Schema.Traits.RequiresLengthTrait,
-    "smithy.api#eventHeader" to Schema.Traits.EventHeaderTrait,
-    "smithy.api#eventPayload" to Schema.Traits.EventPayloadTrait,
-    "smithy.api#xmlAttribute" to Schema.Traits.XmlAttributeTrait,
-    "smithy.api#xmlFlattened" to Schema.Traits.XmlFlattenedTrait,
-    "smithy.api#httpLabel" to Schema.Traits.HttpLabelTrait,
-    "smithy.api#httpPayload" to Schema.Traits.HttpPayloadTrait,
-    "smithy.api#httpQueryParams" to Schema.Traits.HttpQueryParamsTrait,
-    "smithy.api#httpResponseCode" to Schema.Traits.HttpResponseCodeTrait,
-    "smithy.api#hostLabel" to Schema.Traits.HostLabelTrait,
-)
-
-// all serde-relevant trait ids the generator can render (annotation + value-carrying)
-private val renderableTraitIds: Set<String> = annotationTraits.keys + setOf(
-    "smithy.api#jsonName",
-    "smithy.api#xmlName",
-    "smithy.api#xmlNamespace",
-    "smithy.api#mediaType",
-    "smithy.api#timestampFormat",
-    "smithy.api#httpHeader",
-    "smithy.api#httpQuery",
-    "smithy.api#httpPrefixHeaders",
-    "smithy.rules#contextParam",
-    "aws.protocols#awsQueryError",
-)
-
-private val String.timestampFormatEnum: String
-    get() = when (this) {
-        "epoch-seconds" -> "EPOCH_SECONDS"
-        "date-time" -> "DATE_TIME"
-        "http-date" -> "HTTP_DATE"
-        else -> error("unknown timestampFormat '$this'")
-    }
-
 /**
  * Renders the schema members of a structure or union's companion object per the design doc:
  */
@@ -98,8 +47,12 @@ class SchemaGenerator(
     private val model: Model,
     private val symbolProvider: SymbolProvider,
     private val shape: Shape,
+    private val traitExtension: SchemaTraitExtension = SchemaTraitExtension.default(),
 ) {
     init {
+        // TODO: support top-level enum/simple shapes so enums can carry their own companion SCHEMA
+        //  (SEP: any exported type MUST have an exported schema). Simple/list/map shapes are already
+        //  rendered as member targets; relaxing this require + a top-level entry point would cover enums.
         require(shape is StructureShape || shape is UnionShape) {
             "SchemaGenerator only renders structure and union shapes, got ${shape.type}"
         }
@@ -206,40 +159,14 @@ class SchemaGenerator(
         }
     }
 
-    private fun traitWritable(trait: Trait): InlineKotlinWriter = {
-        val annotation = annotationTraits[trait.toShapeId().toString()]
-        when {
-            annotation != null -> writeInline("#T", annotation)
-            trait is JsonNameTrait -> writeInline("#T(#S)", Schema.Traits.JsonNameTrait, trait.value)
-            trait is XmlNameTrait -> writeInline("#T(#S)", Schema.Traits.XmlNameTrait, trait.value)
-            trait is MediaTypeTrait -> writeInline("#T(#S)", Schema.Traits.MediaTypeTrait, trait.value)
-            trait is HttpHeaderTrait -> writeInline("#T(#S)", Schema.Traits.HttpHeaderTrait, trait.value)
-            trait is HttpQueryTrait -> writeInline("#T(#S)", Schema.Traits.HttpQueryTrait, trait.value)
-            trait is HttpPrefixHeadersTrait -> writeInline("#T(#S)", Schema.Traits.HttpPrefixHeadersTrait, trait.value)
-            trait is ContextParamTrait -> writeInline("#T(#S)", Schema.Traits.ContextParamTrait, trait.name)
-            trait is XmlNamespaceTrait -> {
-                val prefix = trait.prefix.orElse(null)
-                if (prefix != null) {
-                    writeInline("#T(#S, #S)", Schema.Traits.XmlNamespaceTrait, trait.uri, prefix)
-                } else {
-                    writeInline("#T(#S)", Schema.Traits.XmlNamespaceTrait, trait.uri)
-                }
-            }
-            trait is TimestampFormatTrait -> writeInline(
-                "#T(#T.#L)",
-                Schema.Traits.TimestampFormatTrait,
-                Schema.Traits.TimestampFormat,
-                trait.value.timestampFormatEnum,
-            )
-            trait is AwsQueryErrorTrait -> writeInline(
-                "#T(#S, #L)",
-                Schema.Traits.AwsQueryErrorTrait,
-                trait.code,
-                trait.httpResponseCode,
-            )
-            else -> error("no schema renderer for trait ${trait.toShapeId()}")
-        }
-    }
+    private fun traitWritable(trait: Trait): InlineKotlinWriter = traitExtension.rendererFor(trait.toShapeId())?.render(trait)
+        ?: error("no schema trait renderer registered for ${trait.toShapeId()}")
+
+    // TODO: handle unknown/custom traits. Per the SEP ("Handling unknown traits in code generation") an
+    //  unrecognized trait SHOULD be emitted into the schema as-is, keyed by ShapeId with its node value
+    //  represented as a Document (DocumentTrait). Today such traits are filtered out by [eligibleTraits]
+    //  (no registered renderer -> not in includedTraitIds) and silently dropped. Implementing the default
+    //  requires reintroducing DocumentTrait + the Document value representation, which are deferred.
 
     private val MemberShape.constName: String
         get() = memberName.toCamelCase().screamingSnake()
@@ -250,8 +177,10 @@ class SchemaGenerator(
             return target.id == shape.id
         }
 
+    // NOTE: only traits with a registered renderer are included; unknown/custom traits are dropped here.
+    // See the TODO on [traitWritable] — the SEP wants unknowns emitted as a DocumentTrait once Document lands.
     private val Shape.eligibleTraits: List<Trait>
-        get() = allTraits.values.filter { it.toShapeId().toString() in renderableTraitIds }
+        get() = allTraits.values.filter { it.toShapeId() in traitExtension.includedTraitIds }
 
     private val Shape.preludeSchemaName: String?
         get() = if (eligibleTraits.isEmpty()) preludeSchemaByType[type] else null

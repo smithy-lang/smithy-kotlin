@@ -191,7 +191,7 @@ class CodegenVisitor(context: PluginContext) : ShapeVisitor.Default<Unit>() {
     }
 
     override fun unionShape(shape: UnionShape) {
-        writers.useShapeWriter(shape) { UnionGenerator(model, symbolProvider, it, shape).render() }
+        writers.useShapeWriter(shape) { UnionGenerator(model, symbolProvider, it, shape, integrations).render() }
     }
 
     override fun serviceShape(shape: ServiceShape) {

@@ -7,11 +7,13 @@ package aws.smithy.kotlin.codegen.rendering
 import aws.smithy.kotlin.codegen.core.KotlinWriter
 import aws.smithy.kotlin.codegen.core.unionVariantName
 import aws.smithy.kotlin.codegen.core.withBlock
+import aws.smithy.kotlin.codegen.integration.KotlinIntegration
 import aws.smithy.kotlin.codegen.lang.KotlinTypes
 import aws.smithy.kotlin.codegen.model.filterEventStreamErrors
 import aws.smithy.kotlin.codegen.model.hasTrait
 import aws.smithy.kotlin.codegen.model.isNullable
 import aws.smithy.kotlin.codegen.rendering.serde.SchemaGenerator
+import aws.smithy.kotlin.codegen.rendering.serde.SchemaTraitExtension
 import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.codegen.core.SymbolProvider
 import software.amazon.smithy.model.Model
@@ -27,6 +29,7 @@ class UnionGenerator(
     private val symbolProvider: SymbolProvider,
     private val writer: KotlinWriter,
     private val shape: UnionShape,
+    private val integrations: List<KotlinIntegration> = emptyList(),
 ) {
     val symbol: Symbol = symbolProvider.toSymbol(shape)
 
@@ -107,7 +110,8 @@ class UnionGenerator(
 
         writer.write("")
         writer.withBlock("public companion object {", "}") {
-            SchemaGenerator(model, symbolProvider, shape).render(this)
+            val traitExtension = SchemaTraitExtension.fromIntegrations(integrations)
+            SchemaGenerator(model, symbolProvider, shape, traitExtension).render(this)
         }
 
         writer.closeBlock("}").write("")

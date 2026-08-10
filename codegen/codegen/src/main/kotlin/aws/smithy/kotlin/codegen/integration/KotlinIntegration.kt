@@ -10,6 +10,7 @@ import aws.smithy.kotlin.codegen.core.KotlinDelegator
 import aws.smithy.kotlin.codegen.rendering.endpoints.EndpointCustomization
 import aws.smithy.kotlin.codegen.rendering.protocol.ProtocolGenerator
 import aws.smithy.kotlin.codegen.rendering.protocol.ProtocolMiddleware
+import aws.smithy.kotlin.codegen.rendering.serde.SchemaTraitExtension
 import aws.smithy.kotlin.codegen.rendering.util.ConfigProperty
 import software.amazon.smithy.codegen.core.SymbolProvider
 import software.amazon.smithy.model.Model
@@ -132,4 +133,18 @@ interface KotlinIntegration {
      * @param ctx the codegen generation context
      */
     fun customizeEndpointResolution(ctx: ProtocolGenerator.GenerationContext): EndpointCustomization? = null
+
+    /**
+     * Customize how Smithy traits are rendered into generated schemas. Integrations may register
+     * [TraitRenderer][aws.smithy.kotlin.codegen.rendering.serde.TraitRenderer]s for additional trait shape
+     * ids (which also opts those traits into schema inclusion), or remove renderers they previously added.
+     * First-party renderers cannot be removed.
+     *
+     * TODO: the design doc also says trait-inclusion customization SHOULD be exposed as a code-generator CLI
+     *  configuration option, not only this API. A KotlinSettings-backed knob (e.g. include/exclude lists) that
+     *  seeds the [SchemaTraitExtension] is still needed to satisfy that SHOULD.
+     *
+     * @param extension the schema trait renderer registry to customize (pre-populated with first-party renderers)
+     */
+    fun customizeSchemaTraits(extension: SchemaTraitExtension) {}
 }

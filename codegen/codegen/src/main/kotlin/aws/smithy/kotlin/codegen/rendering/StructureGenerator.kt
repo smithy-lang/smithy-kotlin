@@ -21,6 +21,7 @@ import aws.smithy.kotlin.codegen.model.nullable
 import aws.smithy.kotlin.codegen.model.targetOrSelf
 import aws.smithy.kotlin.codegen.rendering.serde.ClientErrorCorrection
 import aws.smithy.kotlin.codegen.rendering.serde.SchemaGenerator
+import aws.smithy.kotlin.codegen.rendering.serde.SchemaTraitExtension
 import aws.smithy.kotlin.codegen.utils.toCamelCase
 import software.amazon.smithy.codegen.core.CodegenException
 import software.amazon.smithy.codegen.core.Symbol
@@ -116,10 +117,9 @@ class StructureGenerator(
     private fun renderCompanionObject() {
         writer.withBlock("public companion object {", "}") {
             write("public operator fun invoke(block: Builder.() -> #Q): #Q = Builder().apply(block).build()", KotlinTypes.Unit, symbol)
-            if (!shape.isError) {
-                write("")
-                SchemaGenerator(model, symbolProvider, shape).render(this)
-            }
+            write("")
+            val traitExtension = SchemaTraitExtension.fromIntegrations(ctx.integrations)
+            SchemaGenerator(model, symbolProvider, shape, traitExtension).render(this)
         }
     }
 
