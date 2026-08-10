@@ -957,6 +957,29 @@ public final class aws/smithy/kotlin/codegen/core/RuntimeTypes$Serde : aws/smith
 	public final fun getSerializer ()Lsoftware/amazon/smithy/codegen/core/Symbol;
 }
 
+public final class aws/smithy/kotlin/codegen/core/RuntimeTypes$Serde$Schema : aws/smithy/kotlin/codegen/core/RuntimeTypePackage {
+	public static final field INSTANCE Laws/smithy/kotlin/codegen/core/RuntimeTypes$Serde$Schema;
+	public final fun getListSchema ()Lsoftware/amazon/smithy/codegen/core/Symbol;
+	public final fun getMapSchema ()Lsoftware/amazon/smithy/codegen/core/Symbol;
+	public final fun getMemberSchema ()Lsoftware/amazon/smithy/codegen/core/Symbol;
+	public final fun getPreludeSchemas ()Lsoftware/amazon/smithy/codegen/core/Symbol;
+	public final fun getShapeId ()Lsoftware/amazon/smithy/codegen/core/Symbol;
+	public final fun getShapeType ()Lsoftware/amazon/smithy/codegen/core/Symbol;
+	public final fun getSimpleSchema ()Lsoftware/amazon/smithy/codegen/core/Symbol;
+	public final fun getStructureSchema ()Lsoftware/amazon/smithy/codegen/core/Symbol;
+	public final fun getUnionSchema ()Lsoftware/amazon/smithy/codegen/core/Symbol;
+}
+
+public final class aws/smithy/kotlin/codegen/core/RuntimeTypes$Serde$Schema$Traits : aws/smithy/kotlin/codegen/core/RuntimeTypePackage {
+	public static final field INSTANCE Laws/smithy/kotlin/codegen/core/RuntimeTypes$Serde$Schema$Traits;
+	public final fun getJsonNameTrait ()Lsoftware/amazon/smithy/codegen/core/Symbol;
+	public final fun getRequiredTrait ()Lsoftware/amazon/smithy/codegen/core/Symbol;
+	public final fun getSparseTrait ()Lsoftware/amazon/smithy/codegen/core/Symbol;
+	public final fun getTimestampFormat ()Lsoftware/amazon/smithy/codegen/core/Symbol;
+	public final fun getTimestampFormatTrait ()Lsoftware/amazon/smithy/codegen/core/Symbol;
+	public final fun getXmlNameTrait ()Lsoftware/amazon/smithy/codegen/core/Symbol;
+}
+
 public final class aws/smithy/kotlin/codegen/core/RuntimeTypes$Serde$SerdeCbor : aws/smithy/kotlin/codegen/core/RuntimeTypePackage {
 	public static final field INSTANCE Laws/smithy/kotlin/codegen/core/RuntimeTypes$Serde$SerdeCbor;
 	public final fun getCborDeserializer ()Lsoftware/amazon/smithy/codegen/core/Symbol;
@@ -2717,6 +2740,11 @@ public class aws/smithy/kotlin/codegen/rendering/serde/JsonSerializerGenerator :
 	public fun getDefaultTimestampFormat ()Lsoftware/amazon/smithy/model/traits/TimestampFormatTrait$Format;
 	public fun operationSerializer (Laws/smithy/kotlin/codegen/rendering/protocol/ProtocolGenerator$GenerationContext;Lsoftware/amazon/smithy/model/shapes/OperationShape;Ljava/util/List;)Lsoftware/amazon/smithy/codegen/core/Symbol;
 	public fun payloadSerializer (Laws/smithy/kotlin/codegen/rendering/protocol/ProtocolGenerator$GenerationContext;Lsoftware/amazon/smithy/model/shapes/Shape;Ljava/util/Collection;)Lsoftware/amazon/smithy/codegen/core/Symbol;
+}
+
+public final class aws/smithy/kotlin/codegen/rendering/serde/SchemaGenerator {
+	public fun <init> (Lsoftware/amazon/smithy/model/Model;Lsoftware/amazon/smithy/codegen/core/SymbolProvider;Lsoftware/amazon/smithy/model/shapes/Shape;)V
+	public final fun render (Laws/smithy/kotlin/codegen/core/KotlinWriter;)V
 }
 
 public final class aws/smithy/kotlin/codegen/rendering/serde/SdkFieldDescriptorTrait {
