@@ -8,6 +8,7 @@ import aws.smithy.kotlin.codegen.core.InlineKotlinWriter
 import aws.smithy.kotlin.codegen.core.KotlinWriter
 import aws.smithy.kotlin.codegen.core.RuntimeTypes.Serde.Schema
 import aws.smithy.kotlin.codegen.core.withBlock
+import aws.smithy.kotlin.codegen.core.withInlineBlock
 import aws.smithy.kotlin.codegen.utils.toCamelCase
 import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.codegen.core.SymbolProvider
@@ -93,7 +94,8 @@ class SchemaGenerator(
         writeInline("member(#S, ", member.memberName)
         renderTargetSchema(member)
         renderMemberTraitArgs(member)
-        write(")")
+        writeInline(")")
+        ensureNewline()
     }
 
     // renders the target-schema argument: prelude singleton, nested list/map, or a struct/union's SCHEMA
@@ -111,14 +113,15 @@ class SchemaGenerator(
     }
 
     private fun KotlinWriter.renderListSchema(shape: ListShape) {
-        withBlock("#T(#W) {", "}", Schema.ListSchema, shapeIdWritable(shape)) {
+        // withInlineBlock closes with "}" and NO trailing newline, so the caller's ")" attaches: "})"
+        withInlineBlock("#T(#W) {", "}", Schema.ListSchema, shapeIdWritable(shape)) {
             renderContainerTraits(shape)
             renderMemberEntry("element", shape.member)
         }
     }
 
     private fun KotlinWriter.renderMapSchema(shape: MapShape) {
-        withBlock("#T(#W) {", "}", Schema.MapSchema, shapeIdWritable(shape)) {
+        withInlineBlock("#T(#W) {", "}", Schema.MapSchema, shapeIdWritable(shape)) {
             renderContainerTraits(shape)
             renderMemberEntry("key", shape.key)
             renderMemberEntry("value", shape.value)
@@ -130,10 +133,11 @@ class SchemaGenerator(
     }
 
     private fun KotlinWriter.renderMemberEntry(entry: String, member: MemberShape) {
+        ensureNewline()
         writeInline("#L(", entry)
         renderTargetSchema(member)
         renderMemberTraitArgs(member)
-        write(")")
+        writeInline(")")
     }
 
     private fun shapeIdWritable(shape: Shape): InlineKotlinWriter = {
