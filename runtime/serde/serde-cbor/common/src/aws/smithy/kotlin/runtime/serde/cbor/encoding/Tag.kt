@@ -63,8 +63,9 @@ internal class Timestamp(val value: Instant) : Value {
 
     internal companion object {
         internal fun decode(buffer: SdkBufferedSource): Timestamp {
-            val major = peekMajor(buffer)
-            val minor = peekMinorByte(buffer)
+            val head = peekHead(buffer)
+            val major = majorOf(head)
+            val minor = minorOf(head)
 
             val instant: Instant = when (major) {
                 Major.U_INT -> {

@@ -29,10 +29,18 @@ internal enum class Minor(val value: UByte) {
 
 internal val MINOR_BYTE_MASK: UByte = 0b11111u
 
-internal fun peekMinorByte(buffer: SdkBufferedSource): UByte {
-    val byte = buffer.peek().readByte().toUByte()
-    return byte and MINOR_BYTE_MASK
-}
+/**
+ * Peek the head byte (major + minor) of the next CBOR value without consuming it.
+ *
+ * `SdkBufferedSource.peek()` allocates on every call, so callers that need both the major and the minor
+ * type should peek **once** via this and derive both with [majorOf]/[minorOf] rather than calling
+ * [peekMajor] and [peekMinorByte] separately.
+ */
+internal fun peekHead(buffer: SdkBufferedSource): UByte = buffer.peek().readByte().toUByte()
+
+internal fun minorOf(head: UByte): UByte = head and MINOR_BYTE_MASK
+
+internal fun peekMinorByte(buffer: SdkBufferedSource): UByte = minorOf(peekHead(buffer))
 
 internal fun decodeArgument(buffer: SdkBufferedSource): ULong {
     val minor = buffer.readByte().toUByte() and MINOR_BYTE_MASK

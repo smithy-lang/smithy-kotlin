@@ -26,10 +26,8 @@ internal enum class Major(val value: UByte) {
     }
 }
 
-private val MAJOR_BYTE_MASK: UByte = 0b111u
+// Derive the [Major] type from an already-peeked head byte. The top 3 bits index directly into
+// Major.entries (values 0..7 in ordinal order), avoiding the linear scan in Major.fromValue.
+internal fun majorOf(head: UByte): Major = Major.entries[((head.toInt() shr 5) and 0b111)]
 
-internal fun peekMajor(buffer: SdkBufferedSource): Major {
-    val byte = buffer.peek().readByte().toUByte()
-    val major = ((byte.toUInt() shr 5).toUByte()) and MAJOR_BYTE_MASK
-    return Major.fromValue(major)
-}
+internal fun peekMajor(buffer: SdkBufferedSource): Major = majorOf(peekHead(buffer))
