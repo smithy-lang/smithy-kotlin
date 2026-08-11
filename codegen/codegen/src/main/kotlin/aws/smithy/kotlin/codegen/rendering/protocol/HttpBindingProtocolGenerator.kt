@@ -590,8 +590,6 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                 "}",
                 RuntimeTypes.Core.Text.Encoding.PercentEncoding,
             ) {
-                // render length check if applicable
-                queryBindings.forEach { binding -> renderNonBlankGuard(ctx, binding.member, writer) }
 
                 renderStringValuesMapParameters(ctx, queryBindings, writer)
 
