@@ -206,3 +206,113 @@ Deserialize dominates — the `peek()`-per-byte allocation pattern (D1) and the
 temp-buffer decodes (D2/D3) are the prime suspects.
 
 ### Experiment log
+
+**Exp 1 — D2+D3+D4: fixed-width reads in decode primitives.** `decodeArgument`
+now uses `readByte/readShort/readInt/readLong`; `TextString.decode` uses
+`readUtf8(len)`; `ByteString.decode` uses `readByteArray(len)`; float decode uses
+`readInt/readLong`. Removes temp `SdkBuffer` + `ByteArray` + fold per
+integer/length/string/float. Tests green.
+- deserialize: 7.666 → **7.153** ms/op (−6.7%)
+- serialize: 0.681 → 0.684 (noise)
+- **KEPT.**
+
+**Exp 2 — D1: peek the head byte once.** Added `peekHead`/`majorOf`/`minorOf`;
+rewrote `peekMajor`/`peekMinorByte`, `nextValueIsIndefiniteBreak`,
+`nextValueIsNull`, `Value.decode`, `Timestamp.decode` to peek the head byte a
+single time and derive both major & minor from it (was 2–3 `peek()` allocations
+per value). Also replaced `Major.fromValue` linear scan with a direct
+`Major.entries[..]` index. Tests green.
+- deserialize: 7.153 → **5.787** ms/op (−19%; −24.5% vs baseline)
+- serialize: 0.684 → 0.668 (minor)
+- **KEPT.** Confirms `peek()` allocation was the dominant deserialize cost.
+
+**Exp 3 — D5: field-name → index map.** `CborFieldIterator` resolves each
+field's serial name once into a `Map<String, Int>` instead of an O(fields) scan
+with a trait-set lookup per comparison on every decoded field. Tests green.
+- deserialize: 5.787 → **5.565** ms/op (−3.8%)
+- serialize: unchanged (noise)
+- **KEPT.**
+
+**Exp 4 — S1+S2: direct-write encode arguments & floats.** Replaced
+`encodeArgument` (which built a boxed `List<Byte>` + `ByteArray` + spread copy
+per integer/length/tag id) with a `SdkBufferedSink.writeArgument` extension that
+writes the head byte + fixed-width big-endian bytes directly. Float encode now
+uses `writeInt`/`writeLong`. Removed the dead `encodeArgument` /
+`ByteArray.toULong` helpers. Byte-identical output. Tests green.
+- deserialize: 5.565 → 5.682 (noise)
+- serialize: 0.681 (baseline) → **0.364** ms/op (−47%)
+- **KEPT.** `encodeArgument` array+boxing was the dominant serialize cost.
+
+**Exp 5 — S4+S5: skip per-primitive value allocations in `CborSerializer`.**
+`serializeBoolean`/`serializeByte/Short/Int/Long`/`serializeString` and
+`beginMap`/`beginList` now write directly to the buffer instead of allocating a
+`Boolean`/`UInt`/`NegInt`/`TextString`/`IndefiniteMap`/`IndefiniteList` value.
+NegInt semantics preserved exactly (`abs(value) - 1`). Byte-identical. Tests green.
+- deserialize: 5.682 → 5.490 (noise)
+- serialize: 0.364 → **0.351** ms/op (−3.6%)
+- **KEPT.**
+
+**Exp 6 — D6: skip per-primitive value allocations on decode.** Added
+`decodeValue` helpers to `TextString`/`UInt`/`NegInt`/`Boolean` that return the
+primitive directly; `deserializeString`/`deserializeBoolean`/`deserializeNumber`
+and the struct field-name decode use them instead of allocating a wrapper value.
+Tests green.
+- deserialize: 5.490 → **5.429** ms/op (−1.1%, within error bars)
+- serialize: unchanged
+- **KEPT** — the wall-clock delta is within noise, but it removes an allocation
+  per decoded number/string/bool/field-name (reduced GC pressure), is zero-risk,
+  and mirrors the kept serialize-side change. No regression.
+
+### Ideas considered but NOT pursued
+
+- **Definite-length maps/lists** (the existing TODOs). Would shrink payloads and
+  speed decode, but changes the wire format (indefinite → definite) — **not
+  byte-identical**, so out of scope here. Flagged as a follow-up.
+- **Rewriting the deserializer onto a raw `ByteArray` cursor** (JSON-lexer style)
+  to remove `peek()` entirely. Bigger win potential, but `CborPrimitiveDeserializer`
+  and the `*.decode` companions are constructed with `SdkBufferedSource` and used
+  that way by tests; a full cursor rewrite is high-risk for this pass. The
+  single-peek change (D1) captured most of the benefit at low risk.
+- **Caching `serialName` on the serialize side.** Would need changes to the
+  shared `SdkFieldDescriptor` (out of scope: not CBOR-only).
+
+---
+
+## Summary
+
+| Benchmark              | Baseline | Final | Change |
+|------------------------|----------|-------|--------|
+| `deserializeBenchmark` | 7.666    | 5.551 | −27.6% |
+| `serializeBenchmark`   | 0.681    | 0.356 | −47.7% |
+
+(ms/op, avg time; baseline = S3-corrected encoder; final = HEAD confirmation run.
+Per-experiment deltas above; deserialize error bars ~±0.05–0.17 ms.)
+
+All 249 serde-cbor JVM tests pass. Encoded output is **byte-for-byte identical**
+to the pre-optimization baseline (verified by serializing a comprehensive object
+graph — all integer widths, negatives, `Long.MIN/MAX`, float/double, ASCII +
+multibyte strings, null, instant, nested list/map, bignums, big decimals, byte
+arrays — at both revisions and comparing SHA-256; identical). The public API
+(`serde-cbor.api`) is unchanged.
+
+### Verification performed
+
+- `./gradlew :runtime:serde:serde-cbor:jvmTest` → BUILD SUCCESSFUL, 249 tests,
+  0 failures.
+- Byte-identity: probe hex at HEAD == probe hex at baseline commit `f52544c7`
+  (SHA-256 match). CBOR round-trip of the CJK-heavy twitter payload succeeds.
+- `./gradlew :runtime:serde:serde-cbor:jvmJar
+  :tests:codegen:serde-codegen-support:build
+  :tests:benchmarks:serde-benchmarks:compileKotlinJvm` → BUILD SUCCESSFUL.
+- `serde-cbor.api` unchanged (`git diff` empty).
+
+### Flagged behavior change
+
+`TextString.encode` previously emitted the UTF-16 code-unit count as the CBOR
+byte-length for text strings, producing **invalid, non-round-trippable CBOR for
+any multibyte string** (verified). The fix uses the UTF-8 byte length. This is
+**byte-identical for ASCII** (all existing tests / hex vectors unchanged) and is
+a spec-compliance correctness fix for multibyte; it was also a prerequisite for
+benchmarking the CJK-heavy twitter dataset. Callers relying on the previous
+(broken) multibyte bytes — there should be none, as they never round-tripped —
+would observe different output.
