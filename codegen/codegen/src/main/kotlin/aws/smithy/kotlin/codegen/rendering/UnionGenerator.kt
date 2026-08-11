@@ -30,8 +30,16 @@ class UnionGenerator(
     private val symbolProvider: SymbolProvider,
     private val writer: KotlinWriter,
     private val shape: UnionShape,
-    private val integrations: List<KotlinIntegration> = emptyList(),
+    private val integrations: List<KotlinIntegration>,
 ) {
+    // preserves the original 4-arg binary signature (integrations added later for schema generation)
+    constructor(
+        model: Model,
+        symbolProvider: SymbolProvider,
+        writer: KotlinWriter,
+        shape: UnionShape,
+    ) : this(model, symbolProvider, writer, shape, emptyList())
+
     val symbol: Symbol = symbolProvider.toSymbol(shape)
 
     /**

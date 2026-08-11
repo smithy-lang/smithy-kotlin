@@ -1803,8 +1803,8 @@ public final class aws/smithy/kotlin/codegen/rendering/StructureGenerator {
 }
 
 public final class aws/smithy/kotlin/codegen/rendering/UnionGenerator {
+	public fun <init> (Lsoftware/amazon/smithy/model/Model;Lsoftware/amazon/smithy/codegen/core/SymbolProvider;Laws/smithy/kotlin/codegen/core/KotlinWriter;Lsoftware/amazon/smithy/model/shapes/UnionShape;)V
 	public fun <init> (Lsoftware/amazon/smithy/model/Model;Lsoftware/amazon/smithy/codegen/core/SymbolProvider;Laws/smithy/kotlin/codegen/core/KotlinWriter;Lsoftware/amazon/smithy/model/shapes/UnionShape;Ljava/util/List;)V
-	public synthetic fun <init> (Lsoftware/amazon/smithy/model/Model;Lsoftware/amazon/smithy/codegen/core/SymbolProvider;Laws/smithy/kotlin/codegen/core/KotlinWriter;Lsoftware/amazon/smithy/model/shapes/UnionShape;Ljava/util/List;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public final fun getModel ()Lsoftware/amazon/smithy/model/Model;
 	public final fun getSymbol ()Lsoftware/amazon/smithy/codegen/core/Symbol;
 	public final fun render ()V
