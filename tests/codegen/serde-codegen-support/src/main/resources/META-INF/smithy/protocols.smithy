@@ -11,3 +11,7 @@ structure serdeJson{}
 @protocolDefinition
 @trait
 structure serdeXml{}
+
+@protocolDefinition
+@trait
+structure serdeCbor{}

@@ -26,6 +26,7 @@ kotlin {
                 implementation(libs.kotlinx.benchmark.runtime)
                 implementation(project(":runtime:serde:serde-json"))
                 implementation(project(":runtime:serde:serde-xml"))
+                implementation(project(":runtime:serde:serde-cbor"))
                 implementation(libs.kotlinx.coroutines.core)
             }
         }
@@ -63,6 +64,14 @@ benchmark {
             reportFormat = "text"
             include(".*xml.*")
         }
+
+        register("cbor") {
+            iterations = 5
+            warmups = 7
+            outputTimeUnit = "ms"
+            reportFormat = "text"
+            include(".*cbor.*")
+        }
     }
 }
 
@@ -95,6 +104,7 @@ data class BenchmarkModel(val name: String) {
 
 val benchmarkModels = listOf(
     "twitter",
+    "twitter-cbor",
     "countries-states",
 ).map { BenchmarkModel(it) }
 

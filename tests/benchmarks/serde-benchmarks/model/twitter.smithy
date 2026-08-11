@@ -3,8 +3,10 @@ $version: "1.0"
 namespace aws.benchmarks.twitter
 
 use aws.serde.protocols#serdeJson
+use aws.serde.protocols#serdeCbor
 
 @serdeJson
+@serdeCbor
 service Twitter {
     version: "2019-12-16",
     operations: [GetFeed]

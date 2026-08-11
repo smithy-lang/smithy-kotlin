@@ -1,2 +1,3 @@
 software.amazon.smithy.kotlin.codegen.protocols.json.SerdeJsonProtocol$Companion$Provider
 software.amazon.smithy.kotlin.codegen.protocols.xml.SerdeXmlProtocol$Companion$Provider
+software.amazon.smithy.kotlin.codegen.protocols.cbor.SerdeCborProtocol$Companion$Provider

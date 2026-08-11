@@ -30,6 +30,34 @@
         }
       }
     },
+    "twitter-cbor": {
+      "transforms": [
+        {
+          "name": "includeServices",
+          "args": {
+            "services": [
+              "aws.benchmarks.twitter#Twitter"
+            ]
+          }
+        }
+      ],
+      "plugins": {
+        "kotlin-codegen": {
+          "service": "aws.benchmarks.twitter#Twitter",
+          "package": {
+            "name": "aws.smithy.kotlin.benchmarks.serde.cbor.twitter",
+            "version": "0.0.1"
+          },
+          "build": {
+            "rootProject": false,
+            "generateDefaultBuildFiles": false
+          },
+          "api": {
+            "protocolResolutionPriority": ["aws.serde.protocols#serdeCbor"]
+          }
+        }
+      }
+    },
     "countries-states": {
       "transforms": [
         {
