@@ -9,7 +9,6 @@ import aws.smithy.kotlin.runtime.io.SdkBufferedSource
 import aws.smithy.kotlin.runtime.serde.SerializationException
 import aws.smithy.kotlin.runtime.serde.cbor.encodeArgument
 import aws.smithy.kotlin.runtime.serde.cbor.encodeMajorMinor
-import aws.smithy.kotlin.runtime.serde.cbor.toULong
 
 /**
  * Represents a CBOR unsigned integer (major type 0) in the range [0, 2^64-1].
@@ -102,8 +101,8 @@ internal class Float32(val value: Float) : Value {
     internal companion object {
         fun decode(buffer: SdkBufferedSource): Float32 {
             buffer.readByte() // discard head byte
-            val bytes = buffer.readByteArray(4)
-            return Float32(Float.fromBits(bytes.toULong().toInt()))
+            // CBOR floats are big-endian; readInt avoids a byte-array allocation + fold.
+            return Float32(Float.fromBits(buffer.readInt()))
         }
     }
 }
@@ -126,8 +125,8 @@ internal class Float64(val value: Double) : Value {
     internal companion object {
         fun decode(buffer: SdkBufferedSource): Float64 {
             buffer.readByte() // discard head byte
-            val bytes = buffer.readByteArray(8)
-            return Float64(Double.fromBits(bytes.toULong().toLong()))
+            // CBOR floats are big-endian; readLong avoids a byte-array allocation + fold.
+            return Float64(Double.fromBits(buffer.readLong()))
         }
     }
 }
