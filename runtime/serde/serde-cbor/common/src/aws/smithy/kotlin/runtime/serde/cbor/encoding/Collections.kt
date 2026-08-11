@@ -15,9 +15,6 @@ import aws.smithy.kotlin.runtime.serde.cbor.encodeMajorMinor
  */
 internal class TextString(val value: String) : Value {
     override fun encode(into: SdkBufferedSink) {
-        // Encode the UTF-8 bytes once and use their length for the CBOR length argument. The CBOR text
-        // string length is a *byte* count (RFC 8949 §3.1), so we must not use `value.length` which is a
-        // UTF-16 code-unit count and diverges for any multibyte character.
         val bytes = value.encodeToByteArray()
         into.write(encodeArgument(Major.STRING, bytes.size.toULong()))
         into.write(bytes)
