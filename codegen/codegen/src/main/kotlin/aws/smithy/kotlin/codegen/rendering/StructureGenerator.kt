@@ -6,6 +6,8 @@ package aws.smithy.kotlin.codegen.rendering
 
 import aws.smithy.kotlin.codegen.core.RenderingContext
 import aws.smithy.kotlin.codegen.core.RuntimeTypes
+import aws.smithy.kotlin.codegen.core.RuntimeTypes.Serde.Schema.Serde.SerializableStruct
+import aws.smithy.kotlin.codegen.core.RuntimeTypes.Serde.Schema.Serde.ShapeBuilder
 import aws.smithy.kotlin.codegen.core.defaultName
 import aws.smithy.kotlin.codegen.core.withBlock
 import aws.smithy.kotlin.codegen.lang.KotlinTypes
@@ -28,8 +30,6 @@ import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.shapes.*
 import software.amazon.smithy.model.traits.*
-import aws.smithy.kotlin.codegen.core.RuntimeTypes.Serde.Schema.Serde.SerializableStruct
-import aws.smithy.kotlin.codegen.core.RuntimeTypes.Serde.Schema.Serde.ShapeBuilder
 
 private const val REDACTED_VALUE = "*** Sensitive Data Redacted ***"
 

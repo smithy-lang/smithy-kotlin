@@ -5,8 +5,8 @@
 package aws.smithy.kotlin.codegen.rendering.serde
 
 import aws.smithy.kotlin.codegen.core.KotlinWriter
-import aws.smithy.kotlin.codegen.core.defaultName
 import aws.smithy.kotlin.codegen.core.RuntimeTypes.Serde.Schema
+import aws.smithy.kotlin.codegen.core.defaultName
 import aws.smithy.kotlin.codegen.core.unionVariantName
 import aws.smithy.kotlin.codegen.core.withBlock
 import aws.smithy.kotlin.codegen.lang.KotlinTypes

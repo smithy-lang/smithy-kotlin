@@ -971,6 +971,15 @@ public final class aws/smithy/kotlin/codegen/core/RuntimeTypes$Serde$Schema : aw
 	public final fun getUnionSchema ()Lsoftware/amazon/smithy/codegen/core/Symbol;
 }
 
+public final class aws/smithy/kotlin/codegen/core/RuntimeTypes$Serde$Schema$Serde : aws/smithy/kotlin/codegen/core/RuntimeTypePackage {
+	public static final field INSTANCE Laws/smithy/kotlin/codegen/core/RuntimeTypes$Serde$Schema$Serde;
+	public final fun getSerializableStruct ()Lsoftware/amazon/smithy/codegen/core/Symbol;
+	public final fun getShapeBuilder ()Lsoftware/amazon/smithy/codegen/core/Symbol;
+	public final fun getShapeDeserializer ()Lsoftware/amazon/smithy/codegen/core/Symbol;
+	public final fun getShapeSerializer ()Lsoftware/amazon/smithy/codegen/core/Symbol;
+	public final fun getStructSerializer ()Lsoftware/amazon/smithy/codegen/core/Symbol;
+}
+
 public final class aws/smithy/kotlin/codegen/core/RuntimeTypes$Serde$Schema$Traits : aws/smithy/kotlin/codegen/core/RuntimeTypePackage {
 	public static final field INSTANCE Laws/smithy/kotlin/codegen/core/RuntimeTypes$Serde$Schema$Traits;
 	public final fun getAwsQueryErrorTrait ()Lsoftware/amazon/smithy/codegen/core/Symbol;
@@ -2786,6 +2795,8 @@ public final class aws/smithy/kotlin/codegen/rendering/serde/SchemaGenerator {
 	public fun <init> (Lsoftware/amazon/smithy/model/Model;Lsoftware/amazon/smithy/codegen/core/SymbolProvider;Lsoftware/amazon/smithy/model/shapes/Shape;Laws/smithy/kotlin/codegen/rendering/serde/SchemaTraitExtension;)V
 	public synthetic fun <init> (Lsoftware/amazon/smithy/model/Model;Lsoftware/amazon/smithy/codegen/core/SymbolProvider;Lsoftware/amazon/smithy/model/shapes/Shape;Laws/smithy/kotlin/codegen/rendering/serde/SchemaTraitExtension;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public final fun render (Laws/smithy/kotlin/codegen/core/KotlinWriter;)V
+	public final fun renderDeserialize (Laws/smithy/kotlin/codegen/core/KotlinWriter;)V
+	public final fun renderSerialize (Laws/smithy/kotlin/codegen/core/KotlinWriter;)V
 }
 
 public final class aws/smithy/kotlin/codegen/rendering/serde/SchemaTraitExtension {

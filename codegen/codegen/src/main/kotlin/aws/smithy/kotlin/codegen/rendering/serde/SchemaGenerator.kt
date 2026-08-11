@@ -71,12 +71,10 @@ class SchemaGenerator(
     }
 
     /** Renders `serialize`/`serializeMembers`. */
-    fun renderSerialize(writer: KotlinWriter): Unit =
-        ShapeSerializerGenerator(model, symbolProvider, shape).render(writer)
+    fun renderSerialize(writer: KotlinWriter): Unit = ShapeSerializerGenerator(model, symbolProvider, shape).render(writer)
 
     /** Renders `deserialize` (call on the Builder for structs, or in the companion for unions). */
-    fun renderDeserialize(writer: KotlinWriter): Unit =
-        ShapeDeserializerGenerator(model, symbolProvider, shape).render(writer)
+    fun renderDeserialize(writer: KotlinWriter): Unit = ShapeDeserializerGenerator(model, symbolProvider, shape).render(writer)
 
     // ── SCHEMA value ──────────────────────────────────────────────────────────────────────────────
 
