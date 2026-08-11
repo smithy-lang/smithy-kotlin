@@ -6,7 +6,7 @@ package aws.smithy.kotlin.runtime.serde.cbor.encoding
 
 import aws.smithy.kotlin.runtime.io.*
 import aws.smithy.kotlin.runtime.serde.cbor.*
-import aws.smithy.kotlin.runtime.serde.cbor.encodeArgument
+import aws.smithy.kotlin.runtime.serde.cbor.writeArgument
 import aws.smithy.kotlin.runtime.serde.cbor.encodeMajorMinor
 
 /**
@@ -19,7 +19,7 @@ internal class TextString(val value: String) : Value {
         // string length is a *byte* count (RFC 8949 §3.1), so we must not use `value.length` which is a
         // UTF-16 code-unit count and diverges for any multibyte character.
         val bytes = value.encodeToByteArray()
-        into.write(encodeArgument(Major.STRING, bytes.size.toULong()))
+        into.writeArgument(Major.STRING, bytes.size.toULong())
         into.write(bytes)
     }
 
@@ -47,7 +47,7 @@ internal class TextString(val value: String) : Value {
  */
 internal class ByteString(val value: ByteArray) : Value {
     override fun encode(into: SdkBufferedSink) {
-        into.write(encodeArgument(Major.BYTE_STRING, value.size.toULong()))
+        into.writeArgument(Major.BYTE_STRING, value.size.toULong())
         into.write(value)
     }
 
@@ -75,7 +75,7 @@ internal class ByteString(val value: ByteArray) : Value {
  */
 internal class List(val value: kotlin.collections.List<Value>) : Value {
     override fun encode(into: SdkBufferedSink) {
-        into.write(encodeArgument(Major.LIST, value.size.toULong()))
+        into.writeArgument(Major.LIST, value.size.toULong())
         value.forEach { it.encode(into) }
     }
 
@@ -134,7 +134,7 @@ internal class IndefiniteList(val value: Collection<Value> = listOf()) : Value {
  */
 internal class Map(val value: kotlin.collections.Map<Value, Value>) : Value {
     override fun encode(into: SdkBufferedSink) {
-        into.write(encodeArgument(Major.MAP, value.size.toULong()))
+        into.writeArgument(Major.MAP, value.size.toULong())
         value.forEach { (k, v) ->
             k.encode(into)
             v.encode(into)
