@@ -471,6 +471,10 @@ public abstract interface class aws/smithy/kotlin/runtime/serde/schema/serde/Lis
 public abstract interface class aws/smithy/kotlin/runtime/serde/schema/serde/ListSerializer : aws/smithy/kotlin/runtime/serde/schema/serde/ValueSerializer {
 }
 
+public final class aws/smithy/kotlin/runtime/serde/schema/serde/ListSerializer$DefaultImpls {
+	public static fun writeStruct (Laws/smithy/kotlin/runtime/serde/schema/serde/ListSerializer;Laws/smithy/kotlin/runtime/serde/schema/Schema;Laws/smithy/kotlin/runtime/serde/schema/serde/SerializableStruct;)V
+}
+
 public abstract interface class aws/smithy/kotlin/runtime/serde/schema/serde/MapConsumer {
 	public abstract fun accept (Ljava/lang/Object;Ljava/lang/String;Laws/smithy/kotlin/runtime/serde/schema/serde/ShapeDeserializer;)V
 }
@@ -481,6 +485,7 @@ public abstract interface class aws/smithy/kotlin/runtime/serde/schema/serde/Map
 
 public abstract interface class aws/smithy/kotlin/runtime/serde/schema/serde/SerializableStruct {
 	public abstract fun serialize (Laws/smithy/kotlin/runtime/serde/schema/serde/ShapeSerializer;)V
+	public abstract fun serializeMembers (Laws/smithy/kotlin/runtime/serde/schema/serde/StructSerializer;)V
 }
 
 public abstract interface annotation class aws/smithy/kotlin/runtime/serde/schema/serde/SerializerDsl : java/lang/annotation/Annotation {
@@ -515,11 +520,19 @@ public abstract interface class aws/smithy/kotlin/runtime/serde/schema/serde/Sha
 	public abstract fun flush ()Ljava/lang/Object;
 }
 
+public final class aws/smithy/kotlin/runtime/serde/schema/serde/ShapeSerializer$DefaultImpls {
+	public static fun writeStruct (Laws/smithy/kotlin/runtime/serde/schema/serde/ShapeSerializer;Laws/smithy/kotlin/runtime/serde/schema/Schema;Laws/smithy/kotlin/runtime/serde/schema/serde/SerializableStruct;)V
+}
+
 public abstract interface class aws/smithy/kotlin/runtime/serde/schema/serde/StructConsumer {
 	public abstract fun accept (Ljava/lang/Object;Laws/smithy/kotlin/runtime/serde/schema/MemberSchema;Laws/smithy/kotlin/runtime/serde/schema/serde/ShapeDeserializer;)V
 }
 
 public abstract interface class aws/smithy/kotlin/runtime/serde/schema/serde/StructSerializer : aws/smithy/kotlin/runtime/serde/schema/serde/ValueSerializer {
+}
+
+public final class aws/smithy/kotlin/runtime/serde/schema/serde/StructSerializer$DefaultImpls {
+	public static fun writeStruct (Laws/smithy/kotlin/runtime/serde/schema/serde/StructSerializer;Laws/smithy/kotlin/runtime/serde/schema/Schema;Laws/smithy/kotlin/runtime/serde/schema/serde/SerializableStruct;)V
 }
 
 public abstract interface class aws/smithy/kotlin/runtime/serde/schema/serde/ValueSerializer {
@@ -538,8 +551,13 @@ public abstract interface class aws/smithy/kotlin/runtime/serde/schema/serde/Val
 	public abstract fun writeNull (Laws/smithy/kotlin/runtime/serde/schema/Schema;)V
 	public abstract fun writeShort (Laws/smithy/kotlin/runtime/serde/schema/Schema;S)V
 	public abstract fun writeString (Laws/smithy/kotlin/runtime/serde/schema/Schema;Ljava/lang/String;)V
+	public fun writeStruct (Laws/smithy/kotlin/runtime/serde/schema/Schema;Laws/smithy/kotlin/runtime/serde/schema/serde/SerializableStruct;)V
 	public abstract fun writeStruct (Laws/smithy/kotlin/runtime/serde/schema/Schema;Lkotlin/jvm/functions/Function1;)V
 	public abstract fun writeTimestamp (Laws/smithy/kotlin/runtime/serde/schema/Schema;Laws/smithy/kotlin/runtime/time/Instant;)V
+}
+
+public final class aws/smithy/kotlin/runtime/serde/schema/serde/ValueSerializer$DefaultImpls {
+	public static fun writeStruct (Laws/smithy/kotlin/runtime/serde/schema/serde/ValueSerializer;Laws/smithy/kotlin/runtime/serde/schema/Schema;Laws/smithy/kotlin/runtime/serde/schema/serde/SerializableStruct;)V
 }
 
 public final class aws/smithy/kotlin/runtime/serde/schema/trait/AwsQueryErrorTrait : aws/smithy/kotlin/runtime/serde/schema/trait/Trait {

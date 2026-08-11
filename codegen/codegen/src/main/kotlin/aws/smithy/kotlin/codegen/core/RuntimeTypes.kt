@@ -311,6 +311,14 @@ object RuntimeTypes {
             val StructureSchema = symbol("StructureSchema")
             val UnionSchema = symbol("UnionSchema")
 
+            object Serde : RuntimeTypePackage(KotlinDependency.SERDE, "schema.serde") {
+                val ShapeSerializer = symbol("ShapeSerializer")
+                val ShapeDeserializer = symbol("ShapeDeserializer")
+                val StructSerializer = symbol("StructSerializer")
+                val SerializableStruct = symbol("SerializableStruct")
+                val ShapeBuilder = symbol("ShapeBuilder")
+            }
+
             object Traits : RuntimeTypePackage(KotlinDependency.SERDE, "schema.trait") {
                 val JsonNameTrait = symbol("JsonNameTrait")
                 val XmlNameTrait = symbol("XmlNameTrait")

@@ -5,6 +5,7 @@
 package aws.smithy.kotlin.codegen.rendering
 
 import aws.smithy.kotlin.codegen.core.KotlinWriter
+import aws.smithy.kotlin.codegen.core.RuntimeTypes.Serde.Schema.Serde.SerializableStruct
 import aws.smithy.kotlin.codegen.core.unionVariantName
 import aws.smithy.kotlin.codegen.core.withBlock
 import aws.smithy.kotlin.codegen.integration.KotlinIntegration
@@ -36,11 +37,13 @@ class UnionGenerator(
     /**
      * Renders a Smithy union to a Kotlin sealed class
      */
+    private val schemaGenerator = SchemaGenerator(model, symbolProvider, shape, SchemaTraitExtension.fromIntegrations(integrations))
+
     fun render() {
         check(!shape.allMembers.values.any { memberShape -> memberShape.memberName.equals("SdkUnknown", true) }) { "generating SdkUnknown would cause duplicate variant for union shape: $shape" }
         writer.renderDocumentation(shape)
         writer.renderAnnotations(shape)
-        writer.openBlock("public sealed class #T {", symbol)
+        writer.openBlock("public sealed class #T : #T {", symbol, SerializableStruct)
 
         // event streams (@streaming union) MAY have variants that target errors.
         // These errors if encountered on the stream will be thrown as an exception rather
@@ -108,10 +111,12 @@ class UnionGenerator(
             )
         }
 
+        schemaGenerator.renderSerialize(writer)
+
         writer.write("")
         writer.withBlock("public companion object {", "}") {
-            val traitExtension = SchemaTraitExtension.fromIntegrations(integrations)
-            SchemaGenerator(model, symbolProvider, shape, traitExtension).render(this)
+            schemaGenerator.render(this)
+            schemaGenerator.renderDeserialize(writer)
         }
 
         writer.closeBlock("}").write("")

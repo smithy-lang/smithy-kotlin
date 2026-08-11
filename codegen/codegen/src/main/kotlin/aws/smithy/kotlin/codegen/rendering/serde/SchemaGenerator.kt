@@ -9,8 +9,6 @@ import aws.smithy.kotlin.codegen.core.KotlinWriter
 import aws.smithy.kotlin.codegen.core.RuntimeTypes.Serde.Schema
 import aws.smithy.kotlin.codegen.core.withBlock
 import aws.smithy.kotlin.codegen.core.withInlineBlock
-import aws.smithy.kotlin.codegen.utils.toCamelCase
-import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.codegen.core.SymbolProvider
 import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.shapes.ListShape
@@ -21,8 +19,6 @@ import software.amazon.smithy.model.shapes.ShapeType
 import software.amazon.smithy.model.shapes.StructureShape
 import software.amazon.smithy.model.shapes.UnionShape
 import software.amazon.smithy.model.traits.Trait
-
-private fun String.screamingSnake(): String = replace(Regex("([a-z0-9])([A-Z])"), "$1_$2").uppercase()
 
 private val preludeSchemaByType = mapOf(
     ShapeType.BLOB to "Blob",
@@ -64,6 +60,7 @@ class SchemaGenerator(
         else -> emptyList()
     }
 
+    /** Renders `SCHEMA` + extracted member vals (call inside the companion object). */
     fun render(writer: KotlinWriter) {
         val ctor = if (shape is UnionShape) Schema.UnionSchema else Schema.StructureSchema
         writer.withBlock("public val SCHEMA: #T = #T(#W) {", "}", ctor, ctor, shapeIdWritable(shape)) {
@@ -72,6 +69,16 @@ class SchemaGenerator(
         }
         members.forEach { writer.renderMemberVals(it) }
     }
+
+    /** Renders `serialize`/`serializeMembers`. */
+    fun renderSerialize(writer: KotlinWriter): Unit =
+        ShapeSerializerGenerator(model, symbolProvider, shape).render(writer)
+
+    /** Renders `deserialize` (call on the Builder for structs, or in the companion for unions). */
+    fun renderDeserialize(writer: KotlinWriter): Unit =
+        ShapeDeserializerGenerator(model, symbolProvider, shape).render(writer)
+
+    // ── SCHEMA value ──────────────────────────────────────────────────────────────────────────────
 
     private fun KotlinWriter.renderMemberDecl(member: MemberShape) {
         writeInline("member(#S, ", member.memberName)
@@ -131,17 +138,22 @@ class SchemaGenerator(
     private fun KotlinWriter.renderMemberVals(member: MemberShape) {
         val name = member.constName
         write("public val #L: #T = SCHEMA.member(#S)!!", name, Schema.MemberSchema, member.memberName)
-        when (model.expectShape(member.target)) {
-            is ListShape -> write(
-                "public val #L_ELEMENT: #T = (#L.target as #T).element",
-                name,
-                Schema.MemberSchema,
-                name,
-                Schema.ListSchema,
-            )
+        renderNestedMemberVals(name, model.expectShape(member.target))
+    }
+
+    private fun KotlinWriter.renderNestedMemberVals(parent: String, target: Shape) {
+        when (target) {
+            is ListShape -> {
+                val elem = "${parent}_ELEMENT"
+                write("public val #L: #T = (#L.target as #T).element", elem, Schema.MemberSchema, parent, Schema.ListSchema)
+                renderNestedMemberVals(elem, model.expectShape(target.member.target))
+            }
             is MapShape -> {
-                write("public val #L_KEY: #T = (#L.target as #T).key", name, Schema.MemberSchema, name, Schema.MapSchema)
-                write("public val #L_VALUE: #T = (#L.target as #T).value", name, Schema.MemberSchema, name, Schema.MapSchema)
+                val key = "${parent}_KEY"
+                val value = "${parent}_VALUE"
+                write("public val #L: #T = (#L.target as #T).key", key, Schema.MemberSchema, parent, Schema.MapSchema)
+                write("public val #L: #T = (#L.target as #T).value", value, Schema.MemberSchema, parent, Schema.MapSchema)
+                renderNestedMemberVals(value, model.expectShape(target.value.target))
             }
             else -> {}
         }
@@ -167,9 +179,6 @@ class SchemaGenerator(
     //  represented as a Document (DocumentTrait). Today such traits are filtered out by [eligibleTraits]
     //  (no registered renderer -> not in includedTraitIds) and silently dropped. Implementing the default
     //  requires reintroducing DocumentTrait + the Document value representation, which are deferred.
-
-    private val MemberShape.constName: String
-        get() = memberName.toCamelCase().screamingSnake()
 
     private val MemberShape.isRecursive: Boolean
         get() {

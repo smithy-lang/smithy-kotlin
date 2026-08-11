@@ -28,6 +28,8 @@ import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.shapes.*
 import software.amazon.smithy.model.traits.*
+import aws.smithy.kotlin.codegen.core.RuntimeTypes.Serde.Schema.Serde.SerializableStruct
+import aws.smithy.kotlin.codegen.core.RuntimeTypes.Serde.Schema.Serde.ShapeBuilder
 
 private const val REDACTED_VALUE = "*** Sensitive Data Redacted ***"
 
@@ -66,15 +68,19 @@ class StructureGenerator(
     /**
      * Renders a normal (non-error) Smithy structure to a Kotlin class
      */
+    private val schemaGenerator = SchemaGenerator(model, symbolProvider, shape, SchemaTraitExtension.fromIntegrations(ctx.integrations))
+
     private fun renderStructure() {
         writer.openBlock(
-            "#L class #T private constructor(builder: Builder) {",
+            "#L class #T private constructor(builder: Builder) : #T {",
             ctx.settings.api.visibility,
             symbol,
+            SerializableStruct,
         )
             .call { renderImmutableProperties() }
             .write("")
             .call { renderCompanionObject() }
+            .call { schemaGenerator.renderSerialize(writer) }
             .call { renderToString() }
             .call { renderHashCode() }
             .call { renderEquals() }
@@ -118,8 +124,7 @@ class StructureGenerator(
         writer.withBlock("public companion object {", "}") {
             write("public operator fun invoke(block: Builder.() -> #Q): #Q = Builder().apply(block).build()", KotlinTypes.Unit, symbol)
             write("")
-            val traitExtension = SchemaTraitExtension.fromIntegrations(ctx.integrations)
-            SchemaGenerator(model, symbolProvider, shape, traitExtension).render(this)
+            schemaGenerator.render(this)
         }
     }
 
@@ -268,7 +273,7 @@ class StructureGenerator(
     private fun renderBuilder() {
         writer.write("")
             .write("@#T", RuntimeTypes.Core.SdkDsl)
-            .withBlock("public class Builder {", "}") {
+            .withBlock("public class Builder : #T<#Q> {", "}", ShapeBuilder, symbol) {
                 for (member in sortedMembers) {
                     val (memberName, memberSymbol) = memberNameSymbolIndex[member]!!
                     writer.renderMemberDocumentation(model, member)
@@ -299,8 +304,9 @@ class StructureGenerator(
                 }
 
                 write("")
-                write("@PublishedApi")
-                write("internal fun build(): #1Q = #1T(this)", symbol)
+                write("override fun build(): #1Q = #1T(this)", symbol)
+
+                call { schemaGenerator.renderDeserialize(writer) }
 
                 for (member in structMembers) {
                     writer.write("")
@@ -373,11 +379,12 @@ class StructureGenerator(
         }?.let { "builder.message" } ?: ""
 
         writer.openBlock(
-            "#L class #T private constructor(builder: Builder) : #L(#L) {",
+            "#L class #T private constructor(builder: Builder) : #L(#L), #T {",
             ctx.settings.api.visibility,
             symbol,
             exceptionBaseClass.name,
             superParam,
+            SerializableStruct,
         )
             .write("")
             .call { renderImmutableProperties() }
@@ -391,6 +398,7 @@ class StructureGenerator(
             }
             .write("")
             .call { renderCompanionObject() }
+            .call { schemaGenerator.renderSerialize(writer) }
             .call { renderToString() }
             .call { renderHashCode() }
             .call { renderEquals() }

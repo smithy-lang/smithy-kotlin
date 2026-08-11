@@ -90,7 +90,7 @@ class StructureGeneratorTest {
     @Test
     fun `it renders constructors`() {
         val expectedClassDecl = """
-            public class MyStruct private constructor(builder: Builder) {
+            public class MyStruct private constructor(builder: Builder) : SerializableStruct {
                 /**
                  * This *is* documentation about the member.
                  */
@@ -202,7 +202,7 @@ class StructureGeneratorTest {
     fun `it renders a builder impl`() {
         val expected = """
             @SdkDsl
-            public class Builder {
+            public class Builder : ShapeBuilder<com.test.model.MyStruct> {
                 /**
                  * This *is* documentation about the member.
                  */
@@ -231,9 +231,25 @@ class StructureGeneratorTest {
                     this.requiredIntButNullable = x.requiredIntButNullable
                 }
         
-                @PublishedApi
-                internal fun build(): com.test.model.MyStruct = MyStruct(this)
-                
+                override fun build(): com.test.model.MyStruct = MyStruct(this)
+
+                override fun deserialize(deserializer: ShapeDeserializer): kotlin.Unit {
+                    deserializer.readStruct(SCHEMA, this) { builder, member, d ->
+                        when (member.memberName) {
+                            "bar" -> builder.bar = d.readInt(member)
+                            "baz" -> builder.baz = d.readInt(member)
+                            "byteValue" -> builder.byteValue = d.readByte(member)
+                            "defaultString" -> builder.defaultString = d.readString(member)
+                            "foo" -> builder.foo = d.readString(member)
+                            "object" -> builder.`object` = d.readString(member)
+                            "Quux" -> builder.quux = Qux.Builder().apply { deserialize(d) }.build()
+                            "requiredInt" -> builder.requiredInt = d.readInt(member)
+                            "requiredIntButNullable" -> builder.requiredIntButNullable = d.readInt(member)
+                            else -> {}
+                        }
+                    }
+                }
+
                 /**
                  * construct an [com.test.model.Qux] inside the given [block]
                  */
@@ -447,7 +463,7 @@ class StructureGeneratorTest {
 
         val generated = writer.toString()
         val expected = """
-            public class FooRequest private constructor(builder: Builder) {
+            public class FooRequest private constructor(builder: Builder) : SerializableStruct {
                 public val bar: Map<String, String> = requireNotNull(builder.bar) { "A non-null value must be provided for bar" }
                 public val baz: kotlin.String? = builder.baz
         """.formatForTest(indent = "")
@@ -602,7 +618,7 @@ class StructureGeneratorTest {
         deprecatedTestContents.shouldContainOnlyOnceWithDiff(
             """
                 @Deprecated("No longer recommended for use. See AWS API documentation for more details.")
-                public class MyStruct private constructor(builder: Builder) {
+                public class MyStruct private constructor(builder: Builder) : SerializableStruct {
             """.trimIndent(),
         )
     }

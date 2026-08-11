@@ -46,7 +46,7 @@ class UnionGeneratorTest {
             /**
              * Documentation for MyUnion
              */
-            public sealed class MyUnion {
+            public sealed class MyUnion : SerializableStruct {
                 public data class Bar(val value: kotlin.Int) : test.model.MyUnion() {
                 }
             
@@ -179,7 +179,7 @@ class UnionGeneratorTest {
         contents.shouldContainOnlyOnce(
             """
                 @Deprecated("No longer recommended for use. See AWS API documentation for more details.")
-                public sealed class MyUnion {
+                public sealed class MyUnion : SerializableStruct {
             """.trimIndent(),
         )
     }
@@ -227,7 +227,7 @@ class UnionGeneratorTest {
         )
 
         val expectedClassDecl = """
-            public sealed class MyUnion {
+            public sealed class MyUnion : SerializableStruct {
                 public data class Foo(val value: test.model.MyStruct) : test.model.MyUnion() {
                 }
             
@@ -267,7 +267,7 @@ class UnionGeneratorTest {
         )
 
         val expectedClassDecl = """
-            public sealed class MyUnion {
+            public sealed class MyUnion : SerializableStruct {
                 public data class Bar(val value: kotlin.Int) : test.model.MyUnion() {
                     override fun toString(): kotlin.String = "MyUnion(*** Sensitive Data Redacted ***)"
                 }

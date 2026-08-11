@@ -39,6 +39,9 @@ public interface ValueSerializer {
     public fun writeStruct(schema: Schema, block: StructSerializer.() -> Unit)
     public fun writeList(schema: Schema, size: Int, block: ListSerializer.() -> Unit)
     public fun writeMap(schema: Schema, size: Int, block: MapSerializer.() -> Unit)
+
+    public fun writeStruct(schema: Schema, value: SerializableStruct): Unit =
+        writeStruct(schema) { value.serializeMembers(this) }
 }
 
 /** Receiver for writing a structure's or union's members (each via a `writeXxx(memberSchema, …)`). */
