@@ -590,7 +590,6 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                 "}",
                 RuntimeTypes.Core.Text.Encoding.PercentEncoding,
             ) {
-
                 renderStringValuesMapParameters(ctx, queryBindings, writer)
 
                 queryMapBindings.forEach {
