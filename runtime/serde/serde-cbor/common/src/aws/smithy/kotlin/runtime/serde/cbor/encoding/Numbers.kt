@@ -18,7 +18,10 @@ internal class UInt(val value: ULong) : Value {
     override fun encode(into: SdkBufferedSink) = into.writeArgument(Major.U_INT, value)
 
     internal companion object {
-        fun decode(buffer: SdkBufferedSource) = UInt(decodeArgument(buffer))
+        fun decode(buffer: SdkBufferedSource) = UInt(decodeValue(buffer))
+
+        // Decode the value directly without allocating a [UInt] wrapper (hot number-deserialize path).
+        fun decodeValue(buffer: SdkBufferedSource): ULong = decodeArgument(buffer)
     }
 }
 
@@ -32,10 +35,10 @@ internal class NegInt(val value: ULong) : Value {
     override fun encode(into: SdkBufferedSink) = into.writeArgument(Major.NEG_INT, value - 1u)
 
     internal companion object {
-        fun decode(buffer: SdkBufferedSource): NegInt {
-            val argument: ULong = decodeArgument(buffer)
-            return NegInt(argument + 1u)
-        }
+        fun decode(buffer: SdkBufferedSource): NegInt = NegInt(decodeValue(buffer))
+
+        // Decode the value directly without allocating a [NegInt] wrapper (hot number-deserialize path).
+        fun decodeValue(buffer: SdkBufferedSource): ULong = decodeArgument(buffer) + 1u
     }
 }
 

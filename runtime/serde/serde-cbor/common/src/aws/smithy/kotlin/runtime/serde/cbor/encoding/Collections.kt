@@ -24,7 +24,11 @@ internal class TextString(val value: String) : Value {
     }
 
     internal companion object {
-        fun decode(buffer: SdkBufferedSource, depth: Int = 0): TextString = if (peekMinorByte(buffer) == Minor.INDEFINITE.value) {
+        fun decode(buffer: SdkBufferedSource, depth: Int = 0): TextString = TextString(decodeValue(buffer, depth))
+
+        // Decode the string value directly, without allocating a [TextString] wrapper. Used on the hot
+        // deserialize path (every field name and string value).
+        fun decodeValue(buffer: SdkBufferedSource, depth: Int = 0): String = if (peekMinorByte(buffer) == Minor.INDEFINITE.value) {
             val list = IndefiniteList.decode(buffer, depth).value
 
             val sb = StringBuilder()
@@ -32,11 +36,11 @@ internal class TextString(val value: String) : Value {
                 sb.append((it as TextString).value)
             }
 
-            TextString(sb.toString())
+            sb.toString()
         } else {
             val length = decodeArgument(buffer).toLong()
             // Decode UTF-8 directly from the source, avoiding a temp buffer + intermediate ByteArray copy.
-            TextString(buffer.readUtf8(length))
+            buffer.readUtf8(length)
         }
     }
 }

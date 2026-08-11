@@ -62,8 +62,8 @@ internal class CborPrimitiveDeserializer(private val buffer: SdkBufferedSource) 
         val major = peekMajor(buffer)
 
         val unsigned: ULong = when (major) {
-            Major.U_INT -> UInt.decode(buffer).value
-            Major.NEG_INT -> NegInt.decode(buffer).value
+            Major.U_INT -> UInt.decodeValue(buffer)
+            Major.NEG_INT -> NegInt.decodeValue(buffer)
             else -> throw DeserializationException("Expected ${Major.U_INT} or ${Major.NEG_INT} for CBOR number, got $major.")
         }
 
@@ -120,9 +120,9 @@ internal class CborPrimitiveDeserializer(private val buffer: SdkBufferedSource) 
         return (tag.value as DecimalFraction).value
     }
 
-    override fun deserializeString(): String = TextString.decode(buffer).value
+    override fun deserializeString(): String = TextString.decodeValue(buffer)
 
-    override fun deserializeBoolean(): Boolean = cborBoolean.decode(buffer).value
+    override fun deserializeBoolean(): Boolean = cborBoolean.decodeValue(buffer)
 
     override fun deserializeDocument(): Document = throw DeserializationException("Document is not a supported CBOR type.")
 
@@ -202,7 +202,7 @@ private class CborFieldIterator(
             IndefiniteBreak.decode(buffer)
             null
         } else {
-            val nextFieldName = TextString.decode(buffer).value
+            val nextFieldName = TextString.decodeValue(buffer)
             fieldIndexByName[nextFieldName] ?: Deserializer.FieldIterator.UNKNOWN_FIELD
         }
 
