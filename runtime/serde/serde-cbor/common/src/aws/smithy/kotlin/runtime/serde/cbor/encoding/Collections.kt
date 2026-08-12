@@ -24,18 +24,17 @@ internal class TextString(val value: String) : Value {
     }
 
     internal companion object {
-        fun decode(buffer: SdkBufferedSource, depth: Int = 0): TextString = TextString(decodeValue(buffer, depth))
+        fun decode(buffer: CborReader, depth: Int = 0): TextString = TextString(decodeValue(buffer, depth))
 
         // Decode the string value directly, without allocating a [TextString] wrapper. Used on the hot
         // deserialize path (every field name and string value). Read the head byte once (it is always
-        // consumed) and derive the length from it, rather than peeking the minor type (an allocation) and
-        // then re-reading the same head byte in decodeArgument.
-        fun decodeValue(buffer: SdkBufferedSource, depth: Int = 0): String {
+        // consumed) and derive the length from it.
+        fun decodeValue(buffer: CborReader, depth: Int = 0): String {
             val head = buffer.readByte().toUByte()
 
             if (minorOf(head) != Minor.INDEFINITE.value) {
-                val length = decodeArgument(buffer, head).toLong()
-                // Decode UTF-8 directly from the source, avoiding a temp buffer + intermediate ByteArray copy.
+                val length = decodeArgument(buffer, head).toInt()
+                // Decode UTF-8 directly from the cursor (bulk decode over the backing byte array).
                 return buffer.readUtf8(length)
             }
 
@@ -65,18 +64,19 @@ internal class ByteString(val value: ByteArray) : Value {
     }
 
     internal companion object {
-        fun decode(buffer: SdkBufferedSource, depth: Int = 0): ByteString = if (peekMinorByte(buffer) == Minor.INDEFINITE.value) {
-            val list = IndefiniteList.decode(buffer, depth).value
+        fun decode(buffer: CborReader, depth: Int = 0): ByteString = if (peekMinorByte(buffer) == Minor.INDEFINITE.value) {
+            val chunks = IndefiniteList.decode(buffer, depth).value.map { (it as ByteString).value }
 
-            val tempBuffer = SdkBuffer()
-            list.forEach {
-                tempBuffer.write((it as ByteString).value)
+            val out = ByteArray(chunks.sumOf { it.size })
+            var offset = 0
+            chunks.forEach { chunk ->
+                chunk.copyInto(out, offset)
+                offset += chunk.size
             }
-
-            ByteString(tempBuffer.readByteArray())
+            ByteString(out)
         } else {
-            val length = decodeArgument(buffer).toLong()
-            // Read the byte string directly from the source, avoiding a temp buffer copy.
+            val length = decodeArgument(buffer).toInt()
+            // Read the byte string directly from the cursor (bulk slice of the backing byte array).
             ByteString(buffer.readByteArray(length))
         }
     }
@@ -93,7 +93,7 @@ internal class List(val value: kotlin.collections.List<Value>) : Value {
     }
 
     internal companion object {
-        internal fun decode(buffer: SdkBufferedSource, depth: Int = 0): List {
+        internal fun decode(buffer: CborReader, depth: Int = 0): List {
             val length = decodeArgument(buffer).toInt()
             val valuesList = mutableListOf<Value>()
 
@@ -126,7 +126,10 @@ internal class IndefiniteList(val value: Collection<Value> = listOf()) : Value {
     }
 
     internal companion object {
-        internal fun decode(buffer: SdkBufferedSource, depth: Int = 0): IndefiniteList {
+        // Test-compat overload.
+        internal fun decode(buffer: SdkBufferedSource, depth: Int = 0): IndefiniteList = decode(CborReader(buffer), depth)
+
+        internal fun decode(buffer: CborReader, depth: Int = 0): IndefiniteList {
             buffer.readByte() // discard head
 
             val list = mutableListOf<Value>()
@@ -155,7 +158,7 @@ internal class Map(val value: kotlin.collections.Map<Value, Value>) : Value {
     }
 
     internal companion object {
-        internal fun decode(buffer: SdkBufferedSource, depth: Int = 0): Map {
+        internal fun decode(buffer: CborReader, depth: Int = 0): Map {
             val valueMap = mutableMapOf<Value, Value>()
             val length = decodeArgument(buffer).toInt()
 
@@ -191,7 +194,7 @@ internal class IndefiniteMap(val value: kotlin.collections.Map<Value, Value> = m
     }
 
     internal companion object {
-        internal fun decode(buffer: SdkBufferedSource, depth: Int = 0): IndefiniteMap {
+        internal fun decode(buffer: CborReader, depth: Int = 0): IndefiniteMap {
             buffer.readByte() // discard head byte
             val valueMap = mutableMapOf<Value, Value>()
 

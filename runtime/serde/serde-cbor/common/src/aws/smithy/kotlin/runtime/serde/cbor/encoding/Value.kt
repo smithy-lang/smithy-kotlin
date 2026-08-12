@@ -4,11 +4,11 @@
  */
 package aws.smithy.kotlin.runtime.serde.cbor.encoding
 
-import aws.smithy.kotlin.runtime.io.SdkBuffer
 import aws.smithy.kotlin.runtime.io.SdkBufferedSink
 import aws.smithy.kotlin.runtime.io.SdkBufferedSource
 import aws.smithy.kotlin.runtime.serde.DeserializationException
 import aws.smithy.kotlin.runtime.serde.DeserializationRecursionException
+import aws.smithy.kotlin.runtime.serde.cbor.CborReader
 
 /**
  * Represents an encodable / decodable CBOR value.
@@ -26,7 +26,10 @@ internal interface Value {
          * @param buffer the [SdkBufferedSource] to read the next [Value] from
          * @param depth the current recursion depth
          */
-        fun decode(buffer: SdkBufferedSource, depth: Int = 0): Value {
+        // Test-compat overload: decode from any buffered source by draining it into a reader.
+        fun decode(buffer: SdkBufferedSource, depth: Int = 0): Value = decode(CborReader(buffer), depth)
+
+        fun decode(buffer: CborReader, depth: Int = 0): Value {
             DeserializationRecursionException.assertDepth(depth)
 
             val head = peekHead(buffer)

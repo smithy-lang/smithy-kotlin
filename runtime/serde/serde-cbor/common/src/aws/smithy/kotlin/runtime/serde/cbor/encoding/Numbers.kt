@@ -7,6 +7,7 @@ package aws.smithy.kotlin.runtime.serde.cbor.encoding
 import aws.smithy.kotlin.runtime.io.SdkBufferedSink
 import aws.smithy.kotlin.runtime.io.SdkBufferedSource
 import aws.smithy.kotlin.runtime.serde.SerializationException
+import aws.smithy.kotlin.runtime.serde.cbor.CborReader
 import aws.smithy.kotlin.runtime.serde.cbor.encodeMajorMinor
 import aws.smithy.kotlin.runtime.serde.cbor.writeArgument
 
@@ -18,10 +19,12 @@ internal class UInt(val value: ULong) : Value {
     override fun encode(into: SdkBufferedSink) = into.writeArgument(Major.U_INT, value)
 
     internal companion object {
-        fun decode(buffer: SdkBufferedSource) = UInt(decodeValue(buffer))
+        fun decode(buffer: CborReader) = UInt(decodeValue(buffer))
+        // Test-compat overload.
+        fun decode(buffer: SdkBufferedSource) = decode(CborReader(buffer))
 
         // Decode the value directly without allocating a [UInt] wrapper (hot number-deserialize path).
-        fun decodeValue(buffer: SdkBufferedSource): ULong = decodeArgument(buffer)
+        fun decodeValue(buffer: CborReader): ULong = decodeArgument(buffer)
     }
 }
 
@@ -35,10 +38,12 @@ internal class NegInt(val value: ULong) : Value {
     override fun encode(into: SdkBufferedSink) = into.writeArgument(Major.NEG_INT, value - 1u)
 
     internal companion object {
-        fun decode(buffer: SdkBufferedSource): NegInt = NegInt(decodeValue(buffer))
+        fun decode(buffer: CborReader): NegInt = NegInt(decodeValue(buffer))
+        // Test-compat overload.
+        fun decode(buffer: SdkBufferedSource): NegInt = decode(CborReader(buffer))
 
         // Decode the value directly without allocating a [NegInt] wrapper (hot number-deserialize path).
-        fun decodeValue(buffer: SdkBufferedSource): ULong = decodeArgument(buffer) + 1u
+        fun decodeValue(buffer: CborReader): ULong = decodeArgument(buffer) + 1u
     }
 }
 
@@ -51,7 +56,7 @@ internal class Float16(val value: Float) : Value {
     override fun encode(into: SdkBufferedSink) = throw SerializationException("Encoding of CBOR 16-bit floats is not supported")
 
     internal companion object {
-        fun decode(buffer: SdkBufferedSource): Float16 {
+        fun decode(buffer: CborReader): Float16 {
             buffer.readByte() // discard head byte
             val bytes = buffer.readByteArray(2)
 
@@ -97,7 +102,7 @@ internal class Float32(val value: Float) : Value {
     }
 
     internal companion object {
-        fun decode(buffer: SdkBufferedSource): Float32 {
+        fun decode(buffer: CborReader): Float32 {
             buffer.readByte() // discard head byte
             // CBOR floats are big-endian; readInt avoids a byte-array allocation + fold.
             return Float32(Float.fromBits(buffer.readInt()))
@@ -117,7 +122,7 @@ internal class Float64(val value: Double) : Value {
     }
 
     internal companion object {
-        fun decode(buffer: SdkBufferedSource): Float64 {
+        fun decode(buffer: CborReader): Float64 {
             buffer.readByte() // discard head byte
             // CBOR floats are big-endian; readLong avoids a byte-array allocation + fold.
             return Float64(Double.fromBits(buffer.readLong()))

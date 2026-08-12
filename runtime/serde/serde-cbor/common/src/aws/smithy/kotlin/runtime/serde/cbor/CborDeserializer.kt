@@ -19,7 +19,9 @@ import aws.smithy.kotlin.runtime.serde.cbor.encoding.Boolean as cborBoolean
  * @param payload Bytes from which CBOR data is deserialized
  */
 public class CborDeserializer(payload: ByteArray) : Deserializer {
-    private val buffer = SdkBuffer().apply { write(payload) }
+    // Read directly from the payload via a zero-copy cursor (no SdkBuffer/okio, no initial payload copy,
+    // allocation-free lookahead).
+    private val buffer = CborReader(payload)
 
     // Cache each struct descriptor's serialName -> field index map. A single CborDeserializer decodes an
     // entire payload on one thread, and nested/repeated structs (e.g. every element of a list of the same
@@ -70,7 +72,10 @@ public class CborDeserializer(payload: ByteArray) : Deserializer {
     }
 }
 
-internal class CborPrimitiveDeserializer(private val buffer: SdkBufferedSource) : PrimitiveDeserializer {
+internal class CborPrimitiveDeserializer(private val buffer: CborReader) : PrimitiveDeserializer {
+    // Test-compat: construct from any buffered source by draining it into a reader.
+    constructor(buffer: SdkBufferedSource) : this(CborReader(buffer))
+
     private inline fun <reified T : Number> deserializeNumber(cast: (Number) -> T): T {
         // Read the head byte once and derive both the major type and the argument from it, instead of
         // peeking the major (an allocation) and then re-reading the same head byte in decodeArgument.
@@ -159,7 +164,7 @@ internal class CborPrimitiveDeserializer(private val buffer: SdkBufferedSource) 
  * Element iterator used for deserializing lists
  */
 private class CborElementIterator(
-    val buffer: SdkBufferedSource,
+    val buffer: CborReader,
     val expectedLength: ULong? = null,
 ) : Deserializer.ElementIterator,
     PrimitiveDeserializer by CborPrimitiveDeserializer(buffer) {
@@ -192,7 +197,7 @@ private class CborElementIterator(
  * Field iterator used for deserializing structures
  */
 private class CborFieldIterator(
-    val buffer: SdkBuffer,
+    val buffer: CborReader,
     val expectedLength: ULong? = null,
     // serialName -> field index, resolved and cached once per descriptor by the owning CborDeserializer.
     private val fieldIndexByName: kotlin.collections.Map<String, Int>,
@@ -239,7 +244,7 @@ private class CborFieldIterator(
  * Entry iterator used for deserializing maps
  */
 private class CborEntryIterator(
-    val buffer: SdkBufferedSource,
+    val buffer: CborReader,
     val expectedLength: ULong?,
 ) : Deserializer.EntryIterator,
     PrimitiveDeserializer by CborPrimitiveDeserializer(buffer) {

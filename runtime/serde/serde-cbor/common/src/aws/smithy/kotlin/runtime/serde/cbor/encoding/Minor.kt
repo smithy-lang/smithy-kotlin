@@ -4,9 +4,8 @@
  */
 package aws.smithy.kotlin.runtime.serde.cbor.encoding
 
-import aws.smithy.kotlin.runtime.io.SdkBufferedSource
-import aws.smithy.kotlin.runtime.io.peekByte
 import aws.smithy.kotlin.runtime.serde.DeserializationException
+import aws.smithy.kotlin.runtime.serde.cbor.CborReader
 
 /**
  * Represents CBOR minor types (aka "additional information")
@@ -30,34 +29,24 @@ internal enum class Minor(val value: UByte) {
 
 internal val MINOR_BYTE_MASK: UByte = 0b11111u
 
-/**
- * Peek the head byte (major + minor) of the next CBOR value without consuming it.
- *
- * `SdkBufferedSource.peek()` allocates on every call, so callers that need both the major and the minor
- * type should peek **once** via this and derive both with [majorOf]/[minorOf] rather than peeking the
- * major and minor separately. On paths where the head byte is always consumed, prefer reading it once
- * with `readByte()` (non-allocating) over peeking at all.
- */
-// Read the next head byte without consuming it. CBOR always decodes from a fully-buffered SdkBuffer, so
-// we peek the byte directly from the in-memory buffer (allocation-free) instead of buffer.peek(), which
-// allocates a fresh buffered source on every call. This is the hot lookahead used by nextValueIsNull /
-// nextValueIsIndefiniteBreak (called for every element/entry/field of indefinite-length containers).
-internal fun peekHead(buffer: SdkBufferedSource): UByte = buffer.buffer.peekByte().toUByte()
+// Read the next head byte (major + minor) without consuming it. [CborReader] peeks directly from the
+// in-memory payload, so this allocates nothing — unlike SdkBuffer.peek(). Hot lookahead used by
+// nextValueIsNull / nextValueIsIndefiniteBreak (every element/entry/field of indefinite containers).
+internal fun peekHead(buffer: CborReader): UByte = buffer.peekByte().toUByte()
 
 internal fun minorOf(head: UByte): UByte = head and MINOR_BYTE_MASK
 
-internal fun peekMinorByte(buffer: SdkBufferedSource): UByte = minorOf(peekHead(buffer))
+internal fun peekMinorByte(buffer: CborReader): UByte = minorOf(peekHead(buffer))
 
-internal fun decodeArgument(buffer: SdkBufferedSource): ULong = decodeArgument(buffer, buffer.readByte().toUByte())
+internal fun decodeArgument(buffer: CborReader): ULong = decodeArgument(buffer, buffer.readByte().toUByte())
 
 /**
  * Decode a CBOR argument from an already-read [head] byte.
  *
  * Callers that must inspect the head byte first (e.g. to derive the [Major] type, or to distinguish an
- * indefinite-length marker) can read it a single time and pass it here, avoiding the extra `peek()`
- * allocation that reading the major/minor separately would incur on every integer / length / tag id.
+ * indefinite-length marker) can read it a single time and pass it here, avoiding a re-read.
  */
-internal fun decodeArgument(buffer: SdkBufferedSource, head: UByte): ULong {
+internal fun decodeArgument(buffer: CborReader, head: UByte): ULong {
     val minor = head and MINOR_BYTE_MASK
 
     if (minor < Minor.ARG_1.value) {

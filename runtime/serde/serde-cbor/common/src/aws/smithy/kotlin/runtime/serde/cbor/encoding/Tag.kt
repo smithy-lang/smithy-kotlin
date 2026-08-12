@@ -9,6 +9,7 @@ import aws.smithy.kotlin.runtime.content.BigInteger
 import aws.smithy.kotlin.runtime.io.SdkBufferedSink
 import aws.smithy.kotlin.runtime.io.SdkBufferedSource
 import aws.smithy.kotlin.runtime.serde.DeserializationException
+import aws.smithy.kotlin.runtime.serde.cbor.CborReader
 import aws.smithy.kotlin.runtime.serde.cbor.writeArgument
 import aws.smithy.kotlin.runtime.time.Instant
 import aws.smithy.kotlin.runtime.time.epochMilliseconds
@@ -43,7 +44,10 @@ internal class Tag(val id: ULong, val value: Value) : Value {
     }
 
     internal companion object {
-        fun decode(buffer: SdkBufferedSource, depth: Int = 0): Tag {
+        // Test-compat overload.
+        fun decode(buffer: SdkBufferedSource, depth: Int = 0): Tag = decode(CborReader(buffer), depth)
+
+        fun decode(buffer: CborReader, depth: Int = 0): Tag {
             val id = decodeArgument(buffer)
 
             val value: Value = when (id) {
@@ -69,7 +73,7 @@ internal class Timestamp(val value: Instant) : Value {
     override fun encode(into: SdkBufferedSink) = Tag(1u, Float64(value.epochMilliseconds / 1000.toDouble())).encode(into)
 
     internal companion object {
-        internal fun decode(buffer: SdkBufferedSource): Timestamp {
+        internal fun decode(buffer: CborReader): Timestamp {
             val head = peekHead(buffer)
             val major = majorOf(head)
             val minor = minorOf(head)
@@ -108,7 +112,7 @@ internal class BigNum(val value: BigInteger) : Value {
     override fun encode(into: SdkBufferedSink) = Tag(2u, ByteString(value.toByteArray())).encode(into)
 
     internal companion object {
-        internal fun decode(buffer: SdkBufferedSource, depth: Int = 0): BigNum {
+        internal fun decode(buffer: CborReader, depth: Int = 0): BigNum {
             val bytes = ByteString.decode(buffer, depth).value
             return BigNum(BigInteger(bytes))
         }
@@ -126,7 +130,7 @@ internal class NegBigNum(val value: BigInteger) : Value {
     }
 
     internal companion object {
-        internal fun decode(buffer: SdkBufferedSource, depth: Int = 0): NegBigNum {
+        internal fun decode(buffer: CborReader, depth: Int = 0): NegBigNum {
             val bytes = ByteString.decode(buffer, depth).value
 
             // note: CBOR encoding implies (-1 - $value), add one to get the real value.
@@ -168,7 +172,7 @@ internal class DecimalFraction(val value: BigDecimal) : Value {
     }
 
     internal companion object {
-        internal fun decode(buffer: SdkBufferedSource, depth: Int = 0): DecimalFraction {
+        internal fun decode(buffer: CborReader, depth: Int = 0): DecimalFraction {
             val list = List.decode(buffer, depth).value
             check(list.size == 2) { "Expected array of length 2 for decimal fraction, got ${list.size}" }
 

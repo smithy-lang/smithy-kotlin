@@ -6,6 +6,7 @@ package aws.smithy.kotlin.runtime.serde.cbor.encoding
 
 import aws.smithy.kotlin.runtime.io.*
 import aws.smithy.kotlin.runtime.serde.DeserializationException
+import aws.smithy.kotlin.runtime.serde.cbor.CborReader
 import aws.smithy.kotlin.runtime.serde.cbor.encodeMajorMinor
 
 /**
@@ -21,11 +22,11 @@ internal class Boolean(val value: kotlin.Boolean) : Value {
     )
 
     internal companion object {
-        internal fun decode(buffer: SdkBufferedSource): Boolean = Boolean(decodeValue(buffer))
+        internal fun decode(buffer: CborReader): Boolean = Boolean(decodeValue(buffer))
 
         // Decode the value directly without allocating a [Boolean] wrapper (hot deserialize path). The head
-        // byte is always consumed, so read it once instead of peeking (an allocation) and then reading.
-        internal fun decodeValue(buffer: SdkBufferedSource): kotlin.Boolean = when (val minor = minorOf(buffer.readByte().toUByte())) {
+        // byte is always consumed, so read it once.
+        internal fun decodeValue(buffer: CborReader): kotlin.Boolean = when (val minor = minorOf(buffer.readByte().toUByte())) {
             Minor.FALSE.value -> false
             Minor.TRUE.value -> true
             else -> throw DeserializationException("Unknown minor argument $minor for Boolean")
@@ -39,7 +40,7 @@ internal class Boolean(val value: kotlin.Boolean) : Value {
 internal object Null : Value {
     override fun encode(into: SdkBufferedSink) = into.writeByte(encodeMajorMinor(Major.TYPE_7, Minor.NULL))
 
-    internal fun decode(buffer: SdkBufferedSource): Null {
+    internal fun decode(buffer: CborReader): Null {
         buffer.readByte() // consume the byte
         return Null
     }
@@ -51,7 +52,7 @@ internal object Null : Value {
 internal object IndefiniteBreak : Value {
     override fun encode(into: SdkBufferedSink) = into.writeByte(encodeMajorMinor(Major.TYPE_7, Minor.INDEFINITE))
 
-    internal fun decode(buffer: SdkBufferedSource): IndefiniteBreak {
+    internal fun decode(buffer: CborReader): IndefiniteBreak {
         buffer.readByte()
         return IndefiniteBreak
     }

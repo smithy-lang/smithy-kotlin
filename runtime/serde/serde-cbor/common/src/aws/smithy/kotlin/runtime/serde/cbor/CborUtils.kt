@@ -6,7 +6,6 @@ package aws.smithy.kotlin.runtime.serde.cbor
 
 import aws.smithy.kotlin.runtime.io.SdkBuffer
 import aws.smithy.kotlin.runtime.io.SdkBufferedSink
-import aws.smithy.kotlin.runtime.io.SdkBufferedSource
 import aws.smithy.kotlin.runtime.serde.cbor.encoding.*
 
 /**
@@ -15,14 +14,14 @@ import aws.smithy.kotlin.runtime.serde.cbor.encoding.*
 internal fun SdkBuffer.write(value: Value) = value.encode(this)
 
 // Peek at the head byte to determine if the next encoded value represents a break in an indefinite-length list/map
-internal val SdkBufferedSource.nextValueIsIndefiniteBreak: kotlin.Boolean
+internal val CborReader.nextValueIsIndefiniteBreak: kotlin.Boolean
     get() {
         val head = peekHead(this)
         return majorOf(head) == Major.TYPE_7 && minorOf(head) == Minor.INDEFINITE.value
     }
 
 // Peek at the head byte to determine if the next encoded value represents null
-internal val SdkBufferedSource.nextValueIsNull: kotlin.Boolean
+internal val CborReader.nextValueIsNull: kotlin.Boolean
     get() {
         val head = peekHead(this)
         if (majorOf(head) != Major.TYPE_7) return false
