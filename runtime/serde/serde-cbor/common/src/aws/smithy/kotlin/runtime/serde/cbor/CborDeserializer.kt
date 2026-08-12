@@ -91,17 +91,16 @@ internal class CborPrimitiveDeserializer(private val buffer: SdkBufferedSource) 
     override fun deserializeLong(): Long = deserializeNumber { it.toLong() }
 
     private inline fun <reified T : Number> deserializeFloatingPoint(cast: (Number) -> T): T {
-        val number = when (peekMinorByte(buffer)) {
-            Minor.FLOAT16.value -> Float16.decode(buffer).value
-            Minor.FLOAT32.value -> Float32.decode(buffer).value
-            Minor.FLOAT64.value -> Float64.decode(buffer).value
-            else -> {
-                when (T::class) {
-                    Float::class -> Float.fromBits(decodeArgument(buffer).toInt())
-                    Double::class -> Double.fromBits(decodeArgument(buffer).toLong())
-                    else -> throw DeserializationException("Unsupported floating point type: ${T::class}")
-                }
+        val number: Number = when (val major = peekMajor(buffer)) {
+            Major.TYPE_7 -> when (val minor = peekMinorByte(buffer)) {
+                Minor.FLOAT16.value -> Float16.decode(buffer).value
+                Minor.FLOAT32.value -> Float32.decode(buffer).value
+                Minor.FLOAT64.value -> Float64.decode(buffer).value
+                else -> throw DeserializationException("Unexpected minor value $minor decoding CBOR floating point for major type 7.")
             }
+            Major.U_INT -> UInt.decode(buffer).value.toLong()
+            Major.NEG_INT -> -(NegInt.decode(buffer).value.toLong())
+            else -> throw DeserializationException("Expected floating point or integer major type for CBOR floating point number, got $major.")
         }
         return cast(number)
     }

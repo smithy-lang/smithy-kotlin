@@ -31,10 +31,10 @@ internal class TextString(val value: String) : Value {
 
             TextString(sb.toString())
         } else {
-            val length = decodeArgument(buffer).toInt()
+            val length = decodeArgument(buffer).toLong()
 
             val bytes = SdkBuffer().use {
-                buffer.readFully(it, length.toLong())
+                buffer.readFully(it, length)
                 it.readByteArray()
             }
 
@@ -64,10 +64,10 @@ internal class ByteString(val value: ByteArray) : Value {
 
             ByteString(tempBuffer.readByteArray())
         } else {
-            val length = decodeArgument(buffer).toInt()
+            val length = decodeArgument(buffer).toLong()
 
             val bytes = SdkBuffer().use {
-                buffer.readFully(it, length.toLong())
+                buffer.readFully(it, length)
                 it.readByteArray()
             }
 
@@ -88,7 +88,7 @@ internal class List(val value: kotlin.collections.List<Value>) : Value {
 
     internal companion object {
         internal fun decode(buffer: SdkBufferedSource, depth: Int = 0): List {
-            val length = decodeArgument(buffer).toInt()
+            val length = decodeArgument(buffer).toLong()
             val valuesList = mutableListOf<Value>()
 
             for (i in 0 until length) {
@@ -151,7 +151,7 @@ internal class Map(val value: kotlin.collections.Map<Value, Value>) : Value {
     internal companion object {
         internal fun decode(buffer: SdkBufferedSource, depth: Int = 0): Map {
             val valueMap = mutableMapOf<Value, Value>()
-            val length = decodeArgument(buffer).toInt()
+            val length = decodeArgument(buffer).toLong()
 
             for (i in 0 until length) {
                 val key = Value.decode(buffer, depth + 1)

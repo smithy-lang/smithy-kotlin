@@ -200,6 +200,20 @@ class CborSerializerTest {
     }
 
     @Test
+    fun testNegativeBigIntegerRfcEncoding() {
+        mapOf(
+            "-500" to "c34201f3", // n = 499 = 0x01f3
+            "-1" to "c34100", // n = 0
+            "-256" to "c341ff", // n = 255 = 0xff
+            "-18446744073709551617" to "c349010000000000000000", // n = 2^64 (mirror of the positive RFC example)
+        ).forEach { (input, expectedHex) ->
+            val serializer = CborSerializer()
+            serializer.serializeBigInteger(BigInteger(input))
+            assertEquals(expectedHex, serializer.toByteArray().toHexString(), "encoding $input")
+        }
+    }
+
+    @Test
     fun testBigDecimal() {
         val tests = listOf(
             BigDecimal("-123453450934503474823945734895.4563458734895738978902384902384908"),
@@ -237,6 +251,19 @@ class CborSerializerTest {
         // Test taken from CBOR RFC: https://www.rfc-editor.org/rfc/rfc8949.html#section-3.4.4
         serializer.serializeBigDecimal(BigDecimal("273.15"))
         assertEquals("c48221196ab3", serializer.toByteArray().toHexString())
+    }
+
+    @Test
+    fun testBigDecimalRfcEncoding() {
+        mapOf(
+            "1.1" to "c482200b", // [-1, 11]  (NOT 11, which the scientific-exponent bug would emit)
+            "13" to "c482000d", // [0, 13]
+            "123.456" to "c482221a0001e240", // [-3, 123456]
+        ).forEach { (input, expectedHex) ->
+            val serializer = CborSerializer()
+            serializer.serializeBigDecimal(BigDecimal(input))
+            assertEquals(expectedHex, serializer.toByteArray().toHexString(), "encoding $input")
+        }
     }
 
     @Test
