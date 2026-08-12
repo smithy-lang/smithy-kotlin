@@ -25,7 +25,9 @@ public class CborDeserializer(payload: ByteArray) : Deserializer {
     // entire payload on one thread, and nested/repeated structs (e.g. every element of a list of the same
     // shape) call deserializeStruct on this same instance, so caching here avoids rebuilding the map and
     // re-resolving every CborSerialName trait on each struct occurrence.
-    private val fieldIndexCache = HashMap<SdkObjectDescriptor, Map<String, Int>>()
+    // NB: fully-qualify kotlin.collections.Map — `import ...encoding.*` brings the CBOR `Map` value type
+    // into scope and the Kotlin/Native frontend resolves a bare `Map` to it.
+    private val fieldIndexCache = HashMap<SdkObjectDescriptor, kotlin.collections.Map<String, Int>>()
 
     override fun deserializeStruct(descriptor: SdkObjectDescriptor): Deserializer.FieldIterator {
         val head = buffer.readByte().toUByte()
@@ -33,7 +35,7 @@ public class CborDeserializer(payload: ByteArray) : Deserializer {
         check(major == Major.MAP) { "Expected major ${Major.MAP} for structure, got $major" }
 
         val expectedLength = deserializeExpectedLength(head)
-        val fieldIndexByName = fieldIndexCache.getOrPut(descriptor) {
+        val fieldIndexByName: kotlin.collections.Map<String, Int> = fieldIndexCache.getOrPut(descriptor) {
             descriptor.fields.associate { it.serialName to it.index }
         }
         return CborFieldIterator(buffer, expectedLength, fieldIndexByName)
@@ -193,7 +195,7 @@ private class CborFieldIterator(
     val buffer: SdkBuffer,
     val expectedLength: ULong? = null,
     // serialName -> field index, resolved and cached once per descriptor by the owning CborDeserializer.
-    private val fieldIndexByName: Map<String, Int>,
+    private val fieldIndexByName: kotlin.collections.Map<String, Int>,
 ) : Deserializer.FieldIterator,
     PrimitiveDeserializer by CborPrimitiveDeserializer(buffer) {
     var currentLength: ULong = 0uL
