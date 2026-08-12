@@ -15,6 +15,13 @@ import aws.smithy.kotlin.runtime.time.epochMilliseconds
 import aws.smithy.kotlin.runtime.time.fromEpochMilliseconds
 import kotlin.math.absoluteValue
 
+// Cached constants so the decimal-fraction / bignum encode paths don't reconstruct these BigIntegers from
+// strings on every call.
+private val BIG_INTEGER_ZERO = BigInteger("0")
+private val BIG_INTEGER_ONE = BigInteger("1")
+private val LONG_MIN_BIG_INTEGER = BigInteger(Long.MIN_VALUE.toString())
+private val LONG_MAX_BIG_INTEGER = BigInteger(Long.MAX_VALUE.toString())
+
 internal enum class TagId(val value: ULong) {
     TIMESTAMP(1uL),
     BIG_NUM(2uL),
@@ -114,7 +121,7 @@ internal class BigNum(val value: BigInteger) : Value {
  */
 internal class NegBigNum(val value: BigInteger) : Value {
     override fun encode(into: SdkBufferedSink) {
-        val bytes = (value - BigInteger("1")).toByteArray()
+        val bytes = (value - BIG_INTEGER_ONE).toByteArray()
         Tag(3u, ByteString(bytes)).encode(into)
     }
 
@@ -123,7 +130,7 @@ internal class NegBigNum(val value: BigInteger) : Value {
             val bytes = ByteString.decode(buffer, depth).value
 
             // note: CBOR encoding implies (-1 - $value), add one to get the real value.
-            val bigInteger = BigInteger(bytes) + BigInteger("1")
+            val bigInteger = BigInteger(bytes) + BIG_INTEGER_ONE
             return NegBigNum(bigInteger)
         }
     }
@@ -143,14 +150,14 @@ internal class DecimalFraction(val value: BigDecimal) : Value {
             UInt(cborExponent.toULong())
         }
 
-        val mantissa = if (value.mantissa > BigInteger(Long.MIN_VALUE.toString()) && value.mantissa < BigInteger(Long.MAX_VALUE.toString())) {
-            if (value.mantissa.toString().startsWith("-")) {
+        val mantissa = if (value.mantissa > LONG_MIN_BIG_INTEGER && value.mantissa < LONG_MAX_BIG_INTEGER) {
+            if (value.mantissa < BIG_INTEGER_ZERO) {
                 NegInt(value.mantissa.toLong().absoluteValue.toULong())
             } else {
                 UInt(value.mantissa.toLong().toULong())
             }
         } else {
-            if (value.mantissa.toString().startsWith("-")) {
+            if (value.mantissa < BIG_INTEGER_ZERO) {
                 NegBigNum(value.mantissa)
             } else {
                 BigNum(value.mantissa)
