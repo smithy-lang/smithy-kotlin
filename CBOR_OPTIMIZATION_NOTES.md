@@ -263,6 +263,77 @@ Tests green.
   per decoded number/string/bool/field-name (reduced GC pressure), is zero-risk,
   and mirrors the kept serialize-side change. No regression.
 
+---
+
+## Phase 4 (round 2) — eliminate remaining `peek()` allocations on decode
+
+Environment: **macOS (Apple silicon, JDK/Corretto)** — a *different machine* from
+the round-1 Linux Cloud Desktop, so absolute ms differ; only same-session
+before/after deltas on this machine are meaningful. Benchmark: kotlinx-benchmark
+JMH, 7 warmups + 5 measured iterations, avg time, ms/op, `jvmCborBenchmark`.
+
+**Motivation.** Round-1 Exp 2 (D1) reduced the deserialize hot path from *2–3*
+`peek()` calls per value to *one*, but a single `peek()` still remains on every
+decoded value, and each `peek()` allocates a JVM `PeekSource` + SDK wrapper +
+buffered source (documented as the dominant deserialize cost). A truly
+zero-allocation lookahead would need a non-allocating indexed read on `SdkBuffer`,
+but `SdkBuffer.inner` (the backing `okio.Buffer`) is `internal` to `runtime-core`
+and out of the CBOR-only scope. **Key observation the round-1 pass missed:** on
+several hot paths the peeked head byte is *always consumed anyway*, so `peek()`
+(allocating) can be replaced with a direct `readByte()` (non-allocating) — no
+non-consuming lookahead needed. This is a much smaller, safer change than the
+full JSON-lexer-style cursor rewrite that round 1 (correctly) deferred.
+
+**Baseline (this machine, HEAD before round-2), same-session:**
+
+| Benchmark              | Cold-JVM run | Warm run (fair)  |
+|------------------------|--------------|------------------|
+| `deserializeBenchmark` | 3.199 ±0.502 | 2.546 ±0.136     |
+| `serializeBenchmark`   | 0.207 ±0.011 | 0.201 ±0.006     |
+
+(The first run was inflated by cold-JVM/JIT warmup — hence its ±0.5 error bar. The
+warm run is the fair baseline for a same-session comparison.)
+
+**Exp 7 — D7: read the head byte once instead of `peek()` where it is always
+consumed.** Five decode-only edits (encoding untouched → output byte-identical by
+construction; `git diff` shows no `encode`/serialize lines):
+- `Minor.kt`: added `decodeArgument(buffer, head: UByte)` overload that decodes the
+  argument from an already-read head byte; the old `decodeArgument(buffer)` now
+  delegates to it after one `readByte()`.
+- `CborDeserializer.deserializeNumber`: `readByte()` the head once → `majorOf(head)`
+  → `decodeArgument(buffer, head)` (NEG_INT adds `+1u`), replacing `peekMajor` +
+  `UInt/NegInt.decodeValue`. Removes a `peek()` per integer.
+- `CborDeserializer.deserialize{Struct,Map,List}` + `deserializeExpectedLength`:
+  `readByte()` the container head once (it is always consumed), check the major,
+  and derive the length from the same byte — removing **both** `peek()` calls
+  (`peekMajor` + `peekMinorByte`) per container.
+- `Collections.kt` `TextString.decodeValue`: `readByte()` the head once; definite
+  branch decodes length from it; the rare indefinite branch is inlined to mirror
+  the old `IndefiniteList`-based path exactly (same `Value.decode(depth+1)` +
+  `TextString` cast, same single break consume). Removes a `peek()` per field
+  name / string value — the hottest decode path.
+- `SimpleTypes.kt` `Boolean.decodeValue`: `readByte()` + `minorOf(...)` instead of
+  `peekMinorByte` + `.also { readByte() }`. Removes a `peek()` per boolean.
+
+All 249 serde-cbor JVM tests pass (the conformance suite has exact hex vectors for
+indefinite strings `7fff`/`7f60ff`/`7f6063666f6fff`/…, all int widths, booleans,
+and floats — these directly guard the decode changes). Two independent optimized
+benchmark runs:
+
+| Benchmark              | Warm baseline | Opt run 1     | Opt run 2     |
+|------------------------|---------------|---------------|---------------|
+| `deserializeBenchmark` | 2.546 ±0.136  | 2.270 ±0.206  | 2.256 ±0.165  |
+| `serializeBenchmark`   | 0.201 ±0.006  | 0.197 ±0.007  | 0.217 ±0.014  |
+
+- deserialize: 2.546 → ~2.26 ms/op = **−11%** (warm/warm; up to −29% vs the cold
+  baseline). Reproducible across two runs.
+- serialize: flat (~0.20) — a clean control, since no encode path was touched.
+- **KEPT.** A real, reproducible deserialize win on top of the round-1 work, plus
+  a `PeekSource` allocation removed on every decoded integer, boolean, field name,
+  string, and container head (lower GC pressure). Zero behavior change for valid
+  input (only difference: a malformed value now consumes its head byte before
+  throwing — immaterial, as deserialization aborts on error).
+
 ### Ideas considered but NOT pursued
 
 - **Definite-length maps/lists** (the existing TODOs). Would shrink payloads and
@@ -272,13 +343,25 @@ Tests green.
   to remove `peek()` entirely. Bigger win potential, but `CborPrimitiveDeserializer`
   and the `*.decode` companions are constructed with `SdkBufferedSource` and used
   that way by tests; a full cursor rewrite is high-risk for this pass. The
-  single-peek change (D1) captured most of the benefit at low risk.
+  single-peek change (D1) plus the peek→read change (Exp 7, D7) captured most of
+  the benefit at low risk.
+- **A non-allocating indexed peek** (e.g. `buffer[0]`) to remove the *remaining*
+  `peek()` calls on the genuinely-speculative lookaheads (`nextValueIsNull`,
+  `nextValueIsIndefiniteBreak`, `deserializeFloatingPoint`, `ByteString.decode`),
+  where the head byte is *not* always consumed. This would need a non-allocating
+  byte accessor on `SdkBuffer`, but its backing `okio.Buffer` is `internal` to
+  `runtime-core` — a change outside the CBOR-only scope (and one that would touch
+  the `runtime-core` public API contract). **Flagged as the highest-value
+  follow-up** if the scope is ever widened to `runtime-core`: it would let every
+  CBOR lookahead be allocation-free.
 - **Caching `serialName` on the serialize side.** Would need changes to the
   shared `SdkFieldDescriptor` (out of scope: not CBOR-only).
 
 ---
 
 ## Summary
+
+**Round 1** (Linux Cloud Desktop; Exp 1–6):
 
 | Benchmark              | Baseline | Final | Change |
 |------------------------|----------|-------|--------|
@@ -287,6 +370,18 @@ Tests green.
 
 (ms/op, avg time; baseline = S3-corrected encoder; final = HEAD confirmation run.
 Per-experiment deltas above; deserialize error bars ~±0.05–0.17 ms.)
+
+**Round 2** (macOS; Exp 7 — `peek()`→`readByte()` where the head is always
+consumed, on top of round 1):
+
+| Benchmark              | Warm baseline | Final (~avg of 2 runs) | Change |
+|------------------------|---------------|------------------------|--------|
+| `deserializeBenchmark` | 2.546         | 2.26                   | −11%   |
+| `serializeBenchmark`   | 0.201         | ~0.20 (flat)           | ~0%    |
+
+(Same-session, same machine; two optimized runs 2.270 / 2.256. Round 1 and round 2
+were measured on different machines, so the absolute numbers are not comparable
+across rounds; each `Change` is a same-session before/after on its own machine.)
 
 All 249 serde-cbor JVM tests pass. Encoded output is **byte-for-byte identical**
 to the pre-optimization baseline (verified by serializing a comprehensive object
