@@ -1,6 +1,0 @@
-{
-  "id": "eab4cb84-2a49-447a-a435-48efb8b34bb0",
-  "type": "bugfix",
-  "description": "Fix CBOR encoding and decoding of text strings, negative bignums, negative-integer timestamps, decimal fractions, integer-encoded floats, and large lengths to be RFC 8949 compliant on the wire",
-  "module": "serde-cbor"
-}
