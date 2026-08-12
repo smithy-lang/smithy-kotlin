@@ -396,21 +396,38 @@ zero-allocation lookahead needs the backing `okio.Buffer` (indexed `get`), which
 `internal` to `runtime-core`, so added `@InternalApi SdkBuffer.peekByte(index)` there
 (compiles + ABI-checks on JVM and native) and pointed the single `peekHead` choke point at
 `buffer.buffer.peekByte()`. Tests green (2 runs).
-- deserialize: 2.181 → **1.05** ms/op (−52%; 1.049 / 1.057 across two runs). **KEPT** — the
-  dominant remaining decode cost.
+- deserialize: 2.181 → **1.05** ms/op (−52%; 1.049 / 1.057 across two runs). The dominant
+  remaining decode cost.
+- **REVERTED** — kept only until Exp 12 measured. The cursor rewrite (Tier C) eliminates the
+  same `peek()` allocation *without* any `runtime-core` API change, and is faster, so Tier B
+  (the `SdkBuffer.peekByte` addition + the `peekHead` rewire) was reverted in favor of it.
+
+**Exp 12 — Tier C: decode via a zero-copy `ByteArray` cursor (`CborReader`).** Replaced
+`SdkBuffer`/okio on the *decode* path with `CborReader`, a cursor over the raw payload: no
+initial payload copy, allocation-free `peekByte()` lookahead, and bulk `decodeToString` /
+`copyOfRange` slices. The decode companions and iterators thread `CborReader`;
+`SdkBufferedSource`-accepting overloads were kept for test compatibility (so the ~200-site
+conformance suite compiles unchanged — no oracle rewrite). Encode paths (`SdkBufferedSink`)
+are untouched → output byte-identical. All 249 tests pass; runs entirely inside `serde-cbor`
+(no `runtime-core` change; Tier B reverted).
+- deserialize: 1.05 → **0.954** ms/op (−9% vs Tier B; 0.953 / 0.975 / 0.954 across three runs;
+  −59% vs round-2 HEAD). **KEPT.** The remaining ~0.95 ms is dominated by object-graph + string
+  allocation the cursor cannot remove, matching the predicted ceiling.
 
 **Native-compat fix.** `import ...encoding.*` shadows `kotlin.collections.Map`/`Boolean` on
-the Kotlin/Native frontend; fully-qualified `kotlin.collections.Map` at the new field-index
+the Kotlin/Native frontend; fully-qualified `kotlin.collections.Map` at the field-index
 sites. (The module has other *pre-existing* native shadowing errors in unrelated original
 code — verified present on the pristine pre-session commit — left as-is; the module is
 JVM-validated here.)
 
-### Round 3 result (same-session, macOS)
+### Round 3 result (same-session, macOS) — final state = round-1/2 + Tier A + Tier C
 
 | Benchmark              | Round-2 HEAD | Round-3 final | Change |
 |------------------------|--------------|---------------|--------|
-| `deserializeBenchmark` | 2.353        | 1.05          | −55%   |
+| `deserializeBenchmark` | 2.353        | 0.954         | −59%   |
 | `serializeBenchmark`   | 0.202        | 0.177         | −12%   |
+
+Public API unchanged (`serde-cbor.api` and `runtime-core.api` both identical to baseline).
 
 ---
 
@@ -437,6 +454,18 @@ consumed, on top of round 1):
 (Same-session, same machine; two optimized runs 2.270 / 2.256. Round 1 and round 2
 were measured on different machines, so the absolute numbers are not comparable
 across rounds; each `Change` is a same-session before/after on its own machine.)
+
+**Round 3** (macOS; Exp 8–12 — per-descriptor field-index cache, per-serializer
+field-name cache, bignum sign checks, and a zero-copy `CborReader` decode cursor; Tier B's
+`SdkBuffer.peekByte` was a measured stepping stone, then reverted in favor of the cursor):
+
+| Benchmark              | Round-2 HEAD | Final | Change |
+|------------------------|--------------|-------|--------|
+| `deserializeBenchmark` | 2.353        | 0.954 | −59%   |
+| `serializeBenchmark`   | 0.202        | 0.177 | −12%   |
+
+(Same-session, same machine. Final = committed HEAD, three deserialize runs
+0.953 / 0.975 / 0.954. No `runtime-core` API change; everything inside `serde-cbor`.)
 
 All 249 serde-cbor JVM tests pass. Encoded output is **byte-for-byte identical**
 to the pre-optimization baseline (verified by serializing a comprehensive object
