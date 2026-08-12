@@ -4,8 +4,6 @@
  */
 package aws.smithy.kotlin.runtime.serde.cbor.encoding
 
-import aws.smithy.kotlin.runtime.io.SdkBufferedSource
-
 /**
  * Represents CBOR major types (0 for unsigned integer, 1 for negative integer, etc...)
  */
@@ -26,8 +24,6 @@ internal enum class Major(val value: UByte) {
     }
 }
 
-// Derive the [Major] type from an already-peeked head byte. The top 3 bits index directly into
+// Derive the [Major] type from an already-read head byte. The top 3 bits index directly into
 // Major.entries (values 0..7 in ordinal order), avoiding the linear scan in Major.fromValue.
 internal fun majorOf(head: UByte): Major = Major.entries[((head.toInt() shr 5) and 0b111)]
-
-internal fun peekMajor(buffer: SdkBufferedSource): Major = majorOf(peekHead(buffer))
