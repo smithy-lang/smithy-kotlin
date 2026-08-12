@@ -23,13 +23,12 @@ internal class Boolean(val value: kotlin.Boolean) : Value {
     internal companion object {
         internal fun decode(buffer: SdkBufferedSource): Boolean = Boolean(decodeValue(buffer))
 
-        // Decode the value directly without allocating a [Boolean] wrapper (hot deserialize path).
-        internal fun decodeValue(buffer: SdkBufferedSource): kotlin.Boolean = when (val minor = peekMinorByte(buffer)) {
+        // Decode the value directly without allocating a [Boolean] wrapper (hot deserialize path). The head
+        // byte is always consumed, so read it once instead of peeking (an allocation) and then reading.
+        internal fun decodeValue(buffer: SdkBufferedSource): kotlin.Boolean = when (val minor = minorOf(buffer.readByte().toUByte())) {
             Minor.FALSE.value -> false
             Minor.TRUE.value -> true
             else -> throw DeserializationException("Unknown minor argument $minor for Boolean")
-        }.also {
-            buffer.readByte()
         }
     }
 }

@@ -27,20 +27,29 @@ internal class TextString(val value: String) : Value {
         fun decode(buffer: SdkBufferedSource, depth: Int = 0): TextString = TextString(decodeValue(buffer, depth))
 
         // Decode the string value directly, without allocating a [TextString] wrapper. Used on the hot
-        // deserialize path (every field name and string value).
-        fun decodeValue(buffer: SdkBufferedSource, depth: Int = 0): String = if (peekMinorByte(buffer) == Minor.INDEFINITE.value) {
-            val list = IndefiniteList.decode(buffer, depth).value
+        // deserialize path (every field name and string value). Read the head byte once (it is always
+        // consumed) and derive the length from it, rather than peeking the minor type (an allocation) and
+        // then re-reading the same head byte in decodeArgument.
+        fun decodeValue(buffer: SdkBufferedSource, depth: Int = 0): String {
+            val head = buffer.readByte().toUByte()
 
-            val sb = StringBuilder()
-            list.forEach {
-                sb.append((it as TextString).value)
+            if (minorOf(head) != Minor.INDEFINITE.value) {
+                val length = decodeArgument(buffer, head).toLong()
+                // Decode UTF-8 directly from the source, avoiding a temp buffer + intermediate ByteArray copy.
+                return buffer.readUtf8(length)
             }
 
-            sb.toString()
-        } else {
-            val length = decodeArgument(buffer).toLong()
-            // Decode UTF-8 directly from the source, avoiding a temp buffer + intermediate ByteArray copy.
-            buffer.readUtf8(length)
+            // Indefinite-length text string: concatenate the definite-length chunks until the break code.
+            // The head byte has already been consumed above, so read chunks directly instead of routing
+            // through IndefiniteList.decode (which would try to discard a head byte again). Mirrors the
+            // previous behavior exactly: each chunk is decoded via Value.decode(depth + 1) and cast to
+            // TextString.
+            val sb = StringBuilder()
+            while (!buffer.nextValueIsIndefiniteBreak) {
+                sb.append((Value.decode(buffer, depth + 1) as TextString).value)
+            }
+            IndefiniteBreak.decode(buffer)
+            return sb.toString()
         }
     }
 }
