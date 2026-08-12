@@ -5,6 +5,7 @@
 package aws.smithy.kotlin.runtime.serde.cbor.encoding
 
 import aws.smithy.kotlin.runtime.io.SdkBufferedSource
+import aws.smithy.kotlin.runtime.io.peekByte
 import aws.smithy.kotlin.runtime.serde.DeserializationException
 
 /**
@@ -37,7 +38,11 @@ internal val MINOR_BYTE_MASK: UByte = 0b11111u
  * major and minor separately. On paths where the head byte is always consumed, prefer reading it once
  * with `readByte()` (non-allocating) over peeking at all.
  */
-internal fun peekHead(buffer: SdkBufferedSource): UByte = buffer.peek().readByte().toUByte()
+// Read the next head byte without consuming it. CBOR always decodes from a fully-buffered SdkBuffer, so
+// we peek the byte directly from the in-memory buffer (allocation-free) instead of buffer.peek(), which
+// allocates a fresh buffered source on every call. This is the hot lookahead used by nextValueIsNull /
+// nextValueIsIndefiniteBreak (called for every element/entry/field of indefinite-length containers).
+internal fun peekHead(buffer: SdkBufferedSource): UByte = buffer.buffer.peekByte().toUByte()
 
 internal fun minorOf(head: UByte): UByte = head and MINOR_BYTE_MASK
 
