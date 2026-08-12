@@ -21,13 +21,22 @@ import aws.smithy.kotlin.runtime.serde.cbor.encoding.Boolean as cborBoolean
 public class CborDeserializer(payload: ByteArray) : Deserializer {
     private val buffer = SdkBuffer().apply { write(payload) }
 
+    // Cache each struct descriptor's serialName -> field index map. A single CborDeserializer decodes an
+    // entire payload on one thread, and nested/repeated structs (e.g. every element of a list of the same
+    // shape) call deserializeStruct on this same instance, so caching here avoids rebuilding the map and
+    // re-resolving every CborSerialName trait on each struct occurrence.
+    private val fieldIndexCache = HashMap<SdkObjectDescriptor, Map<String, Int>>()
+
     override fun deserializeStruct(descriptor: SdkObjectDescriptor): Deserializer.FieldIterator {
         val head = buffer.readByte().toUByte()
         val major = majorOf(head)
         check(major == Major.MAP) { "Expected major ${Major.MAP} for structure, got $major" }
 
         val expectedLength = deserializeExpectedLength(head)
-        return CborFieldIterator(buffer, expectedLength, descriptor)
+        val fieldIndexByName = fieldIndexCache.getOrPut(descriptor) {
+            descriptor.fields.associate { it.serialName to it.index }
+        }
+        return CborFieldIterator(buffer, expectedLength, fieldIndexByName)
     }
 
     override fun deserializeMap(descriptor: SdkFieldDescriptor): Deserializer.EntryIterator {
@@ -183,14 +192,11 @@ private class CborElementIterator(
 private class CborFieldIterator(
     val buffer: SdkBuffer,
     val expectedLength: ULong? = null,
-    val descriptor: SdkObjectDescriptor,
+    // serialName -> field index, resolved and cached once per descriptor by the owning CborDeserializer.
+    private val fieldIndexByName: Map<String, Int>,
 ) : Deserializer.FieldIterator,
     PrimitiveDeserializer by CborPrimitiveDeserializer(buffer) {
     var currentLength: ULong = 0uL
-
-    // Resolve each field's CBOR serial name once (each `serialName` lookup scans the field's trait set)
-    // and index by name, avoiding an O(fields) scan with repeated trait lookups per decoded field.
-    private val fieldIndexByName: Map<String, Int> = descriptor.fields.associate { it.serialName to it.index }
 
     override tailrec fun findNextFieldIndex(): Int? {
         if (buffer.exhausted() && expectedLength != currentLength) {
