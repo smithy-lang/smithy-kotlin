@@ -33,8 +33,9 @@ internal val MINOR_BYTE_MASK: UByte = 0b11111u
  * Peek the head byte (major + minor) of the next CBOR value without consuming it.
  *
  * `SdkBufferedSource.peek()` allocates on every call, so callers that need both the major and the minor
- * type should peek **once** via this and derive both with [majorOf]/[minorOf] rather than calling
- * [peekMajor] and [peekMinorByte] separately.
+ * type should peek **once** via this and derive both with [majorOf]/[minorOf] rather than peeking the
+ * major and minor separately. On paths where the head byte is always consumed, prefer reading it once
+ * with `readByte()` (non-allocating) over peeking at all.
  */
 internal fun peekHead(buffer: SdkBufferedSource): UByte = buffer.peek().readByte().toUByte()
 
@@ -42,8 +43,17 @@ internal fun minorOf(head: UByte): UByte = head and MINOR_BYTE_MASK
 
 internal fun peekMinorByte(buffer: SdkBufferedSource): UByte = minorOf(peekHead(buffer))
 
-internal fun decodeArgument(buffer: SdkBufferedSource): ULong {
-    val minor = buffer.readByte().toUByte() and MINOR_BYTE_MASK
+internal fun decodeArgument(buffer: SdkBufferedSource): ULong = decodeArgument(buffer, buffer.readByte().toUByte())
+
+/**
+ * Decode a CBOR argument from an already-read [head] byte.
+ *
+ * Callers that must inspect the head byte first (e.g. to derive the [Major] type, or to distinguish an
+ * indefinite-length marker) can read it a single time and pass it here, avoiding the extra `peek()`
+ * allocation that reading the major/minor separately would incur on every integer / length / tag id.
+ */
+internal fun decodeArgument(buffer: SdkBufferedSource, head: UByte): ULong {
+    val minor = head and MINOR_BYTE_MASK
 
     if (minor < Minor.ARG_1.value) {
         return minor.toULong()

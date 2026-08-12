@@ -22,48 +22,53 @@ public class CborDeserializer(payload: ByteArray) : Deserializer {
     private val buffer = SdkBuffer().apply { write(payload) }
 
     override fun deserializeStruct(descriptor: SdkObjectDescriptor): Deserializer.FieldIterator {
-        peekMajor(buffer).also {
-            check(it == Major.MAP) { "Expected major ${Major.MAP} for structure, got $it" }
-        }
+        val head = buffer.readByte().toUByte()
+        val major = majorOf(head)
+        check(major == Major.MAP) { "Expected major ${Major.MAP} for structure, got $major" }
 
-        val expectedLength = deserializeExpectedLength()
+        val expectedLength = deserializeExpectedLength(head)
         return CborFieldIterator(buffer, expectedLength, descriptor)
     }
 
     override fun deserializeMap(descriptor: SdkFieldDescriptor): Deserializer.EntryIterator {
-        peekMajor(buffer).also {
-            check(it == Major.MAP) { "Expected major ${Major.MAP} for CBOR map, got $it" }
-        }
+        val head = buffer.readByte().toUByte()
+        val major = majorOf(head)
+        check(major == Major.MAP) { "Expected major ${Major.MAP} for CBOR map, got $major" }
 
-        val expectedLength = deserializeExpectedLength()
+        val expectedLength = deserializeExpectedLength(head)
         return CborEntryIterator(buffer, expectedLength)
     }
 
     override fun deserializeList(descriptor: SdkFieldDescriptor): Deserializer.ElementIterator {
-        peekMajor(buffer).also {
-            check(it == Major.LIST) { "Expected major ${Major.LIST} for CBOR list, got $it" }
-        }
+        val head = buffer.readByte().toUByte()
+        val major = majorOf(head)
+        check(major == Major.LIST) { "Expected major ${Major.LIST} for CBOR list, got $major" }
 
-        val expectedLength = deserializeExpectedLength()
+        val expectedLength = deserializeExpectedLength(head)
         return CborElementIterator(buffer, expectedLength)
     }
 
-    // Peek at the head byte and return the expected length of the list/map if provided, null if not
-    private fun deserializeExpectedLength(): ULong? = if (peekMinorByte(buffer) == Minor.INDEFINITE.value) {
-        buffer.readByte() // no length encoded, discard head
-        null
+    // Given an already-read container [head] byte, return the expected length of the list/map if it was
+    // encoded, or null for an indefinite-length container. The head byte has already been consumed by the
+    // caller, so this reads no head byte itself — avoiding the peek() the previous split major/minor
+    // inspection incurred at the start of every container.
+    private fun deserializeExpectedLength(head: UByte): ULong? = if (minorOf(head) == Minor.INDEFINITE.value) {
+        null // indefinite-length marker; head already consumed
     } else {
-        decodeArgument(buffer)
+        decodeArgument(buffer, head)
     }
 }
 
 internal class CborPrimitiveDeserializer(private val buffer: SdkBufferedSource) : PrimitiveDeserializer {
     private inline fun <reified T : Number> deserializeNumber(cast: (Number) -> T): T {
-        val major = peekMajor(buffer)
+        // Read the head byte once and derive both the major type and the argument from it, instead of
+        // peeking the major (an allocation) and then re-reading the same head byte in decodeArgument.
+        val head = buffer.readByte().toUByte()
+        val major = majorOf(head)
 
         val unsigned: ULong = when (major) {
-            Major.U_INT -> UInt.decodeValue(buffer)
-            Major.NEG_INT -> NegInt.decodeValue(buffer)
+            Major.U_INT -> decodeArgument(buffer, head)
+            Major.NEG_INT -> decodeArgument(buffer, head) + 1u // NegInt encodes -1 - value
             else -> throw DeserializationException("Expected ${Major.U_INT} or ${Major.NEG_INT} for CBOR number, got $major.")
         }
 
