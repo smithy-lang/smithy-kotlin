@@ -993,6 +993,11 @@ public final class aws/smithy/kotlin/runtime/io/SdkBuffer : aws/smithy/kotlin/ru
 	public fun writeUtf8 (Ljava/lang/String;II)V
 }
 
+public final class aws/smithy/kotlin/runtime/io/SdkBufferKt {
+	public static final fun peekByte (Laws/smithy/kotlin/runtime/io/SdkBuffer;J)B
+	public static synthetic fun peekByte$default (Laws/smithy/kotlin/runtime/io/SdkBuffer;JILjava/lang/Object;)B
+}
+
 public abstract interface class aws/smithy/kotlin/runtime/io/SdkBufferedSink : aws/smithy/kotlin/runtime/io/SdkSink, java/nio/channels/WritableByteChannel {
 	public abstract fun emit ()V
 	public abstract fun flush ()V

@@ -5,6 +5,8 @@
 
 package aws.smithy.kotlin.runtime.io
 
+import aws.smithy.kotlin.runtime.InternalApi
+
 /**
  * A collection of bytes in memory. Moving data from one buffer to another is fast.
  *
@@ -59,3 +61,13 @@ public expect class SdkBuffer :
     override fun writeShortLe(x: Short)
     override fun writeUtf8(string: String, start: Int, endExclusive: Int)
 }
+
+/**
+ * Returns the byte at [index] (relative to the current read position) **without consuming** any input.
+ *
+ * Unlike [SdkBuffer.peek], which allocates a new buffered source on every call, this reads directly from
+ * the buffer's in-memory bytes and allocates nothing — useful for hot lookahead loops. The buffer must
+ * contain at least `index + 1` bytes; otherwise this throws (e.g. [IndexOutOfBoundsException]).
+ */
+@InternalApi
+public fun SdkBuffer.peekByte(index: Long = 0L): Byte = inner[index]
