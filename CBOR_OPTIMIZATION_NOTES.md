@@ -359,6 +359,61 @@ benchmark runs:
 
 ---
 
+## Phase 4 (round 3) — caching + eliminating the *remaining* peek allocations
+
+Environment: macOS, same benchmark harness. Baseline = round-2 HEAD (warm), measured
+same-session: deserialize **2.353 ±0.106**, serialize **0.202 ±0.003** ms/op.
+
+Scope was widened this round (with sign-off) to allow a small `runtime-core` addition.
+Byte-identical output is still preserved (encode paths only changed to *cache* the exact
+same bytes). Definite-length encoding (wire-format change) remains out of scope.
+
+**Exp 8 — Tier A1: cache the struct field-index map per deserializer.**
+`CborFieldIterator` rebuilt the `serialName -> index` map (re-resolving every
+`CborSerialName` trait) on every struct occurrence. Since one `CborDeserializer` decodes a
+whole payload on one thread and nested/repeated structs call `deserializeStruct` on it,
+the map is now cached by descriptor on the deserializer. Tests green.
+- deserialize: 2.353 → **2.181** ms/op (−7.3%). **KEPT.**
+
+**Exp 9 — Tier A2: cache encoded field-name bytes per serializer.** `serializeString`
+re-encoded each field name to UTF-8 (+ length header) on every `field(...)` call. Cache the
+fully-encoded bytes per field name on the `CborSerializer` and bulk-write them; `field(...)`
+values are non-null so they now write the cached name + value directly, skipping `entry()`'s
+dead null-check. Byte-identical; tests green.
+- serialize: 0.202 → **0.177** ms/op (−12.4%). **KEPT.**
+
+**Exp 10 — Tier A3: bignum sign checks via comparison.** Replaced
+`value.toString().startsWith("-")` (allocates the full decimal string) with `BigInteger`
+comparisons and cached the repeatedly-constructed bound/one/zero `BigInteger`s. Not exercised
+by the twitter benchmark (no bignums), but a zero-risk allocation reduction guarded by the
+bignum/decimal hex-vector tests. **KEPT.**
+
+**Exp 11 — Tier B: non-allocating `SdkBuffer.peekByte()`.** After round 2, one `peek()`
+remained on every *speculative* lookahead (`nextValueIsNull`, `nextValueIsIndefiniteBreak`,
+float/byte-string minor peek) — and because the twitter CBOR is **indefinite-length**, the
+break/null checks fire for *every* element/entry/field, each allocating a `PeekSource`. A
+zero-allocation lookahead needs the backing `okio.Buffer` (indexed `get`), which is
+`internal` to `runtime-core`, so added `@InternalApi SdkBuffer.peekByte(index)` there
+(compiles + ABI-checks on JVM and native) and pointed the single `peekHead` choke point at
+`buffer.buffer.peekByte()`. Tests green (2 runs).
+- deserialize: 2.181 → **1.05** ms/op (−52%; 1.049 / 1.057 across two runs). **KEPT** — the
+  dominant remaining decode cost.
+
+**Native-compat fix.** `import ...encoding.*` shadows `kotlin.collections.Map`/`Boolean` on
+the Kotlin/Native frontend; fully-qualified `kotlin.collections.Map` at the new field-index
+sites. (The module has other *pre-existing* native shadowing errors in unrelated original
+code — verified present on the pristine pre-session commit — left as-is; the module is
+JVM-validated here.)
+
+### Round 3 result (same-session, macOS)
+
+| Benchmark              | Round-2 HEAD | Round-3 final | Change |
+|------------------------|--------------|---------------|--------|
+| `deserializeBenchmark` | 2.353        | 1.05          | −55%   |
+| `serializeBenchmark`   | 0.202        | 0.177         | −12%   |
+
+---
+
 ## Summary
 
 **Round 1** (Linux Cloud Desktop; Exp 1–6):
