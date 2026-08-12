@@ -16,7 +16,6 @@ import aws.smithy.kotlin.runtime.serde.cbor.encoding.*
 import aws.smithy.kotlin.runtime.time.Instant
 import aws.smithy.kotlin.runtime.time.TimestampFormat
 import kotlin.math.absoluteValue
-import aws.smithy.kotlin.runtime.serde.cbor.encoding.Boolean as cborBoolean
 
 @InternalApi
 public class CborSerializer :
@@ -33,7 +32,8 @@ public class CborSerializer :
     override fun beginMap(descriptor: SdkFieldDescriptor): MapSerializer {
         // TODO Encoding indefinite maps comes with some performance overhead, see if we can refactor mapEntry interface to
         // pass additional information such as the map length. That way we can serialize a definite-length map.
-        buffer.write(IndefiniteMap())
+        // Write the indefinite-map head byte directly instead of allocating an IndefiniteMap value.
+        buffer.writeByte(encodeMajorMinor(Major.MAP, Minor.INDEFINITE))
         return this
     }
 
@@ -42,7 +42,8 @@ public class CborSerializer :
     override fun beginList(descriptor: SdkFieldDescriptor): ListSerializer {
         // TODO Encoding indefinite lists comes with some performance overhead, see if we can refactor listEntry interface to
         // pass additional information such as the list length. That way we can serialize a definite-length list.
-        buffer.write(IndefiniteList())
+        // Write the indefinite-list head byte directly instead of allocating an IndefiniteList value.
+        buffer.writeByte(encodeMajorMinor(Major.LIST, Minor.INDEFINITE))
         return this
     }
 
@@ -55,15 +56,19 @@ public class CborSerializer :
 
     override fun endStruct(): Unit = endMap()
 
-    override fun serializeBoolean(value: Boolean): Unit = buffer.write(cborBoolean(value))
+    override fun serializeBoolean(value: Boolean): Unit =
+        buffer.writeByte(encodeMajorMinor(Major.TYPE_7, if (value) Minor.TRUE else Minor.FALSE))
 
-    private inline fun <reified T : Number> serializeNumber(value: T): Unit = buffer.write(
-        if (value.toLong() < 0) {
-            NegInt(value.toLong().absoluteValue.toULong())
+    // Write integers directly to the buffer instead of allocating a UInt/NegInt value. This matches the
+    // exact bytes UInt/NegInt.encode would emit (NegInt encodes -1 - value, i.e. abs(value) - 1).
+    private inline fun <reified T : Number> serializeNumber(value: T) {
+        val longValue = value.toLong()
+        if (longValue < 0) {
+            buffer.writeArgument(Major.NEG_INT, longValue.absoluteValue.toULong() - 1u)
         } else {
-            UInt(value.toLong().toULong())
-        },
-    )
+            buffer.writeArgument(Major.U_INT, longValue.toULong())
+        }
+    }
     override fun serializeByte(value: Byte): Unit = serializeNumber(value)
     override fun serializeShort(value: Short): Unit = serializeNumber(value)
     override fun serializeInt(value: Int): Unit = serializeNumber(value)
@@ -85,7 +90,13 @@ public class CborSerializer :
 
     override fun serializeChar(value: Char): Unit = buffer.write(TextString(value.toString()))
 
-    override fun serializeString(value: String): Unit = buffer.write(TextString(value))
+    override fun serializeString(value: String) {
+        // Inline TextString.encode to avoid allocating a wrapper value per string. Encode UTF-8 once and
+        // use its byte length (CBOR text-string length is a byte count, RFC 8949 §3.1).
+        val bytes = value.encodeToByteArray()
+        buffer.writeArgument(Major.STRING, bytes.size.toULong())
+        buffer.write(bytes)
+    }
 
     // Note: CBOR does not use [TimestampFormat]
     override fun serializeInstant(value: Instant, format: TimestampFormat): Unit = serializeInstant(value)

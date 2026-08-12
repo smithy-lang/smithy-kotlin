@@ -6,8 +6,8 @@ package aws.smithy.kotlin.runtime.serde.cbor.encoding
 
 import aws.smithy.kotlin.runtime.io.*
 import aws.smithy.kotlin.runtime.serde.cbor.*
-import aws.smithy.kotlin.runtime.serde.cbor.encodeArgument
 import aws.smithy.kotlin.runtime.serde.cbor.encodeMajorMinor
+import aws.smithy.kotlin.runtime.serde.cbor.writeArgument
 
 /**
  * Represents a CBOR text string (major type 3) encoded as a UTF-8 byte array.
@@ -15,8 +15,9 @@ import aws.smithy.kotlin.runtime.serde.cbor.encodeMajorMinor
  */
 internal class TextString(val value: String) : Value {
     override fun encode(into: SdkBufferedSink) {
-        into.write(encodeArgument(Major.STRING, value.length.toULong()))
-        into.write(value.encodeToByteArray())
+        val bytes = value.encodeToByteArray()
+        into.writeArgument(Major.STRING, bytes.size.toULong())
+        into.write(bytes)
     }
 
     internal companion object {
@@ -30,10 +31,10 @@ internal class TextString(val value: String) : Value {
 
             TextString(sb.toString())
         } else {
-            val length = decodeArgument(buffer).toInt()
+            val length = decodeArgument(buffer).toLong()
 
             val bytes = SdkBuffer().use {
-                buffer.readFully(it, length.toLong())
+                buffer.readFully(it, length)
                 it.readByteArray()
             }
 
@@ -48,7 +49,7 @@ internal class TextString(val value: String) : Value {
  */
 internal class ByteString(val value: ByteArray) : Value {
     override fun encode(into: SdkBufferedSink) {
-        into.write(encodeArgument(Major.BYTE_STRING, value.size.toULong()))
+        into.writeArgument(Major.BYTE_STRING, value.size.toULong())
         into.write(value)
     }
 
@@ -63,10 +64,10 @@ internal class ByteString(val value: ByteArray) : Value {
 
             ByteString(tempBuffer.readByteArray())
         } else {
-            val length = decodeArgument(buffer).toInt()
+            val length = decodeArgument(buffer).toLong()
 
             val bytes = SdkBuffer().use {
-                buffer.readFully(it, length.toLong())
+                buffer.readFully(it, length)
                 it.readByteArray()
             }
 
@@ -81,13 +82,13 @@ internal class ByteString(val value: ByteArray) : Value {
  */
 internal class List(val value: kotlin.collections.List<Value>) : Value {
     override fun encode(into: SdkBufferedSink) {
-        into.write(encodeArgument(Major.LIST, value.size.toULong()))
+        into.writeArgument(Major.LIST, value.size.toULong())
         value.forEach { it.encode(into) }
     }
 
     internal companion object {
         internal fun decode(buffer: SdkBufferedSource, depth: Int = 0): List {
-            val length = decodeArgument(buffer).toInt()
+            val length = decodeArgument(buffer).toLong()
             val valuesList = mutableListOf<Value>()
 
             for (i in 0 until length) {
@@ -140,7 +141,7 @@ internal class IndefiniteList(val value: Collection<Value> = listOf()) : Value {
  */
 internal class Map(val value: kotlin.collections.Map<Value, Value>) : Value {
     override fun encode(into: SdkBufferedSink) {
-        into.write(encodeArgument(Major.MAP, value.size.toULong()))
+        into.writeArgument(Major.MAP, value.size.toULong())
         value.forEach { (k, v) ->
             k.encode(into)
             v.encode(into)
@@ -150,7 +151,7 @@ internal class Map(val value: kotlin.collections.Map<Value, Value>) : Value {
     internal companion object {
         internal fun decode(buffer: SdkBufferedSource, depth: Int = 0): Map {
             val valueMap = mutableMapOf<Value, Value>()
-            val length = decodeArgument(buffer).toInt()
+            val length = decodeArgument(buffer).toLong()
 
             for (i in 0 until length) {
                 val key = Value.decode(buffer, depth + 1)

@@ -5,6 +5,7 @@
 package aws.smithy.kotlin.runtime.serde.cbor
 
 import aws.smithy.kotlin.runtime.io.SdkBuffer
+import aws.smithy.kotlin.runtime.io.SdkBufferedSink
 import aws.smithy.kotlin.runtime.io.SdkBufferedSource
 import aws.smithy.kotlin.runtime.serde.cbor.encoding.*
 import aws.smithy.kotlin.runtime.serde.cbor.encoding.Major
@@ -28,33 +29,31 @@ internal val SdkBufferedSource.nextValueIsNull: kotlin.Boolean
 // Encodes a [Major] and [Minor] value in a single byte
 internal fun encodeMajorMinor(major: Major, minor: Minor): Byte = (major.value.toUInt() shl 5 or minor.value.toUInt()).toByte()
 
-// Encode a [Major] value along with its additional information / argument
-internal fun encodeArgument(major: Major, argument: ULong): ByteArray {
-    // Convert a ULong to a ByteArray by right-shifting it appropriately
-    fun ULong.toByteArray(): ByteArray {
-        val argumentByteLength = when {
-            this < 24u -> 0
-            this < 0x100u -> 1
-            this < 0x10000u -> 2
-            this < 0x100000000u -> 4
-            else -> 8
+// Encode a [Major] value along with its additional information / argument, writing directly to [into].
+// CBOR arguments are big-endian; using fixed-width writes avoids allocating an intermediate ByteArray
+// (and boxing each byte) on every integer / length / tag id that is serialized. Produces byte-for-byte
+// identical output to the previous ByteArray-building encoder.
+internal fun SdkBufferedSink.writeArgument(major: Major, argument: ULong) {
+    val majorBits = major.ordinal shl 5
+    when {
+        argument < 24u -> writeByte((majorBits.toULong() or argument).toByte())
+        argument < 0x100u -> {
+            writeByte((majorBits or Minor.ARG_1.value.toInt()).toByte())
+            writeByte(argument.toByte())
         }
-
-        val argumentBytes = ((argumentByteLength - 1) downTo 0).map { index ->
-            (this shr (index * 8) and 0xffu).toByte()
-        }.toByteArray()
-        return argumentBytes
+        argument < 0x10000u -> {
+            writeByte((majorBits or Minor.ARG_2.value.toInt()).toByte())
+            writeShort(argument.toShort())
+        }
+        argument < 0x100000000u -> {
+            writeByte((majorBits or Minor.ARG_4.value.toInt()).toByte())
+            writeInt(argument.toInt())
+        }
+        else -> {
+            writeByte((majorBits or Minor.ARG_8.value.toInt()).toByte())
+            writeLong(argument.toLong())
+        }
     }
-
-    val head = when {
-        argument < 24u -> ((major.ordinal shl 5).toULong() or argument).toByte()
-        argument < 0x100u -> ((major.ordinal shl 5) or Minor.ARG_1.value.toInt()).toByte()
-        argument < 0x10000u -> ((major.ordinal shl 5) or Minor.ARG_2.value.toInt()).toByte()
-        argument < 0x100000000u -> ((major.ordinal shl 5) or Minor.ARG_4.value.toInt()).toByte()
-        else -> ((major.ordinal shl 5) or Minor.ARG_8.value.toInt()).toByte()
-    }
-
-    return byteArrayOf(head, *argument.toByteArray())
 }
 
 // Convert a ByteArray to a ULong by left-shifting each byte appropriately
