@@ -1,6 +1,6 @@
 {
   "id": "eab4cb84-2a49-447a-a435-48efb8b34bb0",
   "type": "bugfix",
-  "description": "Fix CBOR serialization and deserialization to be RFC 8949 compliant on the wire. Text string lengths now use the UTF-8 byte count instead of the UTF-16 code-unit count. Negative bignums, negative-integer timestamps, and decimal fractions now encode and decode using the correct RFC representation instead of a self-consistent but non-interoperable one. Floating-point values encoded as CBOR integers are converted numerically rather than misinterpreted as raw IEEE-754 bits, and byte-string/collection lengths are no longer truncated to `Int`",
+  "description": "Fix CBOR encoding and decoding of text strings, negative bignums, negative-integer timestamps, decimal fractions, integer-encoded floats, and large lengths to be RFC 8949 compliant on the wire",
   "module": "serde-cbor"
 }
