@@ -8,15 +8,17 @@ import aws.smithy.kotlin.runtime.io.*
 import aws.smithy.kotlin.runtime.serde.cbor.*
 import aws.smithy.kotlin.runtime.serde.cbor.encodeMajorMinor
 import aws.smithy.kotlin.runtime.serde.cbor.writeArgument
-import aws.smithy.kotlin.runtime.serde.cbor.writeBytes
-import aws.smithy.kotlin.runtime.serde.cbor.writeText
 
 /**
  * Represents a CBOR text string (major type 3) encoded as a UTF-8 byte array.
  * @param value The [TextString] which this CBOR string represents.
  */
 internal class TextString(val value: String) : Value {
-    override fun encode(into: SdkBufferedSink) = into.writeText(value)
+    override fun encode(into: SdkBufferedSink) {
+        val bytes = value.encodeToByteArray()
+        into.writeArgument(Major.STRING, bytes.size.toULong())
+        into.write(bytes)
+    }
 
     internal companion object {
         fun decode(buffer: SdkBufferedSource, depth: Int = 0): TextString = if (peekMinorByte(buffer) == Minor.INDEFINITE.value) {
@@ -46,7 +48,10 @@ internal class TextString(val value: String) : Value {
  * @param value The [ByteArray] which this CBOR byte string represents.
  */
 internal class ByteString(val value: ByteArray) : Value {
-    override fun encode(into: SdkBufferedSink) = into.writeBytes(value)
+    override fun encode(into: SdkBufferedSink) {
+        into.writeArgument(Major.BYTE_STRING, value.size.toULong())
+        into.write(value)
+    }
 
     internal companion object {
         fun decode(buffer: SdkBufferedSource, depth: Int = 0): ByteString = if (peekMinorByte(buffer) == Minor.INDEFINITE.value) {

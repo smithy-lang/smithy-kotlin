@@ -7,10 +7,9 @@ package aws.smithy.kotlin.runtime.serde.cbor.encoding
 import aws.smithy.kotlin.runtime.io.SdkBufferedSink
 import aws.smithy.kotlin.runtime.io.SdkBufferedSource
 import aws.smithy.kotlin.runtime.serde.SerializationException
+import aws.smithy.kotlin.runtime.serde.cbor.encodeMajorMinor
 import aws.smithy.kotlin.runtime.serde.cbor.toULong
 import aws.smithy.kotlin.runtime.serde.cbor.writeArgument
-import aws.smithy.kotlin.runtime.serde.cbor.writeFloat32
-import aws.smithy.kotlin.runtime.serde.cbor.writeFloat64
 
 /**
  * Represents a CBOR unsigned integer (major type 0) in the range [0, 2^64-1].
@@ -89,7 +88,11 @@ internal class Float16(val value: Float) : Value {
  * @param value the [Float] that this CBOR 32-bit float represents.
  */
 internal class Float32(val value: Float) : Value {
-    override fun encode(into: SdkBufferedSink) = into.writeFloat32(value)
+    override fun encode(into: SdkBufferedSink) {
+        into.writeByte(encodeMajorMinor(Major.TYPE_7, Minor.FLOAT32))
+        // CBOR is big-endian; writeInt avoids the intermediate boxed-byte List + ByteArray.
+        into.writeInt(value.toRawBits())
+    }
 
     internal companion object {
         fun decode(buffer: SdkBufferedSource): Float32 {
@@ -105,7 +108,11 @@ internal class Float32(val value: Float) : Value {
  * @param value the [Double] that this CBOR 64-bit float represents
  */
 internal class Float64(val value: Double) : Value {
-    override fun encode(into: SdkBufferedSink) = into.writeFloat64(value)
+    override fun encode(into: SdkBufferedSink) {
+        into.writeByte(encodeMajorMinor(Major.TYPE_7, Minor.FLOAT64))
+        // CBOR is big-endian; writeLong avoids the intermediate boxed-byte List + ByteArray.
+        into.writeLong(value.toRawBits())
+    }
 
     internal companion object {
         fun decode(buffer: SdkBufferedSource): Float64 {
