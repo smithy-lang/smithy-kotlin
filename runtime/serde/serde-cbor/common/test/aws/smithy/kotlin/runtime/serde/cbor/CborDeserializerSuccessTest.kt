@@ -4,12 +4,16 @@
  */
 package aws.smithy.kotlin.runtime.serde.cbor
 
+import aws.smithy.kotlin.runtime.content.BigDecimal
+import aws.smithy.kotlin.runtime.content.BigInteger
 import aws.smithy.kotlin.runtime.io.SdkBuffer
 import aws.smithy.kotlin.runtime.serde.SdkFieldDescriptor
 import aws.smithy.kotlin.runtime.serde.SerialKind
 import aws.smithy.kotlin.runtime.serde.cbor.encoding.NegInt
 import aws.smithy.kotlin.runtime.serde.deserializeList
 import aws.smithy.kotlin.runtime.serde.deserializeMap
+import aws.smithy.kotlin.runtime.time.Instant
+import aws.smithy.kotlin.runtime.time.TimestampFormat
 import kotlin.test.*
 
 class CborDeserializerSuccessTest {
@@ -2652,5 +2656,56 @@ class CborDeserializerSuccessTest {
         assertEquals(1, actual.size)
         assertEquals("foo", actual.entries.first().key)
         assertEquals(-1, actual.entries.first().value)
+    }
+
+    @Test
+    fun `negative bignum - rfc unsigned magnitude`() {
+        mapOf(
+            "c34201f3" to "-500", // n = 499 = 0x01f3
+            "c34100" to "-1", // n = 0 (single 0x00 byte)
+            "c341ff" to "-256", // n = 255 = 0xff
+        ).forEach { (hex, expected) ->
+            val deserializer = CborPrimitiveDeserializer(SdkBuffer().apply { write(hex.hexToByteArray()) })
+            assertEquals(BigInteger(expected), deserializer.deserializeBigInteger(), "decoding $hex")
+        }
+    }
+
+    @Test
+    fun `timestamp - negative integer`() {
+        mapOf(
+            "c120" to -1L, // negint -1
+            "c13a3b9ac9ff" to -1000000000L, // negint -1000000000
+        ).forEach { (hex, epochSeconds) ->
+            val deserializer = CborPrimitiveDeserializer(SdkBuffer().apply { write(hex.hexToByteArray()) })
+            assertEquals(
+                Instant.fromEpochSeconds(epochSeconds),
+                deserializer.deserializeInstant(TimestampFormat.EPOCH_SECONDS),
+                "decoding $hex",
+            )
+        }
+    }
+
+    @Test
+    fun `decimal fraction - rfc scale exponent`() {
+        mapOf(
+            "c482200b" to "1.1", // 4([-1, 11])
+            "c482221a0001e240" to "123.456", // 4([-3, 123456])
+        ).forEach { (hex, expected) ->
+            val deserializer = CborPrimitiveDeserializer(SdkBuffer().apply { write(hex.hexToByteArray()) })
+            assertEquals(BigDecimal(expected), deserializer.deserializeBigDecimal(), "decoding $hex")
+        }
+    }
+
+    @Test
+    fun `floating point - encoded as integer`() {
+        mapOf(
+            "01" to 1.0, // uint 1
+            "20" to -1.0, // negint -1
+            "1903e8" to 1000.0, // uint 1000 (>=2-byte arg)
+        ).forEach { (hex, expected) ->
+            fun deserializer() = CborPrimitiveDeserializer(SdkBuffer().apply { write(hex.hexToByteArray()) })
+            assertEquals(expected.toFloat(), deserializer().deserializeFloat(), "decoding $hex as float")
+            assertEquals(expected, deserializer().deserializeDouble(), "decoding $hex as double")
+        }
     }
 }

@@ -1,0 +1,6 @@
+{
+  "id": "f040019d-5596-40bb-86f0-c3794b624677",
+  "type": "bugfix",
+  "description": "Convert CBOR floating-point values that arrive encoded as integers numerically instead of misinterpreting the integer as raw IEEE-754 bits",
+  "module": "serde-cbor"
+}
