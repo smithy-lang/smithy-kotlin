@@ -72,7 +72,7 @@ internal class Timestamp(val value: Instant) : Value {
                     Instant.fromEpochSeconds(timestamp)
                 }
                 Major.NEG_INT -> {
-                    val negativeTimestamp: Long = NegInt.decode(buffer).value.toLong()
+                    val negativeTimestamp: Long = -(NegInt.decode(buffer).value.toLong())
                     Instant.fromEpochSeconds(negativeTimestamp)
                 }
                 Major.TYPE_7 -> {
@@ -113,7 +113,13 @@ internal class BigNum(val value: BigInteger) : Value {
  */
 internal class NegBigNum(val value: BigInteger) : Value {
     override fun encode(into: SdkBufferedSink) {
-        val bytes = (value - BigInteger("1")).toByteArray()
+        val magnitude = BigInteger("-1") - value
+        val twosComplement = magnitude.toByteArray()
+        val bytes = if (twosComplement.size > 1 && twosComplement[0] == 0.toByte()) {
+            twosComplement.copyOfRange(1, twosComplement.size)
+        } else {
+            twosComplement
+        }
         Tag(3u, ByteString(bytes)).encode(into)
     }
 
@@ -121,9 +127,8 @@ internal class NegBigNum(val value: BigInteger) : Value {
         internal fun decode(buffer: SdkBufferedSource, depth: Int = 0): NegBigNum {
             val bytes = ByteString.decode(buffer, depth).value
 
-            // note: CBOR encoding implies (-1 - $value), add one to get the real value.
-            val bigInteger = BigInteger(bytes) + BigInteger("1")
-            return NegBigNum(bigInteger)
+            val magnitude = BigInteger(byteArrayOf(0) + bytes)
+            return NegBigNum(BigInteger("-1") - magnitude)
         }
     }
 }
@@ -134,7 +139,8 @@ internal class NegBigNum(val value: BigInteger) : Value {
  */
 internal class DecimalFraction(val value: BigDecimal) : Value {
     override fun encode(into: SdkBufferedSink) {
-        val cborExponent = -value.exponent // CBOR has inverted exponent semantics
+        val mantissaDigits = value.mantissa.toString().trimStart('-').length
+        val cborExponent = value.exponent - (mantissaDigits - 1)
 
         val exponent = if (cborExponent < 0) {
             NegInt(cborExponent.absoluteValue.toULong())
@@ -177,14 +183,15 @@ internal class DecimalFraction(val value: BigDecimal) : Value {
                 else -> throw DeserializationException("Expected UInt, NegInt, or Tag for CBOR decimal fraction mantissa, got $mantissaValue")
             }
 
-            val exponent = when (exponentValue) {
+            val cborExponent = when (exponentValue) {
                 is UInt -> exponentValue.value.toInt()
                 is NegInt -> -exponentValue.value.toInt()
                 else -> throw DeserializationException("Expected integer for CBOR decimal fraction exponent value, got $exponentValue.")
             }
 
+            val mantissaDigits = mantissa.toString().trimStart('-').length
             return try {
-                DecimalFraction(BigDecimal(mantissa, -exponent))
+                DecimalFraction(BigDecimal(mantissa, cborExponent + (mantissaDigits - 1)))
             } catch (iae: IllegalArgumentException) {
                 throw DeserializationException("Cannot deserialize unsupported BigDecimal value", iae)
             }
