@@ -4,7 +4,6 @@
  */
 package aws.smithy.kotlin.runtime.http.interceptors
 
-import aws.smithy.kotlin.runtime.ExperimentalApi
 import aws.smithy.kotlin.runtime.collections.AttributeKey
 import aws.smithy.kotlin.runtime.collections.get
 import aws.smithy.kotlin.runtime.http.Headers
@@ -47,7 +46,6 @@ private val RESPONSE_BODY = "response-payload-that-is-longer".encodeToByteArray(
 private object TelemetryTestInput
 private data class TelemetryTestOutput(val body: HttpBody)
 
-@OptIn(ExperimentalApi::class)
 class OperationTelemetryInterceptorTest {
     private fun runOperation(provider: RecordingTelemetryProvider, withTimeToFirstByte: Boolean) = runTest {
         val op = SdkHttpOperation.build<TelemetryTestInput, TelemetryTestOutput> {
