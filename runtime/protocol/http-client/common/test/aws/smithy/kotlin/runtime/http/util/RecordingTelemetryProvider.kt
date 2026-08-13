@@ -4,7 +4,6 @@
  */
 package aws.smithy.kotlin.runtime.http.util
 
-import aws.smithy.kotlin.runtime.ExperimentalApi
 import aws.smithy.kotlin.runtime.collections.Attributes
 import aws.smithy.kotlin.runtime.telemetry.AbstractTelemetryProvider
 import aws.smithy.kotlin.runtime.telemetry.context.AbstractContext
@@ -40,7 +39,6 @@ internal data class MetricRecord(
  * [activeContext] is returned from [ContextManager.current] so tests can assert that the "current" context is
  * threaded through to metric recordings.
  */
-@OptIn(ExperimentalApi::class)
 internal class RecordingTelemetryProvider : AbstractTelemetryProvider() {
     val records = mutableListOf<MetricRecord>()
 
