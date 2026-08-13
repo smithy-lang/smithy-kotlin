@@ -1,8 +1,0 @@
-{
-  "id": "e31b4eb0-a1de-4ed6-98cc-d8a427a3353f",
-  "type": "bugfix",
-  "description": "Remove client-side non-blank validation for HTTP query-bound members to match the Smithy specification. Optional query parameters left unset no longer cause an `IllegalArgumentException` during request serialization.",
-  "issues": [
-    "https://github.com/aws/aws-sdk-kotlin/issues/1974"
-  ]
-}
