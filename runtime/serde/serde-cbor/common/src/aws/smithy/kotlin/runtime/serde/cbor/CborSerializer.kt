@@ -12,7 +12,11 @@ import aws.smithy.kotlin.runtime.http.HttpBody
 import aws.smithy.kotlin.runtime.http.toHttpBody
 import aws.smithy.kotlin.runtime.io.SdkBuffer
 import aws.smithy.kotlin.runtime.serde.*
-import aws.smithy.kotlin.runtime.serde.cbor.encoding.*
+import aws.smithy.kotlin.runtime.serde.cbor.encoding.IndefiniteBreak
+import aws.smithy.kotlin.runtime.serde.cbor.encoding.Major
+import aws.smithy.kotlin.runtime.serde.cbor.encoding.Minor
+import aws.smithy.kotlin.runtime.serde.cbor.encoding.Null
+import aws.smithy.kotlin.runtime.serde.cbor.encoding.TagId
 import aws.smithy.kotlin.runtime.time.Instant
 import aws.smithy.kotlin.runtime.time.TimestampFormat
 import aws.smithy.kotlin.runtime.time.epochMilliseconds
