@@ -43,7 +43,6 @@ public class CborSerializer :
     override fun beginMap(descriptor: SdkFieldDescriptor): MapSerializer {
         // TODO Encoding indefinite maps comes with some performance overhead, see if we can refactor mapEntry interface to
         // pass additional information such as the map length. That way we can serialize a definite-length map.
-        // Write the indefinite-map head byte directly instead of allocating an IndefiniteMap value.
         buffer.writeByte(encodeMajorMinor(Major.MAP, Minor.INDEFINITE))
         return this
     }
@@ -53,7 +52,6 @@ public class CborSerializer :
     override fun beginList(descriptor: SdkFieldDescriptor): ListSerializer {
         // TODO Encoding indefinite lists comes with some performance overhead, see if we can refactor listEntry interface to
         // pass additional information such as the list length. That way we can serialize a definite-length list.
-        // Write the indefinite-list head byte directly instead of allocating an IndefiniteList value.
         buffer.writeByte(encodeMajorMinor(Major.LIST, Minor.INDEFINITE))
         return this
     }
@@ -69,8 +67,6 @@ public class CborSerializer :
 
     override fun serializeBoolean(value: Boolean): Unit = buffer.writeByte(encodeMajorMinor(Major.TYPE_7, if (value) Minor.TRUE else Minor.FALSE))
 
-    // Write integers directly to the buffer instead of allocating a UInt/NegInt value. This matches the
-    // exact bytes UInt/NegInt.encode would emit (NegInt encodes -1 - value, i.e. abs(value) - 1).
     private inline fun <reified T : Number> serializeNumber(value: T) {
         val longValue = value.toLong()
         if (longValue < 0) {
@@ -101,8 +97,6 @@ public class CborSerializer :
     override fun serializeChar(value: Char): Unit = buffer.write(TextString(value.toString()))
 
     override fun serializeString(value: String) {
-        // Inline TextString.encode to avoid allocating a wrapper value per string. Encode UTF-8 once and
-        // use its byte length (CBOR text-string length is a byte count, RFC 8949 §3.1).
         val bytes = value.encodeToByteArray()
         buffer.writeArgument(Major.STRING, bytes.size.toULong())
         buffer.write(bytes)

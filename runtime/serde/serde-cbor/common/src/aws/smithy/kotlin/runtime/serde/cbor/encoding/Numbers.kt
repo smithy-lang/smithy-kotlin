@@ -90,7 +90,6 @@ internal class Float16(val value: Float) : Value {
 internal class Float32(val value: Float) : Value {
     override fun encode(into: SdkBufferedSink) {
         into.writeByte(encodeMajorMinor(Major.TYPE_7, Minor.FLOAT32))
-        // CBOR is big-endian; writeInt avoids the intermediate boxed-byte List + ByteArray.
         into.writeInt(value.toRawBits())
     }
 
@@ -110,7 +109,6 @@ internal class Float32(val value: Float) : Value {
 internal class Float64(val value: Double) : Value {
     override fun encode(into: SdkBufferedSink) {
         into.writeByte(encodeMajorMinor(Major.TYPE_7, Minor.FLOAT64))
-        // CBOR is big-endian; writeLong avoids the intermediate boxed-byte List + ByteArray.
         into.writeLong(value.toRawBits())
     }
 

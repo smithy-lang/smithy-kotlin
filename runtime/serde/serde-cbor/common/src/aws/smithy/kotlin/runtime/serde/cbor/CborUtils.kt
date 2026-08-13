@@ -31,8 +31,7 @@ internal fun encodeMajorMinor(major: Major, minor: Minor): Byte = (major.value.t
 
 // Encode a [Major] value along with its additional information / argument, writing directly to [into].
 // CBOR arguments are big-endian; using fixed-width writes avoids allocating an intermediate ByteArray
-// (and boxing each byte) on every integer / length / tag id that is serialized. Produces byte-for-byte
-// identical output to the previous ByteArray-building encoder.
+// (and boxing each byte) on every integer / length / tag id that is serialized.
 internal fun SdkBufferedSink.writeArgument(major: Major, argument: ULong) {
     val majorBits = major.ordinal shl 5
     when {
