@@ -15,6 +15,7 @@ import aws.smithy.kotlin.runtime.serde.*
 import aws.smithy.kotlin.runtime.serde.cbor.encoding.*
 import aws.smithy.kotlin.runtime.time.Instant
 import aws.smithy.kotlin.runtime.time.TimestampFormat
+import aws.smithy.kotlin.runtime.time.epochMilliseconds
 import kotlin.math.absoluteValue
 
 @InternalApi
@@ -74,35 +75,33 @@ public class CborSerializer :
     override fun serializeInt(value: Int): Unit = serializeNumber(value)
     override fun serializeLong(value: Long): Unit = serializeNumber(value)
 
-    override fun serializeFloat(value: Float): Unit = buffer.write(Float32(value))
+    override fun serializeFloat(value: Float): Unit = buffer.writeFloat32(value)
 
-    override fun serializeDouble(value: Double): Unit = buffer.write(Float64(value))
+    override fun serializeDouble(value: Double): Unit = buffer.writeFloat64(value)
 
     override fun serializeBigInteger(value: BigInteger) {
-        if (value.toString().startsWith("-")) {
-            buffer.write(NegBigNum(value))
+        if (value < BIG_INTEGER_ZERO) {
+            buffer.writeNegBigNum(value)
         } else {
-            buffer.write(BigNum(value))
+            buffer.writeBigNum(value)
         }
     }
 
-    override fun serializeBigDecimal(value: BigDecimal): Unit = buffer.write(DecimalFraction(value))
+    override fun serializeBigDecimal(value: BigDecimal): Unit = buffer.writeDecimalFraction(value)
 
-    override fun serializeChar(value: Char): Unit = buffer.write(TextString(value.toString()))
+    override fun serializeChar(value: Char): Unit = buffer.writeText(value.toString())
 
-    override fun serializeString(value: String) {
-        // Inline TextString.encode to avoid allocating a wrapper value per string. Encode UTF-8 once and
-        // use its byte length (CBOR text-string length is a byte count, RFC 8949 §3.1).
-        val bytes = value.encodeToByteArray()
-        buffer.writeArgument(Major.STRING, bytes.size.toULong())
-        buffer.write(bytes)
-    }
+    override fun serializeString(value: String): Unit = buffer.writeText(value)
 
     // Note: CBOR does not use [TimestampFormat]
     override fun serializeInstant(value: Instant, format: TimestampFormat): Unit = serializeInstant(value)
-    public fun serializeInstant(value: Instant): Unit = buffer.write(Timestamp(value))
+    public fun serializeInstant(value: Instant) {
+        // Inline the tag-1 + float64 encode to avoid allocating Timestamp/Tag/Float64 wrapper objects.
+        buffer.writeArgument(Major.TAG, TagId.TIMESTAMP.value)
+        buffer.writeFloat64(value.epochMilliseconds / 1000.toDouble())
+    }
 
-    override fun serializeByteArray(value: ByteArray): Unit = buffer.write(ByteString(value))
+    override fun serializeByteArray(value: ByteArray): Unit = buffer.writeBytes(value)
 
     override fun serializeSdkSerializable(value: SdkSerializable): Unit = value.serialize(this)
 
@@ -169,32 +168,32 @@ public class CborSerializer :
     override fun field(descriptor: SdkFieldDescriptor, value: ByteArray): Unit = entry(descriptor.serialName, value)
 
     override fun field(descriptor: SdkFieldDescriptor, value: BigInteger) {
-        buffer.write(TextString(descriptor.serialName))
+        serializeString(descriptor.serialName)
         serializeBigInteger(value)
     }
 
     override fun field(descriptor: SdkFieldDescriptor, value: BigDecimal) {
-        buffer.write(TextString(descriptor.serialName))
+        serializeString(descriptor.serialName)
         serializeBigDecimal(value)
     }
 
     override fun structField(descriptor: SdkFieldDescriptor, block: StructSerializer.() -> Unit) {
-        buffer.write(TextString(descriptor.serialName))
+        serializeString(descriptor.serialName)
         serializeStruct(descriptor, block)
     }
 
     override fun listField(descriptor: SdkFieldDescriptor, block: ListSerializer.() -> Unit) {
-        buffer.write(TextString(descriptor.serialName))
+        serializeString(descriptor.serialName)
         serializeList(descriptor, block)
     }
 
     override fun mapField(descriptor: SdkFieldDescriptor, block: MapSerializer.() -> Unit) {
-        buffer.write(TextString(descriptor.serialName))
+        serializeString(descriptor.serialName)
         serializeMap(descriptor, block)
     }
 
     override fun nullField(descriptor: SdkFieldDescriptor) {
-        buffer.write(TextString(descriptor.serialName))
+        serializeString(descriptor.serialName)
         serializeNull()
     }
 }

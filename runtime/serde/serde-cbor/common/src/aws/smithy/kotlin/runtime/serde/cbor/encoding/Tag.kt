@@ -10,10 +10,13 @@ import aws.smithy.kotlin.runtime.io.SdkBufferedSink
 import aws.smithy.kotlin.runtime.io.SdkBufferedSource
 import aws.smithy.kotlin.runtime.serde.DeserializationException
 import aws.smithy.kotlin.runtime.serde.cbor.writeArgument
+import aws.smithy.kotlin.runtime.serde.cbor.writeBigNum
+import aws.smithy.kotlin.runtime.serde.cbor.writeDecimalFraction
+import aws.smithy.kotlin.runtime.serde.cbor.writeFloat64
+import aws.smithy.kotlin.runtime.serde.cbor.writeNegBigNum
 import aws.smithy.kotlin.runtime.time.Instant
 import aws.smithy.kotlin.runtime.time.epochMilliseconds
 import aws.smithy.kotlin.runtime.time.fromEpochMilliseconds
-import kotlin.math.absoluteValue
 
 internal enum class TagId(val value: ULong) {
     TIMESTAMP(1uL),
@@ -59,7 +62,11 @@ internal class Tag(val id: ULong, val value: Value) : Value {
  * @param value the [Instant] that this CBOR timestamp represents
  */
 internal class Timestamp(val value: Instant) : Value {
-    override fun encode(into: SdkBufferedSink) = Tag(1u, Float64(value.epochMilliseconds / 1000.toDouble())).encode(into)
+    // Inline the tag-1 + float64 encode to avoid allocating Tag and Float64 wrapper objects.
+    override fun encode(into: SdkBufferedSink) {
+        into.writeArgument(Major.TAG, TagId.TIMESTAMP.value)
+        into.writeFloat64(value.epochMilliseconds / 1000.toDouble())
+    }
 
     internal companion object {
         internal fun decode(buffer: SdkBufferedSource): Timestamp {
@@ -97,7 +104,7 @@ internal class Timestamp(val value: Instant) : Value {
  * @param value the [BigInteger] that this CBOR bignum represents.
  */
 internal class BigNum(val value: BigInteger) : Value {
-    override fun encode(into: SdkBufferedSink) = Tag(2u, ByteString(value.toByteArray())).encode(into)
+    override fun encode(into: SdkBufferedSink) = into.writeBigNum(value)
 
     internal companion object {
         internal fun decode(buffer: SdkBufferedSource, depth: Int = 0): BigNum {
@@ -112,10 +119,7 @@ internal class BigNum(val value: BigInteger) : Value {
  * @param value the [BigInteger] that this negative CBOR bignum represents.
  */
 internal class NegBigNum(val value: BigInteger) : Value {
-    override fun encode(into: SdkBufferedSink) {
-        val bytes = (value - BigInteger("1")).toByteArray()
-        Tag(3u, ByteString(bytes)).encode(into)
-    }
+    override fun encode(into: SdkBufferedSink) = into.writeNegBigNum(value)
 
     internal companion object {
         internal fun decode(buffer: SdkBufferedSource, depth: Int = 0): NegBigNum {
@@ -133,31 +137,7 @@ internal class NegBigNum(val value: BigInteger) : Value {
  * @param value the [BigDecimal] that this decimal fraction represents.
  */
 internal class DecimalFraction(val value: BigDecimal) : Value {
-    override fun encode(into: SdkBufferedSink) {
-        val cborExponent = -value.exponent // CBOR has inverted exponent semantics
-
-        val exponent = if (cborExponent < 0) {
-            NegInt(cborExponent.absoluteValue.toULong())
-        } else {
-            UInt(cborExponent.toULong())
-        }
-
-        val mantissa = if (value.mantissa > BigInteger(Long.MIN_VALUE.toString()) && value.mantissa < BigInteger(Long.MAX_VALUE.toString())) {
-            if (value.mantissa.toString().startsWith("-")) {
-                NegInt(value.mantissa.toLong().absoluteValue.toULong())
-            } else {
-                UInt(value.mantissa.toLong().toULong())
-            }
-        } else {
-            if (value.mantissa.toString().startsWith("-")) {
-                NegBigNum(value.mantissa)
-            } else {
-                BigNum(value.mantissa)
-            }
-        }
-
-        Tag(TagId.DECIMAL_FRACTION.value, List(listOf(exponent, mantissa))).encode(into)
-    }
+    override fun encode(into: SdkBufferedSink) = into.writeDecimalFraction(value)
 
     internal companion object {
         internal fun decode(buffer: SdkBufferedSource, depth: Int = 0): DecimalFraction {
