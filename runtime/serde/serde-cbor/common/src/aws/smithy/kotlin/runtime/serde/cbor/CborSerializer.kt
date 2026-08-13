@@ -57,8 +57,7 @@ public class CborSerializer :
 
     override fun endStruct(): Unit = endMap()
 
-    override fun serializeBoolean(value: Boolean): Unit =
-        buffer.writeByte(encodeMajorMinor(Major.TYPE_7, if (value) Minor.TRUE else Minor.FALSE))
+    override fun serializeBoolean(value: Boolean): Unit = buffer.writeByte(encodeMajorMinor(Major.TYPE_7, if (value) Minor.TRUE else Minor.FALSE))
 
     // Write integers directly to the buffer instead of allocating a UInt/NegInt value. This matches the
     // exact bytes UInt/NegInt.encode would emit (NegInt encodes -1 - value, i.e. abs(value) - 1).

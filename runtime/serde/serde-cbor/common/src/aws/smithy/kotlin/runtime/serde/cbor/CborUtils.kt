@@ -9,12 +9,12 @@ import aws.smithy.kotlin.runtime.content.BigInteger
 import aws.smithy.kotlin.runtime.io.SdkBuffer
 import aws.smithy.kotlin.runtime.io.SdkBufferedSink
 import aws.smithy.kotlin.runtime.io.SdkBufferedSource
-import kotlin.math.absoluteValue
 import aws.smithy.kotlin.runtime.serde.cbor.encoding.*
 import aws.smithy.kotlin.runtime.serde.cbor.encoding.Major
 import aws.smithy.kotlin.runtime.serde.cbor.encoding.Minor
 import aws.smithy.kotlin.runtime.serde.cbor.encoding.peekMajor
 import aws.smithy.kotlin.runtime.serde.cbor.encoding.peekMinorByte
+import kotlin.math.absoluteValue
 
 /**
  * Encode and write a CBOR [Value] to this [SdkBuffer]
