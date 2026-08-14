@@ -7,27 +7,7 @@
 
 package aws.smithy.kotlin.runtime.io.internal
 
-import aws.smithy.kotlin.runtime.InternalApi
 import aws.smithy.kotlin.runtime.io.*
-
-/**
- * Read the next byte of this source **without consuming it**.
- *
- * For both [SdkBuffer] and [BufferedSourceAdapter] this peeks at the byte in place, avoiding the
- * allocation of a new peek source that a generic `peek().readByte()` would incur.
- */
-@InternalApi
-public fun SdkBufferedSource.peekByte(): Byte = when (this) {
-    is SdkBuffer -> wrapOkio {
-        inner.require(1L)
-        inner[0L]
-    }
-    is AbstractBufferedSourceAdapter -> wrapOkio {
-        delegate.require(1L)
-        delegate.buffer[0L]
-    }
-    else -> peek().readByte()
-}
 
 /**
  * Used to wrap calls to Okio, catching Okio exceptions (e.g. okio.EOFException) and throwing our own (e.g. aws.smithy.kotlin.runtime.io.EOFException).
@@ -43,6 +23,11 @@ internal inline fun <T> SdkBuffer.wrapOkio(block: SdkBuffer.() -> T): T = try {
 internal inline fun SdkBuffer.commonSkip(byteCount: Long) = wrapOkio { inner.skip(byteCount) }
 
 internal inline fun SdkBuffer.commonReadByte(): Byte = wrapOkio { inner.readByte() }
+
+internal inline fun SdkBuffer.commonPeekByte(): Byte = wrapOkio {
+    inner.require(1L)
+    inner[0L]
+}
 
 internal inline fun SdkBuffer.commonReadShort(): Short = wrapOkio { inner.readShort() }
 

@@ -5,7 +5,6 @@
 package aws.smithy.kotlin.runtime.serde.cbor.encoding
 
 import aws.smithy.kotlin.runtime.io.SdkBufferedSource
-import aws.smithy.kotlin.runtime.io.internal.peekByte
 import aws.smithy.kotlin.runtime.serde.DeserializationException
 
 /**
