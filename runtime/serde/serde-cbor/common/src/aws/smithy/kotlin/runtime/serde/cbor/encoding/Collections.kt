@@ -99,7 +99,6 @@ internal class List(val value: kotlin.collections.List<Value>) : Value {
     }
 }
 
-// Decode a CBOR definite-length list's elements, returning the list of [Value]s directly without allocating a [List] wrapper.
 internal fun decodeListValue(buffer: SdkBufferedSource, depth: Int = 0): kotlin.collections.List<Value> {
     val length = decodeArgument(buffer).toLong()
     val valuesList = mutableListOf<Value>()
@@ -135,8 +134,6 @@ internal class IndefiniteList(val value: Collection<Value> = listOf()) : Value {
     }
 }
 
-// Decode a CBOR indefinite-length list's elements, returning the list of [Value]s directly without allocating an
-// [IndefiniteList] wrapper.
 internal fun decodeIndefiniteListValue(buffer: SdkBufferedSource, depth: Int = 0): kotlin.collections.List<Value> {
     buffer.readByte() // discard head
 
