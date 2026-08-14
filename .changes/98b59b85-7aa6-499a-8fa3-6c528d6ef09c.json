@@ -1,0 +1,6 @@
+{
+  "id": "98b59b85-7aa6-499a-8fa3-6c528d6ef09c",
+  "type": "bugfix",
+  "description": "Encode and decode CBOR negative bignums using the RFC 8949 unsigned magnitude representation instead of a signed two's-complement encoding, fixing interoperability for negative `BigInteger` values",
+  "module": "serde-cbor"
+}

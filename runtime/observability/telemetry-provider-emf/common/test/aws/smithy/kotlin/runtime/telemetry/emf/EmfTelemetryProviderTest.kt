@@ -4,12 +4,10 @@
  */
 package aws.smithy.kotlin.runtime.telemetry.emf
 
-import aws.smithy.kotlin.runtime.ExperimentalApi
 import kotlin.test.Test
 import kotlin.test.assertFailsWith
 import kotlin.test.assertNotNull
 
-@OptIn(ExperimentalApi::class)
 class EmfTelemetryProviderTest {
     @Test
     fun rejectsEmptyNamespace() {

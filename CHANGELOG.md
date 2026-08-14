@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.7.7] - 08/11/2026
+
+### Fixes
+* [#1974](https://github.com/aws/aws-sdk-kotlin/issues/1974) Remove client-side non-blank validation for HTTP query-bound members to match the Smithy specification. Optional query parameters left unset no longer cause an `IllegalArgumentException` during request serialization.
+
 ## [1.7.6] - 08/04/2026
 
 ### Features

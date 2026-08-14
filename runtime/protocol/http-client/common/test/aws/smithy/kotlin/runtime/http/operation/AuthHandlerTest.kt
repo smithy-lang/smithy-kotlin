@@ -5,7 +5,6 @@
 
 package aws.smithy.kotlin.runtime.http.operation
 
-import aws.smithy.kotlin.runtime.ExperimentalApi
 import aws.smithy.kotlin.runtime.auth.AuthOption
 import aws.smithy.kotlin.runtime.auth.AuthSchemeId
 import aws.smithy.kotlin.runtime.client.SdkClientOption
@@ -105,7 +104,6 @@ class HttpAuthHandlerTest {
         assertEquals(Host.Domain("localhost"), request.subject.url.host)
     }
 
-    @OptIn(ExperimentalApi::class)
     @Test
     fun testAuthMetricsCarryRpcAttributesAndContext() = runTest {
         // verify identity-resolution and signing metrics are tagged with rpc.service/rpc.method and
@@ -136,7 +134,6 @@ class HttpAuthHandlerTest {
         }
     }
 
-    @OptIn(ExperimentalApi::class)
     @Test
     fun testEndpointResolutionMetricCarriesRpcAttributesAndContext() = runTest {
         // verify the endpoint-resolution metric is tagged with rpc.service/rpc.method and carries the
@@ -170,7 +167,6 @@ class HttpAuthHandlerTest {
      * Asserts that exactly one measurement was recorded for [name] and that it carries the rpc.service/rpc.method
      * attributes and the provider's current telemetry context.
      */
-    @OptIn(ExperimentalApi::class)
     private fun assertMetricHasRpcAttributesAndContext(provider: RecordingTelemetryProvider, name: String) {
         val rpcServiceKey = AttributeKey<String>("rpc.service")
         val rpcMethodKey = AttributeKey<String>("rpc.method")
