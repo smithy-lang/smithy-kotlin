@@ -1,0 +1,8 @@
+{
+    "id": "a4b16059-858b-449b-8df4-066b889a99c3",
+    "type": "bugfix",
+    "description": "Upgrade to Smithy [v1.73.0](https://github.com/smithy-lang/smithy/releases/tag/1.73.0) to pick up [bugfix for endpoint ruleset trimming](https://github.com/smithy-lang/smithy/pull/3219)",
+    "issues": [
+        "https://github.com/smithy-lang/smithy/issues/3190"
+    ]
+}
