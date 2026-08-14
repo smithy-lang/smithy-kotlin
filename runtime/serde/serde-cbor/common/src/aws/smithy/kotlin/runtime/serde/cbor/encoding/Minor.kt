@@ -4,12 +4,8 @@
  */
 package aws.smithy.kotlin.runtime.serde.cbor.encoding
 
-import aws.smithy.kotlin.runtime.io.SdkBuffer
 import aws.smithy.kotlin.runtime.io.SdkBufferedSource
-import aws.smithy.kotlin.runtime.io.readFully
-import aws.smithy.kotlin.runtime.io.use
 import aws.smithy.kotlin.runtime.serde.DeserializationException
-import aws.smithy.kotlin.runtime.serde.cbor.toULong
 
 /**
  * Represents CBOR minor types (aka "additional information")
@@ -33,10 +29,11 @@ internal enum class Minor(val value: UByte) {
 
 internal val MINOR_BYTE_MASK: UByte = 0b11111u
 
-internal fun peekMinorByte(buffer: SdkBufferedSource): UByte {
-    val byte = buffer.peek().readByte().toUByte()
-    return byte and MINOR_BYTE_MASK
-}
+internal fun peekHead(buffer: SdkBufferedSource): UByte = buffer.peek().readByte().toUByte()
+
+internal fun minorOf(head: UByte): UByte = head and MINOR_BYTE_MASK
+
+internal fun peekMinorByte(buffer: SdkBufferedSource): UByte = minorOf(peekHead(buffer))
 
 internal fun decodeArgument(buffer: SdkBufferedSource): ULong {
     val minor = buffer.readByte().toUByte() and MINOR_BYTE_MASK
@@ -45,17 +42,11 @@ internal fun decodeArgument(buffer: SdkBufferedSource): ULong {
         return minor.toULong()
     }
 
-    val numBytes = when (minor) {
-        Minor.ARG_1.value -> 1L
-        Minor.ARG_2.value -> 2L
-        Minor.ARG_4.value -> 4L
-        Minor.ARG_8.value -> 8L
+    return when (minor) {
+        Minor.ARG_1.value -> buffer.readByte().toUByte().toULong()
+        Minor.ARG_2.value -> buffer.readShort().toUShort().toULong()
+        Minor.ARG_4.value -> buffer.readInt().toUInt().toULong()
+        Minor.ARG_8.value -> buffer.readLong().toULong()
         else -> throw DeserializationException("Unsupported minor value $minor, expected one of ${Minor.ARG_1.value}, ${Minor.ARG_2.value}, ${Minor.ARG_4.value}, ${Minor.ARG_8.value}")
     }
-
-    val bytes = SdkBuffer().use {
-        buffer.readFully(it, numBytes)
-        it.readByteArray()
-    }
-    return bytes.toULong()
 }
