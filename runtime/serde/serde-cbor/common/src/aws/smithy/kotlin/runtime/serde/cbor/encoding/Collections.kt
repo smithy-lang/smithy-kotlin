@@ -32,7 +32,7 @@ internal class TextString(val value: String) : Value {
             TextString(sb.toString())
         } else {
             val length = decodeArgument(buffer).toLong()
-            TextString(buffer.readByteArray(length).decodeToString())
+            TextString(buffer.readUtf8(length))
         }
     }
 }
