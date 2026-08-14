@@ -51,9 +51,7 @@ internal class Float16(val value: Float) : Value {
     internal companion object {
         fun decode(buffer: SdkBufferedSource): Float16 {
             buffer.readByte() // discard head byte
-            val bytes = buffer.readByteArray(2)
-
-            val float16Bits: Int = ((bytes[0].toInt() and 0xff) shl 8) or (bytes[1].toInt() and 0xff)
+            val float16Bits: Int = buffer.readShort().toInt() and 0xffff
 
             val sign = (float16Bits and (0x1 shl 15)) shl 16 // top bit
             val exponent = (float16Bits and (0x1f shl 10)) shr 10 // next 5 bits
@@ -96,8 +94,7 @@ internal class Float32(val value: Float) : Value {
     internal companion object {
         fun decode(buffer: SdkBufferedSource): Float32 {
             buffer.readByte() // discard head byte
-            val bytes = buffer.readByteArray(4)
-            return Float32(Float.fromBits(bytes.toULong().toInt()))
+            return Float32(Float.fromBits(buffer.readInt()))
         }
     }
 }
@@ -115,8 +112,7 @@ internal class Float64(val value: Double) : Value {
     internal companion object {
         fun decode(buffer: SdkBufferedSource): Float64 {
             buffer.readByte() // discard head byte
-            val bytes = buffer.readByteArray(8)
-            return Float64(Double.fromBits(bytes.toULong().toLong()))
+            return Float64(Double.fromBits(buffer.readLong()))
         }
     }
 }
