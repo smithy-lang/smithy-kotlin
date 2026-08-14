@@ -7,7 +7,17 @@
 
 package aws.smithy.kotlin.runtime.io.internal
 
+import aws.smithy.kotlin.runtime.InternalApi
 import aws.smithy.kotlin.runtime.io.*
+
+/**
+ * Read the head (next-to-be-read) byte of this buffer **without consuming it**.
+ */
+@InternalApi
+public fun SdkBuffer.headByte(): Byte = wrapOkio {
+    inner.require(1L)
+    inner[0L]
+}
 
 /**
  * Used to wrap calls to Okio, catching Okio exceptions (e.g. okio.EOFException) and throwing our own (e.g. aws.smithy.kotlin.runtime.io.EOFException).

@@ -1170,6 +1170,10 @@ public final class aws/smithy/kotlin/runtime/io/SdkSourceKt {
 	public static synthetic fun toSdkByteReadChannel$default (Laws/smithy/kotlin/runtime/io/SdkSource;Lkotlinx/coroutines/CoroutineScope;ILjava/lang/Object;)Laws/smithy/kotlin/runtime/io/SdkByteReadChannel;
 }
 
+public final class aws/smithy/kotlin/runtime/io/internal/BufferOperationsKt {
+	public static final fun headByte (Laws/smithy/kotlin/runtime/io/SdkBuffer;)B
+}
+
 public final class aws/smithy/kotlin/runtime/io/internal/ConvertKt {
 	public static final fun toOkio (Laws/smithy/kotlin/runtime/io/SdkBuffer;)Lokio/Buffer;
 	public static final fun toOkio (Laws/smithy/kotlin/runtime/io/SdkSink;)Lokio/Sink;

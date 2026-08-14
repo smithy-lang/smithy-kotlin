@@ -4,7 +4,9 @@
  */
 package aws.smithy.kotlin.runtime.serde.cbor.encoding
 
+import aws.smithy.kotlin.runtime.io.SdkBuffer
 import aws.smithy.kotlin.runtime.io.SdkBufferedSource
+import aws.smithy.kotlin.runtime.io.internal.headByte
 import aws.smithy.kotlin.runtime.serde.DeserializationException
 
 /**
@@ -29,7 +31,10 @@ internal enum class Minor(val value: UByte) {
 
 internal val MINOR_BYTE_MASK: UByte = 0b11111u
 
-internal fun peekHead(buffer: SdkBufferedSource): UByte = buffer.peek().readByte().toUByte()
+internal fun peekHead(buffer: SdkBufferedSource): UByte = when (buffer) {
+    is SdkBuffer -> buffer.headByte().toUByte()
+    else -> buffer.peek().readByte().toUByte()
+}
 
 internal fun minorOf(head: UByte): UByte = head and MINOR_BYTE_MASK
 
