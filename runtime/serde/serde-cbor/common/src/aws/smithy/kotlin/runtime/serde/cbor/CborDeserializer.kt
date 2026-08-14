@@ -14,6 +14,7 @@ import aws.smithy.kotlin.runtime.serde.cbor.encoding.Major
 import aws.smithy.kotlin.runtime.serde.cbor.encoding.Minor
 import aws.smithy.kotlin.runtime.serde.cbor.encoding.Null
 import aws.smithy.kotlin.runtime.serde.cbor.encoding.TagId
+import aws.smithy.kotlin.runtime.serde.cbor.encoding.Value
 import aws.smithy.kotlin.runtime.serde.cbor.encoding.decodeArgument
 import aws.smithy.kotlin.runtime.serde.cbor.encoding.decodeBigNum
 import aws.smithy.kotlin.runtime.serde.cbor.encoding.decodeBooleanValue
@@ -29,7 +30,6 @@ import aws.smithy.kotlin.runtime.serde.cbor.encoding.decodeTextStringValue
 import aws.smithy.kotlin.runtime.serde.cbor.encoding.decodeUInt
 import aws.smithy.kotlin.runtime.serde.cbor.encoding.peekMajor
 import aws.smithy.kotlin.runtime.serde.cbor.encoding.peekMinorByte
-import aws.smithy.kotlin.runtime.serde.cbor.encoding.skipValue
 import aws.smithy.kotlin.runtime.time.Instant
 import aws.smithy.kotlin.runtime.time.TimestampFormat
 
@@ -238,7 +238,7 @@ private class CborFieldIterator(
     }
 
     override fun skipValue() {
-        skipValue(buffer)
+        Value.decode(buffer)
     }
 }
 
