@@ -1,0 +1,6 @@
+{
+  "id": "1226d4d3-49d0-4faf-bf8f-9c93e11b0882",
+  "type": "feature",
+  "description": "Optimize CBOR deserialization by peeking the next head byte via indexed buffer access instead of allocating a peek-source chain per value",
+  "module": "serde-cbor"
+}
