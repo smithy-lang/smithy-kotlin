@@ -29,7 +29,7 @@ internal interface Value {
         fun decode(buffer: SdkBufferedSource, depth: Int = 0): Value {
             DeserializationRecursionException.assertDepth(depth)
 
-            val head = peekHead(buffer)
+            val head = peekByte(buffer)
             val major = majorOf(head)
             val minor = minorOf(head)
 

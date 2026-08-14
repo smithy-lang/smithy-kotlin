@@ -24,4 +24,4 @@ internal enum class Major(val value: UByte) {
 // map directly to enum ordinals, so we index [Major.entries] and avoid a per-call linear scan.
 internal fun majorOf(head: UByte): Major = Major.entries[head.toInt() shr 5]
 
-internal fun peekMajor(buffer: SdkBufferedSource): Major = majorOf(peekHead(buffer))
+internal fun peekMajor(buffer: SdkBufferedSource): Major = majorOf(peekByte(buffer))

@@ -959,6 +959,7 @@ public final class aws/smithy/kotlin/runtime/io/SdkBuffer : aws/smithy/kotlin/ru
 	public fun isOpen ()Z
 	public fun outputStream ()Ljava/io/OutputStream;
 	public fun peek ()Laws/smithy/kotlin/runtime/io/SdkBufferedSource;
+	public fun peekByte ()B
 	public fun read (Laws/smithy/kotlin/runtime/io/SdkBuffer;J)J
 	public fun read (Ljava/nio/ByteBuffer;)I
 	public fun read ([BII)I
@@ -1023,6 +1024,7 @@ public abstract interface class aws/smithy/kotlin/runtime/io/SdkBufferedSource :
 	public abstract fun getBuffer ()Laws/smithy/kotlin/runtime/io/SdkBuffer;
 	public abstract fun inputStream ()Ljava/io/InputStream;
 	public abstract fun peek ()Laws/smithy/kotlin/runtime/io/SdkBufferedSource;
+	public abstract fun peekByte ()B
 	public abstract fun read ([BII)I
 	public static synthetic fun read$default (Laws/smithy/kotlin/runtime/io/SdkBufferedSource;[BIIILjava/lang/Object;)I
 	public abstract fun readAll (Laws/smithy/kotlin/runtime/io/SdkSink;)J
