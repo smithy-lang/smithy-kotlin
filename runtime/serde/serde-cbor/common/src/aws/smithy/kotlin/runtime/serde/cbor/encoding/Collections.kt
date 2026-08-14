@@ -5,6 +5,8 @@
 package aws.smithy.kotlin.runtime.serde.cbor.encoding
 
 import aws.smithy.kotlin.runtime.io.*
+import aws.smithy.kotlin.runtime.serde.DeserializationException
+import aws.smithy.kotlin.runtime.serde.DeserializationRecursionException
 import aws.smithy.kotlin.runtime.serde.cbor.*
 import aws.smithy.kotlin.runtime.serde.cbor.encodeMajorMinor
 import aws.smithy.kotlin.runtime.serde.cbor.writeArgument
@@ -27,18 +29,29 @@ internal fun SdkBufferedSink.writeTextString(value: String) {
     write(bytes)
 }
 
-internal fun decodeTextStringValue(buffer: SdkBufferedSource, depth: Int = 0): String = if (peekMinorByte(buffer) == Minor.INDEFINITE.value) {
-    val list = decodeIndefiniteListValue(buffer, depth)
+private inline fun SdkBufferedSource.decodeIndefiniteStringChunks(expected: Major, decodeChunk: () -> Unit) {
+    readByte() // discard indefinite-length head
+    while (!nextValueIsIndefiniteBreak) {
+        val major = peekMajor(this)
+        if (major != expected) {
+            throw DeserializationException("Unexpected major type $major in indefinite-length CBOR string, expected $expected")
+        }
+        decodeChunk()
+    }
+    IndefiniteBreak.decode(this)
+}
 
-    val sb = StringBuilder()
-    list.forEach {
-        sb.append((it as TextString).value)
+internal fun decodeTextStringValue(buffer: SdkBufferedSource, depth: Int = 0): String {
+    DeserializationRecursionException.assertDepth(depth)
+
+    if (peekMinorByte(buffer) != Minor.INDEFINITE.value) {
+        val length = decodeArgument(buffer).toLong()
+        return buffer.readByteArray(length).decodeToString()
     }
 
-    sb.toString()
-} else {
-    val length = decodeArgument(buffer).toLong()
-    buffer.readByteArray(length).decodeToString()
+    val sb = StringBuilder()
+    buffer.decodeIndefiniteStringChunks(Major.STRING) { sb.append(decodeTextStringValue(buffer, depth + 1)) }
+    return sb.toString()
 }
 
 /**
@@ -58,18 +71,17 @@ internal fun SdkBufferedSink.writeByteString(value: ByteArray) {
     write(value)
 }
 
-internal fun decodeByteStringValue(buffer: SdkBufferedSource, depth: Int = 0): ByteArray = if (peekMinorByte(buffer) == Minor.INDEFINITE.value) {
-    val list = decodeIndefiniteListValue(buffer, depth)
+internal fun decodeByteStringValue(buffer: SdkBufferedSource, depth: Int = 0): ByteArray {
+    DeserializationRecursionException.assertDepth(depth)
 
-    val tempBuffer = SdkBuffer()
-    list.forEach {
-        tempBuffer.write((it as ByteString).value)
+    if (peekMinorByte(buffer) != Minor.INDEFINITE.value) {
+        val length = decodeArgument(buffer).toLong()
+        return buffer.readByteArray(length)
     }
 
-    tempBuffer.readByteArray()
-} else {
-    val length = decodeArgument(buffer).toLong()
-    buffer.readByteArray(length)
+    val tempBuffer = SdkBuffer()
+    buffer.decodeIndefiniteStringChunks(Major.BYTE_STRING) { tempBuffer.write(decodeByteStringValue(buffer, depth + 1)) }
+    return tempBuffer.readByteArray()
 }
 
 /**

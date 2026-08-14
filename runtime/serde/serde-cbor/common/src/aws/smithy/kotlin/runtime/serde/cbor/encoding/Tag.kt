@@ -9,6 +9,7 @@ import aws.smithy.kotlin.runtime.content.BigInteger
 import aws.smithy.kotlin.runtime.io.SdkBufferedSink
 import aws.smithy.kotlin.runtime.io.SdkBufferedSource
 import aws.smithy.kotlin.runtime.serde.DeserializationException
+import aws.smithy.kotlin.runtime.serde.DeserializationRecursionException
 import aws.smithy.kotlin.runtime.serde.cbor.writeArgument
 import aws.smithy.kotlin.runtime.time.Instant
 import aws.smithy.kotlin.runtime.time.epochMilliseconds
@@ -195,26 +196,26 @@ internal fun SdkBufferedSink.writeDecimalFraction(value: BigDecimal) {
 }
 
 internal fun decodeDecimalFraction(buffer: SdkBufferedSource, depth: Int = 0): BigDecimal {
-    val list = decodeListValue(buffer, depth)
-    check(list.size == 2) { "Expected array of length 2 for decimal fraction, got ${list.size}" }
+    DeserializationRecursionException.assertDepth(depth)
 
-    val (exponentValue, mantissaValue) = list
+    val length = decodeArgument(buffer).toLong()
+    check(length == 2L) { "Expected array of length 2 for decimal fraction, got $length" }
 
-    val mantissa = when (mantissaValue) {
-        is UInt -> BigInteger(mantissaValue.value.toString())
-        is NegInt -> BigInteger("-" + mantissaValue.value.toString())
-        is Tag -> when (mantissaValue.value) {
-            is NegBigNum -> mantissaValue.value.value
-            is BigNum -> mantissaValue.value.value
-            else -> throw DeserializationException("Expected BigNum or NegBigNum for CBOR tagged decimal fraction mantissa, got ${mantissaValue.id}")
-        }
-        else -> throw DeserializationException("Expected UInt, NegInt, or Tag for CBOR decimal fraction mantissa, got $mantissaValue")
+    val cborExponent = when (val major = peekMajor(buffer)) {
+        Major.U_INT -> decodeUInt(buffer).toInt()
+        Major.NEG_INT -> -decodeNegInt(buffer).toInt()
+        else -> throw DeserializationException("Expected integer for CBOR decimal fraction exponent value, got $major.")
     }
 
-    val cborExponent = when (exponentValue) {
-        is UInt -> exponentValue.value.toInt()
-        is NegInt -> -exponentValue.value.toInt()
-        else -> throw DeserializationException("Expected integer for CBOR decimal fraction exponent value, got $exponentValue.")
+    val mantissa = when (val major = peekMajor(buffer)) {
+        Major.U_INT -> BigInteger(decodeUInt(buffer).toString())
+        Major.NEG_INT -> BigInteger("-" + decodeNegInt(buffer).toString())
+        Major.TAG -> when (val id = decodeArgument(buffer)) {
+            TagId.BIG_NUM.value -> decodeBigNum(buffer, depth + 1)
+            TagId.NEG_BIG_NUM.value -> decodeNegBigNum(buffer, depth + 1)
+            else -> throw DeserializationException("Expected BigNum or NegBigNum tag for CBOR decimal fraction mantissa, got tag $id")
+        }
+        else -> throw DeserializationException("Expected integer or bignum for CBOR decimal fraction mantissa, got major type $major")
     }
 
     val mantissaString = mantissa.toString()
