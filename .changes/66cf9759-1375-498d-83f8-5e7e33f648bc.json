@@ -1,0 +1,6 @@
+{
+  "id": "66cf9759-1375-498d-83f8-5e7e33f648bc",
+  "type": "misc",
+  "description": "Optimize CBOR text string decoding by reading UTF-8 directly from the buffer instead of copying into an intermediate byte array",
+  "module": "serde-cbor"
+}
