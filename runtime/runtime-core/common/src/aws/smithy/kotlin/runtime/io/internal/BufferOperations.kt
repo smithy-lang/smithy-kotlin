@@ -11,12 +11,22 @@ import aws.smithy.kotlin.runtime.InternalApi
 import aws.smithy.kotlin.runtime.io.*
 
 /**
- * Read the head (next-to-be-read) byte of this buffer **without consuming it**.
+ * Read the next byte of this source **without consuming it**.
+ *
+ * For both [SdkBuffer] and [BufferedSourceAdapter] this peeks at the byte in place, avoiding the
+ * allocation of a new peek source that a generic `peek().readByte()` would incur.
  */
 @InternalApi
-public fun SdkBuffer.headByte(): Byte = wrapOkio {
-    inner.require(1L)
-    inner[0L]
+public fun SdkBufferedSource.peekByte(): Byte = when (this) {
+    is SdkBuffer -> wrapOkio {
+        inner.require(1L)
+        inner[0L]
+    }
+    is AbstractBufferedSourceAdapter -> wrapOkio {
+        delegate.require(1L)
+        delegate.buffer[0L]
+    }
+    else -> peek().readByte()
 }
 
 /**
