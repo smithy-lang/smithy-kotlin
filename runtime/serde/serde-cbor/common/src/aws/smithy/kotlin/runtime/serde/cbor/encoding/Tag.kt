@@ -9,7 +9,7 @@ import aws.smithy.kotlin.runtime.content.BigInteger
 import aws.smithy.kotlin.runtime.io.SdkBufferedSink
 import aws.smithy.kotlin.runtime.io.SdkBufferedSource
 import aws.smithy.kotlin.runtime.serde.DeserializationException
-import aws.smithy.kotlin.runtime.serde.cbor.encodeArgument
+import aws.smithy.kotlin.runtime.serde.cbor.writeArgument
 import aws.smithy.kotlin.runtime.time.Instant
 import aws.smithy.kotlin.runtime.time.epochMilliseconds
 import aws.smithy.kotlin.runtime.time.fromEpochMilliseconds
@@ -31,7 +31,7 @@ internal enum class TagId(val value: ULong) {
  */
 internal class Tag(val id: ULong, val value: Value) : Value {
     override fun encode(into: SdkBufferedSink) {
-        into.write(encodeArgument(Major.TAG, id))
+        into.writeArgument(Major.TAG, id)
         value.encode(into)
     }
 

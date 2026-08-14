@@ -1,0 +1,6 @@
+{
+  "id": "bf618eda-f564-4ddb-a165-9e292e76151f",
+  "type": "feature",
+  "description": "Optimize CBOR serialization by writing values directly to the output buffer instead of building intermediate byte arrays",
+  "module": "serde-cbor"
+}
