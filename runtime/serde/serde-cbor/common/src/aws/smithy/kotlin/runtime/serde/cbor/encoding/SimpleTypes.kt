@@ -13,22 +13,23 @@ import aws.smithy.kotlin.runtime.serde.cbor.encodeMajorMinor
  * @param value the [kotlin.Boolean] this CBOR boolean represents.
  */
 internal class Boolean(val value: kotlin.Boolean) : Value {
-    override fun encode(into: SdkBufferedSink) = into.writeByte(
-        when (value) {
-            false -> encodeMajorMinor(Major.TYPE_7, Minor.FALSE)
-            true -> encodeMajorMinor(Major.TYPE_7, Minor.TRUE)
-        },
-    )
+    override fun encode(into: SdkBufferedSink) = into.writeBoolean(value)
 
     internal companion object {
-        internal fun decode(buffer: SdkBufferedSource): Boolean = when (val minor = peekMinorByte(buffer)) {
-            Minor.FALSE.value -> Boolean(false)
-            Minor.TRUE.value -> Boolean(true)
-            else -> throw DeserializationException("Unknown minor argument $minor for Boolean")
-        }.also {
-            buffer.readByte()
-        }
+        internal fun decode(buffer: SdkBufferedSource): Boolean = Boolean(decodeBooleanValue(buffer))
     }
+}
+
+internal fun SdkBufferedSink.writeBoolean(value: kotlin.Boolean) = writeByte(
+    encodeMajorMinor(Major.TYPE_7, if (value) Minor.TRUE else Minor.FALSE),
+)
+
+internal fun decodeBooleanValue(buffer: SdkBufferedSource): kotlin.Boolean = when (val minor = peekMinorByte(buffer)) {
+    Minor.FALSE.value -> false
+    Minor.TRUE.value -> true
+    else -> throw DeserializationException("Unknown minor argument $minor for Boolean")
+}.also {
+    buffer.readByte()
 }
 
 /**

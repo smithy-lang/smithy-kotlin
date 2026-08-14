@@ -14,27 +14,31 @@ import aws.smithy.kotlin.runtime.serde.cbor.writeArgument
  * @param value The [TextString] which this CBOR string represents.
  */
 internal class TextString(val value: String) : Value {
-    override fun encode(into: SdkBufferedSink) {
-        val bytes = value.encodeToByteArray()
-        into.writeArgument(Major.STRING, bytes.size.toULong())
-        into.write(bytes)
-    }
+    override fun encode(into: SdkBufferedSink) = into.writeTextString(value)
 
     internal companion object {
-        fun decode(buffer: SdkBufferedSource, depth: Int = 0): TextString = if (peekMinorByte(buffer) == Minor.INDEFINITE.value) {
-            val list = IndefiniteList.decode(buffer, depth).value
-
-            val sb = StringBuilder()
-            list.forEach {
-                sb.append((it as TextString).value)
-            }
-
-            TextString(sb.toString())
-        } else {
-            val length = decodeArgument(buffer).toLong()
-            TextString(buffer.readByteArray(length).decodeToString())
-        }
+        fun decode(buffer: SdkBufferedSource, depth: Int = 0): TextString = TextString(decodeTextStringValue(buffer, depth))
     }
+}
+
+internal fun SdkBufferedSink.writeTextString(value: String) {
+    val bytes = value.encodeToByteArray()
+    writeArgument(Major.STRING, bytes.size.toULong())
+    write(bytes)
+}
+
+internal fun decodeTextStringValue(buffer: SdkBufferedSource, depth: Int = 0): String = if (peekMinorByte(buffer) == Minor.INDEFINITE.value) {
+    val list = decodeIndefiniteListValue(buffer, depth)
+
+    val sb = StringBuilder()
+    list.forEach {
+        sb.append((it as TextString).value)
+    }
+
+    sb.toString()
+} else {
+    val length = decodeArgument(buffer).toLong()
+    buffer.readByteArray(length).decodeToString()
 }
 
 /**
@@ -42,26 +46,30 @@ internal class TextString(val value: String) : Value {
  * @param value The [ByteArray] which this CBOR byte string represents.
  */
 internal class ByteString(val value: ByteArray) : Value {
-    override fun encode(into: SdkBufferedSink) {
-        into.writeArgument(Major.BYTE_STRING, value.size.toULong())
-        into.write(value)
-    }
+    override fun encode(into: SdkBufferedSink) = into.writeByteString(value)
 
     internal companion object {
-        fun decode(buffer: SdkBufferedSource, depth: Int = 0): ByteString = if (peekMinorByte(buffer) == Minor.INDEFINITE.value) {
-            val list = IndefiniteList.decode(buffer, depth).value
-
-            val tempBuffer = SdkBuffer()
-            list.forEach {
-                tempBuffer.write((it as ByteString).value)
-            }
-
-            ByteString(tempBuffer.readByteArray())
-        } else {
-            val length = decodeArgument(buffer).toLong()
-            ByteString(buffer.readByteArray(length))
-        }
+        fun decode(buffer: SdkBufferedSource, depth: Int = 0): ByteString = ByteString(decodeByteStringValue(buffer, depth))
     }
+}
+
+internal fun SdkBufferedSink.writeByteString(value: ByteArray) {
+    writeArgument(Major.BYTE_STRING, value.size.toULong())
+    write(value)
+}
+
+internal fun decodeByteStringValue(buffer: SdkBufferedSource, depth: Int = 0): ByteArray = if (peekMinorByte(buffer) == Minor.INDEFINITE.value) {
+    val list = decodeIndefiniteListValue(buffer, depth)
+
+    val tempBuffer = SdkBuffer()
+    list.forEach {
+        tempBuffer.write((it as ByteString).value)
+    }
+
+    tempBuffer.readByteArray()
+} else {
+    val length = decodeArgument(buffer).toLong()
+    buffer.readByteArray(length)
 }
 
 /**
@@ -75,17 +83,20 @@ internal class List(val value: kotlin.collections.List<Value>) : Value {
     }
 
     internal companion object {
-        internal fun decode(buffer: SdkBufferedSource, depth: Int = 0): List {
-            val length = decodeArgument(buffer).toLong()
-            val valuesList = mutableListOf<Value>()
-
-            for (i in 0 until length) {
-                valuesList.add(Value.decode(buffer, depth + 1))
-            }
-
-            return List(valuesList)
-        }
+        internal fun decode(buffer: SdkBufferedSource, depth: Int = 0): List = List(decodeListValue(buffer, depth))
     }
+}
+
+// Decode a CBOR definite-length list's elements, returning the list of [Value]s directly without allocating a [List] wrapper.
+internal fun decodeListValue(buffer: SdkBufferedSource, depth: Int = 0): kotlin.collections.List<Value> {
+    val length = decodeArgument(buffer).toLong()
+    val valuesList = mutableListOf<Value>()
+
+    for (i in 0 until length) {
+        valuesList.add(Value.decode(buffer, depth + 1))
+    }
+
+    return valuesList
 }
 
 /**
@@ -108,19 +119,23 @@ internal class IndefiniteList(val value: Collection<Value> = listOf()) : Value {
     }
 
     internal companion object {
-        internal fun decode(buffer: SdkBufferedSource, depth: Int = 0): IndefiniteList {
-            buffer.readByte() // discard head
-
-            val list = mutableListOf<Value>()
-
-            while (!buffer.nextValueIsIndefiniteBreak) {
-                list.add(Value.decode(buffer, depth + 1))
-            }
-
-            IndefiniteBreak.decode(buffer)
-            return IndefiniteList(list)
-        }
+        internal fun decode(buffer: SdkBufferedSource, depth: Int = 0): IndefiniteList = IndefiniteList(decodeIndefiniteListValue(buffer, depth))
     }
+}
+
+// Decode a CBOR indefinite-length list's elements, returning the list of [Value]s directly without allocating an
+// [IndefiniteList] wrapper.
+internal fun decodeIndefiniteListValue(buffer: SdkBufferedSource, depth: Int = 0): kotlin.collections.List<Value> {
+    buffer.readByte() // discard head
+
+    val list = mutableListOf<Value>()
+
+    while (!buffer.nextValueIsIndefiniteBreak) {
+        list.add(Value.decode(buffer, depth + 1))
+    }
+
+    IndefiniteBreak.decode(buffer)
+    return list
 }
 
 /**

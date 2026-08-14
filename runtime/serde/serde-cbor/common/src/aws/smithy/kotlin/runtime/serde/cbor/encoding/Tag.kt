@@ -15,6 +15,10 @@ import aws.smithy.kotlin.runtime.time.epochMilliseconds
 import aws.smithy.kotlin.runtime.time.fromEpochMilliseconds
 import kotlin.math.absoluteValue
 
+private val NEGATIVE_ONE = BigInteger("-1")
+private val MIN_LONG_AS_BIG_INTEGER = BigInteger(Long.MIN_VALUE.toString())
+private val MAX_LONG_AS_BIG_INTEGER = BigInteger(Long.MAX_VALUE.toString())
+
 internal enum class TagId(val value: ULong) {
     TIMESTAMP(1uL),
     BIG_NUM(2uL),
@@ -59,36 +63,41 @@ internal class Tag(val id: ULong, val value: Value) : Value {
  * @param value the [Instant] that this CBOR timestamp represents
  */
 internal class Timestamp(val value: Instant) : Value {
-    override fun encode(into: SdkBufferedSink) = Tag(1u, Float64(value.epochMilliseconds / 1000.toDouble())).encode(into)
+    override fun encode(into: SdkBufferedSink) = into.writeTimestamp(value)
 
     internal companion object {
-        internal fun decode(buffer: SdkBufferedSource): Timestamp {
-            val major = peekMajor(buffer)
-            val minor = peekMinorByte(buffer)
+        internal fun decode(buffer: SdkBufferedSource): Timestamp = Timestamp(decodeInstant(buffer))
+    }
+}
 
-            val instant: Instant = when (major) {
-                Major.U_INT -> {
-                    val timestamp = UInt.decode(buffer).value.toLong()
-                    Instant.fromEpochSeconds(timestamp)
-                }
-                Major.NEG_INT -> {
-                    val negativeTimestamp: Long = -(NegInt.decode(buffer).value.toLong())
-                    Instant.fromEpochSeconds(negativeTimestamp)
-                }
-                Major.TYPE_7 -> {
-                    val doubleTimestamp: Double = when (minor) {
-                        Minor.FLOAT16.value -> Float16.decode(buffer).value.toDouble()
-                        Minor.FLOAT32.value -> Float32.decode(buffer).value.toDouble()
-                        Minor.FLOAT64.value -> Float64.decode(buffer).value
-                        else -> throw DeserializationException("Unexpected minor type $minor for CBOR floating point timestamp, expected ${Minor.FLOAT16}, ${Minor.FLOAT32}, or ${Minor.FLOAT64}.")
-                    }
-                    Instant.fromEpochMilliseconds((doubleTimestamp * 1000).toLong())
-                }
-                else -> throw DeserializationException("Unexpected major type $major for CBOR Timestamp. Expected ${Major.U_INT}, ${Major.NEG_INT}, or ${Major.TYPE_7}.")
-            }
+internal fun SdkBufferedSink.writeTimestamp(value: Instant) {
+    writeArgument(Major.TAG, TagId.TIMESTAMP.value)
+    writeFloat64(value.epochMilliseconds / 1000.toDouble())
+}
 
-            return Timestamp(instant)
+internal fun decodeInstant(buffer: SdkBufferedSource): Instant {
+    val major = peekMajor(buffer)
+    val minor = peekMinorByte(buffer)
+
+    return when (major) {
+        Major.U_INT -> {
+            val timestamp = decodeUInt(buffer).toLong()
+            Instant.fromEpochSeconds(timestamp)
         }
+        Major.NEG_INT -> {
+            val negativeTimestamp: Long = -(decodeNegInt(buffer).toLong())
+            Instant.fromEpochSeconds(negativeTimestamp)
+        }
+        Major.TYPE_7 -> {
+            val doubleTimestamp: Double = when (minor) {
+                Minor.FLOAT16.value -> decodeFloat16(buffer).toDouble()
+                Minor.FLOAT32.value -> decodeFloat32(buffer).toDouble()
+                Minor.FLOAT64.value -> decodeFloat64(buffer)
+                else -> throw DeserializationException("Unexpected minor type $minor for CBOR floating point timestamp, expected ${Minor.FLOAT16}, ${Minor.FLOAT32}, or ${Minor.FLOAT64}.")
+            }
+            Instant.fromEpochMilliseconds((doubleTimestamp * 1000).toLong())
+        }
+        else -> throw DeserializationException("Unexpected major type $major for CBOR Timestamp. Expected ${Major.U_INT}, ${Major.NEG_INT}, or ${Major.TYPE_7}.")
     }
 }
 
@@ -97,40 +106,49 @@ internal class Timestamp(val value: Instant) : Value {
  * @param value the [BigInteger] that this CBOR bignum represents.
  */
 internal class BigNum(val value: BigInteger) : Value {
-    override fun encode(into: SdkBufferedSink) = Tag(2u, ByteString(value.toByteArray())).encode(into)
+    override fun encode(into: SdkBufferedSink) = into.writeBigNum(value)
 
     internal companion object {
-        internal fun decode(buffer: SdkBufferedSource, depth: Int = 0): BigNum {
-            val bytes = ByteString.decode(buffer, depth).value
-            return BigNum(BigInteger(bytes))
-        }
+        internal fun decode(buffer: SdkBufferedSource, depth: Int = 0): BigNum = BigNum(decodeBigNum(buffer, depth))
     }
 }
+
+internal fun SdkBufferedSink.writeBigNum(value: BigInteger) {
+    writeArgument(Major.TAG, TagId.BIG_NUM.value)
+    writeByteString(value.toByteArray())
+}
+
+internal fun decodeBigNum(buffer: SdkBufferedSource, depth: Int = 0): BigInteger = BigInteger(decodeByteStringValue(buffer, depth))
 
 /**
  * Represents a CBOR negative bignum, a [Tag] with ID 3.
  * @param value the [BigInteger] that this negative CBOR bignum represents.
  */
 internal class NegBigNum(val value: BigInteger) : Value {
-    override fun encode(into: SdkBufferedSink) {
-        val magnitude = BigInteger("-1") - value
-        val twosComplement = magnitude.toByteArray()
-        val bytes = if (twosComplement.size > 1 && twosComplement[0] == 0.toByte()) {
-            twosComplement.copyOfRange(1, twosComplement.size)
-        } else {
-            twosComplement
-        }
-        Tag(3u, ByteString(bytes)).encode(into)
-    }
+    override fun encode(into: SdkBufferedSink) = into.writeNegBigNum(value)
 
     internal companion object {
-        internal fun decode(buffer: SdkBufferedSource, depth: Int = 0): NegBigNum {
-            val bytes = ByteString.decode(buffer, depth).value
-
-            val magnitude = BigInteger(byteArrayOf(0) + bytes)
-            return NegBigNum(BigInteger("-1") - magnitude)
-        }
+        internal fun decode(buffer: SdkBufferedSource, depth: Int = 0): NegBigNum = NegBigNum(decodeNegBigNum(buffer, depth))
     }
+}
+
+internal fun SdkBufferedSink.writeNegBigNum(value: BigInteger) {
+    val magnitude = NEGATIVE_ONE - value
+    val twosComplement = magnitude.toByteArray()
+    val bytes = if (twosComplement.size > 1 && twosComplement[0] == 0.toByte()) {
+        twosComplement.copyOfRange(1, twosComplement.size)
+    } else {
+        twosComplement
+    }
+    writeArgument(Major.TAG, TagId.NEG_BIG_NUM.value)
+    writeByteString(bytes)
+}
+
+internal fun decodeNegBigNum(buffer: SdkBufferedSource, depth: Int = 0): BigInteger {
+    val bytes = decodeByteStringValue(buffer, depth)
+
+    val magnitude = BigInteger(byteArrayOf(0) + bytes)
+    return NEGATIVE_ONE - magnitude
 }
 
 /**
@@ -138,63 +156,72 @@ internal class NegBigNum(val value: BigInteger) : Value {
  * @param value the [BigDecimal] that this decimal fraction represents.
  */
 internal class DecimalFraction(val value: BigDecimal) : Value {
-    override fun encode(into: SdkBufferedSink) {
-        val mantissaDigits = value.mantissa.toString().trimStart('-').length
-        val cborExponent = value.exponent - (mantissaDigits - 1)
-
-        val exponent = if (cborExponent < 0) {
-            NegInt(cborExponent.absoluteValue.toULong())
-        } else {
-            UInt(cborExponent.toULong())
-        }
-
-        val mantissa = if (value.mantissa > BigInteger(Long.MIN_VALUE.toString()) && value.mantissa < BigInteger(Long.MAX_VALUE.toString())) {
-            if (value.mantissa.toString().startsWith("-")) {
-                NegInt(value.mantissa.toLong().absoluteValue.toULong())
-            } else {
-                UInt(value.mantissa.toLong().toULong())
-            }
-        } else {
-            if (value.mantissa.toString().startsWith("-")) {
-                NegBigNum(value.mantissa)
-            } else {
-                BigNum(value.mantissa)
-            }
-        }
-
-        Tag(TagId.DECIMAL_FRACTION.value, List(listOf(exponent, mantissa))).encode(into)
-    }
+    override fun encode(into: SdkBufferedSink) = into.writeDecimalFraction(value)
 
     internal companion object {
-        internal fun decode(buffer: SdkBufferedSource, depth: Int = 0): DecimalFraction {
-            val list = List.decode(buffer, depth).value
-            check(list.size == 2) { "Expected array of length 2 for decimal fraction, got ${list.size}" }
+        internal fun decode(buffer: SdkBufferedSource, depth: Int = 0): DecimalFraction = DecimalFraction(decodeDecimalFraction(buffer, depth))
+    }
+}
 
-            val (exponentValue, mantissaValue) = list
+internal fun SdkBufferedSink.writeDecimalFraction(value: BigDecimal) {
+    val mantissaString = value.mantissa.toString()
+    val isNegative = mantissaString.startsWith('-')
+    val mantissaDigits = if (isNegative) mantissaString.length - 1 else mantissaString.length
+    val cborExponent = value.exponent - (mantissaDigits - 1)
 
-            val mantissa = when (mantissaValue) {
-                is UInt -> BigInteger(mantissaValue.value.toString())
-                is NegInt -> BigInteger("-" + mantissaValue.value.toString())
-                is Tag -> when (mantissaValue.value) {
-                    is NegBigNum -> mantissaValue.value.value
-                    is BigNum -> mantissaValue.value.value
-                    else -> throw DeserializationException("Expected BigNum or NegBigNum for CBOR tagged decimal fraction mantissa, got ${mantissaValue.id}")
-                }
-                else -> throw DeserializationException("Expected UInt, NegInt, or Tag for CBOR decimal fraction mantissa, got $mantissaValue")
-            }
+    writeArgument(Major.TAG, TagId.DECIMAL_FRACTION.value)
+    writeArgument(Major.LIST, 2uL)
 
-            val cborExponent = when (exponentValue) {
-                is UInt -> exponentValue.value.toInt()
-                is NegInt -> -exponentValue.value.toInt()
-                else -> throw DeserializationException("Expected integer for CBOR decimal fraction exponent value, got $exponentValue.")
-            }
+    if (cborExponent < 0) {
+        writeNegInt(cborExponent.absoluteValue.toULong())
+    } else {
+        writeUInt(cborExponent.toULong())
+    }
 
-            val mantissaDigits = mantissa.toString().trimStart('-').length
-            return try {
-                DecimalFraction(BigDecimal(mantissa, cborExponent + (mantissaDigits - 1)))
-            } catch (iae: IllegalArgumentException) {
-                throw DeserializationException("Cannot deserialize unsupported BigDecimal value", iae)
-            }
+    if (value.mantissa > MIN_LONG_AS_BIG_INTEGER && value.mantissa < MAX_LONG_AS_BIG_INTEGER) {
+        val mantissa = value.mantissa.toLong()
+        if (isNegative) {
+            writeNegInt(mantissa.absoluteValue.toULong())
+        } else {
+            writeUInt(mantissa.toULong())
         }
+    } else {
+        if (isNegative) {
+            writeNegBigNum(value.mantissa)
+        } else {
+            writeBigNum(value.mantissa)
+        }
+    }
+}
+
+internal fun decodeDecimalFraction(buffer: SdkBufferedSource, depth: Int = 0): BigDecimal {
+    val list = decodeListValue(buffer, depth)
+    check(list.size == 2) { "Expected array of length 2 for decimal fraction, got ${list.size}" }
+
+    val (exponentValue, mantissaValue) = list
+
+    val mantissa = when (mantissaValue) {
+        is UInt -> BigInteger(mantissaValue.value.toString())
+        is NegInt -> BigInteger("-" + mantissaValue.value.toString())
+        is Tag -> when (mantissaValue.value) {
+            is NegBigNum -> mantissaValue.value.value
+            is BigNum -> mantissaValue.value.value
+            else -> throw DeserializationException("Expected BigNum or NegBigNum for CBOR tagged decimal fraction mantissa, got ${mantissaValue.id}")
+        }
+        else -> throw DeserializationException("Expected UInt, NegInt, or Tag for CBOR decimal fraction mantissa, got $mantissaValue")
+    }
+
+    val cborExponent = when (exponentValue) {
+        is UInt -> exponentValue.value.toInt()
+        is NegInt -> -exponentValue.value.toInt()
+        else -> throw DeserializationException("Expected integer for CBOR decimal fraction exponent value, got $exponentValue.")
+    }
+
+    val mantissaString = mantissa.toString()
+    val mantissaDigits = if (mantissaString.startsWith('-')) mantissaString.length - 1 else mantissaString.length
+    return try {
+        BigDecimal(mantissa, cborExponent + (mantissaDigits - 1))
+    } catch (iae: IllegalArgumentException) {
+        throw DeserializationException("Cannot deserialize unsupported BigDecimal value", iae)
     }
 }
