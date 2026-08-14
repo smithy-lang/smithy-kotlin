@@ -1171,7 +1171,7 @@ public final class aws/smithy/kotlin/runtime/io/SdkSourceKt {
 }
 
 public final class aws/smithy/kotlin/runtime/io/internal/BufferOperationsKt {
-	public static final fun headByte (Laws/smithy/kotlin/runtime/io/SdkBuffer;)B
+	public static final fun peekByte (Laws/smithy/kotlin/runtime/io/SdkBufferedSource;)B
 }
 
 public final class aws/smithy/kotlin/runtime/io/internal/ConvertKt {
