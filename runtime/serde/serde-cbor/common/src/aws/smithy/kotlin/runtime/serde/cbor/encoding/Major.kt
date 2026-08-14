@@ -18,18 +18,10 @@ internal enum class Major(val value: UByte) {
     MAP(5u),
     TAG(6u),
     TYPE_7(7u),
-    ;
-
-    companion object {
-        fun fromValue(value: UByte): Major = entries.firstOrNull { it.value == value }
-            ?: throw IllegalArgumentException("$value is not a valid Major value.")
-    }
 }
 
-private val MAJOR_BYTE_MASK: UByte = 0b111u
+// Extract the [Major] type from an already-read head byte. The high 3 bits always fall in 0..7, which
+// map directly to enum ordinals, so we index [Major.entries] and avoid a per-call linear scan.
+internal fun majorOf(head: UByte): Major = Major.entries[head.toInt() shr 5]
 
-internal fun peekMajor(buffer: SdkBufferedSource): Major {
-    val byte = buffer.peek().readByte().toUByte()
-    val major = ((byte.toUInt() shr 5).toUByte()) and MAJOR_BYTE_MASK
-    return Major.fromValue(major)
-}
+internal fun peekMajor(buffer: SdkBufferedSource): Major = majorOf(peekHead(buffer))

@@ -31,13 +31,7 @@ internal class TextString(val value: String) : Value {
             TextString(sb.toString())
         } else {
             val length = decodeArgument(buffer).toInt()
-
-            val bytes = SdkBuffer().use {
-                buffer.readFully(it, length.toLong())
-                it.readByteArray()
-            }
-
-            TextString(bytes.decodeToString())
+            TextString(buffer.readByteArray(length.toLong()).decodeToString())
         }
     }
 }
@@ -64,13 +58,7 @@ internal class ByteString(val value: ByteArray) : Value {
             ByteString(tempBuffer.readByteArray())
         } else {
             val length = decodeArgument(buffer).toInt()
-
-            val bytes = SdkBuffer().use {
-                buffer.readFully(it, length.toLong())
-                it.readByteArray()
-            }
-
-            ByteString(bytes)
+            ByteString(buffer.readByteArray(length.toLong()))
         }
     }
 }
