@@ -54,16 +54,6 @@ abstract class AbstractSerdeDescriptorGenerator(
     protected val memberShapes = memberShapes ?: objectShape.members()
     protected val writer = ctx.writer
 
-    /**
-     * Modifier prefix applied to the generated `val` declarations for the field/object descriptors.
-     *
-     * Defaults to an empty string so descriptors are rendered as function-local `val`s (unchanged behavior for
-     * JSON/XML/FormUrl). Sub-classes that hoist the descriptor block to file/top-level scope (e.g. CBOR) override
-     * this with `"private "` so the top-level properties remain file-private and do not collide across files in the
-     * same package.
-     */
-    protected open val descriptorModifier: String = ""
-
     override fun render() {
         if (memberShapes.isEmpty()) return
 
@@ -92,7 +82,9 @@ abstract class AbstractSerdeDescriptorGenerator(
                 renderContainerFieldDescriptors(member, nestedMember)
             }
         }
-        writer.withBlock("${descriptorModifier}val OBJ_DESCRIPTOR = SdkObjectDescriptor.build {", "}") {
+        // `private` (file-scoped): descriptors are top-level declarations that share the package namespace, so they
+        // must be file-private to avoid collisions across serde files.
+        writer.withBlock("private val OBJ_DESCRIPTOR = SdkObjectDescriptor.build {", "}") {
             val objTraits = getObjectDescriptorTraits()
             objTraits.forEach { trait ->
                 writer.addImport(trait.symbol)
@@ -140,11 +132,11 @@ abstract class AbstractSerdeDescriptorGenerator(
 
         val traits = getFieldDescriptorTraits(member, targetShape, nameSuffix)
         if (traits.isEmpty()) {
-            writer.write("${descriptorModifier}val #L = SdkFieldDescriptor(#L)", descriptorName, serialKind)
+            writer.write("private val #L = SdkFieldDescriptor(#L)", descriptorName, serialKind)
         } else {
             traits.forEach { trait -> writer.addImport(trait.symbol) }
             writer.write(
-                "${descriptorModifier}val #L = SdkFieldDescriptor(#L, #L)",
+                "private val #L = SdkFieldDescriptor(#L, #L)",
                 descriptorName,
                 serialKind,
                 traits.joinToString(separator = ", "),

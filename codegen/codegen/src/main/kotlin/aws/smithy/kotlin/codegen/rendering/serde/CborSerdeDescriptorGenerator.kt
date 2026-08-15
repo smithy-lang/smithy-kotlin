@@ -22,12 +22,6 @@ class CborSerdeDescriptorGenerator(
 
     private val serviceShape = ctx.model.expectShape<ServiceShape>(ctx.settings.service)
 
-    // The descriptor block is hoisted to file/top-level scope (see CborSerializerGenerator/CborParserGenerator) so
-    // it is constructed once per class-load and reused across all (de)serialization calls. Rendering the descriptors
-    // as file-private top-level properties keeps them from colliding with identically named descriptors in other
-    // serde files that share the same package.
-    override val descriptorModifier: String = "private "
-
     override fun getObjectDescriptorTraits(): List<SdkFieldDescriptorTrait> {
         val objTraits = mutableListOf<SdkFieldDescriptorTrait>()
         val serialName = objectShape.defaultName(serviceShape)

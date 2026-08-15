@@ -74,33 +74,29 @@ open class HttpProtocolUnitTestRequestGenerator protected constructor(builder: B
         val deserializeFnName = "deserialize" + StringUtils.capitalize(symbol.name) + "Document"
         return shape.documentDeserializer(ctx.settings, symbol) { blockWriter ->
             val renderingCtx = RenderingContext(blockWriter, shape, model, symbolProvider, ctx.settings)
-            val descriptorGenerator = CborSerdeDescriptorGenerator(renderingCtx)
+            // Hoist descriptors to file scope so they are constructed once instead of on every invocation.
+            CborSerdeDescriptorGenerator(renderingCtx).render()
 
-            // Hoist the descriptor block to file/top-level scope so it is constructed once per class-load and reused
-            // across every deserialize call, rather than being rebuilt on each invocation. This mirrors the hoist in
-            // CborParserGenerator so both possible producers of this document deserializer emit identical output.
-            descriptorGenerator.render()
+            val deserializeDocumentGenerator = when (shape) {
+                is StructureShape -> DeserializeStructGenerator(
+                    ctx,
+                    shape.members().toMutableList(),
+                    blockWriter,
+                    TimestampFormatTrait.Format.EPOCH_SECONDS,
+                )
+
+                is UnionShape -> DeserializeUnionGenerator(
+                    ctx,
+                    symbol.name,
+                    shape.members().toMutableList(),
+                    blockWriter,
+                    TimestampFormatTrait.Format.EPOCH_SECONDS,
+                )
+
+                else -> throw CodegenException("Unexpected shape type ${shape.type}, expected a structure or union")
+            }
 
             blockWriter.withBlock("internal fun #L(deserializer: #T): #T {", "}", deserializeFnName, RuntimeTypes.Serde.Deserializer, symbol) {
-                val deserializeDocumentGenerator = when (shape) {
-                    is StructureShape -> DeserializeStructGenerator(
-                        ctx,
-                        shape.members().toMutableList(),
-                        blockWriter,
-                        TimestampFormatTrait.Format.EPOCH_SECONDS,
-                    )
-
-                    is UnionShape -> DeserializeUnionGenerator(
-                        ctx,
-                        symbol.name,
-                        shape.members().toMutableList(),
-                        blockWriter,
-                        TimestampFormatTrait.Format.EPOCH_SECONDS,
-                    )
-
-                    else -> throw CodegenException("Unexpected shape type ${shape.type}, expected a structure or union")
-                }
-
                 if (shape is UnionShape) {
                     blockWriter.write("var value: #T? = null", symbol)
                 } else {
