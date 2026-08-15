@@ -36,9 +36,35 @@ public class CborSerializer :
     StructSerializer {
     private val buffer = SdkBuffer()
 
-    // Tracks, for each currently-open container, whether it was written with an indefinite length and therefore must
-    // be terminated with a "break" byte. Definite-length containers push `false` and write no break on close.
-    private val indefiniteContainers = ArrayDeque<Boolean>()
+    // Number of containers currently open (each begin* not yet matched by an end*). Used to identify which open
+    // container an [openIndefinite] entry refers to so its matching close can emit the terminating "break" byte.
+    private var openContainers = 0
+
+    // A primitive stack of the [openContainers] depths at which indefinite-length containers are currently open.
+    // Definite-length containers (the common, hot path) never touch this stack and never allocate: their close is a
+    // no-op that writes no break. Only genuine indefinite containers (e.g. structs) record their depth here so that
+    // their matching close can emit the terminating "break" byte. Grown on demand; reused for the serializer lifetime.
+    private var indefiniteDepths = IntArray(8)
+    private var indefiniteDepthCount = 0
+
+    // Record that the just-opened container (now at depth [openContainers]) is indefinite-length.
+    private fun pushIndefinite() {
+        openContainers++
+        if (indefiniteDepthCount == indefiniteDepths.size) {
+            indefiniteDepths = indefiniteDepths.copyOf(indefiniteDepths.size * 2)
+        }
+        indefiniteDepths[indefiniteDepthCount++] = openContainers
+    }
+
+    // Close the innermost container. Emits the "break" byte only when that container was opened indefinite-length;
+    // definite-length containers close without writing anything.
+    private fun closeContainer() {
+        if (indefiniteDepthCount > 0 && indefiniteDepths[indefiniteDepthCount - 1] == openContainers) {
+            indefiniteDepthCount--
+            buffer.write(IndefiniteBreak)
+        }
+        openContainers--
+    }
 
     public fun toHttpBody(): HttpBody = buffer.readByteArray().toHttpBody()
 
@@ -46,35 +72,31 @@ public class CborSerializer :
 
     override fun beginMap(descriptor: SdkFieldDescriptor): MapSerializer {
         buffer.writeByte(encodeMajorMinor(Major.MAP, Minor.INDEFINITE))
-        indefiniteContainers.addLast(true)
+        pushIndefinite()
         return this
     }
 
     override fun beginMap(descriptor: SdkFieldDescriptor, size: Int): MapSerializer {
-        buffer.writeArgument(Major.MAP, size.toULong())
-        indefiniteContainers.addLast(false)
+        buffer.writeContainerHeader(Major.MAP, size)
+        openContainers++
         return this
     }
 
-    override fun endMap() {
-        if (indefiniteContainers.removeLast()) buffer.write(IndefiniteBreak)
-    }
+    override fun endMap(): Unit = closeContainer()
 
     override fun beginList(descriptor: SdkFieldDescriptor): ListSerializer {
         buffer.writeByte(encodeMajorMinor(Major.LIST, Minor.INDEFINITE))
-        indefiniteContainers.addLast(true)
+        pushIndefinite()
         return this
     }
 
     override fun beginList(descriptor: SdkFieldDescriptor, size: Int): ListSerializer {
-        buffer.writeArgument(Major.LIST, size.toULong())
-        indefiniteContainers.addLast(false)
+        buffer.writeContainerHeader(Major.LIST, size)
+        openContainers++
         return this
     }
 
-    override fun endList() {
-        if (indefiniteContainers.removeLast()) buffer.write(IndefiniteBreak)
-    }
+    override fun endList(): Unit = closeContainer()
 
     override fun beginStruct(descriptor: SdkFieldDescriptor): StructSerializer {
         beginMap(descriptor)

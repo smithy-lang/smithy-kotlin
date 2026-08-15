@@ -62,6 +62,17 @@ internal fun SdkBufferedSink.writeArgument(major: Major, argument: ULong) {
     }
 }
 
+// Encode a definite-length container header: the [major] type packed with its element [count].
+// The overwhelmingly common case is a small count (< 24), which encodes into a single byte, so handle
+// it directly to avoid the ULong conversion and the full magnitude cascade in [writeArgument].
+internal fun SdkBufferedSink.writeContainerHeader(major: Major, count: Int) {
+    if (count in 0..23) {
+        writeByte(((major.ordinal shl 5) or count).toByte())
+    } else {
+        writeArgument(major, count.toULong())
+    }
+}
+
 // Convert a ByteArray to a ULong by left-shifting each byte appropriately
 internal fun ByteArray.toULong() = foldIndexed(0uL) { i, acc, byte ->
     acc or (byte.toUByte().toULong() shl ((size - 1 - i) * 8))
