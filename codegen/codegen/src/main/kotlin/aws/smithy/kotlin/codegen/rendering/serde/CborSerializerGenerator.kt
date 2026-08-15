@@ -25,6 +25,9 @@ class CborSerializerGenerator(
 
         return op.bodySerializer(ctx.settings) { writer ->
             addNestedDocumentSerializers(ctx, op, writer)
+            // Hoist the descriptor block to file/top-level scope so it is constructed once per class-load and reused
+            // across every serialize call, rather than being rebuilt on each invocation.
+            descriptorGenerator(ctx, input, members, writer).render()
             writer.withBlock("private fun #L(context: #T, input: #T): #T {", "}", op.bodySerializerName(), RuntimeTypes.Core.ExecutionContext, symbol, RuntimeTypes.Http.HttpBody) {
                 call {
                     renderSerializeOperationBody(ctx, op, members, writer)
@@ -51,7 +54,6 @@ class CborSerializerGenerator(
         members: List<MemberShape>,
         writer: KotlinWriter,
     ) {
-        descriptorGenerator(ctx, shape, members, writer).render()
         when (shape) {
             is DocumentShape -> writer.write("serializer.serializeDocument(input)")
             is UnionShape -> SerializeUnionGenerator(ctx, shape, members, writer, TimestampFormatTrait.Format.EPOCH_SECONDS).render()
@@ -107,6 +109,9 @@ class CborSerializerGenerator(
     ): Symbol {
         val symbol = ctx.symbolProvider.toSymbol(shape)
         return shape.documentSerializer(ctx.settings, symbol, members) { writer ->
+            // Hoist the descriptor block to file/top-level scope so it is constructed once per class-load and reused
+            // across every serialize call, rather than being rebuilt on each invocation.
+            descriptorGenerator(ctx, shape, members.toList(), writer).render()
             writer.withBlock("internal fun #identifier.name:L(serializer: #T, input: #T) {", "}", RuntimeTypes.Serde.Serializer, symbol) {
                 call { renderSerializerBody(ctx, shape, members.toList(), writer) }
             }
