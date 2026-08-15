@@ -182,6 +182,12 @@ private class CborFieldIterator(
     PrimitiveDeserializer by CborPrimitiveDeserializer(buffer) {
     var currentLength: ULong = 0uL
 
+    private val fieldIndex = descriptor.fieldIndex { it.serialName }
+
+    // In-order cursor: fields are almost always sent in schema order, so the field following the
+    // last match is the most likely next hit. Checked first by [FieldIndex.lookup] to avoid hashing.
+    private var expectedFieldIndex = 0
+
     override tailrec fun findNextFieldIndex(): Int? {
         if (buffer.exhausted() && expectedLength != currentLength) {
             throw DeserializationException("Buffer is unexpectedly exhausted, expected $expectedLength elements, got $currentLength")
@@ -198,10 +204,11 @@ private class CborFieldIterator(
             null
         } else {
             val nextFieldName = TextString.decode(buffer).value
-            descriptor
-                .fields
-                .firstOrNull { it.serialName == nextFieldName }
-                ?.index ?: Deserializer.FieldIterator.UNKNOWN_FIELD
+            fieldIndex.lookup(nextFieldName, expectedFieldIndex).also {
+                if (it != Deserializer.FieldIterator.UNKNOWN_FIELD) {
+                    expectedFieldIndex = it + 1
+                }
+            }
         }
 
         if (candidate != null) {
