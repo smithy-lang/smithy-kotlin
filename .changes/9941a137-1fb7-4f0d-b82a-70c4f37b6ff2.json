@@ -1,0 +1,6 @@
+{
+  "id": "9941a137-1fb7-4f0d-b82a-70c4f37b6ff2",
+  "type": "feature",
+  "description": "Serialize CBOR lists and maps with a definite length whenever the element count is known, avoiding the per-container indefinite-length \"break\" byte. Containers whose count is not statically known (e.g. sparse collection elements) and structs continue to use indefinite-length encoding",
+  "module": "serde-cbor"
+}

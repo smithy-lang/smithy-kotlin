@@ -54,8 +54,8 @@ class CborSerializerGenerator(
         descriptorGenerator(ctx, shape, members, writer).render()
         when (shape) {
             is DocumentShape -> writer.write("serializer.serializeDocument(input)")
-            is UnionShape -> SerializeUnionGenerator(ctx, shape, members, writer, TimestampFormatTrait.Format.EPOCH_SECONDS).render()
-            else -> SerializeStructGenerator(ctx, members, writer, TimestampFormatTrait.Format.EPOCH_SECONDS).render()
+            is UnionShape -> CborSerializeUnionGenerator(ctx, shape, members, writer, TimestampFormatTrait.Format.EPOCH_SECONDS).render()
+            else -> CborSerializeStructGenerator(ctx, members, writer, TimestampFormatTrait.Format.EPOCH_SECONDS).render()
         }
     }
 

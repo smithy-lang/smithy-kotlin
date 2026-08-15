@@ -20,6 +20,7 @@ import aws.smithy.kotlin.codegen.rendering.protocol.ProtocolContentTypes
 import aws.smithy.kotlin.codegen.rendering.protocol.ProtocolGenerator
 import aws.smithy.kotlin.codegen.rendering.protocol.ProtocolMiddleware
 import aws.smithy.kotlin.codegen.rendering.protocol.errorHandlerName
+import aws.smithy.kotlin.codegen.rendering.serde.CborSerializeStructGenerator
 import aws.smithy.kotlin.codegen.rendering.serde.DeserializeStructGenerator
 import aws.smithy.kotlin.codegen.rendering.serde.SerializeStructGenerator
 import aws.smithy.kotlin.codegen.rendering.serde.SerializeUnionGenerator
@@ -83,6 +84,27 @@ fun codegenSerializerForShape(
     val op = ctx.generationCtx.model.expectShape(ShapeId.from(shapeId))
     return testRender(ctx.requestMembers(op, location)) { members, writer ->
         SerializeStructGenerator(
+            ctx.generationCtx,
+            members,
+            writer,
+            TimestampFormatTrait.Format.EPOCH_SECONDS,
+        ).render()
+    }
+}
+
+/** Drive codegen for CBOR serialization of a given shape (emits definite-length containers where the count is known) */
+fun codegenCborSerializerForShape(
+    model: Model,
+    shapeId: String,
+    location: HttpBinding.Location = HttpBinding.Location.DOCUMENT,
+    settings: KotlinSettings? = null,
+): String {
+    val resolvedSettings = settings ?: model.defaultSettings(TestModelDefault.SERVICE_NAME, TestModelDefault.NAMESPACE)
+    val ctx = model.newTestContext(settings = resolvedSettings)
+
+    val op = ctx.generationCtx.model.expectShape(ShapeId.from(shapeId))
+    return testRender(ctx.requestMembers(op, location)) { members, writer ->
+        CborSerializeStructGenerator(
             ctx.generationCtx,
             members,
             writer,

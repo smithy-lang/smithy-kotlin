@@ -34,6 +34,28 @@ public interface Serializer : PrimitiveSerializer {
      */
     public fun beginMap(descriptor: SdkFieldDescriptor): MapSerializer
 
+    /**
+     * Begin a list whose element count is known in advance and return a [ListSerializer] to serialize its elements.
+     *
+     * Formats that can encode a length more efficiently when the count is known (e.g. CBOR definite-length arrays)
+     * may use [size]. The default implementation ignores [size] and delegates to [beginList].
+     *
+     * @param descriptor SdkFieldDescriptor of container for formats that require them.
+     * @param size the number of elements that will be serialized into the list.
+     */
+    public fun beginList(descriptor: SdkFieldDescriptor, size: Int): ListSerializer = beginList(descriptor)
+
+    /**
+     * Begin a map whose entry count is known in advance and return a [MapSerializer] to serialize its entries.
+     *
+     * Formats that can encode a length more efficiently when the count is known (e.g. CBOR definite-length maps)
+     * may use [size]. The default implementation ignores [size] and delegates to [beginMap].
+     *
+     * @param descriptor SdkFieldDescriptor of container for formats that require them.
+     * @param size the number of entries that will be serialized into the map.
+     */
+    public fun beginMap(descriptor: SdkFieldDescriptor, size: Int): MapSerializer = beginMap(descriptor)
+
     // FIXME - we should commonize how we deal with buffers internally and rely on `SdkBuffer`
     //  (likely once we roll our own json/xml serializers). Until then this should probably return a ByteStream?
     //  we could also supply an SdkBuffer.wrap(byteArray) function that sets the read/write to the limits of the array?
@@ -210,6 +232,30 @@ public interface StructSerializer : PrimitiveSerializer {
     public fun mapField(descriptor: SdkFieldDescriptor, block: MapSerializer.() -> Unit)
 
     /**
+     * Writes the field name given in the descriptor, and then serializes the list field using the given block. The
+     * element count is provided so formats that support it can emit a definite length. The default implementation
+     * ignores [size] and delegates to [listField].
+     *
+     * @param descriptor
+     * @param size the number of elements that will be serialized into the list.
+     * @param block
+     */
+    public fun listField(descriptor: SdkFieldDescriptor, size: Int, block: ListSerializer.() -> Unit): Unit =
+        listField(descriptor, block)
+
+    /**
+     * Writes the field name given in the descriptor, and then serializes the map field using the given block. The
+     * entry count is provided so formats that support it can emit a definite length. The default implementation
+     * ignores [size] and delegates to [mapField].
+     *
+     * @param descriptor
+     * @param size the number of entries that will be serialized into the map.
+     * @param block
+     */
+    public fun mapField(descriptor: SdkFieldDescriptor, size: Int, block: MapSerializer.() -> Unit): Unit =
+        mapField(descriptor, block)
+
+    /**
      * Writes the field name given in the descriptor, and then
      * serializes null.
      */
@@ -377,6 +423,32 @@ public interface MapSerializer : PrimitiveSerializer {
     public fun mapEntry(key: String, mapDescriptor: SdkFieldDescriptor, block: MapSerializer.() -> Unit)
 
     /**
+     * Writes the key, and then serializes the list value using the given block. The element count is provided so
+     * formats that support it can emit a definite length. The default implementation ignores [size] and delegates
+     * to [listEntry].
+     *
+     * @param key
+     * @param listDescriptor
+     * @param size the number of elements that will be serialized into the list.
+     * @param block
+     */
+    public fun listEntry(key: String, listDescriptor: SdkFieldDescriptor, size: Int, block: ListSerializer.() -> Unit): Unit =
+        listEntry(key, listDescriptor, block)
+
+    /**
+     * Writes the key, and then serializes the map value using the given block. The entry count is provided so
+     * formats that support it can emit a definite length. The default implementation ignores [size] and delegates
+     * to [mapEntry].
+     *
+     * @param key
+     * @param mapDescriptor
+     * @param size the number of entries that will be serialized into the map.
+     * @param block
+     */
+    public fun mapEntry(key: String, mapDescriptor: SdkFieldDescriptor, size: Int, block: MapSerializer.() -> Unit): Unit =
+        mapEntry(key, mapDescriptor, block)
+
+    /**
      * Ends the map that was started (i.e. in JSON this would be a '}').
      */
     public fun endMap()
@@ -518,11 +590,33 @@ public inline fun Serializer.serializeList(sdkFieldDescriptor: SdkFieldDescripto
 }
 
 /**
+ * All elements of a list are expected to be serialized in the given block. [size] is the number of elements so
+ * formats that support it can emit a definite length.
+ */
+@InternalApi
+public inline fun Serializer.serializeList(sdkFieldDescriptor: SdkFieldDescriptor, size: Int, crossinline block: ListSerializer.() -> Unit) {
+    val list = beginList(sdkFieldDescriptor, size)
+    list.block()
+    list.endList()
+}
+
+/**
  * All entries of a map are expected to be serialized in the given block.
  */
 @InternalApi
 public inline fun Serializer.serializeMap(sdkFieldDescriptor: SdkFieldDescriptor, crossinline block: MapSerializer.() -> Unit) {
     val map = beginMap(sdkFieldDescriptor)
+    map.block()
+    map.endMap()
+}
+
+/**
+ * All entries of a map are expected to be serialized in the given block. [size] is the number of entries so
+ * formats that support it can emit a definite length.
+ */
+@InternalApi
+public inline fun Serializer.serializeMap(sdkFieldDescriptor: SdkFieldDescriptor, size: Int, crossinline block: MapSerializer.() -> Unit) {
+    val map = beginMap(sdkFieldDescriptor, size)
     map.block()
     map.endMap()
 }

@@ -1,0 +1,6 @@
+{
+  "id": "e4b2f756-108f-43d1-8b32-b7dc1339aa29",
+  "type": "feature",
+  "description": "Add size-aware `beginList`/`beginMap`/`listField`/`mapField`/`listEntry`/`mapEntry` overloads to the serializer interfaces so formats that support definite-length containers can use a known element count. The default implementations ignore the count and delegate to the existing indefinite-length methods",
+  "module": "serde"
+}

@@ -79,6 +79,20 @@ open class SerializeStructGenerator(
     open fun parentName(defaultName: String) = defaultName
 
     /**
+     * Returns the argument (with a leading comma) that supplies a known element/entry count to a container
+     * serialization call (`listField`, `mapField`, `listEntry`, `mapEntry`, `serializeList`, `serializeMap`), or an
+     * empty string to request an indefinite-length encoding.
+     *
+     * The default returns an empty string, so all formats emit indefinite-length containers as before. Formats that
+     * encode a known length more efficiently (e.g. CBOR definite-length arrays/maps) override this.
+     *
+     * @param collectionExpr codegen expression referencing the collection being serialized (e.g. `input.foo`)
+     * @param canBeNull true if [collectionExpr] may be null at the call site (e.g. a sparse element), in which case
+     *   its `.size` cannot be read and indefinite length must be used
+     */
+    protected open fun containerSizeArg(collectionExpr: String, canBeNull: Boolean): String = ""
+
+    /**
      * Returns the name passed to the constructor of a nested serializer.
      */
     open fun valueToSerializeName(defaultName: String): String = defaultName
@@ -155,8 +169,9 @@ open class SerializeStructGenerator(
         val nestingLevel = 0
         val memberSymbol = ctx.symbolProvider.toSymbol(memberShape)
 
+        val sizeArg = containerSizeArg("input.$memberName", canBeNull = false)
         writer.wrapBlockIf(memberSymbol.isNullable, "if (input.$memberName != null) {", "}") {
-            writer.withBlock("mapField($descriptorName) {", "}") {
+            writer.withBlock("mapField($descriptorName$sizeArg) {", "}") {
                 delegateMapSerialization(memberShape, targetShape, nestingLevel, memberName)
             }
         }
@@ -178,8 +193,9 @@ open class SerializeStructGenerator(
         val nestingLevel = 0
         val memberSymbol = ctx.symbolProvider.toSymbol(memberShape)
 
+        val sizeArg = containerSizeArg("input.$memberName", canBeNull = false)
         writer.wrapBlockIf(memberSymbol.isNullable, "if (input.$memberName != null) {", "}") {
-            writer.withBlock("listField($descriptorName) {", "}") {
+            writer.withBlock("listField($descriptorName$sizeArg) {", "}") {
                 delegateListSerialization(memberShape, targetShape, nestingLevel, memberName)
             }
         }
@@ -358,9 +374,10 @@ open class SerializeStructGenerator(
         val elementName = nestingLevel.variableNameFor(NestedIdentifierType.ELEMENT)
         val containerName = if (nestingLevel == 0) "input." else ""
         val parentName = parentName(elementName)
+        val sizeArg = containerSizeArg(elementName, canBeNull = isSparse)
 
         writer.withBlock("for ($elementName in $containerName$parentMemberName) {", "}") {
-            writer.withBlock("serializer.#T($descriptorName) {", "}", RuntimeTypes.Serde.serializeMap) {
+            writer.withBlock("serializer.#T($descriptorName$sizeArg) {", "}", RuntimeTypes.Serde.serializeMap) {
                 writer.wrapBlockIf(isSparse, "if ($elementName != null) {", "} else serializeNull()") {
                     delegateMapSerialization(rootMemberShape, mapShape, nestingLevel + 1, parentName)
                 }
@@ -394,9 +411,10 @@ open class SerializeStructGenerator(
         val keyValue = keyValue(keyShape, keyName)
         val parentName = parentName(valueName)
 
+        val sizeArg = containerSizeArg(valueName, canBeNull = false)
         writer.withBlock("$containerName$parentMemberName.forEach { ($keyName, $valueName) ->", "}") {
             writer.wrapBlockIf(isSparse, "if ($valueName != null) {", "} else entry($keyValue, null as String?)") {
-                writer.withBlock("mapEntry($keyValue, $descriptorName) {", "}") {
+                writer.withBlock("mapEntry($keyValue, $descriptorName$sizeArg) {", "}") {
                     delegateMapSerialization(rootMemberShape, mapShape, nestingLevel + 1, parentName)
                 }
             }
@@ -425,10 +443,11 @@ open class SerializeStructGenerator(
         val (keyName, valueName) = keyValueNames(nestingLevel)
         val parentName = parentName(valueName)
         val keyValue = keyValue(keyShape, keyName)
+        val sizeArg = containerSizeArg(valueName, canBeNull = false)
 
         writer.withBlock("$containerName$parentMemberName.forEach { ($keyName, $valueName) ->", "}") {
             writer.wrapBlockIf(isSparse, "if ($valueName != null) {", "} else entry($keyValue, null as String?)") {
-                writer.withBlock("listEntry($keyValue, $descriptorName) {", "}") {
+                writer.withBlock("listEntry($keyValue, $descriptorName$sizeArg) {", "}") {
                     delegateListSerialization(rootMemberShape, elementShape, nestingLevel + 1, parentName)
                 }
             }
@@ -451,9 +470,10 @@ open class SerializeStructGenerator(
         val descriptorName = rootMemberShape.descriptorName(nestingLevel.nestedDescriptorName())
         val elementName = nestingLevel.variableNameFor(NestedIdentifierType.ELEMENT)
         val containerName = if (nestingLevel == 0) "input." else ""
+        val sizeArg = containerSizeArg(elementName, canBeNull = isSparse)
 
         writer.withBlock("for ($elementName in $containerName$parentListMemberName) {", "}") {
-            writer.withBlock("serializer.#T($descriptorName) {", "}", RuntimeTypes.Serde.serializeList) {
+            writer.withBlock("serializer.#T($descriptorName$sizeArg) {", "}", RuntimeTypes.Serde.serializeList) {
                 writer.wrapBlockIf(isSparse, "if ($elementName != null) {", "} else serializeNull()") {
                     delegateListSerialization(rootMemberShape, elementShape, nestingLevel + 1, elementName)
                 }

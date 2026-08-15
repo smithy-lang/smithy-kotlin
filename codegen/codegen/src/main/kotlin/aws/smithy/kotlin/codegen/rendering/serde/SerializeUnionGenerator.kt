@@ -33,7 +33,7 @@ import software.amazon.smithy.model.traits.TimestampFormatTrait
  * }
  * ```
  */
-class SerializeUnionGenerator(
+open class SerializeUnionGenerator(
     ctx: ProtocolGenerator.GenerationContext,
     private val shape: UnionShape,
     members: List<MemberShape>,
@@ -94,8 +94,9 @@ class SerializeUnionGenerator(
         val descriptorName = memberShape.descriptorName()
         val nestingLevel = 0
 
+        val sizeArg = containerSizeArg("input.value", canBeNull = false)
         writer.withBlock("is $unionMemberName -> {", "}") {
-            writer.withBlock("mapField($descriptorName) {", "}") {
+            writer.withBlock("mapField($descriptorName$sizeArg) {", "}") {
                 delegateMapSerialization(memberShape, targetShape, nestingLevel, "value")
             }
         }
@@ -116,8 +117,9 @@ class SerializeUnionGenerator(
         val descriptorName = memberShape.descriptorName()
         val nestingLevel = 0
 
+        val sizeArg = containerSizeArg("input.value", canBeNull = false)
         writer.withBlock("is $unionMemberName -> {", "}") {
-            writer.withBlock("listField($descriptorName) {", "}") {
+            writer.withBlock("listField($descriptorName$sizeArg) {", "}") {
                 delegateListSerialization(memberShape, targetShape, nestingLevel, "value")
             }
         }

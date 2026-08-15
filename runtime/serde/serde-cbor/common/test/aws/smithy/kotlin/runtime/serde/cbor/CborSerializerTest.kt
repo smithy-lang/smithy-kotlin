@@ -357,7 +357,6 @@ class CborSerializerTest {
             serializeChar('a')
             serializeChar('z')
             serializeString("bye!")
-            endList()
         }
 
         val bytes = serializer.toByteArray()
@@ -393,7 +392,6 @@ class CborSerializerTest {
             entry("charZ", 'z')
             entry("string", "bye!")
             entry("timestamp", Instant.now(), TimestampFormat.EPOCH_SECONDS)
-            endMap()
         }
 
         val bytes = serializer.toByteArray()
@@ -426,5 +424,72 @@ class CborSerializerTest {
                 deserializeInt()
             }
         }
+    }
+
+    @Test
+    fun testDefiniteLengthList() {
+        val serializer = CborSerializer()
+        serializer.serializeList(SdkFieldDescriptor(SerialKind.List), 3) {
+            serializeInt(1)
+            serializeInt(2)
+            serializeInt(3)
+        }
+
+        // definite-length array of 3 (0x83) followed by the three uints; no trailing indefinite "break" (0xff) byte
+        assertEquals("83010203", serializer.toByteArray().toHexString())
+    }
+
+    @Test
+    fun testDefiniteLengthMap() {
+        val serializer = CborSerializer()
+        serializer.serializeMap(SdkFieldDescriptor(SerialKind.Map), 1) {
+            entry("a", 1)
+        }
+
+        // definite-length map of 1 (0xa1), key text(1) "a" (0x6161), value uint 1 (0x01); no trailing break byte
+        assertEquals("a1616101", serializer.toByteArray().toHexString())
+    }
+
+    @Test
+    fun testDefiniteLengthRoundTrip() {
+        val serializer = CborSerializer()
+        serializer.serializeList(SdkFieldDescriptor(SerialKind.List), 3) {
+            serializeInt(1)
+            serializeInt(2)
+            serializeInt(3)
+        }
+
+        val result = mutableListOf<Int>()
+        CborDeserializer(serializer.toByteArray()).deserializeList(SdkFieldDescriptor(SerialKind.List)) {
+            while (hasNextElement()) {
+                result.add(deserializeInt())
+            }
+        }
+        assertEquals(listOf(1, 2, 3), result)
+    }
+
+    @Test
+    fun testDefiniteAndIndefiniteContainersNest() {
+        val serializer = CborSerializer()
+        // definite outer map with an indefinite list value nested inside a definite list value
+        serializer.serializeMap(SdkFieldDescriptor(SerialKind.Map), 1) {
+            listEntry("nums", SdkFieldDescriptor(SerialKind.List), 2) {
+                serializeInt(7)
+                serializeInt(8)
+            }
+        }
+
+        // 0xa1 map(1), 0x646e756d73 text(4) "nums", 0x82 array(2), 0x07 0x08; no break bytes anywhere
+        assertEquals("a1646e756d73820708", serializer.toByteArray().toHexString())
+    }
+
+    @Test
+    fun testStructRemainsIndefinite() {
+        val serializer = CborSerializer()
+        serializer.beginStruct(SdkFieldDescriptor(SerialKind.Struct))
+        serializer.endStruct()
+
+        // structs are still encoded as indefinite-length maps: 0xbf (map start) + 0xff (break)
+        assertEquals("bfff", serializer.toByteArray().toHexString())
     }
 }

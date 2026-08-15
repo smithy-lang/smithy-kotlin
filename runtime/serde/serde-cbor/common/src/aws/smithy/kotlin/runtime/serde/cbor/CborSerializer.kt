@@ -36,27 +36,45 @@ public class CborSerializer :
     StructSerializer {
     private val buffer = SdkBuffer()
 
+    // Tracks, for each currently-open container, whether it was written with an indefinite length and therefore must
+    // be terminated with a "break" byte. Definite-length containers push `false` and write no break on close.
+    private val indefiniteContainers = ArrayDeque<Boolean>()
+
     public fun toHttpBody(): HttpBody = buffer.readByteArray().toHttpBody()
 
     override fun toByteArray(): ByteArray = buffer.readByteArray()
 
     override fun beginMap(descriptor: SdkFieldDescriptor): MapSerializer {
-        // TODO Encoding indefinite maps comes with some performance overhead, see if we can refactor mapEntry interface to
-        // pass additional information such as the map length. That way we can serialize a definite-length map.
         buffer.writeByte(encodeMajorMinor(Major.MAP, Minor.INDEFINITE))
+        indefiniteContainers.addLast(true)
         return this
     }
 
-    override fun endMap(): Unit = buffer.write(IndefiniteBreak)
+    override fun beginMap(descriptor: SdkFieldDescriptor, size: Int): MapSerializer {
+        buffer.writeArgument(Major.MAP, size.toULong())
+        indefiniteContainers.addLast(false)
+        return this
+    }
+
+    override fun endMap() {
+        if (indefiniteContainers.removeLast()) buffer.write(IndefiniteBreak)
+    }
 
     override fun beginList(descriptor: SdkFieldDescriptor): ListSerializer {
-        // TODO Encoding indefinite lists comes with some performance overhead, see if we can refactor listEntry interface to
-        // pass additional information such as the list length. That way we can serialize a definite-length list.
         buffer.writeByte(encodeMajorMinor(Major.LIST, Minor.INDEFINITE))
+        indefiniteContainers.addLast(true)
         return this
     }
 
-    override fun endList(): Unit = buffer.write(IndefiniteBreak)
+    override fun beginList(descriptor: SdkFieldDescriptor, size: Int): ListSerializer {
+        buffer.writeArgument(Major.LIST, size.toULong())
+        indefiniteContainers.addLast(false)
+        return this
+    }
+
+    override fun endList() {
+        if (indefiniteContainers.removeLast()) buffer.write(IndefiniteBreak)
+    }
 
     override fun beginStruct(descriptor: SdkFieldDescriptor): StructSerializer {
         beginMap(descriptor)
@@ -151,9 +169,23 @@ public class CborSerializer :
         endList()
     }
 
+    override fun listEntry(key: String, listDescriptor: SdkFieldDescriptor, size: Int, block: ListSerializer.() -> Unit) {
+        serializeString(key)
+        beginList(listDescriptor, size)
+        block()
+        endList()
+    }
+
     override fun mapEntry(key: String, mapDescriptor: SdkFieldDescriptor, block: MapSerializer.() -> Unit) {
         serializeString(key)
         beginMap(mapDescriptor)
+        block()
+        endMap()
+    }
+
+    override fun mapEntry(key: String, mapDescriptor: SdkFieldDescriptor, size: Int, block: MapSerializer.() -> Unit) {
+        serializeString(key)
+        beginMap(mapDescriptor, size)
         block()
         endMap()
     }
@@ -192,9 +224,19 @@ public class CborSerializer :
         serializeList(descriptor, block)
     }
 
+    override fun listField(descriptor: SdkFieldDescriptor, size: Int, block: ListSerializer.() -> Unit) {
+        buffer.write(TextString(descriptor.serialName))
+        serializeList(descriptor, size, block)
+    }
+
     override fun mapField(descriptor: SdkFieldDescriptor, block: MapSerializer.() -> Unit) {
         buffer.write(TextString(descriptor.serialName))
         serializeMap(descriptor, block)
+    }
+
+    override fun mapField(descriptor: SdkFieldDescriptor, size: Int, block: MapSerializer.() -> Unit) {
+        buffer.write(TextString(descriptor.serialName))
+        serializeMap(descriptor, size, block)
     }
 
     override fun nullField(descriptor: SdkFieldDescriptor) {

@@ -78,8 +78,15 @@ public abstract interface class aws/smithy/kotlin/runtime/serde/MapSerializer : 
 	public abstract fun entry (Ljava/lang/String;Ljava/lang/Short;)V
 	public abstract fun entry (Ljava/lang/String;Ljava/lang/String;)V
 	public abstract fun entry (Ljava/lang/String;[B)V
+	public fun listEntry (Ljava/lang/String;Laws/smithy/kotlin/runtime/serde/SdkFieldDescriptor;ILkotlin/jvm/functions/Function1;)V
 	public abstract fun listEntry (Ljava/lang/String;Laws/smithy/kotlin/runtime/serde/SdkFieldDescriptor;Lkotlin/jvm/functions/Function1;)V
+	public fun mapEntry (Ljava/lang/String;Laws/smithy/kotlin/runtime/serde/SdkFieldDescriptor;ILkotlin/jvm/functions/Function1;)V
 	public abstract fun mapEntry (Ljava/lang/String;Laws/smithy/kotlin/runtime/serde/SdkFieldDescriptor;Lkotlin/jvm/functions/Function1;)V
+}
+
+public final class aws/smithy/kotlin/runtime/serde/MapSerializer$DefaultImpls {
+	public static fun listEntry (Laws/smithy/kotlin/runtime/serde/MapSerializer;Ljava/lang/String;Laws/smithy/kotlin/runtime/serde/SdkFieldDescriptor;ILkotlin/jvm/functions/Function1;)V
+	public static fun mapEntry (Laws/smithy/kotlin/runtime/serde/MapSerializer;Ljava/lang/String;Laws/smithy/kotlin/runtime/serde/SdkFieldDescriptor;ILkotlin/jvm/functions/Function1;)V
 }
 
 public final class aws/smithy/kotlin/runtime/serde/ParsersKt {
@@ -274,13 +281,22 @@ public final class aws/smithy/kotlin/runtime/serde/SerializationException : aws/
 
 public abstract interface class aws/smithy/kotlin/runtime/serde/Serializer : aws/smithy/kotlin/runtime/serde/PrimitiveSerializer {
 	public abstract fun beginList (Laws/smithy/kotlin/runtime/serde/SdkFieldDescriptor;)Laws/smithy/kotlin/runtime/serde/ListSerializer;
+	public fun beginList (Laws/smithy/kotlin/runtime/serde/SdkFieldDescriptor;I)Laws/smithy/kotlin/runtime/serde/ListSerializer;
 	public abstract fun beginMap (Laws/smithy/kotlin/runtime/serde/SdkFieldDescriptor;)Laws/smithy/kotlin/runtime/serde/MapSerializer;
+	public fun beginMap (Laws/smithy/kotlin/runtime/serde/SdkFieldDescriptor;I)Laws/smithy/kotlin/runtime/serde/MapSerializer;
 	public abstract fun beginStruct (Laws/smithy/kotlin/runtime/serde/SdkFieldDescriptor;)Laws/smithy/kotlin/runtime/serde/StructSerializer;
 	public abstract fun toByteArray ()[B
 }
 
+public final class aws/smithy/kotlin/runtime/serde/Serializer$DefaultImpls {
+	public static fun beginList (Laws/smithy/kotlin/runtime/serde/Serializer;Laws/smithy/kotlin/runtime/serde/SdkFieldDescriptor;I)Laws/smithy/kotlin/runtime/serde/ListSerializer;
+	public static fun beginMap (Laws/smithy/kotlin/runtime/serde/Serializer;Laws/smithy/kotlin/runtime/serde/SdkFieldDescriptor;I)Laws/smithy/kotlin/runtime/serde/MapSerializer;
+}
+
 public final class aws/smithy/kotlin/runtime/serde/SerializerKt {
+	public static final fun serializeList (Laws/smithy/kotlin/runtime/serde/Serializer;Laws/smithy/kotlin/runtime/serde/SdkFieldDescriptor;ILkotlin/jvm/functions/Function1;)V
 	public static final fun serializeList (Laws/smithy/kotlin/runtime/serde/Serializer;Laws/smithy/kotlin/runtime/serde/SdkFieldDescriptor;Lkotlin/jvm/functions/Function1;)V
+	public static final fun serializeMap (Laws/smithy/kotlin/runtime/serde/Serializer;Laws/smithy/kotlin/runtime/serde/SdkFieldDescriptor;ILkotlin/jvm/functions/Function1;)V
 	public static final fun serializeMap (Laws/smithy/kotlin/runtime/serde/Serializer;Laws/smithy/kotlin/runtime/serde/SdkFieldDescriptor;Lkotlin/jvm/functions/Function1;)V
 	public static final fun serializeStruct (Laws/smithy/kotlin/runtime/serde/Serializer;Laws/smithy/kotlin/runtime/serde/SdkFieldDescriptor;Lkotlin/jvm/functions/Function1;)V
 }
@@ -306,9 +322,16 @@ public abstract interface class aws/smithy/kotlin/runtime/serde/StructSerializer
 	public abstract fun field (Laws/smithy/kotlin/runtime/serde/SdkFieldDescriptor;S)V
 	public abstract fun field (Laws/smithy/kotlin/runtime/serde/SdkFieldDescriptor;Z)V
 	public abstract fun field (Laws/smithy/kotlin/runtime/serde/SdkFieldDescriptor;[B)V
+	public fun listField (Laws/smithy/kotlin/runtime/serde/SdkFieldDescriptor;ILkotlin/jvm/functions/Function1;)V
 	public abstract fun listField (Laws/smithy/kotlin/runtime/serde/SdkFieldDescriptor;Lkotlin/jvm/functions/Function1;)V
+	public fun mapField (Laws/smithy/kotlin/runtime/serde/SdkFieldDescriptor;ILkotlin/jvm/functions/Function1;)V
 	public abstract fun mapField (Laws/smithy/kotlin/runtime/serde/SdkFieldDescriptor;Lkotlin/jvm/functions/Function1;)V
 	public abstract fun nullField (Laws/smithy/kotlin/runtime/serde/SdkFieldDescriptor;)V
 	public abstract fun structField (Laws/smithy/kotlin/runtime/serde/SdkFieldDescriptor;Lkotlin/jvm/functions/Function1;)V
+}
+
+public final class aws/smithy/kotlin/runtime/serde/StructSerializer$DefaultImpls {
+	public static fun listField (Laws/smithy/kotlin/runtime/serde/StructSerializer;Laws/smithy/kotlin/runtime/serde/SdkFieldDescriptor;ILkotlin/jvm/functions/Function1;)V
+	public static fun mapField (Laws/smithy/kotlin/runtime/serde/StructSerializer;Laws/smithy/kotlin/runtime/serde/SdkFieldDescriptor;ILkotlin/jvm/functions/Function1;)V
 }
 
