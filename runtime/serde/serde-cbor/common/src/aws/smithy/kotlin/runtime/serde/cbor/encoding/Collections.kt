@@ -46,7 +46,7 @@ internal fun decodeTextStringValue(buffer: SdkBufferedSource, depth: Int = 0): S
 
     if (peekMinorByte(buffer) != Minor.INDEFINITE.value) {
         val length = decodeArgument(buffer).toLong()
-        return buffer.readByteArray(length).decodeToString()
+        return buffer.readUtf8(length)
     }
 
     val sb = StringBuilder()
