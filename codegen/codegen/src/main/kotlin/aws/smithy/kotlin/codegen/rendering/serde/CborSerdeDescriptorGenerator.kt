@@ -22,6 +22,11 @@ class CborSerdeDescriptorGenerator(
 
     private val serviceShape = ctx.model.expectShape<ServiceShape>(ctx.settings.service)
 
+    // CBOR hoists the descriptor block to file/top-level scope (see CborSerializerGenerator/CborParserGenerator), so
+    // the descriptors are rendered as top-level `private val`s: explicit visibility is required in explicit API mode
+    // and `private` keeps them file-scoped, avoiding cross-file collisions within the same serde package.
+    override val descriptorDeclarationModifier: String = "private "
+
     override fun getObjectDescriptorTraits(): List<SdkFieldDescriptorTrait> {
         val objTraits = mutableListOf<SdkFieldDescriptorTrait>()
         val serialName = objectShape.defaultName(serviceShape)

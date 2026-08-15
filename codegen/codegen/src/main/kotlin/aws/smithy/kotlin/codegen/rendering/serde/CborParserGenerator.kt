@@ -29,6 +29,9 @@ class CborParserGenerator(
         return op.bodyDeserializer(ctx.settings) { writer ->
             addNestedDocumentDeserializers(ctx, op, writer)
             val fnName = op.bodyDeserializerName()
+            // Hoist the descriptor block to file/top-level scope so it (and its cached field index) is
+            // constructed once per class-load and reused across every deserialization call.
+            renderDescriptor(ctx, ctx.model.expectShape(op.output.get()), members, writer)
             writer.withBlock("private fun #L(builder: #T.Builder, payload: ByteArray) {", "}", fnName, outputSymbol) {
                 call { renderDeserializeOperationBody(ctx, op, members, writer) }
             }
@@ -59,6 +62,11 @@ class CborParserGenerator(
         val symbol = ctx.symbolProvider.toSymbol(shape)
 
         return shape.documentDeserializer(ctx.settings, symbol, members) { writer ->
+            // Hoist the descriptor block to file/top-level scope (see operationDeserializer for rationale).
+            // Document shapes have no members, so this renders nothing for them.
+            if (shape.type != ShapeType.DOCUMENT) {
+                renderDescriptor(ctx, shape, members.toList(), writer)
+            }
             writer.withBlock("internal fun #identifier.name:L(deserializer: #T): #T {", "}", RuntimeTypes.Serde.SerdeCbor.CborDeserializer, symbol) {
                 call {
                     when (shape.type) {
@@ -96,14 +104,26 @@ class CborParserGenerator(
         renderDeserializerBody(ctx, shape, documentMembers, writer)
     }
 
-    private fun renderDeserializerBody(
+    /**
+     * Render the CBOR serde descriptor block (field descriptors + OBJ_DESCRIPTOR) at the current writer position.
+     * Callers invoke this at file/top-level scope (outside the deserialize function body) so the descriptor - and the
+     * field index it lazily caches - is constructed once per class-load and reused across all calls.
+     */
+    private fun renderDescriptor(
         ctx: ProtocolGenerator.GenerationContext,
         shape: Shape,
         members: List<MemberShape>,
         writer: KotlinWriter,
     ) {
         descriptorGenerator(ctx, shape, members, writer).render()
+    }
 
+    private fun renderDeserializerBody(
+        ctx: ProtocolGenerator.GenerationContext,
+        shape: Shape,
+        members: List<MemberShape>,
+        writer: KotlinWriter,
+    ) {
         if (shape.isUnionShape) {
             val name = ctx.symbolProvider.toSymbol(shape).name
             DeserializeUnionGenerator(ctx, name, members, writer, TimestampFormatTrait.Format.EPOCH_SECONDS).render()
@@ -152,6 +172,8 @@ class CborParserGenerator(
         return symbol.errorDeserializer(ctx.settings) { writer ->
             addNestedDocumentDeserializers(ctx, errorShape, writer)
             val fnName = symbol.errorDeserializerName()
+            // Hoist the descriptor block to file/top-level scope (see operationDeserializer for rationale).
+            renderDescriptor(ctx, errorShape, members, writer)
             writer.withBlock("private fun #L(builder: #T.Builder, payload: ByteArray) {", "}", fnName, symbol) {
                 writer.write("val deserializer = #T(payload)", RuntimeTypes.Serde.SerdeCbor.CborDeserializer)
                 call { renderDeserializerBody(ctx, errorShape, members, writer) }

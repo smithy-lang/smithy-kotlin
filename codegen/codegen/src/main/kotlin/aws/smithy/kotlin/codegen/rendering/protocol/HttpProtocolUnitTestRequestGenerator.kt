@@ -73,10 +73,14 @@ open class HttpProtocolUnitTestRequestGenerator protected constructor(builder: B
         val symbol = ctx.symbolProvider.toSymbol(shape)
         val deserializeFnName = "deserialize" + StringUtils.capitalize(symbol.name) + "Document"
         return shape.documentDeserializer(ctx.settings, symbol) { blockWriter ->
-            blockWriter.withBlock("internal fun #L(deserializer: #T): #T {", "}", deserializeFnName, RuntimeTypes.Serde.Deserializer, symbol) {
-                val renderingCtx = RenderingContext(blockWriter, shape, model, symbolProvider, ctx.settings)
-                val descriptorGenerator = CborSerdeDescriptorGenerator(renderingCtx)
+            val renderingCtx = RenderingContext(blockWriter, shape, model, symbolProvider, ctx.settings)
+            val descriptorGenerator = CborSerdeDescriptorGenerator(renderingCtx)
 
+            // Hoist the descriptor block to file/top-level scope so it is constructed once per class-load and reused
+            // across all calls (matching the hoist performed by CborParserGenerator for the same document deserializer).
+            blockWriter.call { descriptorGenerator.render() }
+
+            blockWriter.withBlock("internal fun #L(deserializer: #T): #T {", "}", deserializeFnName, RuntimeTypes.Serde.Deserializer, symbol) {
                 val deserializeDocumentGenerator = when (shape) {
                     is StructureShape -> DeserializeStructGenerator(
                         ctx,
@@ -104,7 +108,6 @@ open class HttpProtocolUnitTestRequestGenerator protected constructor(builder: B
 
                 blockWriter.write("")
 
-                blockWriter.call { descriptorGenerator.render() }
                 blockWriter.call { deserializeDocumentGenerator.render() }
 
                 blockWriter.write("")

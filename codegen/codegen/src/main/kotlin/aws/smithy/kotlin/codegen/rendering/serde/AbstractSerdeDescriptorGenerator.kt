@@ -54,6 +54,18 @@ abstract class AbstractSerdeDescriptorGenerator(
     protected val memberShapes = memberShapes ?: objectShape.members()
     protected val writer = ctx.writer
 
+    /**
+     * Modifier prepended to the `val` declarations of the rendered field/object descriptors.
+     *
+     * Defaults to an empty string, which renders the descriptors as plain (function-local) `val`s - the historical
+     * behavior for generators that emit descriptors inside a serialize/deserialize function body.
+     *
+     * Sub-classes that hoist the descriptor block to file/top-level scope should override this to `"private "` so the
+     * generated top-level properties get an explicit visibility (required in explicit API mode) and stay file-scoped
+     * (avoiding cross-file name collisions within the same package).
+     */
+    protected open val descriptorDeclarationModifier: String = ""
+
     override fun render() {
         if (memberShapes.isEmpty()) return
 
@@ -82,7 +94,7 @@ abstract class AbstractSerdeDescriptorGenerator(
                 renderContainerFieldDescriptors(member, nestedMember)
             }
         }
-        writer.withBlock("val OBJ_DESCRIPTOR = SdkObjectDescriptor.build {", "}") {
+        writer.withBlock("${descriptorDeclarationModifier}val OBJ_DESCRIPTOR = SdkObjectDescriptor.build {", "}") {
             val objTraits = getObjectDescriptorTraits()
             objTraits.forEach { trait ->
                 writer.addImport(trait.symbol)
@@ -130,11 +142,11 @@ abstract class AbstractSerdeDescriptorGenerator(
 
         val traits = getFieldDescriptorTraits(member, targetShape, nameSuffix)
         if (traits.isEmpty()) {
-            writer.write("val #L = SdkFieldDescriptor(#L)", descriptorName, serialKind)
+            writer.write("${descriptorDeclarationModifier}val #L = SdkFieldDescriptor(#L)", descriptorName, serialKind)
         } else {
             traits.forEach { trait -> writer.addImport(trait.symbol) }
             writer.write(
-                "val #L = SdkFieldDescriptor(#L, #L)",
+                "${descriptorDeclarationModifier}val #L = SdkFieldDescriptor(#L, #L)",
                 descriptorName,
                 serialKind,
                 traits.joinToString(separator = ", "),

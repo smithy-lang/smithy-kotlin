@@ -25,6 +25,9 @@ class CborSerializerGenerator(
 
         return op.bodySerializer(ctx.settings) { writer ->
             addNestedDocumentSerializers(ctx, op, writer)
+            // Hoist the descriptor block to file/top-level scope so it is constructed once per class-load
+            // and reused across every serialization call instead of being re-allocated on each invocation.
+            renderDescriptor(ctx, input, members, writer)
             writer.withBlock("private fun #L(context: #T, input: #T): #T {", "}", op.bodySerializerName(), RuntimeTypes.Core.ExecutionContext, symbol, RuntimeTypes.Http.HttpBody) {
                 call {
                     renderSerializeOperationBody(ctx, op, members, writer)
@@ -51,12 +54,25 @@ class CborSerializerGenerator(
         members: List<MemberShape>,
         writer: KotlinWriter,
     ) {
-        descriptorGenerator(ctx, shape, members, writer).render()
         when (shape) {
             is DocumentShape -> writer.write("serializer.serializeDocument(input)")
             is UnionShape -> SerializeUnionGenerator(ctx, shape, members, writer, TimestampFormatTrait.Format.EPOCH_SECONDS).render()
             else -> SerializeStructGenerator(ctx, members, writer, TimestampFormatTrait.Format.EPOCH_SECONDS).render()
         }
+    }
+
+    /**
+     * Render the CBOR serde descriptor block (field descriptors + OBJ_DESCRIPTOR) at the current writer position.
+     * Callers invoke this at file/top-level scope (outside the (de)serialize function body) so the descriptor is
+     * constructed once per class-load and reused across all calls.
+     */
+    private fun renderDescriptor(
+        ctx: ProtocolGenerator.GenerationContext,
+        shape: Shape,
+        members: List<MemberShape>,
+        writer: KotlinWriter,
+    ) {
+        descriptorGenerator(ctx, shape, members, writer).render()
     }
 
     private fun descriptorGenerator(
@@ -107,6 +123,8 @@ class CborSerializerGenerator(
     ): Symbol {
         val symbol = ctx.symbolProvider.toSymbol(shape)
         return shape.documentSerializer(ctx.settings, symbol, members) { writer ->
+            // Hoist the descriptor block to file/top-level scope (see operationSerializer for rationale).
+            renderDescriptor(ctx, shape, members.toList(), writer)
             writer.withBlock("internal fun #identifier.name:L(serializer: #T, input: #T) {", "}", RuntimeTypes.Serde.Serializer, symbol) {
                 call { renderSerializerBody(ctx, shape, members.toList(), writer) }
             }
