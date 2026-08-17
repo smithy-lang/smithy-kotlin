@@ -9,27 +9,7 @@ import aws.smithy.kotlin.runtime.content.BigInteger
 import aws.smithy.kotlin.runtime.content.Document
 import aws.smithy.kotlin.runtime.io.*
 import aws.smithy.kotlin.runtime.serde.*
-import aws.smithy.kotlin.runtime.serde.cbor.encoding.BigNum
-import aws.smithy.kotlin.runtime.serde.cbor.encoding.ByteString
-import aws.smithy.kotlin.runtime.serde.cbor.encoding.DecimalFraction
-import aws.smithy.kotlin.runtime.serde.cbor.encoding.Float16
-import aws.smithy.kotlin.runtime.serde.cbor.encoding.Float32
-import aws.smithy.kotlin.runtime.serde.cbor.encoding.Float64
-import aws.smithy.kotlin.runtime.serde.cbor.encoding.IndefiniteBreak
-import aws.smithy.kotlin.runtime.serde.cbor.encoding.Major
-import aws.smithy.kotlin.runtime.serde.cbor.encoding.Minor
-import aws.smithy.kotlin.runtime.serde.cbor.encoding.NegBigNum
-import aws.smithy.kotlin.runtime.serde.cbor.encoding.NegInt
-import aws.smithy.kotlin.runtime.serde.cbor.encoding.Null
-import aws.smithy.kotlin.runtime.serde.cbor.encoding.Tag
-import aws.smithy.kotlin.runtime.serde.cbor.encoding.TagId
-import aws.smithy.kotlin.runtime.serde.cbor.encoding.TextString
-import aws.smithy.kotlin.runtime.serde.cbor.encoding.Timestamp
-import aws.smithy.kotlin.runtime.serde.cbor.encoding.UInt
-import aws.smithy.kotlin.runtime.serde.cbor.encoding.Value
-import aws.smithy.kotlin.runtime.serde.cbor.encoding.decodeArgument
-import aws.smithy.kotlin.runtime.serde.cbor.encoding.peekMajor
-import aws.smithy.kotlin.runtime.serde.cbor.encoding.peekMinorByte
+import aws.smithy.kotlin.runtime.serde.cbor.encoding.*
 import aws.smithy.kotlin.runtime.time.Instant
 import aws.smithy.kotlin.runtime.time.TimestampFormat
 import aws.smithy.kotlin.runtime.serde.cbor.encoding.Boolean as cborBoolean
@@ -41,26 +21,13 @@ import aws.smithy.kotlin.runtime.serde.cbor.encoding.Boolean as cborBoolean
 public class CborDeserializer(payload: ByteArray) : Deserializer {
     private val buffer = SdkBuffer().apply { write(payload) }
 
-    // Memoizes a serialName -> field index lookup table per struct descriptor so that field
-    // resolution during deserialization is O(1) instead of a linear scan (which also re-resolves
-    // the CborSerialName trait on every comparison). A single CborDeserializer instance decodes one
-    // payload on one thread, so this cache requires no synchronization and is reused across every
-    // (possibly repeated/nested) struct decoded from that payload.
-    private val fieldIndexCache = HashMap<SdkObjectDescriptor, Map<String, Int>>()
-
-    private fun fieldIndex(descriptor: SdkObjectDescriptor): Map<String, Int> = fieldIndexCache.getOrPut(descriptor) {
-        val index = HashMap<String, Int>(descriptor.fields.size)
-        descriptor.fields.forEach { index[it.serialName] = it.index }
-        index
-    }
-
     override fun deserializeStruct(descriptor: SdkObjectDescriptor): Deserializer.FieldIterator {
         peekMajor(buffer).also {
             check(it == Major.MAP) { "Expected major ${Major.MAP} for structure, got $it" }
         }
 
         val expectedLength = deserializeExpectedLength()
-        return CborFieldIterator(buffer, expectedLength, fieldIndex(descriptor))
+        return CborFieldIterator(buffer, expectedLength, descriptor)
     }
 
     override fun deserializeMap(descriptor: SdkFieldDescriptor): Deserializer.EntryIterator {
@@ -210,7 +177,7 @@ private class CborElementIterator(
 private class CborFieldIterator(
     val buffer: SdkBuffer,
     val expectedLength: ULong? = null,
-    val fieldIndexByName: Map<String, Int>,
+    val descriptor: SdkObjectDescriptor,
 ) : Deserializer.FieldIterator,
     PrimitiveDeserializer by CborPrimitiveDeserializer(buffer) {
     var currentLength: ULong = 0uL
@@ -231,7 +198,10 @@ private class CborFieldIterator(
             null
         } else {
             val nextFieldName = TextString.decode(buffer).value
-            fieldIndexByName[nextFieldName] ?: Deserializer.FieldIterator.UNKNOWN_FIELD
+            descriptor
+                .fields
+                .firstOrNull { it.serialName == nextFieldName }
+                ?.index ?: Deserializer.FieldIterator.UNKNOWN_FIELD
         }
 
         if (candidate != null) {
