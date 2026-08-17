@@ -39,7 +39,6 @@ open class JsonParserGenerator(
         val outputSymbol = op.output.get().let { ctx.symbolProvider.toSymbol(ctx.model.expectShape(it)) }
         return op.bodyDeserializer(ctx.settings) { writer ->
             addNestedDocumentDeserializers(ctx, op, writer)
-            // Hoist descriptors to file scope so they are constructed once instead of on every deserializer invocation.
             renderDescriptors(ctx, ctx.model.expectShape(op.output.get()), members, writer)
             val fnName = op.bodyDeserializerName()
             writer.openBlock("private fun #L(builder: #T.Builder, payload: ByteArray) {", fnName, outputSymbol)
@@ -88,7 +87,6 @@ open class JsonParserGenerator(
     ): Symbol {
         val symbol = ctx.symbolProvider.toSymbol(shape)
         return shape.documentDeserializer(ctx.settings, symbol, members) { writer ->
-            // Hoist descriptors to file scope so they are constructed once instead of on every (recursive) invocation.
             renderDescriptors(ctx, shape, members.toList(), writer)
             writer.openBlock("internal fun #identifier.name:L(deserializer: #T): #T {", RuntimeTypes.Serde.Deserializer, symbol)
                 .call {
@@ -127,7 +125,6 @@ open class JsonParserGenerator(
         return symbol.errorDeserializer(ctx.settings) { writer ->
             addNestedDocumentDeserializers(ctx, errorShape, writer)
             val fnName = symbol.errorDeserializerName()
-            // Hoist descriptors to file scope so they are constructed once instead of on every deserializer invocation.
             renderDescriptors(ctx, errorShape, members, writer)
             writer.openBlock("private fun #L(builder: #T.Builder, payload: ByteArray) {", fnName, symbol)
                 .call {
@@ -138,8 +135,6 @@ open class JsonParserGenerator(
         }
     }
 
-    // Renders the object/field descriptors as file-scoped `private val`s. Must be called at file scope (outside the
-    // serde function) so the descriptors are built once at class-load rather than on every invocation.
     private fun renderDescriptors(
         ctx: ProtocolGenerator.GenerationContext,
         shape: Shape,
@@ -155,7 +150,6 @@ open class JsonParserGenerator(
         members: List<MemberShape>,
         writer: KotlinWriter,
     ) {
-        // NOTE: descriptors are hoisted to file scope by the caller via renderDescriptors()
         if (shape.isUnionShape) {
             val name = ctx.symbolProvider.toSymbol(shape).name
             DeserializeUnionGenerator(ctx, name, members, writer, defaultTimestampFormat).render()

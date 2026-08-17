@@ -86,7 +86,6 @@ private class Ec2QuerySerializerGenerator(
         members: List<MemberShape>,
         writer: KotlinWriter,
     ) {
-        // NOTE: descriptors are hoisted to file scope by the caller via renderDescriptors()
         when (shape) {
             is UnionShape -> SerializeUnionGenerator(ctx, shape, members, writer, protocolGenerator.defaultTimestampFormat).render()
             else -> Ec2QuerySerializeStructGenerator(ctx, members, writer, protocolGenerator.defaultTimestampFormat).render()

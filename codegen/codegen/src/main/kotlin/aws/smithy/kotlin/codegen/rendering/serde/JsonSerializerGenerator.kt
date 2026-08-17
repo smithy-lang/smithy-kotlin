@@ -31,7 +31,6 @@ open class JsonSerializerGenerator(
 
         return op.bodySerializer(ctx.settings) { writer ->
             addNestedDocumentSerializers(ctx, op, writer)
-            // Hoist descriptors to file scope so they are constructed once instead of on every serializer invocation.
             renderDescriptors(ctx, input, members, writer)
             val fnName = op.bodySerializerName()
             writer.openBlock("private fun #L(context: #T, input: #T): ByteArray {", fnName, RuntimeTypes.Core.ExecutionContext, symbol)
@@ -77,7 +76,6 @@ open class JsonSerializerGenerator(
         val symbol = ctx.symbolProvider.toSymbol(shape)
 
         return shape.documentSerializer(ctx.settings, symbol, members) { writer ->
-            // Hoist descriptors to file scope so they are constructed once instead of on every (recursive) invocation.
             renderDescriptors(ctx, shape, members.toList(), writer)
             writer.openBlock("internal fun #identifier.name:L(serializer: #T, input: #T) {", RuntimeTypes.Serde.Serializer, symbol)
                 .call {
@@ -87,8 +85,6 @@ open class JsonSerializerGenerator(
         }
     }
 
-    // Renders the object/field descriptors as file-scoped `private val`s. Must be called at file scope (outside the
-    // serde function) so the descriptors are built once at class-load rather than on every invocation.
     private fun renderDescriptors(
         ctx: ProtocolGenerator.GenerationContext,
         shape: Shape,
@@ -104,7 +100,6 @@ open class JsonSerializerGenerator(
         members: List<MemberShape>,
         writer: KotlinWriter,
     ) {
-        // NOTE: descriptors are hoisted to file scope by the caller via renderDescriptors()
         when (shape) {
             is DocumentShape -> writer.write("serializer.serializeDocument(input)")
             is UnionShape -> SerializeUnionGenerator(ctx, shape, members, writer, defaultTimestampFormat).render()

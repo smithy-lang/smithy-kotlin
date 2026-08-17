@@ -74,7 +74,6 @@ open class HttpProtocolUnitTestRequestGenerator protected constructor(builder: B
         val deserializeFnName = "deserialize" + StringUtils.capitalize(symbol.name) + "Document"
         return shape.documentDeserializer(ctx.settings, symbol) { blockWriter ->
             val renderingCtx = RenderingContext(blockWriter, shape, model, symbolProvider, ctx.settings)
-            // Hoist descriptors to file scope so they are constructed once instead of on every invocation.
             CborSerdeDescriptorGenerator(renderingCtx).render()
 
             val deserializeDocumentGenerator = when (shape) {

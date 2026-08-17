@@ -270,7 +270,6 @@ class RestXmlSerializerGenerator(
             definitionFile = "${memberSymbol.name}PayloadSerializer.kt"
             renderBy = { writer ->
                 addNestedDocumentSerializers(ctx, targetShape, writer)
-                // Hoist descriptors to file scope so they are constructed once instead of on every serializer invocation.
                 renderDescriptors(ctx, copyWithMemberTraits, targetShape.members().toList(), writer)
                 writer.dokka("Payload serializer for ${memberSymbol.name} with a different XML name trait (${xmlNameTrait.value})")
                 writer.withBlock("internal fun $name(input: #T): ByteArray {", "}", memberSymbol) {
