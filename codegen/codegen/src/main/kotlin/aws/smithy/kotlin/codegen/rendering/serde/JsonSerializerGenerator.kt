@@ -31,7 +31,7 @@ open class JsonSerializerGenerator(
 
         return op.bodySerializer(ctx.settings) { writer ->
             addNestedDocumentSerializers(ctx, op, writer)
-            renderDescriptors(ctx, input, members, writer)
+            JsonSerdeDescriptorGenerator(ctx.toRenderingContext(protocolGenerator, input, writer), members, supportsJsonNameTrait).render()
             val fnName = op.bodySerializerName()
             writer.openBlock("private fun #L(context: #T, input: #T): ByteArray {", fnName, RuntimeTypes.Core.ExecutionContext, symbol)
                 .call {
@@ -76,22 +76,14 @@ open class JsonSerializerGenerator(
         val symbol = ctx.symbolProvider.toSymbol(shape)
 
         return shape.documentSerializer(ctx.settings, symbol, members) { writer ->
-            renderDescriptors(ctx, shape, members.toList(), writer)
+            // Hoist descriptors to file scope so they are constructed once instead of on every (recursive) invocation.
+            JsonSerdeDescriptorGenerator(ctx.toRenderingContext(protocolGenerator, shape, writer), members.toList(), supportsJsonNameTrait).render()
             writer.openBlock("internal fun #identifier.name:L(serializer: #T, input: #T) {", RuntimeTypes.Serde.Serializer, symbol)
                 .call {
                     renderSerializerBody(ctx, shape, members.toList(), writer)
                 }
                 .closeBlock("}")
         }
-    }
-
-    private fun renderDescriptors(
-        ctx: ProtocolGenerator.GenerationContext,
-        shape: Shape,
-        members: List<MemberShape>,
-        writer: KotlinWriter,
-    ) {
-        JsonSerdeDescriptorGenerator(ctx.toRenderingContext(protocolGenerator, shape, writer), members, supportsJsonNameTrait).render()
     }
 
     private fun renderSerializerBody(

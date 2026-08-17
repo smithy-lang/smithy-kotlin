@@ -39,7 +39,7 @@ open class JsonParserGenerator(
         val outputSymbol = op.output.get().let { ctx.symbolProvider.toSymbol(ctx.model.expectShape(it)) }
         return op.bodyDeserializer(ctx.settings) { writer ->
             addNestedDocumentDeserializers(ctx, op, writer)
-            renderDescriptors(ctx, ctx.model.expectShape(op.output.get()), members, writer)
+            descriptorGenerator(ctx, ctx.model.expectShape(op.output.get()), members, writer).render()
             val fnName = op.bodyDeserializerName()
             writer.openBlock("private fun #L(builder: #T.Builder, payload: ByteArray) {", fnName, outputSymbol)
                 .call {
@@ -87,7 +87,8 @@ open class JsonParserGenerator(
     ): Symbol {
         val symbol = ctx.symbolProvider.toSymbol(shape)
         return shape.documentDeserializer(ctx.settings, symbol, members) { writer ->
-            renderDescriptors(ctx, shape, members.toList(), writer)
+            // Hoist descriptors to file scope so they are constructed once instead of on every (recursive) invocation.
+            descriptorGenerator(ctx, shape, members.toList(), writer).render()
             writer.openBlock("internal fun #identifier.name:L(deserializer: #T): #T {", RuntimeTypes.Serde.Deserializer, symbol)
                 .call {
                     when (shape.type) {
@@ -125,7 +126,8 @@ open class JsonParserGenerator(
         return symbol.errorDeserializer(ctx.settings) { writer ->
             addNestedDocumentDeserializers(ctx, errorShape, writer)
             val fnName = symbol.errorDeserializerName()
-            renderDescriptors(ctx, errorShape, members, writer)
+            // Hoist descriptors to file scope so they are constructed once instead of on every deserializer invocation.
+            descriptorGenerator(ctx, errorShape, members, writer).render()
             writer.openBlock("private fun #L(builder: #T.Builder, payload: ByteArray) {", fnName, symbol)
                 .call {
                     writer.write("val deserializer = #T(payload)", RuntimeTypes.Serde.SerdeJson.JsonDeserializer)
@@ -133,15 +135,6 @@ open class JsonParserGenerator(
                 }
                 .closeBlock("}")
         }
-    }
-
-    private fun renderDescriptors(
-        ctx: ProtocolGenerator.GenerationContext,
-        shape: Shape,
-        members: List<MemberShape>,
-        writer: KotlinWriter,
-    ) {
-        descriptorGenerator(ctx, shape, members, writer).render()
     }
 
     private fun renderDeserializerBody(
