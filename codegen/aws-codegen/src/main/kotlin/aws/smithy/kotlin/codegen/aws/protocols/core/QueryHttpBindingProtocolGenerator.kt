@@ -152,7 +152,6 @@ abstract class AbstractQueryFormUrlSerializerGenerator(
     ): Symbol {
         val symbol = ctx.symbolProvider.toSymbol(shape)
         return shape.documentSerializer(ctx.settings, symbol, members) { writer ->
-            // Hoist descriptors to file scope so they are constructed once instead of on every (recursive) invocation.
             descriptorGenerator(ctx, shape, members.toList(), writer).render()
             writer.openBlock("internal fun #identifier.name:L(serializer: #T, input: #T) {", RuntimeTypes.Serde.Serializer, symbol)
                 .call {

@@ -107,7 +107,6 @@ class CborSerializerGenerator(
     ): Symbol {
         val symbol = ctx.symbolProvider.toSymbol(shape)
         return shape.documentSerializer(ctx.settings, symbol, members) { writer ->
-            // Hoist descriptors to file scope so they are constructed once instead of on every (recursive) invocation.
             descriptorGenerator(ctx, shape, members.toList(), writer).render()
             writer.withBlock("internal fun #identifier.name:L(serializer: #T, input: #T) {", "}", RuntimeTypes.Serde.Serializer, symbol) {
                 call { renderSerializerBody(ctx, shape, members.toList(), writer) }

@@ -87,7 +87,6 @@ open class JsonParserGenerator(
     ): Symbol {
         val symbol = ctx.symbolProvider.toSymbol(shape)
         return shape.documentDeserializer(ctx.settings, symbol, members) { writer ->
-            // Hoist descriptors to file scope so they are constructed once instead of on every (recursive) invocation.
             descriptorGenerator(ctx, shape, members.toList(), writer).render()
             writer.openBlock("internal fun #identifier.name:L(deserializer: #T): #T {", RuntimeTypes.Serde.Deserializer, symbol)
                 .call {
@@ -126,7 +125,6 @@ open class JsonParserGenerator(
         return symbol.errorDeserializer(ctx.settings) { writer ->
             addNestedDocumentDeserializers(ctx, errorShape, writer)
             val fnName = symbol.errorDeserializerName()
-            // Hoist descriptors to file scope so they are constructed once instead of on every deserializer invocation.
             descriptorGenerator(ctx, errorShape, members, writer).render()
             writer.openBlock("private fun #L(builder: #T.Builder, payload: ByteArray) {", fnName, symbol)
                 .call {

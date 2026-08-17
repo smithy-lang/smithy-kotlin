@@ -60,7 +60,6 @@ class CborParserGenerator(
         val symbol = ctx.symbolProvider.toSymbol(shape)
 
         return shape.documentDeserializer(ctx.settings, symbol, members) { writer ->
-            // Hoist descriptors to file scope so they are constructed once instead of on every (recursive) invocation.
             descriptorGenerator(ctx, shape, members.toList(), writer).render()
             writer.withBlock("internal fun #identifier.name:L(deserializer: #T): #T {", "}", RuntimeTypes.Serde.SerdeCbor.CborDeserializer, symbol) {
                 call {
@@ -152,7 +151,6 @@ class CborParserGenerator(
 
         return symbol.errorDeserializer(ctx.settings) { writer ->
             addNestedDocumentDeserializers(ctx, errorShape, writer)
-            // Hoist descriptors to file scope so they are constructed once instead of on every deserializer invocation.
             descriptorGenerator(ctx, errorShape, members, writer).render()
             val fnName = symbol.errorDeserializerName()
             writer.withBlock("private fun #L(builder: #T.Builder, payload: ByteArray) {", "}", fnName, symbol) {
