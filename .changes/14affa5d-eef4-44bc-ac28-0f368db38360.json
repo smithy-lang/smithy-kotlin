@@ -1,6 +1,0 @@
-{
-  "id": "14affa5d-eef4-44bc-ac28-0f368db38360",
-  "type": "feature",
-  "description": "Add `peekByte` to `SdkBufferedSource` and `SdkBuffer` for reading the next byte without consuming it",
-  "module": "runtime-core"
-}
