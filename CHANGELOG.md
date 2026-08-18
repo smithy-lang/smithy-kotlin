@@ -1,5 +1,26 @@
 # Changelog
 
+## [1.7.8] - 08/18/2026
+
+### Features
+* (**runtime-core**) Add `peekByte` to `SdkBufferedSource` and `SdkBuffer` for reading the next byte without consuming it
+* (**serde-cbor**) Optimize CBOR serialization by writing values directly to the output buffer instead of building intermediate byte arrays
+* (**serde-cbor**) Optimize CBOR deserialization by reading values directly from the input buffer instead of building intermediate byte arrays
+* (**serde-cbor**) Optimize CBOR deserialization by peeking the next head byte via indexed buffer access instead of allocating a peek-source chain per value
+
+### Fixes
+* (**serde-cbor**) Encode and decode CBOR negative bignums using the RFC 8949 unsigned magnitude representation instead of a signed two's-complement encoding, fixing interoperability for negative `BigInteger` values
+* (**serde-cbor**) Fix CBOR decimal fraction encoding and decoding to use the RFC 8949 scale exponent, correcting the transmitted value for `BigDecimal`s whose mantissa has more than one significant digit
+* (**serde-cbor**) Encode CBOR text string lengths as a UTF-8 byte count instead of a UTF-16 code-unit count, so multibyte strings produce valid RFC 8949 output
+* (**serde-cbor**) Decode CBOR string, byte-string, and collection lengths as a `Long` so large lengths are no longer silently truncated to `Int`
+* (**serde-cbor**) Convert CBOR floating-point values that arrive encoded as integers numerically instead of misinterpreting the integer as raw IEEE-754 bits
+* (**serde-cbor**) Fix decoding of CBOR timestamps encoded as negative integers, which previously decoded with the wrong sign for pre-epoch instants
+* [#3190](https://github.com/smithy-lang/smithy/issues/3190) Upgrade to Smithy [v1.73.0](https://github.com/smithy-lang/smithy/releases/tag/1.73.0) to pick up [bugfix for endpoint ruleset trimming](https://github.com/smithy-lang/smithy/pull/3219)
+* `TelemetryProvider` and related types are no longer experimental
+
+### Miscellaneous
+* (**serde-cbor**) Optimize CBOR text string decoding by reading UTF-8 directly from the buffer instead of copying into an intermediate byte array
+
 ## [1.7.7] - 08/11/2026
 
 ### Fixes

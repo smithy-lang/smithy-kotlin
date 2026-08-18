@@ -1,6 +1,0 @@
-{
-  "id": "e23080a4-5cde-4d09-b047-ccfbd5b0857c",
-  "type": "bugfix",
-  "description": "Fix CBOR decimal fraction encoding and decoding to use the RFC 8949 scale exponent, correcting the transmitted value for `BigDecimal`s whose mantissa has more than one significant digit",
-  "module": "serde-cbor"
-}
