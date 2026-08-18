@@ -104,8 +104,7 @@ open class HttpProtocolUnitTestRequestGenerator protected constructor(builder: B
         }
     }
 
-    private fun descriptorGenerator(writer: KotlinWriter, shape: Shape) =
-        CborSerdeDescriptorGenerator(RenderingContext(writer, shape, model, symbolProvider, ctx.settings))
+    private fun descriptorGenerator(writer: KotlinWriter, shape: Shape) = CborSerdeDescriptorGenerator(RenderingContext(writer, shape, model, symbolProvider, ctx.settings))
 
     private fun deserializeDocumentGenerator(writer: KotlinWriter, shape: Shape, symbol: Symbol) = when (shape) {
         is StructureShape -> DeserializeStructGenerator(
