@@ -138,7 +138,6 @@ public abstract class aws/smithy/kotlin/codegen/aws/protocols/core/AbstractQuery
 	public abstract fun descriptorGenerator (Laws/smithy/kotlin/codegen/rendering/protocol/ProtocolGenerator$GenerationContext;Lsoftware/amazon/smithy/model/shapes/Shape;Ljava/util/List;Laws/smithy/kotlin/codegen/core/KotlinWriter;)Laws/smithy/kotlin/codegen/rendering/serde/FormUrlSerdeDescriptorGenerator;
 	public fun operationSerializer (Laws/smithy/kotlin/codegen/rendering/protocol/ProtocolGenerator$GenerationContext;Lsoftware/amazon/smithy/model/shapes/OperationShape;Ljava/util/List;)Lsoftware/amazon/smithy/codegen/core/Symbol;
 	public fun payloadSerializer (Laws/smithy/kotlin/codegen/rendering/protocol/ProtocolGenerator$GenerationContext;Lsoftware/amazon/smithy/model/shapes/Shape;Ljava/util/Collection;)Lsoftware/amazon/smithy/codegen/core/Symbol;
-	public fun renderDescriptors (Laws/smithy/kotlin/codegen/rendering/protocol/ProtocolGenerator$GenerationContext;Lsoftware/amazon/smithy/model/shapes/Shape;Ljava/util/List;Laws/smithy/kotlin/codegen/core/KotlinWriter;)V
 	public fun renderSerializerBody (Laws/smithy/kotlin/codegen/rendering/protocol/ProtocolGenerator$GenerationContext;Lsoftware/amazon/smithy/model/shapes/Shape;Ljava/util/List;Laws/smithy/kotlin/codegen/core/KotlinWriter;)V
 }
 

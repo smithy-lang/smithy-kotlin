@@ -17,12 +17,6 @@ import aws.smithy.kotlin.runtime.serde.expectTrait
  */
 @InternalApi
 public data class CborSerialName(public val name: String) : FieldTrait {
-    /**
-     * The full CBOR encoding of this field name: the major-type-3 length header followed by the
-     * UTF-8 bytes of the name. Field descriptors are singletons, so computing this once and
-     * reusing the bytes avoids re-encoding the name (and allocating a [TextString] wrapper) on
-     * every struct-field write.
-     */
     internal val encoded: ByteArray by lazy {
         val bytes = name.encodeToByteArray()
         SdkBuffer().apply {
@@ -40,7 +34,7 @@ public val SdkFieldDescriptor.serialName: String
     get() = expectTrait<CborSerialName>().name
 
 /**
- * Provides the pre-encoded CBOR bytes (length header + UTF-8 name) for the field's serialized name.
+ * Provides the pre-encoded CBOR bytes for the field's serialized name.
  */
 internal val SdkFieldDescriptor.serialNameBytes: ByteArray
     get() = expectTrait<CborSerialName>().encoded
