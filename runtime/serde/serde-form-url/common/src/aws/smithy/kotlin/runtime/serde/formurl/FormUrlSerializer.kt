@@ -84,9 +84,9 @@ private class FormUrlStructSerializer(
     init {
         structDescriptor.traits.mapNotNull { it as? QueryLiteral }
             .forEach { literal ->
-                writeField(literal.toDescriptor()) {
-                    serializeString(literal.value)
-                }
+                if (buffer.size > 0L) buffer.writeUtf8("&")
+                if (prefix.isNotBlank()) buffer.writeUtf8(prefix)
+                buffer.write(literal.encoded)
             }
     }
 
@@ -376,8 +376,6 @@ private inline fun <T : Any> checkNotSparse(value: T?): T {
     if (value == null) throw SerializationException("sparse collections are not supported by form-url encoding")
     return value
 }
-
-private fun QueryLiteral.toDescriptor(): SdkFieldDescriptor = SdkFieldDescriptor(SerialKind.String, FormUrlSerialName(key))
 
 private val SdkFieldDescriptor.serialName: String
     get() = expectTrait<FormUrlSerialName>().name

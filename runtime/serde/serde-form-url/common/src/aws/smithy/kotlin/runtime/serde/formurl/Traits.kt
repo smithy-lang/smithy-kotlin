@@ -9,6 +9,7 @@ import aws.smithy.kotlin.runtime.InternalApi
 import aws.smithy.kotlin.runtime.serde.FieldTrait
 import aws.smithy.kotlin.runtime.serde.SdkFieldDescriptor
 import aws.smithy.kotlin.runtime.serde.expectTrait
+import aws.smithy.kotlin.runtime.text.encoding.PercentEncoding
 
 /**
  * Specifies a name that a field is encoded into for form-url elements.
@@ -33,7 +34,11 @@ public data class FormUrlSerialName(public val name: String) : FieldTrait {
  * ```
  */
 @InternalApi
-public data class QueryLiteral(public val key: String, public val value: String) : FieldTrait
+public data class QueryLiteral(public val key: String, public val value: String) : FieldTrait {
+    internal val encoded: ByteArray by lazy {
+        "$key=${PercentEncoding.FormUrl.encode(value)}".encodeToByteArray()
+    }
+}
 
 /**
  * Indicates that the container should be serialized in "flattened" form.
