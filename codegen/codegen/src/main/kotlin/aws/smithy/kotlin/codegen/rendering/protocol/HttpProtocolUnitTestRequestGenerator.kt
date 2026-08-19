@@ -73,28 +73,7 @@ open class HttpProtocolUnitTestRequestGenerator protected constructor(builder: B
         val symbol = ctx.symbolProvider.toSymbol(shape)
         val deserializeFnName = "deserialize" + StringUtils.capitalize(symbol.name) + "Document"
         return shape.documentDeserializer(ctx.settings, symbol) { blockWriter ->
-            val renderingCtx = RenderingContext(blockWriter, shape, model, symbolProvider, ctx.settings)
-            // Hoist descriptors to file scope so they are constructed once instead of on every invocation.
-            CborSerdeDescriptorGenerator(renderingCtx).render()
-
-            val deserializeDocumentGenerator = when (shape) {
-                is StructureShape -> DeserializeStructGenerator(
-                    ctx,
-                    shape.members().toMutableList(),
-                    blockWriter,
-                    TimestampFormatTrait.Format.EPOCH_SECONDS,
-                )
-
-                is UnionShape -> DeserializeUnionGenerator(
-                    ctx,
-                    symbol.name,
-                    shape.members().toMutableList(),
-                    blockWriter,
-                    TimestampFormatTrait.Format.EPOCH_SECONDS,
-                )
-
-                else -> throw CodegenException("Unexpected shape type ${shape.type}, expected a structure or union")
-            }
+            descriptorGenerator(blockWriter, shape).render()
 
             blockWriter.withBlock("internal fun #L(deserializer: #T): #T {", "}", deserializeFnName, RuntimeTypes.Serde.Deserializer, symbol) {
                 if (shape is UnionShape) {
@@ -105,7 +84,7 @@ open class HttpProtocolUnitTestRequestGenerator protected constructor(builder: B
 
                 blockWriter.write("")
 
-                blockWriter.call { deserializeDocumentGenerator.render() }
+                blockWriter.call { deserializeDocumentGenerator(blockWriter, shape, symbol).render() }
 
                 blockWriter.write("")
 
@@ -123,6 +102,27 @@ open class HttpProtocolUnitTestRequestGenerator protected constructor(builder: B
         }.also {
             writer.addImport(it)
         }
+    }
+
+    private fun descriptorGenerator(writer: KotlinWriter, shape: Shape) = CborSerdeDescriptorGenerator(RenderingContext(writer, shape, model, symbolProvider, ctx.settings))
+
+    private fun deserializeDocumentGenerator(writer: KotlinWriter, shape: Shape, symbol: Symbol) = when (shape) {
+        is StructureShape -> DeserializeStructGenerator(
+            ctx,
+            shape.members().toMutableList(),
+            writer,
+            TimestampFormatTrait.Format.EPOCH_SECONDS,
+        )
+
+        is UnionShape -> DeserializeUnionGenerator(
+            ctx,
+            symbol.name,
+            shape.members().toMutableList(),
+            writer,
+            TimestampFormatTrait.Format.EPOCH_SECONDS,
+        )
+
+        else -> throw CodegenException("Unexpected shape type ${shape.type}, expected a structure or union")
     }
 
     /**
