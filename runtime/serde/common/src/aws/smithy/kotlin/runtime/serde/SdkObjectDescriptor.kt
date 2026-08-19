@@ -21,15 +21,6 @@ public class SdkObjectDescriptor private constructor(builder: Builder) :
 
     /**
      * Returns a cached [FieldIndex] that provides O(1) lookup of a field's index by its serial name.
-     *
-     * Descriptors are hoisted to file-scope singletons by codegen, so a single descriptor may be read
-     * concurrently by multiple threads deserializing the same struct type. The unsynchronized cache
-     * below is safe under that access: [FieldIndex] is effectively immutable (its state lives in `val`
-     * fields fully populated by its constructor, so it is safely published even through the data race),
-     * and construction is idempotent — the only cost of a race is building the index more than once.
-     *
-     * [serialNameOf] must be stable for a given descriptor. That holds because a descriptor is produced
-     * for exactly one protocol, so only that protocol's `serialName` accessor is ever passed here.
      */
     @InternalApi
     public fun fieldIndex(serialNameOf: (SdkFieldDescriptor) -> String): FieldIndex = cachedFieldIndex ?: FieldIndex(fields, serialNameOf).also { cachedFieldIndex = it }
@@ -66,26 +57,18 @@ public class FieldIndex internal constructor(
     fields: List<SdkFieldDescriptor>,
     serialNameOf: (SdkFieldDescriptor) -> String,
 ) {
-    // Aligned by list position, NOT by SdkFieldDescriptor.index: `index` is a mutable var that
-    // Builder.field() reassigns, so a field-descriptor instance shared across multiple object
-    // descriptors can carry an index outside this descriptor's 0..size-1 range. List positions are
-    // always dense and in-bounds, so they are safe to use for the in-order guess arrays.
-    private val serialNames: Array<String?> = arrayOfNulls(fields.size)
+    // Indexed by list position (always dense, in-bounds), NOT SdkFieldDescriptor.index, which is a
+    // mutable var and can fall outside 0..size-1 when a field is shared across object descriptors.
+    private val serialNames: Array<String> = Array(fields.size) { serialNameOf(fields[it]) }
 
-    // Field index (SdkFieldDescriptor.index) at each list position — the value returned to callers.
-    private val fieldIndices: IntArray = IntArray(fields.size)
+    // Field index at each list position — the value returned to callers.
+    private val fieldIndices: IntArray = IntArray(fields.size) { fields[it].index }
 
     // Serial name -> field index, for O(1) fallback when the in-order guess misses.
-    private val byName: MutableMap<String, Int> = HashMap(fields.size)
-
-    init {
+    private val byName: Map<String, Int> = buildMap(fields.size) {
         for (position in fields.indices) {
-            val field = fields[position]
-            val name = serialNameOf(field)
-            serialNames[position] = name
-            fieldIndices[position] = field.index
             // Keep the FIRST field for a duplicated serial name, matching the old linear scan.
-            if (name !in byName) byName[name] = field.index
+            if (serialNames[position] !in this) put(serialNames[position], fieldIndices[position])
         }
     }
 
