@@ -25,9 +25,9 @@ public class JsonSerializer :
         private val floatsToStringify = setOf(Float.NEGATIVE_INFINITY, Float.POSITIVE_INFINITY, Float.NaN)
     }
 
-    private val jsonWriter = jsonStreamWriter()
+    private val jsonWriter = JsonEncoder()
 
-    override fun toByteArray(): ByteArray = jsonWriter.bytes ?: throw SerializationException("Serializer payload is empty")
+    override fun toByteArray(): ByteArray = jsonWriter.bytes
 
     override fun beginStruct(descriptor: SdkFieldDescriptor): StructSerializer {
         jsonWriter.beginObject()
@@ -57,97 +57,97 @@ public class JsonSerializer :
     }
 
     override fun field(descriptor: SdkFieldDescriptor, value: SdkSerializable) {
-        jsonWriter.writeName(descriptor.serialName)
+        jsonWriter.writeName(descriptor)
         value.serialize(this)
     }
 
     override fun field(descriptor: SdkFieldDescriptor, value: ByteArray) {
-        jsonWriter.writeName(descriptor.serialName)
+        jsonWriter.writeName(descriptor)
         serializeByteArray(value)
     }
 
     override fun field(descriptor: SdkFieldDescriptor, value: Int) {
-        jsonWriter.writeName(descriptor.serialName)
+        jsonWriter.writeName(descriptor)
         serializeInt(value)
     }
 
     override fun field(descriptor: SdkFieldDescriptor, value: Long) {
-        jsonWriter.writeName(descriptor.serialName)
+        jsonWriter.writeName(descriptor)
         serializeLong(value)
     }
 
     override fun field(descriptor: SdkFieldDescriptor, value: Float) {
-        jsonWriter.writeName(descriptor.serialName)
+        jsonWriter.writeName(descriptor)
         serializeFloat(value)
     }
 
     override fun field(descriptor: SdkFieldDescriptor, value: String) {
-        jsonWriter.writeName(descriptor.serialName)
+        jsonWriter.writeName(descriptor)
         serializeString(value)
     }
 
     override fun field(descriptor: SdkFieldDescriptor, value: Double) {
-        jsonWriter.writeName(descriptor.serialName)
+        jsonWriter.writeName(descriptor)
         serializeDouble(value)
     }
 
     override fun field(descriptor: SdkFieldDescriptor, value: BigInteger) {
-        jsonWriter.writeName(descriptor.serialName)
+        jsonWriter.writeName(descriptor)
         serializeBigInteger(value)
     }
 
     override fun field(descriptor: SdkFieldDescriptor, value: BigDecimal) {
-        jsonWriter.writeName(descriptor.serialName)
+        jsonWriter.writeName(descriptor)
         serializeBigDecimal(value)
     }
 
     override fun field(descriptor: SdkFieldDescriptor, value: Boolean) {
-        jsonWriter.writeName(descriptor.serialName)
+        jsonWriter.writeName(descriptor)
         serializeBoolean(value)
     }
 
     override fun field(descriptor: SdkFieldDescriptor, value: Byte) {
-        jsonWriter.writeName(descriptor.serialName)
+        jsonWriter.writeName(descriptor)
         serializeByte(value)
     }
 
     override fun field(descriptor: SdkFieldDescriptor, value: Short) {
-        jsonWriter.writeName(descriptor.serialName)
+        jsonWriter.writeName(descriptor)
         serializeShort(value)
     }
 
     override fun field(descriptor: SdkFieldDescriptor, value: Char) {
-        jsonWriter.writeName(descriptor.serialName)
+        jsonWriter.writeName(descriptor)
         serializeChar(value)
     }
 
     override fun field(descriptor: SdkFieldDescriptor, value: Instant, format: TimestampFormat) {
-        jsonWriter.writeName(descriptor.serialName)
+        jsonWriter.writeName(descriptor)
         serializeInstant(value, format)
     }
 
     override fun field(descriptor: SdkFieldDescriptor, value: Document?) {
-        jsonWriter.writeName(descriptor.serialName)
+        jsonWriter.writeName(descriptor)
         serializeDocument(value)
     }
 
     override fun nullField(descriptor: SdkFieldDescriptor) {
-        jsonWriter.writeName(descriptor.serialName)
+        jsonWriter.writeName(descriptor)
         serializeNull()
     }
 
     override fun structField(descriptor: SdkFieldDescriptor, block: StructSerializer.() -> Unit) {
-        jsonWriter.writeName(descriptor.serialName)
+        jsonWriter.writeName(descriptor)
         serializeStruct(descriptor, block)
     }
 
     override fun listField(descriptor: SdkFieldDescriptor, block: ListSerializer.() -> Unit) {
-        jsonWriter.writeName(descriptor.serialName)
+        jsonWriter.writeName(descriptor)
         serializeList(descriptor, block)
     }
 
     override fun mapField(descriptor: SdkFieldDescriptor, block: MapSerializer.() -> Unit) {
-        jsonWriter.writeName(descriptor.serialName)
+        jsonWriter.writeName(descriptor)
         serializeMap(descriptor, block)
     }
 

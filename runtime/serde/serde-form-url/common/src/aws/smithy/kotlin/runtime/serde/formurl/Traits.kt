@@ -8,12 +8,15 @@ package aws.smithy.kotlin.runtime.serde.formurl
 import aws.smithy.kotlin.runtime.InternalApi
 import aws.smithy.kotlin.runtime.serde.FieldTrait
 import aws.smithy.kotlin.runtime.serde.SdkFieldDescriptor
+import aws.smithy.kotlin.runtime.serde.expectTrait
 
 /**
  * Specifies a name that a field is encoded into for form-url elements.
  */
 @InternalApi
-public data class FormUrlSerialName(public val name: String) : FieldTrait
+public data class FormUrlSerialName(public val name: String) : FieldTrait {
+    internal val encoded: ByteArray by lazy { name.encodeToByteArray() }
+}
 
 /**
  * Trait that adds a static `key=value` pair to a form-url encoded object
