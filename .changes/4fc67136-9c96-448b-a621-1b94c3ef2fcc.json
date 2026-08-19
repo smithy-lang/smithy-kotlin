@@ -1,6 +1,0 @@
-{
-  "id": "4fc67136-9c96-448b-a621-1b94c3ef2fcc",
-  "type": "bugfix",
-  "description": "Decode CBOR string, byte-string, and collection lengths as a `Long` so large lengths are no longer silently truncated to `Int`",
-  "module": "serde-cbor"
-}

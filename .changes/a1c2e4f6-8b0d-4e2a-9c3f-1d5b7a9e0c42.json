@@ -1,6 +1,0 @@
-{
-  "id": "a1c2e4f6-8b0d-4e2a-9c3f-1d5b7a9e0c42",
-  "type": "feature",
-  "description": "Optimize CBOR deserialization by reading values directly from the input buffer instead of building intermediate byte arrays",
-  "module": "serde-cbor"
-}

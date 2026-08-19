@@ -82,8 +82,7 @@ abstract class AbstractSerdeDescriptorGenerator(
                 renderContainerFieldDescriptors(member, nestedMember)
             }
         }
-        // `private` (file-scoped): descriptors are top-level declarations that share the package namespace, so they
-        // must be file-private to avoid collisions across serde files.
+
         writer.withBlock("private val OBJ_DESCRIPTOR = SdkObjectDescriptor.build {", "}") {
             val objTraits = getObjectDescriptorTraits()
             objTraits.forEach { trait ->
