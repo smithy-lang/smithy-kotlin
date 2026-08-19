@@ -98,21 +98,16 @@ internal class JsonEncoder(private val pretty: Boolean = false) : JsonStreamWrit
         append("\"")
     }
 
-    override fun writeName(name: String) {
-        if (state.top() == LexerState.ObjectNextKeyOrEnd) {
-            writeComma()
-        }
-        writeIndent()
-        buffer.appendQuoted(name.escape())
-        state.replaceTop(LexerState.ObjectFieldValue)
-    }
+    override fun writeName(name: String): Unit = writeName { buffer.appendQuoted(name.escape()) }
 
-    internal fun writeName(descriptor: SdkFieldDescriptor) {
+    internal fun writeFieldName(descriptor: SdkFieldDescriptor): Unit = writeName { buffer.append(descriptor.escapedSerialName) }
+
+    private inline fun writeName(appendName: () -> Unit) {
         if (state.top() == LexerState.ObjectNextKeyOrEnd) {
             writeComma()
         }
         writeIndent()
-        buffer.append(descriptor.escapedSerialName)
+        appendName()
         state.replaceTop(LexerState.ObjectFieldValue)
     }
 
