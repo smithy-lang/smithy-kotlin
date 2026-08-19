@@ -1,6 +1,0 @@
-{
-  "id": "2049bc8a-cd89-4d1e-bb4a-84c1f7c3349e",
-  "type": "bugfix",
-  "description": "Fix decoding of CBOR timestamps encoded as negative integers, which previously decoded with the wrong sign for pre-epoch instants",
-  "module": "serde-cbor"
-}

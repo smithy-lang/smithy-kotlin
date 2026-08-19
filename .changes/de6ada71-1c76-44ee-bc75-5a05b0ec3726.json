@@ -1,6 +1,0 @@
-{
-  "id": "de6ada71-1c76-44ee-bc75-5a05b0ec3726",
-  "type": "bugfix",
-  "description": "Encode CBOR text string lengths as a UTF-8 byte count instead of a UTF-16 code-unit count, so multibyte strings produce valid RFC 8949 output",
-  "module": "serde-cbor"
-}

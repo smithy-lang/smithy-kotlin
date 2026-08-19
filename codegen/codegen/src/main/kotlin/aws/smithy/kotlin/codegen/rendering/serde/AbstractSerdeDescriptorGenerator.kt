@@ -82,7 +82,8 @@ abstract class AbstractSerdeDescriptorGenerator(
                 renderContainerFieldDescriptors(member, nestedMember)
             }
         }
-        writer.withBlock("val OBJ_DESCRIPTOR = SdkObjectDescriptor.build {", "}") {
+
+        writer.withBlock("private val OBJ_DESCRIPTOR = SdkObjectDescriptor.build {", "}") {
             val objTraits = getObjectDescriptorTraits()
             objTraits.forEach { trait ->
                 writer.addImport(trait.symbol)
@@ -130,11 +131,11 @@ abstract class AbstractSerdeDescriptorGenerator(
 
         val traits = getFieldDescriptorTraits(member, targetShape, nameSuffix)
         if (traits.isEmpty()) {
-            writer.write("val #L = SdkFieldDescriptor(#L)", descriptorName, serialKind)
+            writer.write("private val #L = SdkFieldDescriptor(#L)", descriptorName, serialKind)
         } else {
             traits.forEach { trait -> writer.addImport(trait.symbol) }
             writer.write(
-                "val #L = SdkFieldDescriptor(#L, #L)",
+                "private val #L = SdkFieldDescriptor(#L, #L)",
                 descriptorName,
                 serialKind,
                 traits.joinToString(separator = ", "),
