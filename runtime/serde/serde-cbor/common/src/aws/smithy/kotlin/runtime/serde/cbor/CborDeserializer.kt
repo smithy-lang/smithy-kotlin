@@ -185,7 +185,7 @@ private class CborFieldIterator(
     private val fieldIndex = descriptor.fieldIndex { it.serialName }
 
     // In-order cursor: fields are almost always sent in schema order, so the field following the
-    // last match is the most likely next hit. Checked first by [FieldIndex.lookup] to avoid hashing.
+    // last match is the most likely next hit.
     private var expectedFieldIndex = 0
 
     override tailrec fun findNextFieldIndex(): Int? {

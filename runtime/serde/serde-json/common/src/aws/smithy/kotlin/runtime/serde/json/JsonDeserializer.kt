@@ -199,13 +199,10 @@ private class JsonFieldIterator(
     Deserializer by deserializer,
     PrimitiveDeserializer by deserializer {
 
-    // O(1) serialName -> field index lookup, cached on the (hoisted, singleton) descriptor so it is
-    // built once per struct type and reused across every deserialization instead of the historical
-    // linear scan (which also re-resolved the JsonSerialName trait on every comparison).
     private val fieldIndex = descriptor.fieldIndex { it.serialName }
 
     // In-order cursor: fields are almost always sent in schema order, so the field following the last
-    // match is the most likely next hit. Checked first by [FieldIndex.lookup] to avoid hashing.
+    // match is the most likely next hit.
     private var expectedFieldIndex = 0
 
     override fun findNextFieldIndex(): Int? {
