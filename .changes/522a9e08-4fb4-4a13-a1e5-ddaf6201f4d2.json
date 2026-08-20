@@ -1,0 +1,6 @@
+{
+  "id": "522a9e08-4fb4-4a13-a1e5-ddaf6201f4d2",
+  "type": "feature",
+  "description": "Optimize CBOR serialization by caching each field's pre-encoded CBOR name bytes on its descriptor instead of re-encoding the name on every field write",
+  "module": "serde-cbor"
+}
