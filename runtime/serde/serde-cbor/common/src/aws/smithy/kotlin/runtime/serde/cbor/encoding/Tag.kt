@@ -59,7 +59,7 @@ internal class Tag(val id: ULong, val value: Value) : Value {
  * @param value the [Instant] that this CBOR timestamp represents
  */
 internal class Timestamp(val value: Instant) : Value {
-    override fun encode(into: SdkBufferedSink) = Tag(1u, Float64(value.epochMilliseconds / 1000.toDouble())).encode(into)
+    override fun encode(into: SdkBufferedSink) = into.writeTimestamp(value)
 
     internal companion object {
         internal fun decode(buffer: SdkBufferedSource): Timestamp {
@@ -90,6 +90,13 @@ internal class Timestamp(val value: Instant) : Value {
             return Timestamp(instant)
         }
     }
+}
+
+// Encode a CBOR timestamp (tag 1) directly to [into], without allocating [Timestamp]/[Tag]/[Float64] wrappers.
+// Byte-identical to the wrapper path: tag 1 followed by the epoch-seconds value as a 64-bit float.
+internal fun SdkBufferedSink.writeTimestamp(value: Instant) {
+    writeArgument(Major.TAG, TagId.TIMESTAMP.value)
+    writeFloat64(value.epochMilliseconds / 1000.toDouble())
 }
 
 /**

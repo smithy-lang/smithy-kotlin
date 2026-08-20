@@ -19,9 +19,12 @@ internal class UInt(val value: ULong) : Value {
     override fun encode(into: SdkBufferedSink) = into.writeArgument(Major.U_INT, value)
 
     internal companion object {
-        fun decode(buffer: SdkBufferedSource) = UInt(decodeArgument(buffer))
+        fun decode(buffer: SdkBufferedSource) = UInt(decodeUInt(buffer))
     }
 }
+
+// Decode a CBOR unsigned integer (major type 0) argument directly, without allocating a [UInt] wrapper.
+internal fun decodeUInt(buffer: SdkBufferedSource): ULong = decodeArgument(buffer)
 
 /**
  * Represents a CBOR negative integer (major type 1) in the range [-2^64, -1].
@@ -33,12 +36,12 @@ internal class NegInt(val value: ULong) : Value {
     override fun encode(into: SdkBufferedSink) = into.writeArgument(Major.NEG_INT, value - 1u)
 
     internal companion object {
-        fun decode(buffer: SdkBufferedSource): NegInt {
-            val argument: ULong = decodeArgument(buffer)
-            return NegInt(argument + 1u)
-        }
+        fun decode(buffer: SdkBufferedSource): NegInt = NegInt(decodeNegInt(buffer))
     }
 }
+
+// Decode a CBOR negative integer (major type 1) as its ULong value (-1 - n), without allocating a [NegInt] wrapper.
+internal fun decodeNegInt(buffer: SdkBufferedSource): ULong = decodeArgument(buffer) + 1u
 
 /**
  * Represents a CBOR 16-bit float (major type 7, minor type 25).
@@ -49,36 +52,39 @@ internal class Float16(val value: Float) : Value {
     override fun encode(into: SdkBufferedSink) = throw SerializationException("Encoding of CBOR 16-bit floats is not supported")
 
     internal companion object {
-        fun decode(buffer: SdkBufferedSource): Float16 {
-            buffer.readByte() // discard head byte
-            val float16Bits: Int = buffer.readShort().toInt() and 0xffff
-
-            val sign = (float16Bits and (0x1 shl 15)) shl 16 // top bit
-            val exponent = (float16Bits and (0x1f shl 10)) shr 10 // next 5 bits
-            val fraction = (float16Bits and 0x3ff) shl 13 // remaining 10 bits
-
-            val float32 = when (exponent) {
-                0x1F -> sign or 0x7F800000 or fraction // Infinity / NaN
-                0 -> {
-                    if (fraction == 0) {
-                        sign // Zero
-                    } else {
-                        // Subnormal numbers
-                        var subnormalFraction = fraction
-                        var e = -14 + 127
-                        while (subnormalFraction and 0x800000 == 0) {
-                            subnormalFraction = subnormalFraction shl 1
-                            e -= 1
-                        }
-                        sign or (e shl 23) or (subnormalFraction and 0x7FFFFF)
-                    }
-                }
-                else -> sign or ((exponent + (127 - 15)) shl 23) or fraction // Normalized numbers
-            }
-
-            return Float16(Float.fromBits(float32))
-        }
+        fun decode(buffer: SdkBufferedSource): Float16 = Float16(decodeFloat16(buffer))
     }
+}
+
+// Decode a CBOR 16-bit float (major type 7, minor type 25) directly to a [Float], without allocating a [Float16] wrapper.
+internal fun decodeFloat16(buffer: SdkBufferedSource): Float {
+    buffer.readByte() // discard head byte
+    val float16Bits: Int = buffer.readShort().toInt() and 0xffff
+
+    val sign = (float16Bits and (0x1 shl 15)) shl 16 // top bit
+    val exponent = (float16Bits and (0x1f shl 10)) shr 10 // next 5 bits
+    val fraction = (float16Bits and 0x3ff) shl 13 // remaining 10 bits
+
+    val float32 = when (exponent) {
+        0x1F -> sign or 0x7F800000 or fraction // Infinity / NaN
+        0 -> {
+            if (fraction == 0) {
+                sign // Zero
+            } else {
+                // Subnormal numbers
+                var subnormalFraction = fraction
+                var e = -14 + 127
+                while (subnormalFraction and 0x800000 == 0) {
+                    subnormalFraction = subnormalFraction shl 1
+                    e -= 1
+                }
+                sign or (e shl 23) or (subnormalFraction and 0x7FFFFF)
+            }
+        }
+        else -> sign or ((exponent + (127 - 15)) shl 23) or fraction // Normalized numbers
+    }
+
+    return Float.fromBits(float32)
 }
 
 /**
@@ -86,17 +92,22 @@ internal class Float16(val value: Float) : Value {
  * @param value the [Float] that this CBOR 32-bit float represents.
  */
 internal class Float32(val value: Float) : Value {
-    override fun encode(into: SdkBufferedSink) {
-        into.writeByte(encodeMajorMinor(Major.TYPE_7, Minor.FLOAT32))
-        into.writeInt(value.toRawBits())
-    }
+    override fun encode(into: SdkBufferedSink) = into.writeFloat32(value)
 
     internal companion object {
-        fun decode(buffer: SdkBufferedSource): Float32 {
-            buffer.readByte() // discard head byte
-            return Float32(Float.fromBits(buffer.readInt()))
-        }
+        fun decode(buffer: SdkBufferedSource): Float32 = Float32(decodeFloat32(buffer))
     }
+}
+
+internal fun SdkBufferedSink.writeFloat32(value: Float) {
+    writeByte(encodeMajorMinor(Major.TYPE_7, Minor.FLOAT32))
+    writeInt(value.toRawBits())
+}
+
+// Decode a CBOR 32-bit float (major type 7, minor type 26) directly to a [Float], without allocating a [Float32] wrapper.
+internal fun decodeFloat32(buffer: SdkBufferedSource): Float {
+    buffer.readByte() // discard head byte
+    return Float.fromBits(buffer.readInt())
 }
 
 /**
@@ -104,15 +115,20 @@ internal class Float32(val value: Float) : Value {
  * @param value the [Double] that this CBOR 64-bit float represents
  */
 internal class Float64(val value: Double) : Value {
-    override fun encode(into: SdkBufferedSink) {
-        into.writeByte(encodeMajorMinor(Major.TYPE_7, Minor.FLOAT64))
-        into.writeLong(value.toRawBits())
-    }
+    override fun encode(into: SdkBufferedSink) = into.writeFloat64(value)
 
     internal companion object {
-        fun decode(buffer: SdkBufferedSource): Float64 {
-            buffer.readByte() // discard head byte
-            return Float64(Double.fromBits(buffer.readLong()))
-        }
+        fun decode(buffer: SdkBufferedSource): Float64 = Float64(decodeFloat64(buffer))
     }
+}
+
+internal fun SdkBufferedSink.writeFloat64(value: Double) {
+    writeByte(encodeMajorMinor(Major.TYPE_7, Minor.FLOAT64))
+    writeLong(value.toRawBits())
+}
+
+// Decode a CBOR 64-bit float (major type 7, minor type 27) directly to a [Double], without allocating a [Float64] wrapper.
+internal fun decodeFloat64(buffer: SdkBufferedSource): Double {
+    buffer.readByte() // discard head byte
+    return Double.fromBits(buffer.readLong())
 }

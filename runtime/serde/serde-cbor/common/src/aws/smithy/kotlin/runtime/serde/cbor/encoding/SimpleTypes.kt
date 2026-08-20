@@ -21,14 +21,17 @@ internal class Boolean(val value: kotlin.Boolean) : Value {
     )
 
     internal companion object {
-        internal fun decode(buffer: SdkBufferedSource): Boolean = when (val minor = peekMinorByte(buffer)) {
-            Minor.FALSE.value -> Boolean(false)
-            Minor.TRUE.value -> Boolean(true)
-            else -> throw DeserializationException("Unknown minor argument $minor for Boolean")
-        }.also {
-            buffer.readByte()
-        }
+        internal fun decode(buffer: SdkBufferedSource): Boolean = Boolean(decodeBooleanValue(buffer))
     }
+}
+
+// Decode a CBOR boolean (major type 7, minor 20/21) directly, without allocating a [Boolean] wrapper.
+internal fun decodeBooleanValue(buffer: SdkBufferedSource): kotlin.Boolean = when (val minor = peekMinorByte(buffer)) {
+    Minor.FALSE.value -> false
+    Minor.TRUE.value -> true
+    else -> throw DeserializationException("Unknown minor argument $minor for Boolean")
+}.also {
+    buffer.readByte()
 }
 
 /**

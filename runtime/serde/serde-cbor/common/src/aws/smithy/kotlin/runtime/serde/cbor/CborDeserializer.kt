@@ -12,7 +12,6 @@ import aws.smithy.kotlin.runtime.serde.*
 import aws.smithy.kotlin.runtime.serde.cbor.encoding.*
 import aws.smithy.kotlin.runtime.time.Instant
 import aws.smithy.kotlin.runtime.time.TimestampFormat
-import aws.smithy.kotlin.runtime.serde.cbor.encoding.Boolean as cborBoolean
 
 /**
  * Deserializer for CBOR byte payloads
@@ -58,55 +57,73 @@ public class CborDeserializer(payload: ByteArray) : Deserializer {
 }
 
 internal class CborPrimitiveDeserializer(private val buffer: SdkBufferedSource) : PrimitiveDeserializer {
-    private inline fun <reified T : Number> deserializeNumber(cast: (Number) -> T): T {
+    // Decode a CBOR integer (major 0 / 1) to a signed [Long] with the same range/overflow checks as before,
+    // without allocating a UInt/NegInt wrapper or boxing through a Number.
+    private fun decodeSignedLong(): Long {
         val major = peekMajor(buffer)
 
         val unsigned: ULong = when (major) {
-            Major.U_INT -> UInt.decode(buffer).value
-            Major.NEG_INT -> NegInt.decode(buffer).value
+            Major.U_INT -> decodeUInt(buffer)
+            Major.NEG_INT -> decodeNegInt(buffer)
             else -> throw DeserializationException("Expected ${Major.U_INT} or ${Major.NEG_INT} for CBOR number, got $major.")
         }
 
         // Convert ULong -> Long, handling potential overflow
-        val signed: Long = if (major == Major.NEG_INT) {
+        return if (major == Major.NEG_INT) {
             check(unsigned <= Long.MAX_VALUE.toULong() + 1u) { "CBOR number $unsigned exceeds minimum value ${Long.MIN_VALUE}" }
             -(unsigned.toLong())
         } else {
             check(unsigned <= Long.MAX_VALUE.toULong()) { "CBOR number $unsigned exceeds maximum value ${Long.MAX_VALUE}" }
             unsigned.toLong()
         }
-
-        when (T::class) {
-            Byte::class -> check(signed in (Byte.MIN_VALUE..Byte.MAX_VALUE)) { "$signed out of range for Byte" }
-            Short::class -> check(signed in (Short.MIN_VALUE..Short.MAX_VALUE)) { "$signed out of range for Short" }
-            Int::class -> check(signed in (Int.MIN_VALUE..Int.MAX_VALUE)) { "$signed out of range for Int" }
-        }
-
-        return cast(signed)
     }
 
-    override fun deserializeByte(): Byte = deserializeNumber { it.toByte() }
-    override fun deserializeInt(): Int = deserializeNumber { it.toInt() }
-    override fun deserializeShort(): Short = deserializeNumber { it.toShort() }
-    override fun deserializeLong(): Long = deserializeNumber { it.toLong() }
-
-    private inline fun <reified T : Number> deserializeFloatingPoint(cast: (Number) -> T): T {
-        val number: Number = when (val major = peekMajor(buffer)) {
-            Major.TYPE_7 -> when (val minor = peekMinorByte(buffer)) {
-                Minor.FLOAT16.value -> Float16.decode(buffer).value
-                Minor.FLOAT32.value -> Float32.decode(buffer).value
-                Minor.FLOAT64.value -> Float64.decode(buffer).value
-                else -> throw DeserializationException("Unexpected minor value $minor decoding CBOR floating point for major type 7.")
-            }
-            Major.U_INT -> UInt.decode(buffer).value.toLong()
-            Major.NEG_INT -> -(NegInt.decode(buffer).value.toLong())
-            else -> throw DeserializationException("Expected floating point or integer major type for CBOR floating point number, got $major.")
-        }
-        return cast(number)
+    override fun deserializeByte(): Byte {
+        val value = decodeSignedLong()
+        check(value in (Byte.MIN_VALUE..Byte.MAX_VALUE)) { "$value out of range for Byte" }
+        return value.toByte()
     }
 
-    override fun deserializeFloat(): Float = deserializeFloatingPoint { it.toFloat() }
-    override fun deserializeDouble(): Double = deserializeFloatingPoint { it.toDouble() }
+    override fun deserializeShort(): Short {
+        val value = decodeSignedLong()
+        check(value in (Short.MIN_VALUE..Short.MAX_VALUE)) { "$value out of range for Short" }
+        return value.toShort()
+    }
+
+    override fun deserializeInt(): Int {
+        val value = decodeSignedLong()
+        check(value in (Int.MIN_VALUE..Int.MAX_VALUE)) { "$value out of range for Int" }
+        return value.toInt()
+    }
+
+    override fun deserializeLong(): Long = decodeSignedLong()
+
+    override fun deserializeFloat(): Float = when (val major = peekMajor(buffer)) {
+        Major.TYPE_7 -> when (val minor = peekMinorByte(buffer)) {
+            Minor.FLOAT16.value -> decodeFloat16(buffer)
+            Minor.FLOAT32.value -> decodeFloat32(buffer)
+            Minor.FLOAT64.value -> decodeFloat64(buffer).toFloat()
+            else -> throw DeserializationException("Unexpected minor value $minor decoding CBOR floating point for major type 7.")
+        }
+        Major.U_INT -> decodeUInt(buffer).toLong().toFloat()
+        // Negate the Long before converting (matches the original `-(value.toLong())` semantics, including
+        // the Long.MIN_VALUE overflow), NOT the float — `-x.toFloat()` would parse as convert-then-negate.
+        Major.NEG_INT -> (-decodeNegInt(buffer).toLong()).toFloat()
+        else -> throw DeserializationException("Expected floating point or integer major type for CBOR floating point number, got $major.")
+    }
+
+    override fun deserializeDouble(): Double = when (val major = peekMajor(buffer)) {
+        Major.TYPE_7 -> when (val minor = peekMinorByte(buffer)) {
+            Minor.FLOAT16.value -> decodeFloat16(buffer).toDouble()
+            Minor.FLOAT32.value -> decodeFloat32(buffer).toDouble()
+            Minor.FLOAT64.value -> decodeFloat64(buffer)
+            else -> throw DeserializationException("Unexpected minor value $minor decoding CBOR floating point for major type 7.")
+        }
+        Major.U_INT -> decodeUInt(buffer).toLong().toDouble()
+        // Negate the Long before converting (see deserializeFloat).
+        Major.NEG_INT -> (-decodeNegInt(buffer).toLong()).toDouble()
+        else -> throw DeserializationException("Expected floating point or integer major type for CBOR floating point number, got $major.")
+    }
 
     override fun deserializeBigInteger(): BigInteger = when (val tag = Tag.decode(buffer).value) {
         is BigNum -> tag.value
@@ -119,9 +136,9 @@ internal class CborPrimitiveDeserializer(private val buffer: SdkBufferedSource) 
         return (tag.value as DecimalFraction).value
     }
 
-    override fun deserializeString(): String = TextString.decode(buffer).value
+    override fun deserializeString(): String = decodeTextStringValue(buffer)
 
-    override fun deserializeBoolean(): Boolean = cborBoolean.decode(buffer).value
+    override fun deserializeBoolean(): Boolean = decodeBooleanValue(buffer)
 
     override fun deserializeDocument(): Document = throw DeserializationException("Document is not a supported CBOR type.")
 
@@ -130,7 +147,7 @@ internal class CborPrimitiveDeserializer(private val buffer: SdkBufferedSource) 
         return null
     }
 
-    override fun deserializeByteArray(): ByteArray = ByteString.decode(buffer).value
+    override fun deserializeByteArray(): ByteArray = decodeByteStringValue(buffer)
 
     override fun deserializeInstant(format: TimestampFormat): Instant {
         val tag = Tag.decode(buffer)
@@ -197,7 +214,7 @@ private class CborFieldIterator(
             IndefiniteBreak.decode(buffer)
             null
         } else {
-            val nextFieldName = TextString.decode(buffer).value
+            val nextFieldName = decodeTextStringValue(buffer)
             descriptor
                 .fields
                 .firstOrNull { it.serialName == nextFieldName }
@@ -216,7 +233,7 @@ private class CborFieldIterator(
     }
 
     override fun skipValue() {
-        Value.decode(buffer)
+        skipValue(buffer)
     }
 }
 

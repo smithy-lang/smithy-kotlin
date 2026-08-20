@@ -23,7 +23,7 @@ import aws.smithy.kotlin.runtime.serde.cbor.encoding.Minor
 import aws.smithy.kotlin.runtime.serde.cbor.encoding.NegBigNum
 import aws.smithy.kotlin.runtime.serde.cbor.encoding.Null
 import aws.smithy.kotlin.runtime.serde.cbor.encoding.TextString
-import aws.smithy.kotlin.runtime.serde.cbor.encoding.Timestamp
+import aws.smithy.kotlin.runtime.serde.cbor.encoding.writeTimestamp
 import aws.smithy.kotlin.runtime.time.Instant
 import aws.smithy.kotlin.runtime.time.TimestampFormat
 import kotlin.math.absoluteValue
@@ -104,7 +104,7 @@ public class CborSerializer :
 
     // Note: CBOR does not use [TimestampFormat]
     override fun serializeInstant(value: Instant, format: TimestampFormat): Unit = serializeInstant(value)
-    public fun serializeInstant(value: Instant): Unit = buffer.write(Timestamp(value))
+    public fun serializeInstant(value: Instant): Unit = buffer.writeTimestamp(value)
 
     override fun serializeByteArray(value: ByteArray): Unit = buffer.write(ByteString(value))
 

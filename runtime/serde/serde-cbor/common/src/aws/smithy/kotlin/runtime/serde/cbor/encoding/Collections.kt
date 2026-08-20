@@ -64,6 +64,22 @@ internal class ByteString(val value: ByteArray) : Value {
     }
 }
 
+// Decode a CBOR text string (major type 3) directly to a [String], without allocating a [TextString] wrapper.
+// The rare indefinite-length form falls back to the wrapper-based path.
+internal fun decodeTextStringValue(buffer: SdkBufferedSource, depth: Int = 0): String = if (peekMinorByte(buffer) == Minor.INDEFINITE.value) {
+    TextString.decode(buffer, depth).value
+} else {
+    buffer.readUtf8(decodeArgument(buffer).toLong())
+}
+
+// Decode a CBOR byte string (major type 2) directly to a [ByteArray], without allocating a [ByteString] wrapper.
+// The rare indefinite-length form falls back to the wrapper-based path.
+internal fun decodeByteStringValue(buffer: SdkBufferedSource, depth: Int = 0): ByteArray = if (peekMinorByte(buffer) == Minor.INDEFINITE.value) {
+    ByteString.decode(buffer, depth).value
+} else {
+    buffer.readByteArray(decodeArgument(buffer).toLong())
+}
+
 /**
  * Represents a CBOR list (major type 4).
  * @param value the [kotlin.collections.List<Value>] represented by this CBOR list.
