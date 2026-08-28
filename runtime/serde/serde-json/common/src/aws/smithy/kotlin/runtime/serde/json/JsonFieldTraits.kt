@@ -15,7 +15,6 @@ import aws.smithy.kotlin.runtime.serde.expectTrait
  */
 @InternalApi
 public data class JsonSerialName(public val name: String) : FieldTrait {
-
     internal val escaped: String by lazy { "\"${name.escape()}\"" }
 }
 

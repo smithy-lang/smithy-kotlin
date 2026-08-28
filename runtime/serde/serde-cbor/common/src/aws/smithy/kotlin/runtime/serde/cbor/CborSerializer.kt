@@ -75,6 +75,7 @@ public class CborSerializer :
             buffer.writeArgument(Major.U_INT, longValue.toULong())
         }
     }
+
     override fun serializeByte(value: Byte): Unit = serializeNumber(value)
     override fun serializeShort(value: Short): Unit = serializeNumber(value)
     override fun serializeInt(value: Int): Unit = serializeNumber(value)
@@ -118,6 +119,7 @@ public class CborSerializer :
         serializeString(key)
         value?.let(serializeValue) ?: serializeNull()
     }
+
     override fun entry(key: String, value: Boolean?): Unit = serializeEntry(key, value, ::serializeBoolean)
     override fun entry(key: String, value: Byte?): Unit = serializeEntry(key, value, ::serializeByte)
     override fun entry(key: String, value: Short?): Unit = serializeEntry(key, value, ::serializeShort)
@@ -164,47 +166,59 @@ public class CborSerializer :
         serializeFieldName(descriptor)
         serializeBoolean(value)
     }
+
     override fun field(descriptor: SdkFieldDescriptor, value: Byte) {
         serializeFieldName(descriptor)
         serializeByte(value)
     }
+
     override fun field(descriptor: SdkFieldDescriptor, value: Short) {
         serializeFieldName(descriptor)
         serializeShort(value)
     }
+
     override fun field(descriptor: SdkFieldDescriptor, value: Char) {
         serializeFieldName(descriptor)
         serializeChar(value)
     }
+
     override fun field(descriptor: SdkFieldDescriptor, value: Int) {
         serializeFieldName(descriptor)
         serializeInt(value)
     }
+
     override fun field(descriptor: SdkFieldDescriptor, value: Long) {
         serializeFieldName(descriptor)
         serializeLong(value)
     }
+
     override fun field(descriptor: SdkFieldDescriptor, value: Float) {
         serializeFieldName(descriptor)
         serializeFloat(value)
     }
+
     override fun field(descriptor: SdkFieldDescriptor, value: Double) {
         serializeFieldName(descriptor)
         serializeDouble(value)
     }
+
     override fun field(descriptor: SdkFieldDescriptor, value: String) {
         serializeFieldName(descriptor)
         serializeString(value)
     }
+
     override fun field(descriptor: SdkFieldDescriptor, value: Instant, format: TimestampFormat) {
         serializeFieldName(descriptor)
         serializeInstant(value, format)
     }
+
     override fun field(descriptor: SdkFieldDescriptor, value: Document?): Unit = throw SerializationException("Document is not a supported CBOR type.")
+
     override fun field(descriptor: SdkFieldDescriptor, value: SdkSerializable) {
         serializeFieldName(descriptor)
         serializeSdkSerializable(value)
     }
+
     override fun field(descriptor: SdkFieldDescriptor, value: ByteArray) {
         serializeFieldName(descriptor)
         serializeByteArray(value)
