@@ -81,11 +81,14 @@ private class FormUrlStructSerializer(
     private val buffer
         get() = parent.buffer
 
+    // pre-encoded UTF-8 bytes of [prefix]
+    private val prefixBytes: ByteArray = if (prefix.isNotBlank()) prefix.encodeToByteArray() else EMPTY_BYTES
+
     init {
         structDescriptor.traits.mapNotNull { it as? QueryLiteral }
             .forEach { literal ->
                 if (buffer.size > 0L) buffer.writeUtf8("&")
-                if (prefix.isNotBlank()) buffer.writeUtf8(prefix)
+                buffer.write(prefixBytes)
                 buffer.write(literal.encoded)
             }
     }
@@ -94,7 +97,7 @@ private class FormUrlStructSerializer(
         if (buffer.size > 0L) {
             buffer.writeUtf8("&")
         }
-        if (prefix.isNotBlank()) buffer.writeUtf8(prefix)
+        buffer.write(prefixBytes)
         buffer.write(descriptor.serialNameBytes)
         buffer.writeUtf8("=")
         block()
@@ -363,6 +366,8 @@ private class FormUrlMapSerializer(
 
     override fun endMap() {}
 }
+
+private val EMPTY_BYTES = ByteArray(0)
 
 private fun SdkBuffer.commonWriteNumber(value: Number): Unit = writeUtf8(value.toString())
 
