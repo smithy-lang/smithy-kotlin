@@ -1,6 +1,0 @@
-{
-  "id": "eb0d3ba2-d20c-4ffc-a246-00a6f0721842",
-  "type": "feature",
-  "description": "Optimize JSON serialization by caching each field's pre-escaped, quoted name on its descriptor instead of re-escaping the name on every field write",
-  "module": "serde-json"
-}

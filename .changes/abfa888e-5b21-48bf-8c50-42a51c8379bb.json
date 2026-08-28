@@ -1,6 +1,0 @@
-{
-  "id": "abfa888e-5b21-48bf-8c50-42a51c8379bb",
-  "type": "feature",
-  "description": "Optimize form-url serialization by caching each field's pre-encoded name bytes and each query literal's pre-encoded key/value pair on their descriptors instead of re-encoding on every write",
-  "module": "serde-form-url"
-}
