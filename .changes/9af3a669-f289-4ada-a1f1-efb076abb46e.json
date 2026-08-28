@@ -1,0 +1,5 @@
+{
+  "id": "9af3a669-f289-4ada-a1f1-efb076abb46e",
+  "type": "feature",
+  "description": "Optimize serde performance by hoisting generated object/field descriptors to file-level scope so they are constructed once instead of on every serialize/deserialize invocation"
+}
