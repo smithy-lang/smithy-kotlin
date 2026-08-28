@@ -4,7 +4,6 @@
  */
 package aws.smithy.kotlin.runtime.http.engine.okhttp
 
-import aws.smithy.kotlin.runtime.ExperimentalApi
 import aws.smithy.kotlin.runtime.collections.emptyAttributes
 import aws.smithy.kotlin.runtime.http.engine.internal.HttpClientMetrics
 import aws.smithy.kotlin.runtime.operation.ExecutionContext
@@ -28,7 +27,6 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.fail
 
-@OptIn(ExperimentalApi::class)
 class MetricsInterceptorTest {
     private val metricReader = InMemoryMetricReader.create()
     private val sdkMeterProvider = SdkMeterProvider.builder()

@@ -5,7 +5,6 @@
 
 package aws.smithy.kotlin.runtime.http.operation
 
-import aws.smithy.kotlin.runtime.ExperimentalApi
 import aws.smithy.kotlin.runtime.InternalApi
 import aws.smithy.kotlin.runtime.businessmetrics.BusinessMetrics
 import aws.smithy.kotlin.runtime.businessmetrics.SmithyBusinessMetric
@@ -287,7 +286,6 @@ internal class AuthHandler<Input, Output>(
             request.context.getOrNull(SdkClientOption.OperationName)?.let { "rpc.method" to it }
         }
 
-        @OptIn(ExperimentalApi::class)
         val telemetryCtx = request.context.operationMetrics.provider.contextManager.current()
 
         // properties need to propagate from AuthOption to signer and identity provider

@@ -7,16 +7,16 @@ package aws.smithy.kotlin.runtime.serde.cbor.encoding
 import aws.smithy.kotlin.runtime.io.SdkBufferedSink
 import aws.smithy.kotlin.runtime.io.SdkBufferedSource
 import aws.smithy.kotlin.runtime.serde.SerializationException
-import aws.smithy.kotlin.runtime.serde.cbor.encodeArgument
 import aws.smithy.kotlin.runtime.serde.cbor.encodeMajorMinor
 import aws.smithy.kotlin.runtime.serde.cbor.toULong
+import aws.smithy.kotlin.runtime.serde.cbor.writeArgument
 
 /**
  * Represents a CBOR unsigned integer (major type 0) in the range [0, 2^64-1].
  * @param value The [ULong] value which this unsigned integer represents.
  */
 internal class UInt(val value: ULong) : Value {
-    override fun encode(into: SdkBufferedSink) = into.write(encodeArgument(Major.U_INT, value))
+    override fun encode(into: SdkBufferedSink) = into.writeArgument(Major.U_INT, value)
 
     internal companion object {
         fun decode(buffer: SdkBufferedSource) = UInt(decodeArgument(buffer))
@@ -30,7 +30,7 @@ internal class UInt(val value: ULong) : Value {
  * Values will be properly encoded / decoded according to the CBOR specification (-1 minus $value)
  */
 internal class NegInt(val value: ULong) : Value {
-    override fun encode(into: SdkBufferedSink) = into.write(encodeArgument(Major.NEG_INT, value - 1u))
+    override fun encode(into: SdkBufferedSink) = into.writeArgument(Major.NEG_INT, value - 1u)
 
     internal companion object {
         fun decode(buffer: SdkBufferedSource): NegInt {
@@ -51,9 +51,7 @@ internal class Float16(val value: Float) : Value {
     internal companion object {
         fun decode(buffer: SdkBufferedSource): Float16 {
             buffer.readByte() // discard head byte
-            val bytes = buffer.readByteArray(2)
-
-            val float16Bits: Int = ((bytes[0].toInt() and 0xff) shl 8) or (bytes[1].toInt() and 0xff)
+            val float16Bits: Int = buffer.readShort().toInt() and 0xffff
 
             val sign = (float16Bits and (0x1 shl 15)) shl 16 // top bit
             val exponent = (float16Bits and (0x1f shl 10)) shr 10 // next 5 bits
@@ -89,21 +87,14 @@ internal class Float16(val value: Float) : Value {
  */
 internal class Float32(val value: Float) : Value {
     override fun encode(into: SdkBufferedSink) {
-        val bits: Int = value.toRawBits()
-
-        val bytes = (24 downTo 0 step 8).map { shiftAmount ->
-            (bits shr shiftAmount and 0xff).toByte()
-        }.toByteArray()
-
         into.writeByte(encodeMajorMinor(Major.TYPE_7, Minor.FLOAT32))
-        into.write(bytes)
+        into.writeInt(value.toRawBits())
     }
 
     internal companion object {
         fun decode(buffer: SdkBufferedSource): Float32 {
             buffer.readByte() // discard head byte
-            val bytes = buffer.readByteArray(4)
-            return Float32(Float.fromBits(bytes.toULong().toInt()))
+            return Float32(Float.fromBits(buffer.readInt()))
         }
     }
 }
@@ -114,20 +105,14 @@ internal class Float32(val value: Float) : Value {
  */
 internal class Float64(val value: Double) : Value {
     override fun encode(into: SdkBufferedSink) {
-        val bits: Long = value.toRawBits()
-        val bytes = (56 downTo 0 step 8).map { shiftAmount ->
-            (bits shr shiftAmount and 0xff).toByte()
-        }.toByteArray()
-
         into.writeByte(encodeMajorMinor(Major.TYPE_7, Minor.FLOAT64))
-        into.write(bytes)
+        into.writeLong(value.toRawBits())
     }
 
     internal companion object {
         fun decode(buffer: SdkBufferedSource): Float64 {
             buffer.readByte() // discard head byte
-            val bytes = buffer.readByteArray(8)
-            return Float64(Double.fromBits(bytes.toULong().toLong()))
+            return Float64(Double.fromBits(buffer.readLong()))
         }
     }
 }

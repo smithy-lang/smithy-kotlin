@@ -68,6 +68,8 @@ public actual class SdkBuffer :
 
     actual override fun readByte(): Byte = commonReadByte()
 
+    actual override fun peekByte(): Byte = commonPeekByte()
+
     actual override fun readShort(): Short = commonReadShort()
 
     actual override fun readShortLe(): Short = commonReadShortLe()
