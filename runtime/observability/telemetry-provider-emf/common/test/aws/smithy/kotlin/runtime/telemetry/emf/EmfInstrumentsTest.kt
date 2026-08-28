@@ -4,14 +4,12 @@
  */
 package aws.smithy.kotlin.runtime.telemetry.emf
 
-import aws.smithy.kotlin.runtime.ExperimentalApi
 import aws.smithy.kotlin.runtime.collections.attributesOf
 import aws.smithy.kotlin.runtime.collections.emptyAttributes
 import kotlin.test.Test
 import kotlin.test.assertContains
 import kotlin.test.assertEquals
 
-@OptIn(ExperimentalApi::class)
 class EmfInstrumentsTest {
     @Test
     fun doubleHistogramEmitsEmf() {

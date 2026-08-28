@@ -12,11 +12,21 @@ import aws.smithy.kotlin.runtime.http.HttpBody
 import aws.smithy.kotlin.runtime.http.toHttpBody
 import aws.smithy.kotlin.runtime.io.SdkBuffer
 import aws.smithy.kotlin.runtime.serde.*
-import aws.smithy.kotlin.runtime.serde.cbor.encoding.*
+import aws.smithy.kotlin.runtime.serde.cbor.encoding.BigNum
+import aws.smithy.kotlin.runtime.serde.cbor.encoding.ByteString
+import aws.smithy.kotlin.runtime.serde.cbor.encoding.DecimalFraction
+import aws.smithy.kotlin.runtime.serde.cbor.encoding.Float32
+import aws.smithy.kotlin.runtime.serde.cbor.encoding.Float64
+import aws.smithy.kotlin.runtime.serde.cbor.encoding.IndefiniteBreak
+import aws.smithy.kotlin.runtime.serde.cbor.encoding.Major
+import aws.smithy.kotlin.runtime.serde.cbor.encoding.Minor
+import aws.smithy.kotlin.runtime.serde.cbor.encoding.NegBigNum
+import aws.smithy.kotlin.runtime.serde.cbor.encoding.Null
+import aws.smithy.kotlin.runtime.serde.cbor.encoding.TextString
+import aws.smithy.kotlin.runtime.serde.cbor.encoding.Timestamp
 import aws.smithy.kotlin.runtime.time.Instant
 import aws.smithy.kotlin.runtime.time.TimestampFormat
 import kotlin.math.absoluteValue
-import aws.smithy.kotlin.runtime.serde.cbor.encoding.Boolean as cborBoolean
 
 @InternalApi
 public class CborSerializer :
@@ -33,7 +43,7 @@ public class CborSerializer :
     override fun beginMap(descriptor: SdkFieldDescriptor): MapSerializer {
         // TODO Encoding indefinite maps comes with some performance overhead, see if we can refactor mapEntry interface to
         // pass additional information such as the map length. That way we can serialize a definite-length map.
-        buffer.write(IndefiniteMap())
+        buffer.writeByte(encodeMajorMinor(Major.MAP, Minor.INDEFINITE))
         return this
     }
 
@@ -42,7 +52,7 @@ public class CborSerializer :
     override fun beginList(descriptor: SdkFieldDescriptor): ListSerializer {
         // TODO Encoding indefinite lists comes with some performance overhead, see if we can refactor listEntry interface to
         // pass additional information such as the list length. That way we can serialize a definite-length list.
-        buffer.write(IndefiniteList())
+        buffer.writeByte(encodeMajorMinor(Major.LIST, Minor.INDEFINITE))
         return this
     }
 
@@ -55,15 +65,16 @@ public class CborSerializer :
 
     override fun endStruct(): Unit = endMap()
 
-    override fun serializeBoolean(value: Boolean): Unit = buffer.write(cborBoolean(value))
+    override fun serializeBoolean(value: Boolean): Unit = buffer.writeByte(encodeMajorMinor(Major.TYPE_7, if (value) Minor.TRUE else Minor.FALSE))
 
-    private inline fun <reified T : Number> serializeNumber(value: T): Unit = buffer.write(
-        if (value.toLong() < 0) {
-            NegInt(value.toLong().absoluteValue.toULong())
+    private inline fun <reified T : Number> serializeNumber(value: T) {
+        val longValue = value.toLong()
+        if (longValue < 0) {
+            buffer.writeArgument(Major.NEG_INT, longValue.absoluteValue.toULong() - 1u)
         } else {
-            UInt(value.toLong().toULong())
-        },
-    )
+            buffer.writeArgument(Major.U_INT, longValue.toULong())
+        }
+    }
     override fun serializeByte(value: Byte): Unit = serializeNumber(value)
     override fun serializeShort(value: Short): Unit = serializeNumber(value)
     override fun serializeInt(value: Int): Unit = serializeNumber(value)
@@ -85,7 +96,11 @@ public class CborSerializer :
 
     override fun serializeChar(value: Char): Unit = buffer.write(TextString(value.toString()))
 
-    override fun serializeString(value: String): Unit = buffer.write(TextString(value))
+    override fun serializeString(value: String) {
+        val bytes = value.encodeToByteArray()
+        buffer.writeArgument(Major.STRING, bytes.size.toULong())
+        buffer.write(bytes)
+    }
 
     // Note: CBOR does not use [TimestampFormat]
     override fun serializeInstant(value: Instant, format: TimestampFormat): Unit = serializeInstant(value)

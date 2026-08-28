@@ -4,7 +4,6 @@
  */
 package aws.smithy.kotlin.runtime.telemetry.emf
 
-import aws.smithy.kotlin.runtime.ExperimentalApi
 import aws.smithy.kotlin.runtime.telemetry.TelemetryProvider
 import aws.smithy.kotlin.runtime.telemetry.context.ContextManager
 import aws.smithy.kotlin.runtime.telemetry.logging.LoggerProvider
@@ -29,7 +28,6 @@ import aws.smithy.kotlin.runtime.util.PlatformProvider
  * }
  * ```
  */
-@ExperimentalApi
 public class EmfTelemetryProvider private constructor(builder: Builder) : TelemetryProvider {
     override val meterProvider: MeterProvider = EmfMeterProvider(
         namespace = builder.namespace,
