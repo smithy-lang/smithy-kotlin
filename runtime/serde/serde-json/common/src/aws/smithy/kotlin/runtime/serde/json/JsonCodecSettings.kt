@@ -4,9 +4,10 @@
  */
 package aws.smithy.kotlin.runtime.serde.json
 
-import aws.smithy.kotlin.runtime.serde.schema.trait.TimestampFormat
+import aws.smithy.kotlin.runtime.serde.schema.serde.CodecSettings
+import aws.smithy.kotlin.runtime.time.TimestampFormat
 
 public data class JsonCodecSettings(
     public val useJsonName: Boolean = false,
-    public val defaultTimestampFormat: TimestampFormat = TimestampFormat.EPOCH_SECONDS,
-)
+    override val defaultTimestampFormat: TimestampFormat = TimestampFormat.EPOCH_SECONDS,
+) : CodecSettings

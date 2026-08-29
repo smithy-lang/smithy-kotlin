@@ -4,6 +4,7 @@
  */
 package aws.smithy.kotlin.runtime.serde.schema.trait
 
+import aws.smithy.kotlin.runtime.time.TimestampFormat
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
@@ -21,7 +22,7 @@ class TraitTest {
     fun testInstanceIdMatchesCompanion() {
         assertEquals(JsonNameTrait.ID, JsonNameTrait("x").id)
         assertEquals(XmlNameTrait.ID, XmlNameTrait("x").id)
-        assertEquals(TimestampFormatTrait.ID, TimestampFormatTrait(TimestampFormat.DATE_TIME).id)
+        assertEquals(TimestampFormatTrait.ID, TimestampFormatTrait(TimestampFormat.ISO_8601).id)
         assertEquals(RequiredTrait.ID, RequiredTrait.id)
         assertEquals(SparseTrait.ID, SparseTrait.id)
     }
@@ -37,7 +38,7 @@ class TraitTest {
     fun testToString() {
         assertEquals("JsonName(bird_name)", JsonNameTrait("bird_name").toString())
         assertEquals("XmlName(Bird)", XmlNameTrait("Bird").toString())
-        assertEquals("TimestampFormat(DATE_TIME)", TimestampFormatTrait(TimestampFormat.DATE_TIME).toString())
+        assertEquals("TimestampFormat(ISO_8601)", TimestampFormatTrait(TimestampFormat.ISO_8601).toString())
         assertEquals("Required", RequiredTrait.toString())
         assertEquals("Sparse", SparseTrait.toString())
     }

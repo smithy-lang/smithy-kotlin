@@ -10,14 +10,13 @@ import aws.smithy.kotlin.runtime.content.Document
 import aws.smithy.kotlin.runtime.serde.schema.MemberSchema
 import aws.smithy.kotlin.runtime.serde.schema.Schema
 import aws.smithy.kotlin.runtime.serde.schema.getTrait
+import aws.smithy.kotlin.runtime.serde.schema.resolveTimestampFormat
 import aws.smithy.kotlin.runtime.serde.schema.serde.ListSerializer
 import aws.smithy.kotlin.runtime.serde.schema.serde.MapSerializer
 import aws.smithy.kotlin.runtime.serde.schema.serde.ShapeSerializer
 import aws.smithy.kotlin.runtime.serde.schema.serde.StructSerializer
 import aws.smithy.kotlin.runtime.serde.schema.serde.ValueSerializer
 import aws.smithy.kotlin.runtime.serde.schema.trait.JsonNameTrait
-import aws.smithy.kotlin.runtime.serde.schema.trait.TimestampFormat
-import aws.smithy.kotlin.runtime.serde.schema.trait.TimestampFormatTrait
 import aws.smithy.kotlin.runtime.text.encoding.encodeBase64String
 import aws.smithy.kotlin.runtime.time.Instant
 import aws.smithy.kotlin.runtime.time.TimestampFormat as WireTimestampFormat
@@ -94,7 +93,7 @@ public class JsonShapeSerializer(
 
     override fun writeTimestamp(schema: Schema, value: Instant) {
         writeName(schema)
-        when (val fmt = wireTimestampFormat(schema)) {
+        when (val fmt = schema.resolveTimestampFormat(settings.defaultTimestampFormat)) {
             WireTimestampFormat.EPOCH_SECONDS -> writer.writeRawValue(value.format(fmt))
             else -> writer.writeValue(value.format(fmt))
         }
@@ -164,12 +163,6 @@ public class JsonShapeSerializer(
         writer.writeName(wireName)
     }
 
-    private fun wireTimestampFormat(schema: Schema): WireTimestampFormat {
-        val schemaFormat = schema.getTrait<TimestampFormatTrait>(TimestampFormatTrait.ID)?.format
-            ?: settings.defaultTimestampFormat
-        return schemaFormat.toWireFormat()
-    }
-
     private fun writeDocumentValue(value: Document?) {
         when (value) {
             null -> writer.writeNull()
@@ -191,10 +184,4 @@ public class JsonShapeSerializer(
             }
         }
     }
-}
-
-internal fun TimestampFormat.toWireFormat(): WireTimestampFormat = when (this) {
-    TimestampFormat.EPOCH_SECONDS -> WireTimestampFormat.EPOCH_SECONDS
-    TimestampFormat.DATE_TIME -> WireTimestampFormat.ISO_8601
-    TimestampFormat.HTTP_DATE -> WireTimestampFormat.RFC_5322
 }

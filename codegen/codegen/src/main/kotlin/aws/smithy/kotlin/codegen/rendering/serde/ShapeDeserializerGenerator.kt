@@ -6,7 +6,6 @@ package aws.smithy.kotlin.codegen.rendering.serde
 
 import aws.smithy.kotlin.codegen.core.KotlinWriter
 import aws.smithy.kotlin.codegen.core.RuntimeTypes.Serde.Schema
-import aws.smithy.kotlin.codegen.core.defaultName
 import aws.smithy.kotlin.codegen.core.unionVariantName
 import aws.smithy.kotlin.codegen.core.withBlock
 import aws.smithy.kotlin.codegen.core.withInlineBlock
@@ -27,10 +26,8 @@ internal class ShapeDeserializerGenerator(
     private val symbolProvider: SymbolProvider,
     private val shape: Shape,
 ) {
-    // sorted by Kotlin member name to match the property/argument order used elsewhere in the class
-    private val members: List<MemberShape> = (
-        (shape as? StructureShape)?.members() ?: (shape as UnionShape).members()
-        ).sortedBy { it.defaultName() }
+    private val members: List<MemberShape> = shape.serdeMembers(model)
+    private val names = MemberSchemaNames(model, symbolProvider, shape)
     private val className: String = symbolProvider.toSymbol(shape).name
 
     fun render(writer: KotlinWriter) {
@@ -44,7 +41,7 @@ internal class ShapeDeserializerGenerator(
                 withBlock("when (member.memberName) {", "}") {
                     members.forEach { member ->
                         writeInline("#S -> builder.#L = ", member.memberName, symbolProvider.toMemberName(member))
-                        renderReadValue(member.constName, model.expectShape(member.target), "d", "member")
+                        renderReadValue(names[member], model.expectShape(member.target), "d", "member")
                         ensureNewline()
                     }
                     write("else -> {}")
@@ -61,7 +58,7 @@ internal class ShapeDeserializerGenerator(
                 withBlock("when (member.memberName) {", "}") {
                     members.forEach { member ->
                         writeInline("#S -> value = #L.#L(", member.memberName, className, member.unionVariantName())
-                        renderReadValue(member.constName, model.expectShape(member.target), "d", "member")
+                        renderReadValue(names[member], model.expectShape(member.target), "d", "member")
                         write(")")
                     }
                     write("else -> {}")
@@ -71,58 +68,76 @@ internal class ShapeDeserializerGenerator(
         }
     }
 
-    private fun KotlinWriter.renderReadValue(schemaConst: String, target: Shape, de: String, memberSchemaRef: String) {
+    private fun KotlinWriter.renderReadValue(schemaConst: String, target: Shape, de: String, memberSchemaRef: String, depth: Int = 0) {
         when (target) {
             is StructureShape -> writeInline("#T.Builder().apply { deserialize(#L) }.build()", symbolProvider.toSymbol(target), de)
             is UnionShape -> writeInline("#T.deserialize(#L)", symbolProvider.toSymbol(target), de)
             is ListShape -> {
                 val elemTarget = model.expectShape(target.member.target)
                 val sparse = target.hasTrait<SparseTrait>()
+                val out = local("out", depth)
+                val list = local("list", depth)
+                val elem = local("e", depth)
                 withInlineBlock("run {", "}") {
                     write("")
-                    write("val out = #T<#L>()", KotlinTypes.Collections.mutableListOf, elementTypeName(elemTarget, sparse))
-                    withBlock("#L.readList(#L, out) { list, e ->", "}", de, schemaConst) {
-                        renderReadCollectionSlot("${schemaConst}_ELEMENT", elemTarget, "e", sparse) { "list.add($it)" }
+                    write("val #L = #T<#L>()", out, KotlinTypes.Collections.mutableListOf, target.member.kotlinTypeName(symbolProvider))
+                    withBlock("#L.readList(#L, #L) { #L, #L ->", "}", de, schemaConst, out, list, elem) {
+                        renderReadCollectionSlot(names.element(schemaConst), elemTarget, elem, sparse, depth) { "$list.add($it)" }
                     }
-                    write("out")
+                    write("#L", out)
                 }
             }
             is MapShape -> {
+                val keyTarget = model.expectShape(target.key.target)
                 val valTarget = model.expectShape(target.value.target)
                 val sparse = target.hasTrait<SparseTrait>()
+                val out = local("out", depth)
+                val map = local("map", depth)
+                val elem = local("e", depth)
+                // the wire key is always a string, so an enum-keyed map widens each key on the way into the map
+                val keyExpr = keyTarget.kotlinValueExpr(symbolProvider, local("k", depth))
                 withInlineBlock("run {", "}") {
-                    write("")
-                    write("val out = #T<#Q, #L>()", KotlinTypes.Collections.mutableMapOf, KotlinTypes.String, elementTypeName(valTarget, sparse))
-                    withBlock("#L.readMap(#L, out) { map, k, e ->", "}", de, schemaConst) {
-                        renderReadCollectionSlot("${schemaConst}_VALUE", valTarget, "e", sparse) { "map[k] = $it" }
+                    write(
+                        "val #L = #T<#L, #L>()",
+                        out,
+                        KotlinTypes.Collections.mutableMapOf,
+                        target.key.kotlinTypeName(symbolProvider),
+                        target.value.kotlinTypeName(symbolProvider),
+                    )
+                    withBlock("#L.readMap(#L, #L) { #L, #L, #L ->", "}", de, schemaConst, out, map, local("k", depth), elem) {
+                        renderReadCollectionSlot(names.value(schemaConst), valTarget, elem, sparse, depth) { "$map[$keyExpr] = $it" }
                     }
-                    write("out")
+                    write("#L", out)
                 }
             }
-            else -> writeInline("#L.#L(#L)", de, target.readFn, memberSchemaRef)
+            else -> writeInline("#L", target.readValueExpr(symbolProvider, de, memberSchemaRef))
         }
     }
 
-    private fun KotlinWriter.renderReadCollectionSlot(schemaConst: String, target: Shape, de: String, sparse: Boolean, collect: (String) -> String) {
+    private fun KotlinWriter.renderReadCollectionSlot(
+        schemaConst: String,
+        target: Shape,
+        de: String,
+        sparse: Boolean,
+        depth: Int,
+        collect: (String) -> String,
+    ) {
+        val value = local("v", depth)
         if (sparse) {
             withBlock("if (#L.isNull()) {", "}", de) { write(collect("null")) }
             withBlock("else {", "}") {
-                writeInline("val v = ")
-                renderReadValue(schemaConst, target, de, schemaConst)
+                writeInline("val #L = ", value)
+                renderReadValue(schemaConst, target, de, schemaConst, depth + 1)
                 ensureNewline()
-                write(collect("v"))
+                write(collect(value))
             }
         } else {
-            writeInline("val v = ")
-            renderReadValue(schemaConst, target, de, schemaConst)
+            writeInline("val #L = ", value)
+            renderReadValue(schemaConst, target, de, schemaConst, depth + 1)
             ensureNewline()
-            write(collect("v"))
+            write(collect(value))
         }
     }
 
-    private fun elementTypeName(target: Shape, sparse: Boolean): String {
-        val sym = symbolProvider.toSymbol(target)
-        val base = if (sym.namespace.isEmpty()) sym.name else "${sym.namespace}.${sym.name}"
-        return if (sparse) "$base?" else base
-    }
+    private fun local(name: String, depth: Int): String = if (depth == 0) name else "$name$depth"
 }

@@ -327,7 +327,6 @@ object RuntimeTypes {
                 val XmlNamespaceTrait = symbol("XmlNamespaceTrait")
                 val MediaTypeTrait = symbol("MediaTypeTrait")
                 val TimestampFormatTrait = symbol("TimestampFormatTrait")
-                val TimestampFormat = symbol("TimestampFormat")
                 val AwsQueryErrorTrait = symbol("AwsQueryErrorTrait")
                 val RequiredTrait = symbol("RequiredTrait")
                 val SparseTrait = symbol("SparseTrait")

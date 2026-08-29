@@ -13,12 +13,12 @@ import aws.smithy.kotlin.runtime.serde.schema.Schema
 import aws.smithy.kotlin.runtime.serde.schema.StructureSchema
 import aws.smithy.kotlin.runtime.serde.schema.UnionSchema
 import aws.smithy.kotlin.runtime.serde.schema.getTrait
+import aws.smithy.kotlin.runtime.serde.schema.resolveTimestampFormat
 import aws.smithy.kotlin.runtime.serde.schema.serde.ListConsumer
 import aws.smithy.kotlin.runtime.serde.schema.serde.MapConsumer
 import aws.smithy.kotlin.runtime.serde.schema.serde.ShapeDeserializer
 import aws.smithy.kotlin.runtime.serde.schema.serde.StructConsumer
 import aws.smithy.kotlin.runtime.serde.schema.trait.JsonNameTrait
-import aws.smithy.kotlin.runtime.serde.schema.trait.TimestampFormatTrait
 import aws.smithy.kotlin.runtime.text.encoding.decodeBase64Bytes
 import aws.smithy.kotlin.runtime.time.Instant
 import aws.smithy.kotlin.runtime.time.ParseException
@@ -60,8 +60,7 @@ public class JsonShapeDeserializer(
     override fun readBlob(schema: Schema): ByteArray = readString(schema).decodeBase64Bytes()
 
     override fun readTimestamp(schema: Schema): Instant {
-        val fmt = schema.getTrait<TimestampFormatTrait>(TimestampFormatTrait.ID)?.format?.toWireFormat()
-            ?: settings.defaultTimestampFormat.toWireFormat()
+        val fmt = schema.resolveTimestampFormat(settings.defaultTimestampFormat)
         return try {
             when (fmt) {
                 WireTimestampFormat.EPOCH_SECONDS -> Instant.fromEpochSeconds(readRawNumberOrString())

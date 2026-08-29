@@ -5,6 +5,7 @@
 package aws.smithy.kotlin.codegen.rendering.serde
 
 import aws.smithy.kotlin.codegen.core.InlineKotlinWriter
+import aws.smithy.kotlin.codegen.core.RuntimeTypes
 import aws.smithy.kotlin.codegen.core.RuntimeTypes.Serde.Schema
 import software.amazon.smithy.aws.traits.protocols.AwsQueryErrorTrait
 import software.amazon.smithy.codegen.core.Symbol
@@ -111,7 +112,7 @@ public class SchemaTraitExtension internal constructor(
             renderers[TimestampFormatTrait.ID] = TraitRenderer { t ->
                 val enum = (t as TimestampFormatTrait).value.timestampFormatEnum
                 val w: InlineKotlinWriter = {
-                    writeInline("#T(#T.#L)", Schema.Traits.TimestampFormatTrait, Schema.Traits.TimestampFormat, enum)
+                    writeInline("#T(#T.#L)", Schema.Traits.TimestampFormatTrait, RuntimeTypes.Core.TimestampFormat, enum)
                 }
                 w
             }
@@ -133,10 +134,11 @@ public class SchemaTraitExtension internal constructor(
     }
 }
 
+// the modeled spellings of smithy.api#timestampFormat, named as the runtime timestamp format calls them
 private val String.timestampFormatEnum: String
     get() = when (this) {
         "epoch-seconds" -> "EPOCH_SECONDS"
-        "date-time" -> "DATE_TIME"
-        "http-date" -> "HTTP_DATE"
+        "date-time" -> "ISO_8601"
+        "http-date" -> "RFC_5322"
         else -> error("unknown timestampFormat '$this'")
     }

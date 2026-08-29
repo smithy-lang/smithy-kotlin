@@ -381,8 +381,10 @@ public abstract interface annotation class aws/smithy/kotlin/runtime/serde/schem
 }
 
 public final class aws/smithy/kotlin/runtime/serde/schema/SchemaKt {
+	public static final fun getEffectiveTrait (Laws/smithy/kotlin/runtime/serde/schema/Schema;Laws/smithy/kotlin/runtime/serde/schema/ShapeId;)Laws/smithy/kotlin/runtime/serde/schema/trait/Trait;
 	public static final fun getTrait (Laws/smithy/kotlin/runtime/serde/schema/Schema;Laws/smithy/kotlin/runtime/serde/schema/ShapeId;)Laws/smithy/kotlin/runtime/serde/schema/trait/Trait;
 	public static final fun hasTrait (Laws/smithy/kotlin/runtime/serde/schema/Schema;Laws/smithy/kotlin/runtime/serde/schema/ShapeId;)Z
+	public static final fun resolveTimestampFormat (Laws/smithy/kotlin/runtime/serde/schema/Schema;Laws/smithy/kotlin/runtime/time/TimestampFormat;)Laws/smithy/kotlin/runtime/time/TimestampFormat;
 }
 
 public abstract interface class aws/smithy/kotlin/runtime/serde/schema/ShapeId {
@@ -462,6 +464,21 @@ public final class aws/smithy/kotlin/runtime/serde/schema/UnionSchemaBuilder {
 
 public final class aws/smithy/kotlin/runtime/serde/schema/UnionSchemaKt {
 	public static final fun UnionSchema (Laws/smithy/kotlin/runtime/serde/schema/ShapeId;Lkotlin/jvm/functions/Function1;)Laws/smithy/kotlin/runtime/serde/schema/UnionSchema;
+}
+
+public abstract interface class aws/smithy/kotlin/runtime/serde/schema/serde/Codec {
+	public abstract fun createDeserializer (Ljava/lang/Object;)Laws/smithy/kotlin/runtime/serde/schema/serde/ShapeDeserializer;
+	public abstract fun createSerializer ()Laws/smithy/kotlin/runtime/serde/schema/serde/ShapeSerializer;
+	public abstract fun getSettings ()Laws/smithy/kotlin/runtime/serde/schema/serde/CodecSettings;
+}
+
+public final class aws/smithy/kotlin/runtime/serde/schema/serde/CodecKt {
+	public static final fun deserialize (Laws/smithy/kotlin/runtime/serde/schema/serde/Codec;Ljava/lang/Object;Laws/smithy/kotlin/runtime/serde/schema/serde/ShapeBuilder;)Ljava/lang/Object;
+	public static final fun serialize (Laws/smithy/kotlin/runtime/serde/schema/serde/Codec;Laws/smithy/kotlin/runtime/serde/schema/serde/SerializableStruct;)Ljava/lang/Object;
+}
+
+public abstract interface class aws/smithy/kotlin/runtime/serde/schema/serde/CodecSettings {
+	public abstract fun getDefaultTimestampFormat ()Laws/smithy/kotlin/runtime/time/TimestampFormat;
 }
 
 public abstract interface class aws/smithy/kotlin/runtime/serde/schema/serde/ListConsumer {
@@ -736,19 +753,10 @@ public final class aws/smithy/kotlin/runtime/serde/schema/trait/StreamingTrait :
 	public fun toString ()Ljava/lang/String;
 }
 
-public final class aws/smithy/kotlin/runtime/serde/schema/trait/TimestampFormat : java/lang/Enum {
-	public static final field DATE_TIME Laws/smithy/kotlin/runtime/serde/schema/trait/TimestampFormat;
-	public static final field EPOCH_SECONDS Laws/smithy/kotlin/runtime/serde/schema/trait/TimestampFormat;
-	public static final field HTTP_DATE Laws/smithy/kotlin/runtime/serde/schema/trait/TimestampFormat;
-	public static fun getEntries ()Lkotlin/enums/EnumEntries;
-	public static fun valueOf (Ljava/lang/String;)Laws/smithy/kotlin/runtime/serde/schema/trait/TimestampFormat;
-	public static fun values ()[Laws/smithy/kotlin/runtime/serde/schema/trait/TimestampFormat;
-}
-
 public final class aws/smithy/kotlin/runtime/serde/schema/trait/TimestampFormatTrait : aws/smithy/kotlin/runtime/serde/schema/trait/Trait {
 	public static final field Companion Laws/smithy/kotlin/runtime/serde/schema/trait/TimestampFormatTrait$Companion;
-	public fun <init> (Laws/smithy/kotlin/runtime/serde/schema/trait/TimestampFormat;)V
-	public final fun getFormat ()Laws/smithy/kotlin/runtime/serde/schema/trait/TimestampFormat;
+	public fun <init> (Laws/smithy/kotlin/runtime/time/TimestampFormat;)V
+	public final fun getFormat ()Laws/smithy/kotlin/runtime/time/TimestampFormat;
 	public fun getId ()Laws/smithy/kotlin/runtime/serde/schema/ShapeId;
 	public fun toString ()Ljava/lang/String;
 }

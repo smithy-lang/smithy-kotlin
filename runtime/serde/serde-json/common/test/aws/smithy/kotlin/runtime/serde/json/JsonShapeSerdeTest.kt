@@ -7,20 +7,24 @@ package aws.smithy.kotlin.runtime.serde.json
 import aws.smithy.kotlin.runtime.content.BigDecimal
 import aws.smithy.kotlin.runtime.content.BigInteger
 import aws.smithy.kotlin.runtime.content.Document
+import aws.smithy.kotlin.runtime.serde.DeserializationException
 import aws.smithy.kotlin.runtime.serde.schema.ListSchema
 import aws.smithy.kotlin.runtime.serde.schema.MapSchema
 import aws.smithy.kotlin.runtime.serde.schema.MemberSchema
 import aws.smithy.kotlin.runtime.serde.schema.PreludeSchemas
+import aws.smithy.kotlin.runtime.serde.schema.ShapeType
+import aws.smithy.kotlin.runtime.serde.schema.SimpleSchema
 import aws.smithy.kotlin.runtime.serde.schema.StructureSchema
 import aws.smithy.kotlin.runtime.serde.schema.UnionSchema
 import aws.smithy.kotlin.runtime.serde.schema.shapeId
 import aws.smithy.kotlin.runtime.serde.schema.trait.JsonNameTrait
 import aws.smithy.kotlin.runtime.serde.schema.trait.SparseTrait
-import aws.smithy.kotlin.runtime.serde.schema.trait.TimestampFormat
 import aws.smithy.kotlin.runtime.serde.schema.trait.TimestampFormatTrait
 import aws.smithy.kotlin.runtime.time.Instant
+import aws.smithy.kotlin.runtime.time.TimestampFormat
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
@@ -31,8 +35,8 @@ import kotlin.test.assertTrue
  */
 class JsonShapeSerdeTest {
     private fun ByteArray.str() = decodeToString()
-    private fun ser() = JsonShapeSerializer()
-    private fun de(json: String) = JsonShapeDeserializer(json.encodeToByteArray())
+    private fun ser() = JsonShapeSerializer(JsonCodecSettings())
+    private fun de(json: String) = JsonShapeDeserializer(json.encodeToByteArray(), JsonCodecSettings())
 
     // ── boolean ───────────────────────────────────────────────────────────────────────────────
 
@@ -180,7 +184,7 @@ class JsonShapeSerdeTest {
 
     @Test
     fun testTimestampDateTime() {
-        val schema = timestampMember(TimestampFormat.DATE_TIME)
+        val schema = timestampMember(TimestampFormat.ISO_8601)
         val instant = Instant.fromEpochSeconds(1515531081)
         val json = ser().apply { writeTimestamp(schema, instant) }.flush().str()
         assertEquals("\"2018-01-09T20:51:21Z\"", json)
@@ -189,7 +193,7 @@ class JsonShapeSerdeTest {
 
     @Test
     fun testTimestampHttpDate() {
-        val schema = timestampMember(TimestampFormat.HTTP_DATE)
+        val schema = timestampMember(TimestampFormat.RFC_5322)
         val instant = Instant.fromEpochSeconds(1515531081)
         val json = ser().apply { writeTimestamp(schema, instant) }.flush().str()
         assertEquals("\"Tue, 09 Jan 2018 20:51:21 GMT\"", json)
@@ -203,8 +207,32 @@ class JsonShapeSerdeTest {
         val epochSer = JsonShapeSerializer(JsonCodecSettings(defaultTimestampFormat = TimestampFormat.EPOCH_SECONDS))
         assertEquals("1515531081", epochSer.apply { writeTimestamp(PreludeSchemas.Timestamp, instant) }.flush().str())
 
-        val dtSer = JsonShapeSerializer(JsonCodecSettings(defaultTimestampFormat = TimestampFormat.DATE_TIME))
+        val dtSer = JsonShapeSerializer(JsonCodecSettings(defaultTimestampFormat = TimestampFormat.ISO_8601))
         assertEquals("\"2018-01-09T20:51:21Z\"", dtSer.apply { writeTimestamp(PreludeSchemas.Timestamp, instant) }.flush().str())
+    }
+
+    private fun eventTimeShape(format: TimestampFormat) = SimpleSchema(shapeId("test#EventTime"), ShapeType.TIMESTAMP, TimestampFormatTrait(format))
+
+    @Test
+    fun testTimestampFormatFromTargetShape() {
+        // `@timestampFormat` is a shape-level trait, so a member that declares none inherits it from its target
+        val schema = StructureSchema(shapeId("test#TsHolder")) {
+            member("ts", eventTimeShape(TimestampFormat.ISO_8601))
+        }.member("ts")!!
+        val instant = Instant.fromEpochSeconds(1515531081)
+        val json = ser().apply { writeTimestamp(schema, instant) }.flush().str()
+        assertEquals("\"2018-01-09T20:51:21Z\"", json)
+        assertEquals(instant, de(json).readTimestamp(schema))
+    }
+
+    @Test
+    fun testTimestampFormatOnMemberWinsOverTargetShape() {
+        val schema = StructureSchema(shapeId("test#TsHolder")) {
+            member("ts", eventTimeShape(TimestampFormat.ISO_8601), TimestampFormatTrait(TimestampFormat.EPOCH_SECONDS))
+        }.member("ts")!!
+        val instant = Instant.fromEpochSeconds(1515531081)
+        assertEquals("1515531081", ser().apply { writeTimestamp(schema, instant) }.flush().str())
+        assertEquals(instant, de("1515531081").readTimestamp(schema))
     }
 
     // ── document (every variant + nesting) ───────────────────────────────────────────────────────
@@ -518,4 +546,6 @@ class JsonShapeSerdeTest {
     fun testReadDocumentNullReturnsNull() {
         assertNull(de("null").readDocument(PreludeSchemas.Document))
     }
+
+    // ── flush ─────────────────────────────────────────────────────────────────────────────────
 }

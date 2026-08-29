@@ -58,6 +58,7 @@ dependencies {
 
     implementation(libs.kotlinx.coroutines.core)
     implementation(project(":runtime:runtime-core"))
+    implementation(project(":runtime:serde"))
     implementation(project(":runtime:smithy-client"))
     implementation(project(":runtime:protocol:http-client"))
     implementation(project(":runtime:observability:telemetry-api"))

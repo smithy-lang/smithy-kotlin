@@ -15,6 +15,7 @@ import software.amazon.smithy.model.shapes.ListShape
 import software.amazon.smithy.model.shapes.MapShape
 import software.amazon.smithy.model.shapes.MemberShape
 import software.amazon.smithy.model.shapes.Shape
+import software.amazon.smithy.model.shapes.ShapeId
 import software.amazon.smithy.model.shapes.ShapeType
 import software.amazon.smithy.model.shapes.StructureShape
 import software.amazon.smithy.model.shapes.UnionShape
@@ -54,11 +55,8 @@ class SchemaGenerator(
         }
     }
 
-    private val members: List<MemberShape> = when (shape) {
-        is StructureShape -> shape.members().toList()
-        is UnionShape -> shape.members().toList()
-        else -> emptyList()
-    }
+    private val members: List<MemberShape> = shape.declaredMembers(model)
+    private val names = MemberSchemaNames(model, symbolProvider, shape)
 
     /** Renders `SCHEMA` + extracted member vals (call inside the companion object). */
     fun render(writer: KotlinWriter) {
@@ -92,10 +90,14 @@ class SchemaGenerator(
         val prelude = target.preludeSchemaName
         when {
             prelude != null -> writeInline("#T.#L", Schema.PreludeSchemas, prelude)
-            member.isRecursive -> writeInline("lazy { #T.SCHEMA }", symbolProvider.toSymbol(target))
             target is ListShape -> renderListSchema(target)
             target is MapShape -> renderMapSchema(target)
-            target is StructureShape || target is UnionShape -> writeInline("#T.SCHEMA", symbolProvider.toSymbol(target))
+            target is StructureShape || target is UnionShape ->
+                if (isOnCycle(target)) {
+                    writeInline("lazy { #T.SCHEMA }", symbolProvider.toSymbol(target))
+                } else {
+                    writeInline("#T.SCHEMA", symbolProvider.toSymbol(target))
+                }
             else -> renderSimpleSchema(target) // named/trait-bearing simple shape (e.g. enum)
         }
     }
@@ -134,7 +136,7 @@ class SchemaGenerator(
     }
 
     private fun KotlinWriter.renderMemberVals(member: MemberShape) {
-        val name = member.constName
+        val name = names[member]
         write("public val #L: #T = SCHEMA.member(#S)!!", name, Schema.MemberSchema, member.memberName)
         renderNestedMemberVals(name, model.expectShape(member.target))
     }
@@ -142,13 +144,13 @@ class SchemaGenerator(
     private fun KotlinWriter.renderNestedMemberVals(parent: String, target: Shape) {
         when (target) {
             is ListShape -> {
-                val elem = "${parent}_ELEMENT"
+                val elem = names.element(parent)
                 write("public val #L: #T = (#L.target as #T).element", elem, Schema.MemberSchema, parent, Schema.ListSchema)
                 renderNestedMemberVals(elem, model.expectShape(target.member.target))
             }
             is MapShape -> {
-                val key = "${parent}_KEY"
-                val value = "${parent}_VALUE"
+                val key = names.key(parent)
+                val value = names.value(parent)
                 write("public val #L: #T = (#L.target as #T).key", key, Schema.MemberSchema, parent, Schema.MapSchema)
                 write("public val #L: #T = (#L.target as #T).value", value, Schema.MemberSchema, parent, Schema.MapSchema)
                 renderNestedMemberVals(value, model.expectShape(target.value.target))
@@ -178,11 +180,26 @@ class SchemaGenerator(
     //  (no registered renderer -> not in includedTraitIds) and silently dropped. Implementing the default
     //  requires reintroducing DocumentTrait + the Document value representation, which are deferred.
 
-    private val MemberShape.isRecursive: Boolean
-        get() {
-            val target = model.expectShape(target)
-            return target.id == shape.id
+    // memoized "is this shape reachable from itself through the shape reference graph"
+    private val onCycle = mutableMapOf<ShapeId, Boolean>()
+
+    private fun isOnCycle(shape: Shape): Boolean = onCycle.getOrPut(shape.id) {
+        val seen = mutableSetOf<ShapeId>()
+        val pending = ArrayDeque(shape.childTargets)
+        var found = false
+        while (pending.isNotEmpty() && !found) {
+            val next = pending.removeFirst()
+            if (next == shape.id) {
+                found = true
+            } else if (seen.add(next)) {
+                pending.addAll(model.expectShape(next).childTargets)
+            }
         }
+        found
+    }
+
+    private val Shape.childTargets: List<ShapeId>
+        get() = members().map { it.target }
 
     // NOTE: only traits with a registered renderer are included; unknown/custom traits are dropped here.
     // See the TODO on [traitWritable] — the SEP wants unknowns emitted as a DocumentTrait once Document lands.

@@ -6,6 +6,7 @@ package aws.smithy.kotlin.runtime.serde.schema.trait
 
 import aws.smithy.kotlin.runtime.serde.schema.ShapeId
 import aws.smithy.kotlin.runtime.serde.schema.shapeId
+import aws.smithy.kotlin.runtime.time.TimestampFormat
 
 // ── Serialization & protocol traits ─────────────────────────────────────────────────────────────
 
@@ -57,13 +58,6 @@ public class MediaTypeTrait(public val value: String) : Trait {
     }
     override val id: ShapeId get() = ID
     override fun toString(): String = "MediaType($value)"
-}
-
-/** The set of timestamp wire formats requestable via `smithy.api#timestampFormat`. */
-public enum class TimestampFormat {
-    EPOCH_SECONDS,
-    DATE_TIME,
-    HTTP_DATE,
 }
 
 /** `smithy.api#timestampFormat` — overrides the protocol default timestamp format for a shape/member. */

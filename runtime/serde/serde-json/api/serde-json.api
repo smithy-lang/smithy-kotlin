@@ -9,16 +9,28 @@ public final class aws/smithy/kotlin/runtime/serde/json/IgnoreKey : aws/smithy/k
 	public fun toString ()Ljava/lang/String;
 }
 
-public final class aws/smithy/kotlin/runtime/serde/json/JsonCodecSettings {
+public final class aws/smithy/kotlin/runtime/serde/json/JsonCodec : aws/smithy/kotlin/runtime/serde/schema/serde/Codec {
 	public fun <init> ()V
-	public fun <init> (ZLaws/smithy/kotlin/runtime/serde/schema/trait/TimestampFormat;)V
-	public synthetic fun <init> (ZLaws/smithy/kotlin/runtime/serde/schema/trait/TimestampFormat;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun <init> (Laws/smithy/kotlin/runtime/serde/json/JsonCodecSettings;)V
+	public synthetic fun <init> (Laws/smithy/kotlin/runtime/serde/json/JsonCodecSettings;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public synthetic fun createDeserializer (Ljava/lang/Object;)Laws/smithy/kotlin/runtime/serde/schema/serde/ShapeDeserializer;
+	public fun createDeserializer ([B)Laws/smithy/kotlin/runtime/serde/schema/serde/ShapeDeserializer;
+	public fun createSerializer ()Laws/smithy/kotlin/runtime/serde/schema/serde/ShapeSerializer;
+	public fun getSettings ()Laws/smithy/kotlin/runtime/serde/json/JsonCodecSettings;
+	public synthetic fun getSettings ()Laws/smithy/kotlin/runtime/serde/schema/serde/CodecSettings;
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class aws/smithy/kotlin/runtime/serde/json/JsonCodecSettings : aws/smithy/kotlin/runtime/serde/schema/serde/CodecSettings {
+	public fun <init> ()V
+	public fun <init> (ZLaws/smithy/kotlin/runtime/time/TimestampFormat;)V
+	public synthetic fun <init> (ZLaws/smithy/kotlin/runtime/time/TimestampFormat;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public final fun component1 ()Z
-	public final fun component2 ()Laws/smithy/kotlin/runtime/serde/schema/trait/TimestampFormat;
-	public final fun copy (ZLaws/smithy/kotlin/runtime/serde/schema/trait/TimestampFormat;)Laws/smithy/kotlin/runtime/serde/json/JsonCodecSettings;
-	public static synthetic fun copy$default (Laws/smithy/kotlin/runtime/serde/json/JsonCodecSettings;ZLaws/smithy/kotlin/runtime/serde/schema/trait/TimestampFormat;ILjava/lang/Object;)Laws/smithy/kotlin/runtime/serde/json/JsonCodecSettings;
+	public final fun component2 ()Laws/smithy/kotlin/runtime/time/TimestampFormat;
+	public final fun copy (ZLaws/smithy/kotlin/runtime/time/TimestampFormat;)Laws/smithy/kotlin/runtime/serde/json/JsonCodecSettings;
+	public static synthetic fun copy$default (Laws/smithy/kotlin/runtime/serde/json/JsonCodecSettings;ZLaws/smithy/kotlin/runtime/time/TimestampFormat;ILjava/lang/Object;)Laws/smithy/kotlin/runtime/serde/json/JsonCodecSettings;
 	public fun equals (Ljava/lang/Object;)Z
-	public final fun getDefaultTimestampFormat ()Laws/smithy/kotlin/runtime/serde/schema/trait/TimestampFormat;
+	public fun getDefaultTimestampFormat ()Laws/smithy/kotlin/runtime/time/TimestampFormat;
 	public final fun getUseJsonName ()Z
 	public fun hashCode ()I
 	public fun toString ()Ljava/lang/String;

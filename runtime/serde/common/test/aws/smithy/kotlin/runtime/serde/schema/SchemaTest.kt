@@ -4,10 +4,12 @@
  */
 package aws.smithy.kotlin.runtime.serde.schema
 
+import aws.smithy.kotlin.runtime.serde.schema.trait.HttpHeaderTrait
+import aws.smithy.kotlin.runtime.serde.schema.trait.HttpQueryTrait
 import aws.smithy.kotlin.runtime.serde.schema.trait.JsonNameTrait
-import aws.smithy.kotlin.runtime.serde.schema.trait.TimestampFormat
 import aws.smithy.kotlin.runtime.serde.schema.trait.TimestampFormatTrait
 import aws.smithy.kotlin.runtime.serde.schema.trait.XmlNameTrait
+import aws.smithy.kotlin.runtime.time.TimestampFormat
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
@@ -66,7 +68,7 @@ class SchemaTest {
     @Test
     fun testMemberCarriesOnlyItsOwnTraits() {
         // the target carries a trait; the member declares its own — a member reports ONLY its own
-        val target = SimpleSchema(shapeId("com.example#Named"), ShapeType.STRING, TimestampFormatTrait(TimestampFormat.DATE_TIME))
+        val target = SimpleSchema(shapeId("com.example#Named"), ShapeType.STRING, TimestampFormatTrait(TimestampFormat.ISO_8601))
         val schema = StructureSchema(shapeId("com.example#Holder")) {
             member("field", target, JsonNameTrait("f"))
         }
@@ -76,6 +78,56 @@ class SchemaTest {
         assertEquals(1, field.traits.size)
         // the target still carries its own trait
         assertTrue(field.target.hasTrait(TimestampFormatTrait.ID))
+    }
+
+    @Test
+    fun testEffectiveTraitFallsBackToMemberTarget() {
+        // @timestampFormat("date-time") timestamp Instant + structure Holder { at: Instant }
+        val target = SimpleSchema(shapeId("com.example#Instant"), ShapeType.TIMESTAMP, TimestampFormatTrait(TimestampFormat.ISO_8601))
+        val schema = StructureSchema(shapeId("com.example#Holder")) {
+            member("at", target)
+        }
+        val at = assertNotNull(schema.member("at"))
+        assertNull(at.getTrait<TimestampFormatTrait>(TimestampFormatTrait.ID))
+        assertEquals(TimestampFormat.ISO_8601, at.getEffectiveTrait<TimestampFormatTrait>(TimestampFormatTrait.ID)?.format)
+    }
+
+    @Test
+    fun testEffectiveTraitPrefersTheMemberOverItsTarget() {
+        val target = SimpleSchema(shapeId("com.example#Instant"), ShapeType.TIMESTAMP, TimestampFormatTrait(TimestampFormat.ISO_8601))
+        val schema = StructureSchema(shapeId("com.example#Holder")) {
+            member("at", target, TimestampFormatTrait(TimestampFormat.RFC_5322))
+        }
+        val at = assertNotNull(schema.member("at"))
+        assertEquals(TimestampFormat.RFC_5322, at.getEffectiveTrait<TimestampFormatTrait>(TimestampFormatTrait.ID)?.format)
+    }
+
+    @Test
+    fun testEffectiveTraitAbsentFromMemberAndTarget() {
+        val schema = StructureSchema(shapeId("com.example#Holder")) {
+            member("at", PreludeSchemas.Timestamp)
+        }
+        val at = assertNotNull(schema.member("at"))
+        assertNull(at.getEffectiveTrait<TimestampFormatTrait>(TimestampFormatTrait.ID))
+    }
+
+    @Test
+    fun testEffectiveTraitOnNonMemberSchemaConsultsNothingElse() {
+        val instant = SimpleSchema(shapeId("com.example#Instant"), ShapeType.TIMESTAMP, TimestampFormatTrait(TimestampFormat.ISO_8601))
+        val list = ListSchema(shapeId("com.example#InstantList")) {
+            element(instant)
+        }
+        // an aggregate resolves only its own traits — it never reaches into the shapes it contains
+        assertNull(list.getEffectiveTrait<TimestampFormatTrait>(TimestampFormatTrait.ID))
+        // while the element member, being a member, does reach its target
+        assertEquals(
+            TimestampFormat.ISO_8601,
+            list.element.getEffectiveTrait<TimestampFormatTrait>(TimestampFormatTrait.ID)?.format,
+        )
+
+        // the same holds for the target itself, which is not a member either
+        assertNull(instant.getEffectiveTrait<JsonNameTrait>(JsonNameTrait.ID))
+        assertEquals(TimestampFormat.ISO_8601, instant.getEffectiveTrait<TimestampFormatTrait>(TimestampFormatTrait.ID)?.format)
     }
 
     @Test

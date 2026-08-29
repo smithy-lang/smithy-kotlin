@@ -1002,7 +1002,6 @@ public final class aws/smithy/kotlin/codegen/core/RuntimeTypes$Serde$Schema$Trai
 	public final fun getSensitiveTrait ()Lsoftware/amazon/smithy/codegen/core/Symbol;
 	public final fun getSparseTrait ()Lsoftware/amazon/smithy/codegen/core/Symbol;
 	public final fun getStreamingTrait ()Lsoftware/amazon/smithy/codegen/core/Symbol;
-	public final fun getTimestampFormat ()Lsoftware/amazon/smithy/codegen/core/Symbol;
 	public final fun getTimestampFormatTrait ()Lsoftware/amazon/smithy/codegen/core/Symbol;
 	public final fun getXmlAttributeTrait ()Lsoftware/amazon/smithy/codegen/core/Symbol;
 	public final fun getXmlFlattenedTrait ()Lsoftware/amazon/smithy/codegen/core/Symbol;
