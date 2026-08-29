@@ -9,6 +9,33 @@ public final class aws/smithy/kotlin/runtime/serde/json/IgnoreKey : aws/smithy/k
 	public fun toString ()Ljava/lang/String;
 }
 
+public final class aws/smithy/kotlin/runtime/serde/json/JsonCodec : aws/smithy/kotlin/runtime/serde/schema/serde/Codec {
+	public fun <init> ()V
+	public fun <init> (Laws/smithy/kotlin/runtime/serde/json/JsonCodecSettings;)V
+	public synthetic fun <init> (Laws/smithy/kotlin/runtime/serde/json/JsonCodecSettings;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public synthetic fun createDeserializer (Ljava/lang/Object;)Laws/smithy/kotlin/runtime/serde/schema/serde/ShapeDeserializer;
+	public fun createDeserializer ([B)Laws/smithy/kotlin/runtime/serde/schema/serde/ShapeDeserializer;
+	public fun createSerializer ()Laws/smithy/kotlin/runtime/serde/schema/serde/ShapeSerializer;
+	public fun getSettings ()Laws/smithy/kotlin/runtime/serde/json/JsonCodecSettings;
+	public synthetic fun getSettings ()Laws/smithy/kotlin/runtime/serde/schema/serde/CodecSettings;
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class aws/smithy/kotlin/runtime/serde/json/JsonCodecSettings : aws/smithy/kotlin/runtime/serde/schema/serde/CodecSettings {
+	public fun <init> ()V
+	public fun <init> (ZLaws/smithy/kotlin/runtime/time/TimestampFormat;)V
+	public synthetic fun <init> (ZLaws/smithy/kotlin/runtime/time/TimestampFormat;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun component1 ()Z
+	public final fun component2 ()Laws/smithy/kotlin/runtime/time/TimestampFormat;
+	public final fun copy (ZLaws/smithy/kotlin/runtime/time/TimestampFormat;)Laws/smithy/kotlin/runtime/serde/json/JsonCodecSettings;
+	public static synthetic fun copy$default (Laws/smithy/kotlin/runtime/serde/json/JsonCodecSettings;ZLaws/smithy/kotlin/runtime/time/TimestampFormat;ILjava/lang/Object;)Laws/smithy/kotlin/runtime/serde/json/JsonCodecSettings;
+	public fun equals (Ljava/lang/Object;)Z
+	public fun getDefaultTimestampFormat ()Laws/smithy/kotlin/runtime/time/TimestampFormat;
+	public final fun getUseJsonName ()Z
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
 public final class aws/smithy/kotlin/runtime/serde/json/JsonDeserializer : aws/smithy/kotlin/runtime/serde/Deserializer, aws/smithy/kotlin/runtime/serde/Deserializer$ElementIterator, aws/smithy/kotlin/runtime/serde/Deserializer$EntryIterator, aws/smithy/kotlin/runtime/serde/PrimitiveDeserializer {
 	public static final field Companion Laws/smithy/kotlin/runtime/serde/json/JsonDeserializer$Companion;
 	public fun <init> ([B)V
@@ -116,6 +143,55 @@ public final class aws/smithy/kotlin/runtime/serde/json/JsonSerializer : aws/smi
 }
 
 public final class aws/smithy/kotlin/runtime/serde/json/JsonSerializer$Companion {
+}
+
+public final class aws/smithy/kotlin/runtime/serde/json/JsonShapeDeserializer : aws/smithy/kotlin/runtime/serde/schema/serde/ShapeDeserializer {
+	public fun <init> ([BLaws/smithy/kotlin/runtime/serde/json/JsonCodecSettings;)V
+	public synthetic fun <init> ([BLaws/smithy/kotlin/runtime/serde/json/JsonCodecSettings;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun isNull ()Z
+	public fun readBigDecimal (Laws/smithy/kotlin/runtime/serde/schema/Schema;)Laws/smithy/kotlin/runtime/content/BigDecimal;
+	public fun readBigInteger (Laws/smithy/kotlin/runtime/serde/schema/Schema;)Laws/smithy/kotlin/runtime/content/BigInteger;
+	public fun readBlob (Laws/smithy/kotlin/runtime/serde/schema/Schema;)[B
+	public fun readBoolean (Laws/smithy/kotlin/runtime/serde/schema/Schema;)Z
+	public fun readByte (Laws/smithy/kotlin/runtime/serde/schema/Schema;)B
+	public fun readDocument (Laws/smithy/kotlin/runtime/serde/schema/Schema;)Laws/smithy/kotlin/runtime/content/Document;
+	public fun readDouble (Laws/smithy/kotlin/runtime/serde/schema/Schema;)D
+	public fun readFloat (Laws/smithy/kotlin/runtime/serde/schema/Schema;)F
+	public fun readInt (Laws/smithy/kotlin/runtime/serde/schema/Schema;)I
+	public fun readList (Laws/smithy/kotlin/runtime/serde/schema/Schema;Ljava/lang/Object;Laws/smithy/kotlin/runtime/serde/schema/serde/ListConsumer;)V
+	public fun readLong (Laws/smithy/kotlin/runtime/serde/schema/Schema;)J
+	public fun readMap (Laws/smithy/kotlin/runtime/serde/schema/Schema;Ljava/lang/Object;Laws/smithy/kotlin/runtime/serde/schema/serde/MapConsumer;)V
+	public fun readShort (Laws/smithy/kotlin/runtime/serde/schema/Schema;)S
+	public fun readString (Laws/smithy/kotlin/runtime/serde/schema/Schema;)Ljava/lang/String;
+	public fun readStruct (Laws/smithy/kotlin/runtime/serde/schema/Schema;Ljava/lang/Object;Laws/smithy/kotlin/runtime/serde/schema/serde/StructConsumer;)V
+	public fun readTimestamp (Laws/smithy/kotlin/runtime/serde/schema/Schema;)Laws/smithy/kotlin/runtime/time/Instant;
+}
+
+public final class aws/smithy/kotlin/runtime/serde/json/JsonShapeSerializer : aws/smithy/kotlin/runtime/serde/schema/serde/ListSerializer, aws/smithy/kotlin/runtime/serde/schema/serde/MapSerializer, aws/smithy/kotlin/runtime/serde/schema/serde/ShapeSerializer, aws/smithy/kotlin/runtime/serde/schema/serde/StructSerializer {
+	public fun <init> ()V
+	public fun <init> (Laws/smithy/kotlin/runtime/serde/json/JsonCodecSettings;)V
+	public synthetic fun <init> (Laws/smithy/kotlin/runtime/serde/json/JsonCodecSettings;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun entry (Laws/smithy/kotlin/runtime/serde/schema/MemberSchema;Ljava/lang/String;Lkotlin/jvm/functions/Function1;)V
+	public synthetic fun flush ()Ljava/lang/Object;
+	public fun flush ()[B
+	public fun writeBigDecimal (Laws/smithy/kotlin/runtime/serde/schema/Schema;Laws/smithy/kotlin/runtime/content/BigDecimal;)V
+	public fun writeBigInteger (Laws/smithy/kotlin/runtime/serde/schema/Schema;Laws/smithy/kotlin/runtime/content/BigInteger;)V
+	public fun writeBlob (Laws/smithy/kotlin/runtime/serde/schema/Schema;[B)V
+	public fun writeBoolean (Laws/smithy/kotlin/runtime/serde/schema/Schema;Z)V
+	public fun writeByte (Laws/smithy/kotlin/runtime/serde/schema/Schema;B)V
+	public fun writeDocument (Laws/smithy/kotlin/runtime/serde/schema/Schema;Laws/smithy/kotlin/runtime/content/Document;)V
+	public fun writeDouble (Laws/smithy/kotlin/runtime/serde/schema/Schema;D)V
+	public fun writeFloat (Laws/smithy/kotlin/runtime/serde/schema/Schema;F)V
+	public fun writeInt (Laws/smithy/kotlin/runtime/serde/schema/Schema;I)V
+	public fun writeList (Laws/smithy/kotlin/runtime/serde/schema/Schema;ILkotlin/jvm/functions/Function1;)V
+	public fun writeLong (Laws/smithy/kotlin/runtime/serde/schema/Schema;J)V
+	public fun writeMap (Laws/smithy/kotlin/runtime/serde/schema/Schema;ILkotlin/jvm/functions/Function1;)V
+	public fun writeNull (Laws/smithy/kotlin/runtime/serde/schema/Schema;)V
+	public fun writeShort (Laws/smithy/kotlin/runtime/serde/schema/Schema;S)V
+	public fun writeString (Laws/smithy/kotlin/runtime/serde/schema/Schema;Ljava/lang/String;)V
+	public fun writeStruct (Laws/smithy/kotlin/runtime/serde/schema/Schema;Laws/smithy/kotlin/runtime/serde/schema/serde/SerializableStruct;)V
+	public fun writeStruct (Laws/smithy/kotlin/runtime/serde/schema/Schema;Lkotlin/jvm/functions/Function1;)V
+	public fun writeTimestamp (Laws/smithy/kotlin/runtime/serde/schema/Schema;Laws/smithy/kotlin/runtime/time/Instant;)V
 }
 
 public abstract interface class aws/smithy/kotlin/runtime/serde/json/JsonStreamReader {

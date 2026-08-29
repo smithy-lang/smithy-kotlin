@@ -5,12 +5,16 @@
 package aws.smithy.kotlin.codegen.rendering
 
 import aws.smithy.kotlin.codegen.core.KotlinWriter
+import aws.smithy.kotlin.codegen.core.RuntimeTypes.Serde.Schema.Serde.SerializableStruct
 import aws.smithy.kotlin.codegen.core.unionVariantName
 import aws.smithy.kotlin.codegen.core.withBlock
+import aws.smithy.kotlin.codegen.integration.KotlinIntegration
 import aws.smithy.kotlin.codegen.lang.KotlinTypes
 import aws.smithy.kotlin.codegen.model.filterEventStreamErrors
 import aws.smithy.kotlin.codegen.model.hasTrait
 import aws.smithy.kotlin.codegen.model.isNullable
+import aws.smithy.kotlin.codegen.rendering.serde.SchemaGenerator
+import aws.smithy.kotlin.codegen.rendering.serde.SchemaTraitExtension
 import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.codegen.core.SymbolProvider
 import software.amazon.smithy.model.Model
@@ -26,17 +30,28 @@ class UnionGenerator(
     private val symbolProvider: SymbolProvider,
     private val writer: KotlinWriter,
     private val shape: UnionShape,
+    private val integrations: List<KotlinIntegration>,
 ) {
+    // preserves the original 4-arg binary signature (integrations added later for schema generation)
+    constructor(
+        model: Model,
+        symbolProvider: SymbolProvider,
+        writer: KotlinWriter,
+        shape: UnionShape,
+    ) : this(model, symbolProvider, writer, shape, emptyList())
+
     val symbol: Symbol = symbolProvider.toSymbol(shape)
 
     /**
      * Renders a Smithy union to a Kotlin sealed class
      */
+    private val schemaGenerator = SchemaGenerator(model, symbolProvider, shape, SchemaTraitExtension.fromIntegrations(integrations))
+
     fun render() {
         check(!shape.allMembers.values.any { memberShape -> memberShape.memberName.equals("SdkUnknown", true) }) { "generating SdkUnknown would cause duplicate variant for union shape: $shape" }
         writer.renderDocumentation(shape)
         writer.renderAnnotations(shape)
-        writer.openBlock("public sealed class #T {", symbol)
+        writer.openBlock("public sealed class #T : #T {", symbol, SerializableStruct)
 
         // event streams (@streaming union) MAY have variants that target errors.
         // These errors if encountered on the stream will be thrown as an exception rather
@@ -102,6 +117,14 @@ class UnionGenerator(
                 symbol,
                 variantName,
             )
+        }
+
+        schemaGenerator.renderSerialize(writer)
+
+        writer.write("")
+        writer.withBlock("public companion object {", "}") {
+            schemaGenerator.render(this)
+            schemaGenerator.renderDeserialize(writer)
         }
 
         writer.closeBlock("}").write("")

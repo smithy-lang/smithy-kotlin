@@ -4,6 +4,7 @@ public final class aws/smithy/kotlin/codegen/aws/SdkProtocolGeneratorSupplier : 
 	public fun authSchemes (Laws/smithy/kotlin/codegen/rendering/protocol/ProtocolGenerator$GenerationContext;)Ljava/util/List;
 	public fun customizeEndpointResolution (Laws/smithy/kotlin/codegen/rendering/protocol/ProtocolGenerator$GenerationContext;)Laws/smithy/kotlin/codegen/rendering/endpoints/EndpointCustomization;
 	public fun customizeMiddleware (Laws/smithy/kotlin/codegen/rendering/protocol/ProtocolGenerator$GenerationContext;Ljava/util/List;)Ljava/util/List;
+	public fun customizeSchemaTraits (Laws/smithy/kotlin/codegen/rendering/serde/SchemaTraitExtension;)V
 	public fun decorateSymbolProvider (Laws/smithy/kotlin/codegen/KotlinSettings;Lsoftware/amazon/smithy/model/Model;Lsoftware/amazon/smithy/codegen/core/SymbolProvider;)Lsoftware/amazon/smithy/codegen/core/SymbolProvider;
 	public fun enabledForService (Lsoftware/amazon/smithy/model/Model;Laws/smithy/kotlin/codegen/KotlinSettings;)Z
 	public fun getOrder ()B
@@ -19,6 +20,7 @@ public final class aws/smithy/kotlin/codegen/aws/customization/AwsQueryCompatibl
 	public fun authSchemes (Laws/smithy/kotlin/codegen/rendering/protocol/ProtocolGenerator$GenerationContext;)Ljava/util/List;
 	public fun customizeEndpointResolution (Laws/smithy/kotlin/codegen/rendering/protocol/ProtocolGenerator$GenerationContext;)Laws/smithy/kotlin/codegen/rendering/endpoints/EndpointCustomization;
 	public fun customizeMiddleware (Laws/smithy/kotlin/codegen/rendering/protocol/ProtocolGenerator$GenerationContext;Ljava/util/List;)Ljava/util/List;
+	public fun customizeSchemaTraits (Laws/smithy/kotlin/codegen/rendering/serde/SchemaTraitExtension;)V
 	public fun decorateSymbolProvider (Laws/smithy/kotlin/codegen/KotlinSettings;Lsoftware/amazon/smithy/model/Model;Lsoftware/amazon/smithy/codegen/core/SymbolProvider;)Lsoftware/amazon/smithy/codegen/core/SymbolProvider;
 	public fun enabledForService (Lsoftware/amazon/smithy/model/Model;Laws/smithy/kotlin/codegen/KotlinSettings;)Z
 	public fun getOrder ()B
@@ -36,6 +38,7 @@ public final class aws/smithy/kotlin/codegen/aws/customization/RegionSupport : a
 	public fun authSchemes (Laws/smithy/kotlin/codegen/rendering/protocol/ProtocolGenerator$GenerationContext;)Ljava/util/List;
 	public fun customizeEndpointResolution (Laws/smithy/kotlin/codegen/rendering/protocol/ProtocolGenerator$GenerationContext;)Laws/smithy/kotlin/codegen/rendering/endpoints/EndpointCustomization;
 	public fun customizeMiddleware (Laws/smithy/kotlin/codegen/rendering/protocol/ProtocolGenerator$GenerationContext;Ljava/util/List;)Ljava/util/List;
+	public fun customizeSchemaTraits (Laws/smithy/kotlin/codegen/rendering/serde/SchemaTraitExtension;)V
 	public fun decorateSymbolProvider (Laws/smithy/kotlin/codegen/KotlinSettings;Lsoftware/amazon/smithy/model/Model;Lsoftware/amazon/smithy/codegen/core/SymbolProvider;)Lsoftware/amazon/smithy/codegen/core/SymbolProvider;
 	public fun enabledForService (Lsoftware/amazon/smithy/model/Model;Laws/smithy/kotlin/codegen/KotlinSettings;)Z
 	public fun getOrder ()B
@@ -56,6 +59,7 @@ public final class aws/smithy/kotlin/codegen/aws/middleware/ClockSkew : aws/smit
 	public fun authSchemes (Laws/smithy/kotlin/codegen/rendering/protocol/ProtocolGenerator$GenerationContext;)Ljava/util/List;
 	public fun customizeEndpointResolution (Laws/smithy/kotlin/codegen/rendering/protocol/ProtocolGenerator$GenerationContext;)Laws/smithy/kotlin/codegen/rendering/endpoints/EndpointCustomization;
 	public fun customizeMiddleware (Laws/smithy/kotlin/codegen/rendering/protocol/ProtocolGenerator$GenerationContext;Ljava/util/List;)Ljava/util/List;
+	public fun customizeSchemaTraits (Laws/smithy/kotlin/codegen/rendering/serde/SchemaTraitExtension;)V
 	public fun decorateSymbolProvider (Laws/smithy/kotlin/codegen/KotlinSettings;Lsoftware/amazon/smithy/model/Model;Lsoftware/amazon/smithy/codegen/core/SymbolProvider;)Lsoftware/amazon/smithy/codegen/core/SymbolProvider;
 	public fun enabledForService (Lsoftware/amazon/smithy/model/Model;Laws/smithy/kotlin/codegen/KotlinSettings;)Z
 	public fun getOrder ()B

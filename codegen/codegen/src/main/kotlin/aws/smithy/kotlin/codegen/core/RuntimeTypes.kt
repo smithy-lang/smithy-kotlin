@@ -300,6 +300,54 @@ object RuntimeTypes {
         val parseBigInteger = symbol("parseBigInteger")
         val parseBigDecimal = symbol("parseBigDecimal")
 
+        object Schema : RuntimeTypePackage(KotlinDependency.SERDE, "schema") {
+            val ShapeType = symbol("ShapeType")
+            val shapeId = symbol("shapeId")
+            val PreludeSchemas = symbol("PreludeSchemas")
+            val SimpleSchema = symbol("SimpleSchema")
+            val ListSchema = symbol("ListSchema")
+            val MapSchema = symbol("MapSchema")
+            val MemberSchema = symbol("MemberSchema")
+            val StructureSchema = symbol("StructureSchema")
+            val UnionSchema = symbol("UnionSchema")
+
+            object Serde : RuntimeTypePackage(KotlinDependency.SERDE, "schema.serde") {
+                val ShapeSerializer = symbol("ShapeSerializer")
+                val ShapeDeserializer = symbol("ShapeDeserializer")
+                val StructSerializer = symbol("StructSerializer")
+                val SerializableStruct = symbol("SerializableStruct")
+                val ShapeBuilder = symbol("ShapeBuilder")
+            }
+
+            object Traits : RuntimeTypePackage(KotlinDependency.SERDE, "schema.trait") {
+                val JsonNameTrait = symbol("JsonNameTrait")
+                val XmlNameTrait = symbol("XmlNameTrait")
+                val XmlAttributeTrait = symbol("XmlAttributeTrait")
+                val XmlFlattenedTrait = symbol("XmlFlattenedTrait")
+                val XmlNamespaceTrait = symbol("XmlNamespaceTrait")
+                val MediaTypeTrait = symbol("MediaTypeTrait")
+                val TimestampFormatTrait = symbol("TimestampFormatTrait")
+                val AwsQueryErrorTrait = symbol("AwsQueryErrorTrait")
+                val RequiredTrait = symbol("RequiredTrait")
+                val SparseTrait = symbol("SparseTrait")
+                val SensitiveTrait = symbol("SensitiveTrait")
+                val IdempotencyTokenTrait = symbol("IdempotencyTokenTrait")
+                val StreamingTrait = symbol("StreamingTrait")
+                val RequiresLengthTrait = symbol("RequiresLengthTrait")
+                val EventHeaderTrait = symbol("EventHeaderTrait")
+                val EventPayloadTrait = symbol("EventPayloadTrait")
+                val HttpHeaderTrait = symbol("HttpHeaderTrait")
+                val HttpLabelTrait = symbol("HttpLabelTrait")
+                val HttpPayloadTrait = symbol("HttpPayloadTrait")
+                val HttpPrefixHeadersTrait = symbol("HttpPrefixHeadersTrait")
+                val HttpQueryTrait = symbol("HttpQueryTrait")
+                val HttpQueryParamsTrait = symbol("HttpQueryParamsTrait")
+                val HttpResponseCodeTrait = symbol("HttpResponseCodeTrait")
+                val HostLabelTrait = symbol("HostLabelTrait")
+                val ContextParamTrait = symbol("ContextParamTrait")
+            }
+        }
+
         object SerdeJson : RuntimeTypePackage(KotlinDependency.SERDE_JSON) {
             val JsonSerialName = symbol("JsonSerialName")
             val JsonSerializer = symbol("JsonSerializer")

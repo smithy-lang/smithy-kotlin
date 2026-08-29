@@ -46,7 +46,7 @@ class UnionGeneratorTest {
             /**
              * Documentation for MyUnion
              */
-            public sealed class MyUnion {
+            public sealed class MyUnion : SerializableStruct {
                 public data class Bar(val value: kotlin.Int) : test.model.MyUnion() {
                 }
             
@@ -137,7 +137,6 @@ class UnionGeneratorTest {
                  * Casts this [MyUnion] as a [MyStruct] and retrieves its [test.model.MyStruct] value. Returns null if the [MyUnion] is not a [MyStruct].
                  */
                 public fun asMyStructOrNull(): test.model.MyStruct? = (this as? MyUnion.MyStruct)?.value
-            }
         """.trimIndent()
 
         contents.shouldContainWithDiff(expectedClassDecl)
@@ -180,7 +179,7 @@ class UnionGeneratorTest {
         contents.shouldContainOnlyOnce(
             """
                 @Deprecated("No longer recommended for use. See AWS API documentation for more details.")
-                public sealed class MyUnion {
+                public sealed class MyUnion : SerializableStruct {
             """.trimIndent(),
         )
     }
@@ -228,7 +227,7 @@ class UnionGeneratorTest {
         )
 
         val expectedClassDecl = """
-            public sealed class MyUnion {
+            public sealed class MyUnion : SerializableStruct {
                 public data class Foo(val value: test.model.MyStruct) : test.model.MyUnion() {
                 }
             
@@ -245,7 +244,6 @@ class UnionGeneratorTest {
                  * Casts this [MyUnion] as a [Foo] and retrieves its [test.model.MyStruct] value. Returns null if the [MyUnion] is not a [Foo].
                  */
                 public fun asFooOrNull(): test.model.MyStruct? = (this as? MyUnion.Foo)?.value
-            }
         """.trimIndent()
 
         contents.shouldContainWithDiff(expectedClassDecl)
@@ -269,7 +267,7 @@ class UnionGeneratorTest {
         )
 
         val expectedClassDecl = """
-            public sealed class MyUnion {
+            public sealed class MyUnion : SerializableStruct {
                 public data class Bar(val value: kotlin.Int) : test.model.MyUnion() {
                     override fun toString(): kotlin.String = "MyUnion(*** Sensitive Data Redacted ***)"
                 }
@@ -318,7 +316,6 @@ class UnionGeneratorTest {
                  * Casts this [MyUnion] as a [Foo] and retrieves its [kotlin.String] value. Returns null if the [MyUnion] is not a [Foo].
                  */
                 public fun asFooOrNull(): kotlin.String? = (this as? MyUnion.Foo)?.value
-            }
         """.trimIndent()
 
         contents.shouldContainWithDiff(expectedClassDecl)

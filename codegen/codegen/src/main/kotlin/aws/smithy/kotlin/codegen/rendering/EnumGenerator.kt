@@ -163,6 +163,12 @@ class EnumGenerator(val shape: Shape, val symbol: Symbol, val writer: KotlinWrit
             withBlock("private val values: #Q<#Q> by lazy { listOf(", ") }", KotlinTypes.Collections.List, symbol) {
                 ktEnum.variants.forEach { write("#L,", it.name) }
             }
+
+            // TODO: emit a static SCHEMA for the enum here. Per the SEP ("What shapes should have schemas?")
+            //  any exported type MUST have an exported schema. Enums currently only appear inline as
+            //  SimpleSchema(id, ShapeType.ENUM/INT_ENUM) when used as a member target; the enum class itself
+            //  has no companion SCHEMA. Requires SchemaGenerator to accept simple/enum shapes (see the TODO
+            //  on SchemaGenerator's init require).
         }
     }
 }

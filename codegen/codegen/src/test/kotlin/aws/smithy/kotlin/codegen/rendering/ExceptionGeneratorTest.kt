@@ -93,13 +93,13 @@ class ExceptionGeneratorTest {
     @Test
     fun `error generator extends correctly`() {
         val expectedClientClassDecl = """
-            class ValidationException private constructor(builder: Builder) : TestException() {
+            class ValidationException private constructor(builder: Builder) : TestException(), SerializableStruct {
         """.trimIndent()
 
         clientErrorTestContents.shouldContainWithDiff(expectedClientClassDecl)
 
         val expectedServerClassDecl = """
-            class InternalServerException private constructor(builder: Builder) : TestException(builder.message) {
+            class InternalServerException private constructor(builder: Builder) : TestException(builder.message), SerializableStruct {
         """.trimIndent()
 
         serverErrorTestContents.shouldContainWithDiff(expectedServerClassDecl)
@@ -122,11 +122,11 @@ class ExceptionGeneratorTest {
             .toSmithyModel()
 
         val expectedCapMessageClassDecl = """
-            class CapitalizedMessageMemberException private constructor(builder: Builder) : TestException(builder.message) {
+            class CapitalizedMessageMemberException private constructor(builder: Builder) : TestException(builder.message), SerializableStruct {
         """.trimIndent()
 
         val expectedNoMessageClassDecl = """
-            class NoMessageMemberException private constructor(builder: Builder) : TestException() {
+            class NoMessageMemberException private constructor(builder: Builder) : TestException(), SerializableStruct {
         """.trimIndent()
 
         val provider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(model)
