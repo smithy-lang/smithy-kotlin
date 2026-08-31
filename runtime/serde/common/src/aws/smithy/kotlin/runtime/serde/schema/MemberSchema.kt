@@ -9,7 +9,7 @@ import aws.smithy.kotlin.runtime.serde.schema.trait.Trait
 public sealed interface MemberSchema : Schema {
     override val shapeId: MemberShapeId
 
-    /** The member's modeled name (never a wire name like `jsonName`). */
+    /** The member's modeled name. */
     public val memberName: String
 
     /** The shape this member points at. */

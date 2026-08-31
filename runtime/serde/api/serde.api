@@ -384,7 +384,6 @@ public final class aws/smithy/kotlin/runtime/serde/schema/SchemaKt {
 	public static final fun getEffectiveTrait (Laws/smithy/kotlin/runtime/serde/schema/Schema;Laws/smithy/kotlin/runtime/serde/schema/ShapeId;)Laws/smithy/kotlin/runtime/serde/schema/trait/Trait;
 	public static final fun getTrait (Laws/smithy/kotlin/runtime/serde/schema/Schema;Laws/smithy/kotlin/runtime/serde/schema/ShapeId;)Laws/smithy/kotlin/runtime/serde/schema/trait/Trait;
 	public static final fun hasTrait (Laws/smithy/kotlin/runtime/serde/schema/Schema;Laws/smithy/kotlin/runtime/serde/schema/ShapeId;)Z
-	public static final fun resolveTimestampFormat (Laws/smithy/kotlin/runtime/serde/schema/Schema;Laws/smithy/kotlin/runtime/time/TimestampFormat;)Laws/smithy/kotlin/runtime/time/TimestampFormat;
 }
 
 public abstract interface class aws/smithy/kotlin/runtime/serde/schema/ShapeId {

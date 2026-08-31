@@ -6,9 +6,6 @@ package aws.smithy.kotlin.runtime.serde.schema
 
 /**
  * Shared, trait-free [SimpleSchema] singletons for the Smithy prelude simple shapes (`smithy.api#*`).
- *
- * Members reference these directly (`member("name", PreludeSchemas.String)`) instead of allocating a
- * fresh simple schema per use, keeping generated schema code small and load-time allocation low.
  */
 public object PreludeSchemas {
     private fun prelude(name: String, type: ShapeType): SimpleSchema = SimpleSchemaImpl(shapeId("smithy.api", name), type, emptyList())

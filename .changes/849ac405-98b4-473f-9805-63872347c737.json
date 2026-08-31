@@ -1,6 +1,0 @@
-{
-  "id": "849ac405-98b4-473f-9805-63872347c737",
-  "type": "feature",
-  "description": "Add the schema model for schema-driven serialization: `Schema` and its structure, union, list, map, member, and simple variants, `ShapeId`, `ShapeType`, the prelude schemas, and the serde-relevant `Trait` types",
-  "module": "serde"
-}
