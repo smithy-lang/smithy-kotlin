@@ -6,58 +6,30 @@ package aws.smithy.kotlin.runtime.serde.cbor.encoding
 
 import aws.smithy.kotlin.runtime.io.SdkBufferedSink
 import aws.smithy.kotlin.runtime.io.SdkBufferedSource
-import aws.smithy.kotlin.runtime.serde.SerializationException
 import aws.smithy.kotlin.runtime.serde.cbor.encodeMajorMinor
-import aws.smithy.kotlin.runtime.serde.cbor.toULong
 import aws.smithy.kotlin.runtime.serde.cbor.writeArgument
 
 /**
- * Represents a CBOR unsigned integer (major type 0) in the range [0, 2^64-1].
- * @param value The [ULong] value which this unsigned integer represents.
+ * Write a CBOR unsigned integer (major type 0) in the range [0, 2^64-1].
  */
-internal class UInt(val value: ULong) : Value {
-    override fun encode(into: SdkBufferedSink) = into.writeUInt(value)
-
-    internal companion object {
-        fun decode(buffer: SdkBufferedSource) = UInt(decodeUInt(buffer))
-    }
-}
-
 internal fun SdkBufferedSink.writeUInt(value: ULong) = writeArgument(Major.U_INT, value)
 
 internal fun decodeUInt(buffer: SdkBufferedSource): ULong = decodeArgument(buffer)
 
 /**
- * Represents a CBOR negative integer (major type 1) in the range [-2^64, -1].
- * @param value The [ULong] value which this unsigned integer represents.
+ * Write a CBOR negative integer (major type 1) in the range [-2^64, -1].
  *
- * Values will be properly encoded / decoded according to the CBOR specification (-1 minus $value)
+ * [value] is the magnitude of the negative number; it is encoded / decoded according to the CBOR specification
+ * (-1 minus the encoded argument).
  */
-internal class NegInt(val value: ULong) : Value {
-    override fun encode(into: SdkBufferedSink) = into.writeNegInt(value)
-
-    internal companion object {
-        fun decode(buffer: SdkBufferedSource): NegInt = NegInt(decodeNegInt(buffer))
-    }
-}
-
 internal fun SdkBufferedSink.writeNegInt(value: ULong) = writeArgument(Major.NEG_INT, value - 1u)
 
 internal fun decodeNegInt(buffer: SdkBufferedSource): ULong = decodeArgument(buffer) + 1u
 
 /**
- * Represents a CBOR 16-bit float (major type 7, minor type 25).
+ * Decode a CBOR 16-bit float (major type 7, minor type 25) as a [Float].
  * Note: This CBOR type can only be *decoded*, it will never be encoded.
- * @param value the [Float] that this CBOR 16-bit float represents.
  */
-internal class Float16(val value: Float) : Value {
-    override fun encode(into: SdkBufferedSink) = throw SerializationException("Encoding of CBOR 16-bit floats is not supported")
-
-    internal companion object {
-        fun decode(buffer: SdkBufferedSource): Float16 = Float16(decodeFloat16(buffer))
-    }
-}
-
 internal fun decodeFloat16(buffer: SdkBufferedSource): Float {
     buffer.readByte() // discard head byte
     val float16Bits: Int = buffer.readShort().toInt() and 0xffff
@@ -89,17 +61,8 @@ internal fun decodeFloat16(buffer: SdkBufferedSource): Float {
 }
 
 /**
- * Represents a CBOR 32-bit float (major type 7, minor type 26).
- * @param value the [Float] that this CBOR 32-bit float represents.
+ * Write a CBOR 32-bit float (major type 7, minor type 26).
  */
-internal class Float32(val value: Float) : Value {
-    override fun encode(into: SdkBufferedSink) = into.writeFloat32(value)
-
-    internal companion object {
-        fun decode(buffer: SdkBufferedSource): Float32 = Float32(decodeFloat32(buffer))
-    }
-}
-
 internal fun SdkBufferedSink.writeFloat32(value: Float) {
     writeByte(encodeMajorMinor(Major.TYPE_7, Minor.FLOAT32))
     writeInt(value.toRawBits())
@@ -111,17 +74,8 @@ internal fun decodeFloat32(buffer: SdkBufferedSource): Float {
 }
 
 /**
- * Represents a CBOR 64-bit float (major type 7, minor type 27).
- * @param value the [Double] that this CBOR 64-bit float represents
+ * Write a CBOR 64-bit float (major type 7, minor type 27).
  */
-internal class Float64(val value: Double) : Value {
-    override fun encode(into: SdkBufferedSink) = into.writeFloat64(value)
-
-    internal companion object {
-        fun decode(buffer: SdkBufferedSource): Float64 = Float64(decodeFloat64(buffer))
-    }
-}
-
 internal fun SdkBufferedSink.writeFloat64(value: Double) {
     writeByte(encodeMajorMinor(Major.TYPE_7, Minor.FLOAT64))
     writeLong(value.toRawBits())

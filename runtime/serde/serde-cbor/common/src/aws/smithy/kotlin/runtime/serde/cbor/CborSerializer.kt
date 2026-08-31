@@ -12,18 +12,18 @@ import aws.smithy.kotlin.runtime.http.HttpBody
 import aws.smithy.kotlin.runtime.http.toHttpBody
 import aws.smithy.kotlin.runtime.io.SdkBuffer
 import aws.smithy.kotlin.runtime.serde.*
-import aws.smithy.kotlin.runtime.serde.cbor.encoding.IndefiniteBreak
 import aws.smithy.kotlin.runtime.serde.cbor.encoding.Major
 import aws.smithy.kotlin.runtime.serde.cbor.encoding.Minor
-import aws.smithy.kotlin.runtime.serde.cbor.encoding.Null
 import aws.smithy.kotlin.runtime.serde.cbor.encoding.writeBigNum
 import aws.smithy.kotlin.runtime.serde.cbor.encoding.writeBoolean
 import aws.smithy.kotlin.runtime.serde.cbor.encoding.writeByteString
 import aws.smithy.kotlin.runtime.serde.cbor.encoding.writeDecimalFraction
 import aws.smithy.kotlin.runtime.serde.cbor.encoding.writeFloat32
 import aws.smithy.kotlin.runtime.serde.cbor.encoding.writeFloat64
+import aws.smithy.kotlin.runtime.serde.cbor.encoding.writeIndefiniteBreak
 import aws.smithy.kotlin.runtime.serde.cbor.encoding.writeNegBigNum
 import aws.smithy.kotlin.runtime.serde.cbor.encoding.writeNegInt
+import aws.smithy.kotlin.runtime.serde.cbor.encoding.writeNull
 import aws.smithy.kotlin.runtime.serde.cbor.encoding.writeTextString
 import aws.smithy.kotlin.runtime.serde.cbor.encoding.writeTimestamp
 import aws.smithy.kotlin.runtime.serde.cbor.encoding.writeUInt
@@ -53,7 +53,7 @@ public class CborSerializer :
         return this
     }
 
-    override fun endMap(): Unit = buffer.write(IndefiniteBreak)
+    override fun endMap(): Unit = buffer.writeIndefiniteBreak()
 
     override fun beginList(descriptor: SdkFieldDescriptor): ListSerializer {
         // TODO Encoding indefinite lists comes with some performance overhead, see if we can refactor listEntry interface to
@@ -62,7 +62,7 @@ public class CborSerializer :
         return this
     }
 
-    override fun endList(): Unit = buffer.write(IndefiniteBreak)
+    override fun endList(): Unit = buffer.writeIndefiniteBreak()
 
     override fun beginStruct(descriptor: SdkFieldDescriptor): StructSerializer {
         beginMap(descriptor)
@@ -112,7 +112,7 @@ public class CborSerializer :
 
     override fun serializeSdkSerializable(value: SdkSerializable): Unit = value.serialize(this)
 
-    override fun serializeNull(): Unit = buffer.write(Null)
+    override fun serializeNull(): Unit = buffer.writeNull()
 
     override fun serializeDocument(value: Document?): Unit = throw SerializationException("Document is not a supported CBOR type")
 

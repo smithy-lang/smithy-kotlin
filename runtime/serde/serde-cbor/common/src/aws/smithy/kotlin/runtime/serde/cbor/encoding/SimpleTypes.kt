@@ -9,22 +9,13 @@ import aws.smithy.kotlin.runtime.serde.DeserializationException
 import aws.smithy.kotlin.runtime.serde.cbor.encodeMajorMinor
 
 /**
- * Represents a CBOR boolean (major type 7). The minor type is 5 for false and 6 for true.
- * @param value the [kotlin.Boolean] this CBOR boolean represents.
+ * Write a CBOR boolean (major type 7). The minor type is 5 for false and 6 for true.
  */
-internal class Boolean(val value: kotlin.Boolean) : Value {
-    override fun encode(into: SdkBufferedSink) = into.writeBoolean(value)
-
-    internal companion object {
-        internal fun decode(buffer: SdkBufferedSource): Boolean = Boolean(decodeBooleanValue(buffer))
-    }
-}
-
-internal fun SdkBufferedSink.writeBoolean(value: kotlin.Boolean) = writeByte(
+internal fun SdkBufferedSink.writeBoolean(value: Boolean) = writeByte(
     encodeMajorMinor(Major.TYPE_7, if (value) Minor.TRUE else Minor.FALSE),
 )
 
-internal fun decodeBooleanValue(buffer: SdkBufferedSource): kotlin.Boolean = when (val minor = peekMinorByte(buffer)) {
+internal fun decodeBooleanValue(buffer: SdkBufferedSource): Boolean = when (val minor = peekMinorByte(buffer)) {
     Minor.FALSE.value -> false
     Minor.TRUE.value -> true
     else -> throw DeserializationException("Unknown minor argument $minor for Boolean")
@@ -33,25 +24,25 @@ internal fun decodeBooleanValue(buffer: SdkBufferedSource): kotlin.Boolean = whe
 }
 
 /**
- * Represents a CBOR null value (major type 7, minor type 7).
+ * Write a CBOR null value (major type 7, minor type 7).
  */
-internal object Null : Value {
-    override fun encode(into: SdkBufferedSink) = into.writeByte(encodeMajorMinor(Major.TYPE_7, Minor.NULL))
+internal fun SdkBufferedSink.writeNull() = writeByte(encodeMajorMinor(Major.TYPE_7, Minor.NULL))
 
-    internal fun decode(buffer: SdkBufferedSource): Null {
-        buffer.readByte() // consume the byte
-        return Null
-    }
+/**
+ * Consume the head byte of a CBOR null (or undefined) value.
+ */
+internal fun decodeNull(buffer: SdkBufferedSource) {
+    buffer.readByte()
 }
 
 /**
- * Represents the "break" stop-code for lists/maps with an indefinite length (major type 7, minor type 31).
+ * Write the "break" stop-code which terminates a list/map of indefinite length (major type 7, minor type 31).
  */
-internal object IndefiniteBreak : Value {
-    override fun encode(into: SdkBufferedSink) = into.writeByte(encodeMajorMinor(Major.TYPE_7, Minor.INDEFINITE))
+internal fun SdkBufferedSink.writeIndefiniteBreak() = writeByte(encodeMajorMinor(Major.TYPE_7, Minor.INDEFINITE))
 
-    internal fun decode(buffer: SdkBufferedSource): IndefiniteBreak {
-        buffer.readByte()
-        return IndefiniteBreak
-    }
+/**
+ * Consume the "break" stop-code which terminates a list/map of indefinite length.
+ */
+internal fun decodeIndefiniteBreak(buffer: SdkBufferedSource) {
+    buffer.readByte()
 }

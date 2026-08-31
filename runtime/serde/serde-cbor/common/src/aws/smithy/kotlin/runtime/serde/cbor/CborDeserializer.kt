@@ -9,10 +9,8 @@ import aws.smithy.kotlin.runtime.content.BigInteger
 import aws.smithy.kotlin.runtime.content.Document
 import aws.smithy.kotlin.runtime.io.*
 import aws.smithy.kotlin.runtime.serde.*
-import aws.smithy.kotlin.runtime.serde.cbor.encoding.IndefiniteBreak
 import aws.smithy.kotlin.runtime.serde.cbor.encoding.Major
 import aws.smithy.kotlin.runtime.serde.cbor.encoding.Minor
-import aws.smithy.kotlin.runtime.serde.cbor.encoding.Null
 import aws.smithy.kotlin.runtime.serde.cbor.encoding.TagId
 import aws.smithy.kotlin.runtime.serde.cbor.encoding.decodeArgument
 import aws.smithy.kotlin.runtime.serde.cbor.encoding.decodeBigNum
@@ -22,9 +20,11 @@ import aws.smithy.kotlin.runtime.serde.cbor.encoding.decodeDecimalFraction
 import aws.smithy.kotlin.runtime.serde.cbor.encoding.decodeFloat16
 import aws.smithy.kotlin.runtime.serde.cbor.encoding.decodeFloat32
 import aws.smithy.kotlin.runtime.serde.cbor.encoding.decodeFloat64
+import aws.smithy.kotlin.runtime.serde.cbor.encoding.decodeIndefiniteBreak
 import aws.smithy.kotlin.runtime.serde.cbor.encoding.decodeInstant
 import aws.smithy.kotlin.runtime.serde.cbor.encoding.decodeNegBigNum
 import aws.smithy.kotlin.runtime.serde.cbor.encoding.decodeNegInt
+import aws.smithy.kotlin.runtime.serde.cbor.encoding.decodeNull
 import aws.smithy.kotlin.runtime.serde.cbor.encoding.decodeTextStringValue
 import aws.smithy.kotlin.runtime.serde.cbor.encoding.decodeUInt
 import aws.smithy.kotlin.runtime.serde.cbor.encoding.peekMajor
@@ -148,7 +148,7 @@ internal class CborPrimitiveDeserializer(private val buffer: SdkBufferedSource) 
     override fun deserializeDocument(): Document = throw DeserializationException("Document is not a supported CBOR type.")
 
     override fun deserializeNull(): Nothing? {
-        Null.decode(buffer)
+        decodeNull(buffer)
         return null
     }
 
@@ -181,7 +181,7 @@ private class CborElementIterator(
             }
         } else {
             return if (buffer.nextValueIsIndefiniteBreak) {
-                IndefiniteBreak.decode(buffer)
+                decodeIndefiniteBreak(buffer)
                 false
             } else {
                 check(!buffer.exhausted()) { "Buffer is unexpectedly exhausted" }
@@ -216,7 +216,7 @@ private class CborFieldIterator(
             if (expectedLength != null) {
                 throw DeserializationException("Received unexpected indefinite break while deserializing structure, expected $expectedLength elements, got $currentLength")
             }
-            IndefiniteBreak.decode(buffer)
+            decodeIndefiniteBreak(buffer)
             null
         } else {
             val nextFieldName = decodeTextStringValue(buffer)
@@ -263,7 +263,7 @@ private class CborEntryIterator(
         }
 
         return if (buffer.nextValueIsIndefiniteBreak) {
-            IndefiniteBreak.decode(buffer)
+            decodeIndefiniteBreak(buffer)
             false
         } else {
             check(!buffer.exhausted()) { "Buffer is unexpectedly exhausted" }
