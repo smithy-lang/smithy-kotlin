@@ -9,7 +9,8 @@ import aws.smithy.kotlin.runtime.content.BigInteger
 import aws.smithy.kotlin.runtime.io.SdkBuffer
 import aws.smithy.kotlin.runtime.serde.SdkFieldDescriptor
 import aws.smithy.kotlin.runtime.serde.SerialKind
-import aws.smithy.kotlin.runtime.serde.cbor.encoding.NegInt
+import aws.smithy.kotlin.runtime.serde.cbor.encoding.decodeNegInt
+import aws.smithy.kotlin.runtime.serde.cbor.encoding.decodeUInt
 import aws.smithy.kotlin.runtime.serde.deserializeList
 import aws.smithy.kotlin.runtime.serde.deserializeMap
 import aws.smithy.kotlin.runtime.time.Instant
@@ -66,7 +67,7 @@ class CborDeserializerSuccessTest {
         val payload = "1bffffffffffffffff".hexToByteArray()
 
         val buffer = SdkBuffer().apply { write(payload) }
-        assertEquals(ULong.MAX_VALUE, aws.smithy.kotlin.runtime.serde.cbor.encoding.UInt.decode(buffer).value)
+        assertEquals(ULong.MAX_VALUE, decodeUInt(buffer))
     }
 
     @Test
@@ -108,7 +109,7 @@ class CborDeserializerSuccessTest {
 
         val buffer = SdkBuffer().apply { write(payload) }
 
-        assertEquals(UInt.MAX_VALUE, aws.smithy.kotlin.runtime.serde.cbor.encoding.UInt.decode(buffer).value.toUInt())
+        assertEquals(UInt.MAX_VALUE, decodeUInt(buffer).toUInt())
     }
 
     @Test
@@ -181,7 +182,7 @@ class CborDeserializerSuccessTest {
     fun `atomic - negint - 8 - max`() {
         val payload = "3bfffffffffffffffe".hexToByteArray()
         val buffer = SdkBuffer().apply { write(payload) }
-        val result = NegInt.decode(buffer).value
+        val result = decodeNegInt(buffer)
         assertEquals(ULong.MAX_VALUE, result)
     }
 
@@ -201,7 +202,7 @@ class CborDeserializerSuccessTest {
         val payload = "18ff".hexToByteArray()
 
         val buffer = SdkBuffer().apply { write(payload) }
-        assertEquals(255u, aws.smithy.kotlin.runtime.serde.cbor.encoding.UInt.decode(buffer).value)
+        assertEquals(255u, decodeUInt(buffer))
     }
 
     @Test
@@ -298,14 +299,14 @@ class CborDeserializerSuccessTest {
         val payload = "19ffff".hexToByteArray()
 
         val buffer = SdkBuffer().apply { write(payload) }
-        assertEquals(UShort.MAX_VALUE, aws.smithy.kotlin.runtime.serde.cbor.encoding.UInt.decode(buffer).value.toUShort())
+        assertEquals(UShort.MAX_VALUE, decodeUInt(buffer).toUShort())
     }
 
     @Test
     fun `atomic - negint - 2 - max`() {
         val payload = "39ffff".hexToByteArray()
         val buffer = SdkBuffer().apply { write(payload) }
-        val result = NegInt.decode(buffer).value
+        val result = decodeNegInt(buffer)
         assertEquals(65536u, result)
     }
 
@@ -901,7 +902,7 @@ class CborDeserializerSuccessTest {
 
         val remainingBuffer = "1bffffffffffffffff".hexToByteArray()
         val buffer = SdkBuffer().apply { write(remainingBuffer) }
-        val result = aws.smithy.kotlin.runtime.serde.cbor.encoding.UInt.decode(buffer).value
+        val result = decodeUInt(buffer)
         assertEquals(ULong.MAX_VALUE, result)
     }
 
@@ -972,7 +973,7 @@ class CborDeserializerSuccessTest {
 
         val remainingBuffer = "1bffffffffffffffff".hexToByteArray()
         val buffer = SdkBuffer().apply { write(remainingBuffer) }
-        val result = aws.smithy.kotlin.runtime.serde.cbor.encoding.UInt.decode(buffer).value
+        val result = decodeUInt(buffer)
         assertEquals(ULong.MAX_VALUE, result)
     }
 
@@ -1180,7 +1181,7 @@ class CborDeserializerSuccessTest {
 
         val remainingBuffer = "3bfffffffffffffffe".hexToByteArray()
         val buffer = SdkBuffer().apply { write(remainingBuffer) }
-        val result = NegInt.decode(buffer).value
+        val result = decodeNegInt(buffer)
         assertEquals(ULong.MAX_VALUE, result)
     }
 
@@ -1490,7 +1491,7 @@ class CborDeserializerSuccessTest {
 
         val remainingBuffer = "3bfffffffffffffffe".hexToByteArray()
         val buffer = SdkBuffer().apply { write(remainingBuffer) }
-        val result = NegInt.decode(buffer).value
+        val result = decodeNegInt(buffer)
         assertEquals(ULong.MAX_VALUE, result)
     }
 
@@ -1577,7 +1578,7 @@ class CborDeserializerSuccessTest {
 
         val remainingBuffer = "1bffffffffffffffffff".hexToByteArray()
         val buffer = SdkBuffer().apply { write(remainingBuffer) }
-        val result = aws.smithy.kotlin.runtime.serde.cbor.encoding.UInt.decode(buffer).value
+        val result = decodeUInt(buffer)
         assertEquals(ULong.MAX_VALUE, result)
     }
 
@@ -1780,7 +1781,7 @@ class CborDeserializerSuccessTest {
 
         val remainingBuffer = "3bfffffffffffffffe".hexToByteArray()
         val buffer = SdkBuffer().apply { write(remainingBuffer) }
-        val result = NegInt.decode(buffer).value
+        val result = decodeNegInt(buffer)
         assertEquals(ULong.MAX_VALUE, result)
     }
 
@@ -2055,7 +2056,7 @@ class CborDeserializerSuccessTest {
 
         val remainingBuffer = "1bffffffffffffffff".hexToByteArray()
         val buffer = SdkBuffer().apply { write(remainingBuffer) }
-        val result = aws.smithy.kotlin.runtime.serde.cbor.encoding.UInt.decode(buffer).value
+        val result = decodeUInt(buffer)
         assertEquals(ULong.MAX_VALUE, result)
     }
 
@@ -2240,7 +2241,7 @@ class CborDeserializerSuccessTest {
 
         val remainingBuffer = "3bfffffffffffffffe".hexToByteArray()
         val buffer = SdkBuffer().apply { write(remainingBuffer) }
-        val result = NegInt.decode(buffer).value
+        val result = decodeNegInt(buffer)
         assertEquals(ULong.MAX_VALUE, result)
     }
 
