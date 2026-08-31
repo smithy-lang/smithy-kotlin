@@ -12,21 +12,27 @@ import aws.smithy.kotlin.runtime.http.HttpBody
 import aws.smithy.kotlin.runtime.http.toHttpBody
 import aws.smithy.kotlin.runtime.io.SdkBuffer
 import aws.smithy.kotlin.runtime.serde.*
-import aws.smithy.kotlin.runtime.serde.cbor.encoding.BigNum
-import aws.smithy.kotlin.runtime.serde.cbor.encoding.ByteString
-import aws.smithy.kotlin.runtime.serde.cbor.encoding.DecimalFraction
-import aws.smithy.kotlin.runtime.serde.cbor.encoding.Float32
-import aws.smithy.kotlin.runtime.serde.cbor.encoding.Float64
-import aws.smithy.kotlin.runtime.serde.cbor.encoding.IndefiniteBreak
 import aws.smithy.kotlin.runtime.serde.cbor.encoding.Major
 import aws.smithy.kotlin.runtime.serde.cbor.encoding.Minor
-import aws.smithy.kotlin.runtime.serde.cbor.encoding.NegBigNum
-import aws.smithy.kotlin.runtime.serde.cbor.encoding.Null
-import aws.smithy.kotlin.runtime.serde.cbor.encoding.TextString
-import aws.smithy.kotlin.runtime.serde.cbor.encoding.Timestamp
+import aws.smithy.kotlin.runtime.serde.cbor.encoding.writeBigNum
+import aws.smithy.kotlin.runtime.serde.cbor.encoding.writeBoolean
+import aws.smithy.kotlin.runtime.serde.cbor.encoding.writeByteString
+import aws.smithy.kotlin.runtime.serde.cbor.encoding.writeDecimalFraction
+import aws.smithy.kotlin.runtime.serde.cbor.encoding.writeFloat32
+import aws.smithy.kotlin.runtime.serde.cbor.encoding.writeFloat64
+import aws.smithy.kotlin.runtime.serde.cbor.encoding.writeIndefiniteBreak
+import aws.smithy.kotlin.runtime.serde.cbor.encoding.writeNegBigNum
+import aws.smithy.kotlin.runtime.serde.cbor.encoding.writeNegInt
+import aws.smithy.kotlin.runtime.serde.cbor.encoding.writeNull
+import aws.smithy.kotlin.runtime.serde.cbor.encoding.writeTextString
+import aws.smithy.kotlin.runtime.serde.cbor.encoding.writeTimestamp
+import aws.smithy.kotlin.runtime.serde.cbor.encoding.writeUInt
 import aws.smithy.kotlin.runtime.time.Instant
 import aws.smithy.kotlin.runtime.time.TimestampFormat
 import kotlin.math.absoluteValue
+
+// Hoisted zero constant used to test a BigInteger's sign without allocating its decimal string representation.
+private val ZERO_BIG_INTEGER = BigInteger("0")
 
 @InternalApi
 public class CborSerializer :
@@ -47,7 +53,7 @@ public class CborSerializer :
         return this
     }
 
-    override fun endMap(): Unit = buffer.write(IndefiniteBreak)
+    override fun endMap(): Unit = buffer.writeIndefiniteBreak()
 
     override fun beginList(descriptor: SdkFieldDescriptor): ListSerializer {
         // TODO Encoding indefinite lists comes with some performance overhead, see if we can refactor listEntry interface to
@@ -56,7 +62,7 @@ public class CborSerializer :
         return this
     }
 
-    override fun endList(): Unit = buffer.write(IndefiniteBreak)
+    override fun endList(): Unit = buffer.writeIndefiniteBreak()
 
     override fun beginStruct(descriptor: SdkFieldDescriptor): StructSerializer {
         beginMap(descriptor)
@@ -65,14 +71,14 @@ public class CborSerializer :
 
     override fun endStruct(): Unit = endMap()
 
-    override fun serializeBoolean(value: Boolean): Unit = buffer.writeByte(encodeMajorMinor(Major.TYPE_7, if (value) Minor.TRUE else Minor.FALSE))
+    override fun serializeBoolean(value: Boolean): Unit = buffer.writeBoolean(value)
 
     private inline fun <reified T : Number> serializeNumber(value: T) {
         val longValue = value.toLong()
         if (longValue < 0) {
-            buffer.writeArgument(Major.NEG_INT, longValue.absoluteValue.toULong() - 1u)
+            buffer.writeNegInt(longValue.absoluteValue.toULong())
         } else {
-            buffer.writeArgument(Major.U_INT, longValue.toULong())
+            buffer.writeUInt(longValue.toULong())
         }
     }
 
@@ -81,37 +87,33 @@ public class CborSerializer :
     override fun serializeInt(value: Int): Unit = serializeNumber(value)
     override fun serializeLong(value: Long): Unit = serializeNumber(value)
 
-    override fun serializeFloat(value: Float): Unit = buffer.write(Float32(value))
+    override fun serializeFloat(value: Float): Unit = buffer.writeFloat32(value)
 
-    override fun serializeDouble(value: Double): Unit = buffer.write(Float64(value))
+    override fun serializeDouble(value: Double): Unit = buffer.writeFloat64(value)
 
     override fun serializeBigInteger(value: BigInteger) {
-        if (value.toString().startsWith("-")) {
-            buffer.write(NegBigNum(value))
+        if (value < ZERO_BIG_INTEGER) {
+            buffer.writeNegBigNum(value)
         } else {
-            buffer.write(BigNum(value))
+            buffer.writeBigNum(value)
         }
     }
 
-    override fun serializeBigDecimal(value: BigDecimal): Unit = buffer.write(DecimalFraction(value))
+    override fun serializeBigDecimal(value: BigDecimal): Unit = buffer.writeDecimalFraction(value)
 
-    override fun serializeChar(value: Char): Unit = buffer.write(TextString(value.toString()))
+    override fun serializeChar(value: Char): Unit = buffer.writeTextString(value.toString())
 
-    override fun serializeString(value: String) {
-        val bytes = value.encodeToByteArray()
-        buffer.writeArgument(Major.STRING, bytes.size.toULong())
-        buffer.write(bytes)
-    }
+    override fun serializeString(value: String): Unit = buffer.writeTextString(value)
 
     // Note: CBOR does not use [TimestampFormat]
     override fun serializeInstant(value: Instant, format: TimestampFormat): Unit = serializeInstant(value)
-    public fun serializeInstant(value: Instant): Unit = buffer.write(Timestamp(value))
+    public fun serializeInstant(value: Instant): Unit = buffer.writeTimestamp(value)
 
-    override fun serializeByteArray(value: ByteArray): Unit = buffer.write(ByteString(value))
+    override fun serializeByteArray(value: ByteArray): Unit = buffer.writeByteString(value)
 
     override fun serializeSdkSerializable(value: SdkSerializable): Unit = value.serialize(this)
 
-    override fun serializeNull(): Unit = buffer.write(Null)
+    override fun serializeNull(): Unit = buffer.writeNull()
 
     override fun serializeDocument(value: Document?): Unit = throw SerializationException("Document is not a supported CBOR type")
 
