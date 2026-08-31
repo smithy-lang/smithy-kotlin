@@ -61,30 +61,28 @@ public class SdkObjectDescriptor private constructor(builder: Builder) :
 public class FieldIndex internal constructor(
     fields: List<SdkFieldDescriptor>,
 ) {
-    // Indexed by list position (always dense, in-bounds), NOT SdkFieldDescriptor.index, which is a
-    // mutable var and can fall outside 0..size-1 when a field is shared across object descriptors.
-    private val serialNames: Array<String> = Array(fields.size) { fields[it].serialName }
-
-    // Field index at each list position — the value returned to callers.
-    private val fieldIndices: IntArray = IntArray(fields.size) { fields[it].index }
-
-    // Serial name -> field index, for O(1) fallback when the in-order guess misses.
+    // Serial name -> field index.
     private val byName: Map<String, Int> = buildMap(fields.size) {
-        for (position in fields.indices) {
-            // Keep the FIRST field for a duplicated serial name, matching the old linear scan.
-            if (serialNames[position] !in this) put(serialNames[position], fieldIndices[position])
+        fields.forEach { field ->
+            val serialName = field.serialName
+            if (serialName !in this) put(serialName, field.index)
         }
     }
 
+    // The inverse of byName, as an array for O(1) access: serial name of the field at each field index.
+    private val serialNames: Array<String?> = run {
+        val byIndex = byName.entries.associate { (serialName, index) -> index to serialName }
+        Array(fields.size) { byIndex[it] }
+    }
+
     /**
-     * Resolves [serialName] to its field index (SdkFieldDescriptor.index), checking the field at list
-     * position [expectedPosition] first as an in-order guess before falling back to a hash lookup.
-     * Returns the field's index, or [Deserializer.FieldIterator.UNKNOWN_FIELD] if no field has the
-     * given serial name.
+     * Resolves [serialName] to its field index (SdkFieldDescriptor.index), checking [expectedIndex]
+     * first as an in-order guess before falling back to a hash lookup. Returns the field's index, or
+     * [Deserializer.FieldIterator.UNKNOWN_FIELD] if no field has the given serial name.
      */
-    public fun lookup(serialName: String, expectedPosition: Int): Int {
-        if (expectedPosition < serialNames.size && serialNames[expectedPosition] == serialName) {
-            return fieldIndices[expectedPosition]
+    public fun lookup(serialName: String, expectedIndex: Int): Int {
+        if (expectedIndex < serialNames.size && serialNames[expectedIndex] == serialName) {
+            return expectedIndex
         }
         return byName[serialName] ?: Deserializer.FieldIterator.UNKNOWN_FIELD
     }
