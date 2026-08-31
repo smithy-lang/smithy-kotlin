@@ -17,6 +17,22 @@ import aws.smithy.kotlin.runtime.InternalApi
 public interface FieldTrait
 
 /**
+ * A [FieldTrait] that carries the name a field is encoded into on the wire.
+ */
+@InternalApi
+public interface SerialNameTrait : FieldTrait {
+    public val name: String
+}
+
+/**
+ * The name this field is encoded into on the wire, from whichever [SerialNameTrait] the field carries.
+ */
+internal val SdkFieldDescriptor.serialName: String
+    get() = requireNotNull(traits.firstNotNullOfOrNull { it as? SerialNameTrait }) {
+        "Expected to find a SerialNameTrait in $this but none was present."
+    }.name
+
+/**
  * Denotes that a Map or List may contain null values
  * Details at https://awslabs.github.io/smithy/1.0/spec/core/type-refinement-traits.html#sparse-trait
  */

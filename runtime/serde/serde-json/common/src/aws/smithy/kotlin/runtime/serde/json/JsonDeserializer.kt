@@ -199,7 +199,7 @@ private class JsonFieldIterator(
     Deserializer by deserializer,
     PrimitiveDeserializer by deserializer {
 
-    private val fieldIndex = descriptor.fieldIndex { it.serialName }
+    private val fieldIndex = descriptor.fieldIndex
 
     // In-order cursor: fields are almost always sent in schema order, so the field following the last
     // match is the most likely next hit.

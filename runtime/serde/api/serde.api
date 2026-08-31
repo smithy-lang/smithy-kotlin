@@ -166,7 +166,7 @@ public final class aws/smithy/kotlin/runtime/serde/SdkFieldDescriptor$Companion 
 public final class aws/smithy/kotlin/runtime/serde/SdkObjectDescriptor : aws/smithy/kotlin/runtime/serde/SdkFieldDescriptor {
 	public static final field Companion Laws/smithy/kotlin/runtime/serde/SdkObjectDescriptor$Companion;
 	public synthetic fun <init> (Laws/smithy/kotlin/runtime/serde/SdkObjectDescriptor$Builder;Lkotlin/jvm/internal/DefaultConstructorMarker;)V
-	public final fun fieldIndex (Lkotlin/jvm/functions/Function1;)Laws/smithy/kotlin/runtime/serde/FieldIndex;
+	public final fun getFieldIndex ()Laws/smithy/kotlin/runtime/serde/FieldIndex;
 	public final fun getFields ()Ljava/util/List;
 }
 
@@ -268,6 +268,10 @@ public final class aws/smithy/kotlin/runtime/serde/SerialKind$Timestamp : aws/sm
 
 public final class aws/smithy/kotlin/runtime/serde/SerialKind$Unit : aws/smithy/kotlin/runtime/serde/SerialKind {
 	public static final field INSTANCE Laws/smithy/kotlin/runtime/serde/SerialKind$Unit;
+}
+
+public abstract interface class aws/smithy/kotlin/runtime/serde/SerialNameTrait : aws/smithy/kotlin/runtime/serde/FieldTrait {
+	public abstract fun getName ()Ljava/lang/String;
 }
 
 public final class aws/smithy/kotlin/runtime/serde/SerializationException : aws/smithy/kotlin/runtime/ClientException {

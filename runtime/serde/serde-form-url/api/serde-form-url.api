@@ -38,13 +38,13 @@ public final class aws/smithy/kotlin/runtime/serde/formurl/FormUrlMapName$Compan
 	public final fun getDefault ()Laws/smithy/kotlin/runtime/serde/formurl/FormUrlMapName;
 }
 
-public final class aws/smithy/kotlin/runtime/serde/formurl/FormUrlSerialName : aws/smithy/kotlin/runtime/serde/FieldTrait {
+public final class aws/smithy/kotlin/runtime/serde/formurl/FormUrlSerialName : aws/smithy/kotlin/runtime/serde/SerialNameTrait {
 	public fun <init> (Ljava/lang/String;)V
 	public final fun component1 ()Ljava/lang/String;
 	public final fun copy (Ljava/lang/String;)Laws/smithy/kotlin/runtime/serde/formurl/FormUrlSerialName;
 	public static synthetic fun copy$default (Laws/smithy/kotlin/runtime/serde/formurl/FormUrlSerialName;Ljava/lang/String;ILjava/lang/Object;)Laws/smithy/kotlin/runtime/serde/formurl/FormUrlSerialName;
 	public fun equals (Ljava/lang/Object;)Z
-	public final fun getName ()Ljava/lang/String;
+	public fun getName ()Ljava/lang/String;
 	public fun hashCode ()I
 	public fun toString ()Ljava/lang/String;
 }

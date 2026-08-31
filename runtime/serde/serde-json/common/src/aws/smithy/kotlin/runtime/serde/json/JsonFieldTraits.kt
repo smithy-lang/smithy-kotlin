@@ -8,13 +8,14 @@ package aws.smithy.kotlin.runtime.serde.json
 import aws.smithy.kotlin.runtime.InternalApi
 import aws.smithy.kotlin.runtime.serde.FieldTrait
 import aws.smithy.kotlin.runtime.serde.SdkFieldDescriptor
+import aws.smithy.kotlin.runtime.serde.SerialNameTrait
 import aws.smithy.kotlin.runtime.serde.expectTrait
 
 /**
  * Specifies a name that a field is encoded into for Json elements.
  */
 @InternalApi
-public data class JsonSerialName(public val name: String) : FieldTrait
+public data class JsonSerialName(public override val name: String) : SerialNameTrait
 
 /**
  * Provides the serialized name of the field.

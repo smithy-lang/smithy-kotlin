@@ -24,10 +24,11 @@ public class SdkObjectDescriptor private constructor(builder: Builder) :
     private var cachedFieldIndex: FieldIndex? = null
 
     /**
-     * Returns a cached [FieldIndex] that provides O(1) lookup of a field's index by its serial name.
+     * A cached [FieldIndex] that provides O(1) lookup of a field's index by its serial name.
      */
     @InternalApi
-    public fun fieldIndex(serialNameOf: (SdkFieldDescriptor) -> String): FieldIndex = cachedFieldIndex ?: FieldIndex(fields, serialNameOf).also { cachedFieldIndex = it }
+    public val fieldIndex: FieldIndex
+        get() = cachedFieldIndex ?: FieldIndex(fields).also { cachedFieldIndex = it }
 
     @InternalApi
     public companion object {
@@ -59,11 +60,10 @@ public class SdkObjectDescriptor private constructor(builder: Builder) :
 @InternalApi
 public class FieldIndex internal constructor(
     fields: List<SdkFieldDescriptor>,
-    serialNameOf: (SdkFieldDescriptor) -> String,
 ) {
     // Indexed by list position (always dense, in-bounds), NOT SdkFieldDescriptor.index, which is a
     // mutable var and can fall outside 0..size-1 when a field is shared across object descriptors.
-    private val serialNames: Array<String> = Array(fields.size) { serialNameOf(fields[it]) }
+    private val serialNames: Array<String> = Array(fields.size) { fields[it].serialName }
 
     // Field index at each list position — the value returned to callers.
     private val fieldIndices: IntArray = IntArray(fields.size) { fields[it].index }
