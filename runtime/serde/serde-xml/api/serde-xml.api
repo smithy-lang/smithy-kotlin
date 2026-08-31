@@ -9,6 +9,7 @@ public class aws/smithy/kotlin/runtime/serde/xml/AbstractXmlNamespaceTrait {
 
 public final class aws/smithy/kotlin/runtime/serde/xml/Flattened : aws/smithy/kotlin/runtime/serde/FieldTrait {
 	public static final field INSTANCE Laws/smithy/kotlin/runtime/serde/xml/Flattened;
+	public fun getSerialName ()Ljava/lang/String;
 }
 
 public final class aws/smithy/kotlin/runtime/serde/xml/XmlAliasName : aws/smithy/kotlin/runtime/serde/FieldTrait {
@@ -18,12 +19,14 @@ public final class aws/smithy/kotlin/runtime/serde/xml/XmlAliasName : aws/smithy
 	public static synthetic fun copy$default (Laws/smithy/kotlin/runtime/serde/xml/XmlAliasName;Ljava/lang/String;ILjava/lang/Object;)Laws/smithy/kotlin/runtime/serde/xml/XmlAliasName;
 	public fun equals (Ljava/lang/Object;)Z
 	public final fun getName ()Ljava/lang/String;
+	public fun getSerialName ()Ljava/lang/String;
 	public fun hashCode ()I
 	public fun toString ()Ljava/lang/String;
 }
 
 public final class aws/smithy/kotlin/runtime/serde/xml/XmlAttribute : aws/smithy/kotlin/runtime/serde/FieldTrait {
 	public static final field INSTANCE Laws/smithy/kotlin/runtime/serde/xml/XmlAttribute;
+	public fun getSerialName ()Ljava/lang/String;
 }
 
 public final class aws/smithy/kotlin/runtime/serde/xml/XmlCollectionName : aws/smithy/kotlin/runtime/serde/FieldTrait {
@@ -34,6 +37,7 @@ public final class aws/smithy/kotlin/runtime/serde/xml/XmlCollectionName : aws/s
 	public static synthetic fun copy$default (Laws/smithy/kotlin/runtime/serde/xml/XmlCollectionName;Ljava/lang/String;ILjava/lang/Object;)Laws/smithy/kotlin/runtime/serde/xml/XmlCollectionName;
 	public fun equals (Ljava/lang/Object;)Z
 	public final fun getElement ()Ljava/lang/String;
+	public fun getSerialName ()Ljava/lang/String;
 	public fun hashCode ()I
 	public fun toString ()Ljava/lang/String;
 }
@@ -45,16 +49,19 @@ public final class aws/smithy/kotlin/runtime/serde/xml/XmlCollectionName$Compani
 public final class aws/smithy/kotlin/runtime/serde/xml/XmlCollectionValueNamespace : aws/smithy/kotlin/runtime/serde/xml/AbstractXmlNamespaceTrait, aws/smithy/kotlin/runtime/serde/FieldTrait {
 	public fun <init> (Ljava/lang/String;Ljava/lang/String;)V
 	public synthetic fun <init> (Ljava/lang/String;Ljava/lang/String;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun getSerialName ()Ljava/lang/String;
 }
 
 public final class aws/smithy/kotlin/runtime/serde/xml/XmlError : aws/smithy/kotlin/runtime/serde/FieldTrait {
 	public static final field INSTANCE Laws/smithy/kotlin/runtime/serde/xml/XmlError;
 	public final fun getErrorTag ()Laws/smithy/kotlin/runtime/serde/xml/XmlToken$QualifiedName;
+	public fun getSerialName ()Ljava/lang/String;
 }
 
 public final class aws/smithy/kotlin/runtime/serde/xml/XmlMapKeyNamespace : aws/smithy/kotlin/runtime/serde/xml/AbstractXmlNamespaceTrait, aws/smithy/kotlin/runtime/serde/FieldTrait {
 	public fun <init> (Ljava/lang/String;Ljava/lang/String;)V
 	public synthetic fun <init> (Ljava/lang/String;Ljava/lang/String;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun getSerialName ()Ljava/lang/String;
 }
 
 public final class aws/smithy/kotlin/runtime/serde/xml/XmlMapName : aws/smithy/kotlin/runtime/serde/FieldTrait {
@@ -70,6 +77,7 @@ public final class aws/smithy/kotlin/runtime/serde/xml/XmlMapName : aws/smithy/k
 	public fun equals (Ljava/lang/Object;)Z
 	public final fun getEntry ()Ljava/lang/String;
 	public final fun getKey ()Ljava/lang/String;
+	public fun getSerialName ()Ljava/lang/String;
 	public final fun getValue ()Ljava/lang/String;
 	public fun hashCode ()I
 	public fun toString ()Ljava/lang/String;
@@ -82,15 +90,17 @@ public final class aws/smithy/kotlin/runtime/serde/xml/XmlMapName$Companion {
 public final class aws/smithy/kotlin/runtime/serde/xml/XmlNamespace : aws/smithy/kotlin/runtime/serde/xml/AbstractXmlNamespaceTrait, aws/smithy/kotlin/runtime/serde/FieldTrait {
 	public fun <init> (Ljava/lang/String;Ljava/lang/String;)V
 	public synthetic fun <init> (Ljava/lang/String;Ljava/lang/String;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun getSerialName ()Ljava/lang/String;
 }
 
-public final class aws/smithy/kotlin/runtime/serde/xml/XmlSerialName : aws/smithy/kotlin/runtime/serde/SerialNameTrait {
+public final class aws/smithy/kotlin/runtime/serde/xml/XmlSerialName : aws/smithy/kotlin/runtime/serde/FieldTrait {
 	public fun <init> (Ljava/lang/String;)V
 	public final fun component1 ()Ljava/lang/String;
 	public final fun copy (Ljava/lang/String;)Laws/smithy/kotlin/runtime/serde/xml/XmlSerialName;
 	public static synthetic fun copy$default (Laws/smithy/kotlin/runtime/serde/xml/XmlSerialName;Ljava/lang/String;ILjava/lang/Object;)Laws/smithy/kotlin/runtime/serde/xml/XmlSerialName;
 	public fun equals (Ljava/lang/Object;)Z
-	public fun getName ()Ljava/lang/String;
+	public final fun getName ()Ljava/lang/String;
+	public fun getSerialName ()Ljava/lang/String;
 	public fun hashCode ()I
 	public fun toString ()Ljava/lang/String;
 }
@@ -313,6 +323,7 @@ public final class aws/smithy/kotlin/runtime/serde/xml/XmlToken$Text : aws/smith
 
 public final class aws/smithy/kotlin/runtime/serde/xml/XmlUnwrappedOutput : aws/smithy/kotlin/runtime/serde/FieldTrait {
 	public static final field INSTANCE Laws/smithy/kotlin/runtime/serde/xml/XmlUnwrappedOutput;
+	public fun getSerialName ()Ljava/lang/String;
 }
 
 public final class aws/smithy/kotlin/runtime/serde/xml/deserialization/LexingXmlStreamReader : aws/smithy/kotlin/runtime/serde/xml/XmlStreamReader {

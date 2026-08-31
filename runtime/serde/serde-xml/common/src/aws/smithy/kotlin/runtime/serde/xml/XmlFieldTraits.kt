@@ -7,7 +7,6 @@ package aws.smithy.kotlin.runtime.serde.xml
 
 import aws.smithy.kotlin.runtime.InternalApi
 import aws.smithy.kotlin.runtime.serde.*
-import aws.smithy.kotlin.runtime.serde.SerialNameTrait
 
 // NOTE: By default, a descriptor without any Xml trait is assumed to be a primitive TEXT value.
 
@@ -132,7 +131,10 @@ public class XmlMapKeyNamespace(uri: String, prefix: String? = null) :
  * See https://awslabs.github.io/smithy/1.0/spec/core/xml-traits.html?highlight=xmlname#xmlname-trait
  */
 @InternalApi
-public data class XmlSerialName(public override val name: String) : SerialNameTrait
+public data class XmlSerialName(public val name: String) : FieldTrait {
+    override val serialName: String
+        get() = name
+}
 
 /**
  * Specifies an alternate name that can be used to match an XML node.

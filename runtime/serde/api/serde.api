@@ -61,6 +61,11 @@ public final class aws/smithy/kotlin/runtime/serde/FieldIndex {
 }
 
 public abstract interface class aws/smithy/kotlin/runtime/serde/FieldTrait {
+	public fun getSerialName ()Ljava/lang/String;
+}
+
+public final class aws/smithy/kotlin/runtime/serde/FieldTrait$DefaultImpls {
+	public static fun getSerialName (Laws/smithy/kotlin/runtime/serde/FieldTrait;)Ljava/lang/String;
 }
 
 public abstract interface class aws/smithy/kotlin/runtime/serde/ListSerializer : aws/smithy/kotlin/runtime/serde/PrimitiveSerializer {
@@ -270,10 +275,6 @@ public final class aws/smithy/kotlin/runtime/serde/SerialKind$Unit : aws/smithy/
 	public static final field INSTANCE Laws/smithy/kotlin/runtime/serde/SerialKind$Unit;
 }
 
-public abstract interface class aws/smithy/kotlin/runtime/serde/SerialNameTrait : aws/smithy/kotlin/runtime/serde/FieldTrait {
-	public abstract fun getName ()Ljava/lang/String;
-}
-
 public final class aws/smithy/kotlin/runtime/serde/SerializationException : aws/smithy/kotlin/runtime/ClientException {
 	public fun <init> ()V
 	public fun <init> (Ljava/lang/String;)V
@@ -296,6 +297,7 @@ public final class aws/smithy/kotlin/runtime/serde/SerializerKt {
 
 public final class aws/smithy/kotlin/runtime/serde/SparseValues : aws/smithy/kotlin/runtime/serde/FieldTrait {
 	public static final field INSTANCE Laws/smithy/kotlin/runtime/serde/SparseValues;
+	public fun getSerialName ()Ljava/lang/String;
 }
 
 public abstract interface class aws/smithy/kotlin/runtime/serde/StructSerializer : aws/smithy/kotlin/runtime/serde/PrimitiveSerializer {
