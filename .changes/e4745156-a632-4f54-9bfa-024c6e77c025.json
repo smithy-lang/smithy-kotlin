@@ -1,6 +1,0 @@
-{
-  "id": "e4745156-a632-4f54-9bfa-024c6e77c025",
-  "type": "feature",
-  "description": "Optimize CBOR deserialization by resolving struct field names through a cached O(1) field index with an in-order cursor instead of a linear scan over the field list",
-  "module": "serde-cbor"
-}
