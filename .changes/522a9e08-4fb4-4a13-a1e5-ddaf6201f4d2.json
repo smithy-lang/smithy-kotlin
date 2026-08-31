@@ -1,0 +1,6 @@
+{
+  "id": "522a9e08-4fb4-4a13-a1e5-ddaf6201f4d2",
+  "type": "feature",
+  "description": "Optimize CBOR, JSON, and form-url serialization by caching each field's pre-encoded name (and each query literal's pre-encoded key/value pair) on its descriptor instead of re-encoding on every field write",
+  "module": "serde"
+}
