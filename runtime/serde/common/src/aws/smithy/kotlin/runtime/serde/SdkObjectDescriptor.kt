@@ -5,6 +5,7 @@
 package aws.smithy.kotlin.runtime.serde
 
 import aws.smithy.kotlin.runtime.InternalApi
+import kotlin.concurrent.Volatile
 
 /**
  * Metadata container for all fields of an object/class
@@ -17,6 +18,9 @@ public class SdkObjectDescriptor private constructor(builder: Builder) :
     ) {
     public val fields: List<SdkFieldDescriptor> = builder.fields
 
+    // Racy single-check: concurrent callers may each build an index, but FieldIndex is deeply immutable
+    // and value-equivalent, so losing the race only wastes an instance.
+    @Volatile
     private var cachedFieldIndex: FieldIndex? = null
 
     /**
