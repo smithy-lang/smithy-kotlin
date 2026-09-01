@@ -8,6 +8,7 @@ package aws.smithy.kotlin.runtime.serde.json
 import aws.smithy.kotlin.runtime.collections.*
 import aws.smithy.kotlin.runtime.content.BigDecimal
 import aws.smithy.kotlin.runtime.content.BigInteger
+import aws.smithy.kotlin.runtime.serde.SdkFieldDescriptor
 
 // character code points
 private const val CP_QUOTATION = 0x22
@@ -97,12 +98,16 @@ internal class JsonEncoder(private val pretty: Boolean = false) : JsonStreamWrit
         append("\"")
     }
 
-    override fun writeName(name: String) {
+    override fun writeName(name: String): Unit = writeName { buffer.appendQuoted(name.escape()) }
+
+    internal fun writeFieldName(descriptor: SdkFieldDescriptor): Unit = writeName { buffer.append(descriptor.escapedSerialName) }
+
+    private inline fun writeName(appendName: () -> Unit) {
         if (state.top() == LexerState.ObjectNextKeyOrEnd) {
             writeComma()
         }
         writeIndent()
-        buffer.appendQuoted(name.escape())
+        appendName()
         state.replaceTop(LexerState.ObjectFieldValue)
     }
 

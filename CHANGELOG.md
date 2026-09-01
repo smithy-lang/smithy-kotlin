@@ -1,5 +1,15 @@
 # Changelog
 
+## [1.7.9] - 09/01/2026
+
+### Features
+* (**serde**) Optimize CBOR, JSON, and form-url serialization by caching each field's pre-encoded name (and each query literal's pre-encoded key/value pair) on its descriptor instead of re-encoding on every field write
+* Optimize JSON and CBOR deserialization by resolving struct field names through a cached O(1) field index with an in-order cursor instead of a linear scan over the field list
+* Optimize serde performance by hoisting generated object/field descriptors to file-level scope so they are constructed once instead of on every serialize/deserialize invocation
+
+### Miscellaneous
+* (**serde-cbor**) Reduce allocations in CBOR serialization and deserialization by encoding/decoding values through free functions instead of intermediate wrapper objects, and skipping fields, indefinite-length strings, and decimal fractions without materializing wrapper values
+
 ## [1.7.8] - 08/18/2026
 
 ### Features
