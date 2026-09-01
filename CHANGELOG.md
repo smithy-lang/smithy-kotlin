@@ -1,5 +1,127 @@
 # Changelog
 
+## [1.7.9] - 09/01/2026
+
+### Features
+* (**serde**) Optimize CBOR, JSON, and form-url serialization by caching each field's pre-encoded name (and each query literal's pre-encoded key/value pair) on its descriptor instead of re-encoding on every field write
+* Optimize JSON and CBOR deserialization by resolving struct field names through a cached O(1) field index with an in-order cursor instead of a linear scan over the field list
+* Optimize serde performance by hoisting generated object/field descriptors to file-level scope so they are constructed once instead of on every serialize/deserialize invocation
+
+### Miscellaneous
+* (**serde-cbor**) Reduce allocations in CBOR serialization and deserialization by encoding/decoding values through free functions instead of intermediate wrapper objects, and skipping fields, indefinite-length strings, and decimal fractions without materializing wrapper values
+
+## [1.7.8] - 08/18/2026
+
+### Features
+* (**runtime-core**) Add `peekByte` to `SdkBufferedSource` and `SdkBuffer` for reading the next byte without consuming it
+* (**serde-cbor**) Optimize CBOR serialization by writing values directly to the output buffer instead of building intermediate byte arrays
+* (**serde-cbor**) Optimize CBOR deserialization by reading values directly from the input buffer instead of building intermediate byte arrays
+* (**serde-cbor**) Optimize CBOR deserialization by peeking the next head byte via indexed buffer access instead of allocating a peek-source chain per value
+
+### Fixes
+* (**serde-cbor**) Encode and decode CBOR negative bignums using the RFC 8949 unsigned magnitude representation instead of a signed two's-complement encoding, fixing interoperability for negative `BigInteger` values
+* (**serde-cbor**) Fix CBOR decimal fraction encoding and decoding to use the RFC 8949 scale exponent, correcting the transmitted value for `BigDecimal`s whose mantissa has more than one significant digit
+* (**serde-cbor**) Encode CBOR text string lengths as a UTF-8 byte count instead of a UTF-16 code-unit count, so multibyte strings produce valid RFC 8949 output
+* (**serde-cbor**) Decode CBOR string, byte-string, and collection lengths as a `Long` so large lengths are no longer silently truncated to `Int`
+* (**serde-cbor**) Convert CBOR floating-point values that arrive encoded as integers numerically instead of misinterpreting the integer as raw IEEE-754 bits
+* (**serde-cbor**) Fix decoding of CBOR timestamps encoded as negative integers, which previously decoded with the wrong sign for pre-epoch instants
+* [#3190](https://github.com/smithy-lang/smithy/issues/3190) Upgrade to Smithy [v1.73.0](https://github.com/smithy-lang/smithy/releases/tag/1.73.0) to pick up [bugfix for endpoint ruleset trimming](https://github.com/smithy-lang/smithy/pull/3219)
+* `TelemetryProvider` and related types are no longer experimental
+
+### Miscellaneous
+* (**serde-cbor**) Optimize CBOR text string decoding by reading UTF-8 directly from the buffer instead of copying into an intermediate byte array
+
+## [1.7.7] - 08/11/2026
+
+### Fixes
+* [#1974](https://github.com/aws/aws-sdk-kotlin/issues/1974) Remove client-side non-blank validation for HTTP query-bound members to match the Smithy specification. Optional query parameters left unset no longer cause an `IllegalArgumentException` during request serialization.
+
+## [1.7.6] - 08/04/2026
+
+### Features
+* [#1638](https://github.com/aws/aws-sdk-kotlin/issues/1638) (**telemetry-provider-emf**) Add EMF telemetry provider for emitting SDK operational metrics in CloudWatch Embedded Metric Format
+
+## [1.7.5] - 08/03/2026
+
+## [1.7.4] - 07/31/2026
+
+### Features
+* (**aws-signing**) Add `PayloadSigningEnabled` signing attribute to allow services to skip SigV4 payload signing over HTTPS, reducing CPU overhead for large request bodies
+
+### Fixes
+* [#1667](https://github.com/smithy-lang/smithy-kotlin/issues/1667) Update operation metrics to properly include RPC attributes and telemetry context
+
+## [1.7.3] - 07/27/2026
+
+### Features
+* (**aws-signing-default**) Cache SigV4 signing key derivation to avoid redundant HMAC computations when credentials, region, service, and date are unchanged
+* (**http-client-engine-okhttp**) Expose `maxIdleConnections` on `OkHttpEngineConfig` and change the default from 5 to `maxConcurrency` to align with the SDK's default, reducing connection churn and TLS re-establishment overhead under concurrent workloads
+
+### Fixes
+* [#1656](https://github.com/smithy-lang/smithy-kotlin/issues/1656) (**runtime-core**) Use `kotlin.uuid.Uuid` for UUID generation instead of `kotlin.random.Random` which is unsafe with Lambda SnapStart due to deterministic PRNG state being captured in snapshots
+
+### Miscellaneous
+* (**http-client-engine-crt**) Reduce CPU and memory overhead of the CRT HTTP engine's response body handling by writing received bytes directly into a window-sized channel, eliminating the intermediate unbounded channel and per-response writer coroutine
+
+## [1.7.2] - 07/08/2026
+
+### Fixes
+* Correctly generate default values for floating point numbers given in scientific notation
+
+## [1.7.1] - 07/07/2026
+
+### Features
+* [#1460](https://github.com/aws/aws-sdk-kotlin/issues/1460) (**runtime**) Add configurable header redaction for request/response debug logging via `logRedactedHeaders` client config property
+
+## [1.7.0] - 07/06/2026
+
+### Miscellaneous
+* **Breaking**: Remove deprecated `AwsChunkedSource` constructor overload, `HttpRequestBuilder.setAwsChunkedBody` overload, and `Flow<SdkBuffer>.asEventStreamHttpBody(CoroutineScope)` overload that were scheduled for removal in 1.7
+* **Breaking**: Update Kotlin version from 2.3.20 to 2.4.0
+* **Breaking**: Deprecate `Filesystem.readFileOrNull`, `Filesystem.writeFile`, and `Filesystem.fileExists` for removal in 1.8
+* ⚠️ **IMPORTANT**: Deprecate [`OkHttpEngineConfig.connectionIdlePollingInterval`](https://docs.aws.amazon.com/smithy-kotlin/api/latest/http-client-engine-okhttp/aws.smithy.kotlin.runtime.http.engine.okhttp/-ok-http-engine-config/connection-idle-polling-interval.html), which has been superseded by [`OkHttpEngineConfig.retryOnConnectionFailure`](https://docs.aws.amazon.com/smithy-kotlin/api/latest/http-client-engine-okhttp/aws.smithy.kotlin.runtime.http.engine.okhttp/-ok-http-engine-config/retry-on-connection-failure.html)
+
+## [1.6.15] - 06/10/2026
+
+### Features
+* [#363](https://github.com/smithy-lang/smithy-kotlin/issues/363) Add support for Smithy's [`@requiresLength`](https://smithy.io/2.0/spec/streaming.html#smithy-api-requireslength-trait) and verify that annotated blob shapes include a `Content-Length`
+
+### Fixes
+* Validate that OkHttp header values do not contain CR or LF
+* Limit exponent scale to prevent OOM errors when expanding exponents
+* Limit serde parsing depth to 1,000 levels of nesting to prevent `StackOverflowError`
+
+## [1.6.14] - 05/08/2026
+
+### Features
+* Add standard retry strategy with updated exponential backoff, retry quotas, `x-amz-retry-after` header support, and service-specific behavior for DynamoDB. Gated behind the `SMITHY_NEW_RETRIES_2026` feature flag. See the [announcement](https://github.com/aws/aws-sdk-kotlin/discussions/1885) for more details.
+* Add retry logic for long polling operations. See the [announcement](https://github.com/aws/aws-sdk-kotlin/discussions/1885) for more details.
+
+### Fixes
+* Erase empty file if setting permissions fails
+
+## [1.6.13] - 04/28/2026
+
+### Miscellaneous
+* Bumping Kotlin version to 2.3.20
+
+## [1.6.12] - 04/20/2026
+
+## [1.6.11] - 04/17/2026
+
+### Fixes
+* Fix codegen for `getAttr` returning boolean in endpoint rule conditions
+
+## [1.6.10] - 04/13/2026
+
+## [1.6.9] - 03/31/2026
+
+### Fixes
+* Fix code generation of negative default values for doubles
+* Sleep outside of lock in adaptive rate limiter
+
+## [1.6.8] - 03/30/2026
+
 ## [1.6.7] - 03/24/2026
 
 ## [1.6.6] - 03/13/2026

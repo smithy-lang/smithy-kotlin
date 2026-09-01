@@ -1,0 +1,156 @@
+/*
+ * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
+package aws.smithy.kotlin.runtime.util
+
+import aws.smithy.kotlin.runtime.PlannedRemoval
+import java.io.File
+import java.io.IOException
+import java.io.RandomAccessFile
+import java.nio.file.Files
+import java.nio.file.Path
+import java.nio.file.attribute.PosixFilePermissions
+import java.util.*
+
+internal actual object SystemDefaultProvider : PlatformProvider {
+    actual override fun getAllEnvVars(): Map<String, String> = System.getenv()
+
+    /**
+     * Get an environment variable or null
+     */
+    actual override fun getenv(key: String): String? = System.getenv()[key]
+
+    actual override val isJvm: Boolean = true
+    actual override val isAndroid: Boolean by lazy { isAndroid() }
+    actual override val isBrowser: Boolean = false
+    actual override val isNode: Boolean = false
+    actual override val isNative: Boolean = false
+
+    actual override fun osInfo(): OperatingSystem = getOsInfo()
+
+    /**
+     * Read the contents of a file as a [String] or return null on any IO error.
+     *
+     * @param path fully qualified path encoded specifically to the target platform's filesystem.
+     * @return contents of file or null if error (file does not exist, etc.)
+     */
+    @OptIn(PlannedRemoval::class)
+    @Deprecated("Use readOrNull() instead", replaceWith = ReplaceWith("readOrNull(path, readAll = true)"))
+    actual override suspend fun readFileOrNull(path: String): ByteArray? = readOrNull(path, readAll = true, mustExist = false)
+
+    @OptIn(PlannedRemoval::class)
+    @Deprecated("Use write() instead", replaceWith = ReplaceWith("write(path, data, WriteType.OVERWRITE)"))
+    actual override suspend fun writeFile(path: String, data: ByteArray): Unit = write(path, data, WriteType.OVERWRITE)
+
+    @OptIn(PlannedRemoval::class)
+    @Deprecated("Use exists() instead", replaceWith = ReplaceWith("exists(path)"))
+    actual override fun fileExists(path: String): Boolean = exists(path)
+    actual override fun write(
+        path: String,
+        data: ByteArray,
+        writeType: WriteType,
+        mustExist: Boolean,
+        permissions: String?,
+    ) {
+        val file = File(path)
+        val creating = !file.exists()
+        if (creating && mustExist) throw IOException("$path does not exist and mustExist is set to true")
+
+        if (creating && permissions != null && osInfo().family != OsFamily.Windows) {
+            file.createNewFile()
+
+            try {
+                Files.setPosixFilePermissions(file.toPath(), PosixFilePermissions.fromString(permissions.toPermissionString()))
+            } catch (permissionsException: Throwable) {
+                try {
+                    file.delete()
+                } catch (deleteException: Throwable) {
+                    permissionsException.addSuppressed(deleteException)
+                }
+
+                throw permissionsException
+            }
+        }
+
+        when (writeType) {
+            is WriteType.OFFSET ->
+                RandomAccessFile(path, "rw").use {
+                    it.seek(writeType.offset)
+                    it.write(data)
+                }
+            is WriteType.APPEND -> file.appendBytes(data)
+            is WriteType.OVERWRITE -> file.writeBytes(data)
+        }
+    }
+
+    @Suppress("DEPRECATION")
+    public suspend fun readFileOrNull(path: Path): ByteArray? = readFileOrNull(path.toAbsolutePath().toString())
+
+    @Suppress("DEPRECATION")
+    public suspend fun readFileOrNull(file: File): ByteArray? = readFileOrNull(file.absolutePath)
+
+    actual override fun getAllProperties(): Map<String, String> = System
+        .getProperties()
+        .entries
+        .associate { (key, value) -> key.toString() to value.toString() }
+
+    /**
+     * Get a system property or null
+     *
+     * @param key name of environment variable
+     * @return value of system property or null if undefined or platform does not support properties
+     */
+    actual override fun getProperty(key: String): String? = System.getProperty(key)
+
+    /**
+     * return the platform-specific file path separator char.  Eg on Linux a path may be '/root` and the path
+     * segment char is '/'.
+     */
+    actual override val filePathSeparator: String by lazy { File.separator }
+}
+
+private fun isAndroid(): Boolean = try {
+    Class.forName("android.os.Build")
+    true
+} catch (ex: ClassNotFoundException) {
+    false
+}
+
+private fun normalize(value: String): String = value.lowercase(Locale.US).replace(Regex("[^a-z0-9+]"), "")
+
+private fun getOsInfo(): OperatingSystem {
+    val name = normalize(System.getProperty("os.name"))
+
+    val family = when {
+        isAndroid() -> OsFamily.Android
+        name.contains("windows") -> OsFamily.Windows
+        name.contains("linux") -> OsFamily.Linux
+        name.contains("macosx") -> OsFamily.MacOs
+        else -> OsFamily.Unknown
+    }
+
+    val version = runCatching { System.getProperty("os.version") }.getOrNull()
+
+    return OperatingSystem(family, version)
+}
+
+/**
+ * Convert an octal permission string (e.g., `"600"`) to a POSIX permission string (e.g., `"rw-------"`).
+ * Each octal digit maps to three permission bits: read (4), write (2), execute (1).
+ */
+private fun String.toPermissionString(): String {
+    val mask = toInt(8)
+    return buildString(9) {
+        append(if (mask and 0b100_000_000 != 0) 'r' else '-')
+        append(if (mask and 0b010_000_000 != 0) 'w' else '-')
+        append(if (mask and 0b001_000_000 != 0) 'x' else '-')
+        append(if (mask and 0b000_100_000 != 0) 'r' else '-')
+        append(if (mask and 0b000_010_000 != 0) 'w' else '-')
+        append(if (mask and 0b000_001_000 != 0) 'x' else '-')
+        append(if (mask and 0b000_000_100 != 0) 'r' else '-')
+        append(if (mask and 0b000_000_010 != 0) 'w' else '-')
+        append(if (mask and 0b000_000_001 != 0) 'x' else '-')
+    }
+}

@@ -5,6 +5,7 @@
 package aws.smithy.kotlin.runtime.content
 
 import com.ionspin.kotlin.bignum.decimal.BigDecimal as IonSpinBigDecimal
+import com.ionspin.kotlin.bignum.integer.BigInteger as IonSpinBigInteger
 
 public actual class BigDecimal private constructor(private val delegate: IonSpinBigDecimal) :
     Number(),
@@ -26,8 +27,26 @@ public actual class BigDecimal private constructor(private val delegate: IonSpin
 
     public actual constructor(value: String) : this(IonSpinBigDecimal.parseString(value, 10))
 
-    public actual constructor(mantissa: BigInteger, exponent: Int) :
-        this(IonSpinBigDecimal.fromBigIntegerWithExponent(mantissa.delegate, exponent.toLong()))
+    public actual constructor(mantissa: BigInteger, exponent: Int) : this(
+        IonSpinBigDecimal.fromBigIntegerWithExponent(mantissa.delegate, exponent.toLong()),
+    )
+
+    private val normalized by lazy {
+        if (delegate.significand.isZero()) {
+            delegate
+        } else {
+            val sig = delegate.significand
+            var stripped = sig
+            while (stripped.mod(IonSpinBigInteger.TEN) == IonSpinBigInteger.ZERO && !stripped.isZero()) {
+                stripped = stripped.div(IonSpinBigInteger.TEN)
+            }
+            IonSpinBigDecimal.fromBigIntegerWithExponent(stripped, delegate.exponent)
+        }
+    }
+
+    init {
+        assertExponent(exponent)
+    }
 
     actual override fun toByte(): Byte = delegate.byteValue(exactRequired = false)
     actual override fun toDouble(): Double = delegate.doubleValue(exactRequired = false)
@@ -37,14 +56,14 @@ public actual class BigDecimal private constructor(private val delegate: IonSpin
     actual override fun toShort(): Short = delegate.shortValue(exactRequired = false)
 
     public actual val mantissa: BigInteger
-        get() = BigInteger(delegate.significand)
+        get() = BigInteger(normalized.significand)
 
     public actual val exponent: Int
-        get() = delegate.exponent.toInt()
+        get() = normalized.exponent.toInt()
 
-    actual override fun compareTo(other: BigDecimal): Int = delegate.compare(other.delegate)
-    actual override fun equals(other: Any?): Boolean = other is BigDecimal && other.delegate == delegate
-    actual override fun hashCode(): Int = 31 + delegate.hashCode()
+    actual override fun compareTo(other: BigDecimal): Int = normalized.compare(other.normalized)
+    public actual override fun equals(other: Any?): Boolean = other is BigDecimal && (delegate.compareTo(other.delegate) == 0)
+    actual override fun hashCode(): Int = 31 * normalized.hashCode()
     public actual fun toPlainString(): String = delegate.toPlainString()
     actual override fun toString(): String = delegate.toString()
 

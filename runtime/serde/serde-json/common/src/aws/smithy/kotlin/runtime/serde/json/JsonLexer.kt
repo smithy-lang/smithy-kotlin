@@ -7,6 +7,7 @@ package aws.smithy.kotlin.runtime.serde.json
 
 import aws.smithy.kotlin.runtime.collections.*
 import aws.smithy.kotlin.runtime.serde.DeserializationException
+import aws.smithy.kotlin.runtime.serde.DeserializationRecursionException
 
 private val DIGITS = ('0'..'9').toSet()
 private val EXP = setOf('e', 'E')
@@ -145,6 +146,7 @@ internal class JsonLexer(
 
     // discards the '{' character and pushes 'ObjectFirstKeyOrEnd' state
     private fun startObject(): JsonToken {
+        DeserializationRecursionException.assertDepth(state.size)
         consume('{')
         state.mutate { it.push(LexerState.ObjectFirstKeyOrEnd) }
         return JsonToken.BeginObject
@@ -161,6 +163,7 @@ internal class JsonLexer(
 
     // discards the '[' and pushes 'ArrayFirstValueOrEnd' state
     private fun startArray(): JsonToken {
+        DeserializationRecursionException.assertDepth(state.size)
         consume('[')
         state.mutate { it.push(LexerState.ArrayFirstValueOrEnd) }
         return JsonToken.BeginArray

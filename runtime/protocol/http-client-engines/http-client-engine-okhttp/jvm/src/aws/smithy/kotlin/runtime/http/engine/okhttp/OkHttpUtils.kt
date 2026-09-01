@@ -87,6 +87,7 @@ public fun HttpRequest.toOkHttpRequest(
 public fun Headers.toOkHttpHeaders(): OkHttpHeaders = OkHttpHeaders.Builder().also { okHeaders ->
     forEach { key, values ->
         values.forEach { value ->
+            assertValidHeader(key, value)
             okHeaders.addUnsafeNonAscii(key, value)
         }
     }
@@ -96,6 +97,10 @@ public fun Headers.toOkHttpHeaders(): OkHttpHeaders = OkHttpHeaders.Builder().al
         okHeaders.addUnsafeNonAscii("Accept-Encoding", "identity")
     }
 }.build()
+
+private fun assertValidHeader(key: String, value: String) = require('\r' !in value && '\n' !in value) {
+    "Invalid header value for \"$key\": must not contain CR or LF characters"
+}
 
 /**
  * Convert an [okhttp3.Response] to an SDK [HttpResponse]
