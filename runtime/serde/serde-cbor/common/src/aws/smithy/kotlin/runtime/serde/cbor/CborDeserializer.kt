@@ -9,10 +9,29 @@ import aws.smithy.kotlin.runtime.content.BigInteger
 import aws.smithy.kotlin.runtime.content.Document
 import aws.smithy.kotlin.runtime.io.*
 import aws.smithy.kotlin.runtime.serde.*
-import aws.smithy.kotlin.runtime.serde.cbor.encoding.*
+import aws.smithy.kotlin.runtime.serde.cbor.encoding.Major
+import aws.smithy.kotlin.runtime.serde.cbor.encoding.Minor
+import aws.smithy.kotlin.runtime.serde.cbor.encoding.TagId
+import aws.smithy.kotlin.runtime.serde.cbor.encoding.decodeArgument
+import aws.smithy.kotlin.runtime.serde.cbor.encoding.decodeBigNum
+import aws.smithy.kotlin.runtime.serde.cbor.encoding.decodeBooleanValue
+import aws.smithy.kotlin.runtime.serde.cbor.encoding.decodeByteStringValue
+import aws.smithy.kotlin.runtime.serde.cbor.encoding.decodeDecimalFraction
+import aws.smithy.kotlin.runtime.serde.cbor.encoding.decodeFloat16
+import aws.smithy.kotlin.runtime.serde.cbor.encoding.decodeFloat32
+import aws.smithy.kotlin.runtime.serde.cbor.encoding.decodeFloat64
+import aws.smithy.kotlin.runtime.serde.cbor.encoding.decodeIndefiniteBreak
+import aws.smithy.kotlin.runtime.serde.cbor.encoding.decodeInstant
+import aws.smithy.kotlin.runtime.serde.cbor.encoding.decodeNegBigNum
+import aws.smithy.kotlin.runtime.serde.cbor.encoding.decodeNegInt
+import aws.smithy.kotlin.runtime.serde.cbor.encoding.decodeNull
+import aws.smithy.kotlin.runtime.serde.cbor.encoding.decodeTextStringValue
+import aws.smithy.kotlin.runtime.serde.cbor.encoding.decodeUInt
+import aws.smithy.kotlin.runtime.serde.cbor.encoding.peekMajor
+import aws.smithy.kotlin.runtime.serde.cbor.encoding.peekMinorByte
+import aws.smithy.kotlin.runtime.serde.cbor.encoding.skipValue
 import aws.smithy.kotlin.runtime.time.Instant
 import aws.smithy.kotlin.runtime.time.TimestampFormat
-import aws.smithy.kotlin.runtime.serde.cbor.encoding.Boolean as cborBoolean
 
 /**
  * Deserializer for CBOR byte payloads
@@ -62,8 +81,8 @@ internal class CborPrimitiveDeserializer(private val buffer: SdkBufferedSource) 
         val major = peekMajor(buffer)
 
         val unsigned: ULong = when (major) {
-            Major.U_INT -> UInt.decode(buffer).value
-            Major.NEG_INT -> NegInt.decode(buffer).value
+            Major.U_INT -> decodeUInt(buffer)
+            Major.NEG_INT -> decodeNegInt(buffer)
             else -> throw DeserializationException("Expected ${Major.U_INT} or ${Major.NEG_INT} for CBOR number, got $major.")
         }
 
@@ -93,13 +112,13 @@ internal class CborPrimitiveDeserializer(private val buffer: SdkBufferedSource) 
     private inline fun <reified T : Number> deserializeFloatingPoint(cast: (Number) -> T): T {
         val number: Number = when (val major = peekMajor(buffer)) {
             Major.TYPE_7 -> when (val minor = peekMinorByte(buffer)) {
-                Minor.FLOAT16.value -> Float16.decode(buffer).value
-                Minor.FLOAT32.value -> Float32.decode(buffer).value
-                Minor.FLOAT64.value -> Float64.decode(buffer).value
+                Minor.FLOAT16.value -> decodeFloat16(buffer)
+                Minor.FLOAT32.value -> decodeFloat32(buffer)
+                Minor.FLOAT64.value -> decodeFloat64(buffer)
                 else -> throw DeserializationException("Unexpected minor value $minor decoding CBOR floating point for major type 7.")
             }
-            Major.U_INT -> UInt.decode(buffer).value.toLong()
-            Major.NEG_INT -> -(NegInt.decode(buffer).value.toLong())
+            Major.U_INT -> decodeUInt(buffer).toLong()
+            Major.NEG_INT -> -(decodeNegInt(buffer).toLong())
             else -> throw DeserializationException("Expected floating point or integer major type for CBOR floating point number, got $major.")
         }
         return cast(number)
@@ -108,33 +127,36 @@ internal class CborPrimitiveDeserializer(private val buffer: SdkBufferedSource) 
     override fun deserializeFloat(): Float = deserializeFloatingPoint { it.toFloat() }
     override fun deserializeDouble(): Double = deserializeFloatingPoint { it.toDouble() }
 
-    override fun deserializeBigInteger(): BigInteger = when (val tag = Tag.decode(buffer).value) {
-        is BigNum -> tag.value
-        is NegBigNum -> tag.value
-        else -> throw DeserializationException("Expected tag ${TagId.BIG_NUM.value} or ${TagId.NEG_BIG_NUM.value} for CBOR bignum, got $tag")
+    override fun deserializeBigInteger(): BigInteger {
+        val id = decodeArgument(buffer) // consume the bignum tag id
+        return when (id) {
+            TagId.BIG_NUM.value -> decodeBigNum(buffer)
+            TagId.NEG_BIG_NUM.value -> decodeNegBigNum(buffer)
+            else -> throw DeserializationException("Expected tag ${TagId.BIG_NUM.value} or ${TagId.NEG_BIG_NUM.value} for CBOR bignum, got $id")
+        }
     }
 
     override fun deserializeBigDecimal(): BigDecimal {
-        val tag = Tag.decode(buffer)
-        return (tag.value as DecimalFraction).value
+        decodeArgument(buffer) // consume the decimal fraction tag id
+        return decodeDecimalFraction(buffer)
     }
 
-    override fun deserializeString(): String = TextString.decode(buffer).value
+    override fun deserializeString(): String = decodeTextStringValue(buffer)
 
-    override fun deserializeBoolean(): Boolean = cborBoolean.decode(buffer).value
+    override fun deserializeBoolean(): Boolean = decodeBooleanValue(buffer)
 
     override fun deserializeDocument(): Document = throw DeserializationException("Document is not a supported CBOR type.")
 
     override fun deserializeNull(): Nothing? {
-        Null.decode(buffer)
+        decodeNull(buffer)
         return null
     }
 
-    override fun deserializeByteArray(): ByteArray = ByteString.decode(buffer).value
+    override fun deserializeByteArray(): ByteArray = decodeByteStringValue(buffer)
 
     override fun deserializeInstant(format: TimestampFormat): Instant {
-        val tag = Tag.decode(buffer)
-        return (tag.value as Timestamp).value
+        decodeArgument(buffer)
+        return decodeInstant(buffer)
     }
 }
 
@@ -159,7 +181,7 @@ private class CborElementIterator(
             }
         } else {
             return if (buffer.nextValueIsIndefiniteBreak) {
-                IndefiniteBreak.decode(buffer)
+                decodeIndefiniteBreak(buffer)
                 false
             } else {
                 check(!buffer.exhausted()) { "Buffer is unexpectedly exhausted" }
@@ -182,6 +204,12 @@ private class CborFieldIterator(
     PrimitiveDeserializer by CborPrimitiveDeserializer(buffer) {
     var currentLength: ULong = 0uL
 
+    private val fieldIndex = descriptor.fieldIndex
+
+    // In-order cursor: fields are almost always sent in schema order, so the field following the
+    // last match is the most likely next hit.
+    private var expectedFieldIndex = 0
+
     override tailrec fun findNextFieldIndex(): Int? {
         if (buffer.exhausted() && expectedLength != currentLength) {
             throw DeserializationException("Buffer is unexpectedly exhausted, expected $expectedLength elements, got $currentLength")
@@ -194,14 +222,15 @@ private class CborFieldIterator(
             if (expectedLength != null) {
                 throw DeserializationException("Received unexpected indefinite break while deserializing structure, expected $expectedLength elements, got $currentLength")
             }
-            IndefiniteBreak.decode(buffer)
+            decodeIndefiniteBreak(buffer)
             null
         } else {
-            val nextFieldName = TextString.decode(buffer).value
-            descriptor
-                .fields
-                .firstOrNull { it.serialName == nextFieldName }
-                ?.index ?: Deserializer.FieldIterator.UNKNOWN_FIELD
+            val nextFieldName = decodeTextStringValue(buffer)
+            fieldIndex.lookup(nextFieldName, expectedFieldIndex).also {
+                if (it != Deserializer.FieldIterator.UNKNOWN_FIELD) {
+                    expectedFieldIndex = it + 1
+                }
+            }
         }
 
         if (candidate != null) {
@@ -216,7 +245,7 @@ private class CborFieldIterator(
     }
 
     override fun skipValue() {
-        Value.decode(buffer)
+        skipValue(buffer)
     }
 }
 
@@ -241,7 +270,7 @@ private class CborEntryIterator(
         }
 
         return if (buffer.nextValueIsIndefiniteBreak) {
-            IndefiniteBreak.decode(buffer)
+            decodeIndefiniteBreak(buffer)
             false
         } else {
             check(!buffer.exhausted()) { "Buffer is unexpectedly exhausted" }

@@ -86,8 +86,6 @@ private class Ec2QuerySerializerGenerator(
         members: List<MemberShape>,
         writer: KotlinWriter,
     ) {
-        // render the serde descriptors
-        descriptorGenerator(ctx, shape, members, writer).render()
         when (shape) {
             is UnionShape -> SerializeUnionGenerator(ctx, shape, members, writer, protocolGenerator.defaultTimestampFormat).render()
             else -> Ec2QuerySerializeStructGenerator(ctx, members, writer, protocolGenerator.defaultTimestampFormat).render()
