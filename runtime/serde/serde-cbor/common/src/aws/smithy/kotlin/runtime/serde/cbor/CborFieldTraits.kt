@@ -17,6 +17,9 @@ import aws.smithy.kotlin.runtime.serde.expectTrait
  */
 @InternalApi
 public data class CborSerialName(public val name: String) : FieldTrait {
+    override val serialName: String
+        get() = name
+
     internal val encoded: ByteArray by lazy {
         val bytes = name.encodeToByteArray()
         SdkBuffer().apply {

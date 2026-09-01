@@ -16,6 +16,9 @@ import aws.smithy.kotlin.runtime.text.encoding.PercentEncoding
  */
 @InternalApi
 public data class FormUrlSerialName(public val name: String) : FieldTrait {
+    override val serialName: String
+        get() = name
+
     internal val encoded: ByteArray by lazy { name.encodeToByteArray() }
 }
 
