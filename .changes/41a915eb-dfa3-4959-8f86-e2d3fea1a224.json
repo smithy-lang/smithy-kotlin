@@ -1,6 +1,0 @@
-{
-  "id": "41a915eb-dfa3-4959-8f86-e2d3fea1a224",
-  "type": "misc",
-  "description": "Reduce allocations in CBOR serialization and deserialization by encoding/decoding values through free functions instead of intermediate wrapper objects, and skipping fields, indefinite-length strings, and decimal fractions without materializing wrapper values",
-  "module": "serde-cbor"
-}

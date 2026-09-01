@@ -1,5 +1,0 @@
-{
-  "id": "2a9f1b35-de19-4953-bbce-e0220f90cc4e",
-  "type": "feature",
-  "description": "Optimize JSON and CBOR deserialization by resolving struct field names through a cached O(1) field index with an in-order cursor instead of a linear scan over the field list"
-}
