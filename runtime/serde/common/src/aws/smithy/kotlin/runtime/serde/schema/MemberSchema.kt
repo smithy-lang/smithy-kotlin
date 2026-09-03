@@ -19,12 +19,23 @@ public sealed interface MemberSchema : Schema {
 internal class MemberSchemaImpl(
     override val shapeId: MemberShapeId,
     override val traits: Collection<Trait>,
-    targetProvider: () -> Schema,
+    private val lazyTarget: Lazy<Schema>,
 ) : MemberSchema {
+    constructor(shapeId: MemberShapeId, traits: Collection<Trait>, target: Schema) :
+        this(shapeId, traits, lazyOf(target))
+
     override val type: ShapeType = ShapeType.MEMBER
     override val memberName: String = shapeId.member
 
-    // target stays lazy so a recursive/self-referential shape is resolved only after construction
-    override val target: Schema by lazy(targetProvider)
-    override fun toString(): String = "MemberSchema($shapeId -> ${target.shapeId})"
+    override val target: Schema get() = lazyTarget.value
+    override fun toString(): String = "MemberSchema($shapeId)"
 }
+
+/** Create a [MemberSchema] identified by [id] that targets [target]. */
+public fun MemberSchema(id: MemberShapeId, target: Schema, vararg traits: Trait): MemberSchema = MemberSchemaImpl(id, traits.toList(), target)
+
+/**
+ * Create a [MemberSchema] identified by [id] whose [target] is resolved on first access, for recursive or cyclic
+ * shapes.
+ */
+public fun MemberSchema(id: MemberShapeId, target: Lazy<Schema>, vararg traits: Trait): MemberSchema = MemberSchemaImpl(id, traits.toList(), target)

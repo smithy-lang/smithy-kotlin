@@ -17,13 +17,14 @@ import kotlin.test.assertTrue
 
 class SchemaTest {
     // com.example#Bird { name: String @jsonName("bird_name"), colors: ColorList }
+    private val colorListId = ShapeId("com.example#ColorList")
+    private val colorList = ListSchema(colorListId, MemberSchema(colorListId.withMember("member"), PreludeSchemas.String))
+
     private val birdSchema: StructureSchema = StructureSchema(ShapeId("com.example#Bird")) {
         member("name", PreludeSchemas.String, SerdeTraits.JsonNameTrait("bird_name"))
         member(
             "colors",
-            ListSchema(ShapeId("com.example#ColorList")) {
-                element(PreludeSchemas.String)
-            },
+            colorList,
         )
     }
 
@@ -110,9 +111,8 @@ class SchemaTest {
     @Test
     fun testEffectiveTraitOnNonMemberSchemaConsultsNothingElse() {
         val instant = SimpleSchema(ShapeId("com.example#Instant"), ShapeType.TIMESTAMP, SerdeTraits.TimestampFormatTrait(TimestampFormat.ISO_8601))
-        val list = ListSchema(ShapeId("com.example#InstantList")) {
-            element(instant)
-        }
+        val listId = ShapeId("com.example#InstantList")
+        val list = ListSchema(listId, MemberSchema(listId.withMember("member"), instant))
         // an aggregate resolves only its own traits — it never reaches into the shapes it contains
         assertNull(list.getEffectiveTraitOrNull<SerdeTraits.TimestampFormatTrait>(SerdeTraits.TimestampFormatTrait.ID))
         // while the element member, being a member, does reach its target
@@ -128,10 +128,12 @@ class SchemaTest {
 
     @Test
     fun testMapSchemaNavigation() {
-        val schema = MapSchema(ShapeId("com.example#StringMap")) {
-            key(PreludeSchemas.String)
-            value(PreludeSchemas.Integer)
-        }
+        val mapId = ShapeId("com.example#StringMap")
+        val schema = MapSchema(
+            mapId,
+            MemberSchema(mapId.withMember("key"), PreludeSchemas.String),
+            MemberSchema(mapId.withMember("value"), PreludeSchemas.Integer),
+        )
         assertEquals(ShapeType.MAP, schema.type)
         assertEquals(ShapeType.STRING, schema.key.target.type)
         assertEquals(ShapeType.INTEGER, schema.value.target.type)
@@ -151,14 +153,16 @@ class SchemaTest {
     @Test
     fun testRecursiveSchemaViaLazyMember() {
         // com.example#RecursiveValue { m: Map<String, RecursiveValue> }
+        val mapId = ShapeId("com.example#RecursiveValueMap")
         lateinit var schema: StructureSchema
         schema = StructureSchema(ShapeId("com.example#RecursiveValue")) {
             member(
                 "m",
-                MapSchema(ShapeId("com.example#RecursiveValueMap")) {
-                    key(PreludeSchemas.String)
-                    value(lazy { schema })
-                },
+                MapSchema(
+                    mapId,
+                    MemberSchema(mapId.withMember("key"), PreludeSchemas.String),
+                    MemberSchema(mapId.withMember("value"), lazy { schema }),
+                ),
             )
         }
 
@@ -221,19 +225,20 @@ class SchemaTest {
 
     @Test
     fun testMapKeyAndValueMemberNames() {
-        val schema = MapSchema(ShapeId("com.example#M")) {
-            key(PreludeSchemas.String)
-            value(PreludeSchemas.Integer)
-        }
+        val mapId = ShapeId("com.example#M")
+        val schema = MapSchema(
+            mapId,
+            MemberSchema(mapId.withMember("key"), PreludeSchemas.String),
+            MemberSchema(mapId.withMember("value"), PreludeSchemas.Integer),
+        )
         assertEquals("key", schema.key.memberName)
         assertEquals("value", schema.value.memberName)
     }
 
     @Test
     fun testListElementMemberName() {
-        val schema = ListSchema(ShapeId("com.example#L")) {
-            element(PreludeSchemas.String)
-        }
+        val listId = ShapeId("com.example#L")
+        val schema = ListSchema(listId, MemberSchema(listId.withMember("member"), PreludeSchemas.String))
         assertEquals("member", schema.element.memberName)
     }
 
@@ -243,23 +248,6 @@ class SchemaTest {
             member("a", PreludeSchemas.String)
         }
         assertNull(schema.member("missing"))
-    }
-
-    @Test
-    fun testListMissingElementFails() {
-        assertFailsWith<IllegalArgumentException> {
-            ListSchema(ShapeId("com.example#L")) { /* no element */ }
-        }
-    }
-
-    @Test
-    fun testMapMissingKeyOrValueFails() {
-        assertFailsWith<IllegalArgumentException> {
-            MapSchema(ShapeId("com.example#M")) { value(PreludeSchemas.String) } // no key
-        }
-        assertFailsWith<IllegalArgumentException> {
-            MapSchema(ShapeId("com.example#M")) { key(PreludeSchemas.String) } // no value
-        }
     }
 
     @Test

@@ -14,10 +14,9 @@ public sealed interface StructureSchema : Schema {
 internal class StructureSchemaImpl(
     override val shapeId: ShapeId,
     override val traits: Collection<Trait>,
-    membersProvider: () -> List<MemberSchema>,
+    override val members: List<MemberSchema>,
 ) : StructureSchema {
     override val type: ShapeType = ShapeType.STRUCTURE
-    override val members: List<MemberSchema> by lazy(membersProvider)
     private val byName: Map<String, MemberSchema> by lazy { members.associateBy { it.memberName } }
 
     override fun member(name: String): MemberSchema? = byName[name]
@@ -35,21 +34,16 @@ public class StructureSchemaBuilder internal constructor(private val shapeId: Sh
     }
 
     /** Declare a member with an eagerly-known [target]. */
-    public fun member(name: String, target: Schema, vararg traits: Trait): Unit = member(name, lazyOf(target), *traits)
+    public fun member(name: String, target: Schema, vararg traits: Trait) {
+        members += MemberSchemaImpl(shapeId.withMember(name), traits.toList(), target)
+    }
 
     /** Declare a member whose [target] is resolved lazily (for recursive/cyclic shapes). */
     public fun member(name: String, target: Lazy<Schema>, vararg traits: Trait) {
-        members += MemberSchemaImpl(
-            shapeId = shapeId.withMember(name),
-            traits = traits.toList(),
-            targetProvider = { target.value },
-        )
+        members += MemberSchemaImpl(shapeId.withMember(name), traits.toList(), target)
     }
 
-    internal fun build(): StructureSchema {
-        val snapshot = members.toList()
-        return StructureSchemaImpl(shapeId, traits.toList()) { snapshot }
-    }
+    internal fun build(): StructureSchema = StructureSchemaImpl(shapeId, traits.toList(), members.toList())
 }
 
 public fun StructureSchema(id: ShapeId, block: StructureSchemaBuilder.() -> Unit): StructureSchema = StructureSchemaBuilder(id).apply(block).build()

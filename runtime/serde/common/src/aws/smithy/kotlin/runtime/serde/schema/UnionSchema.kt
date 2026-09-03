@@ -14,10 +14,9 @@ public sealed interface UnionSchema : Schema {
 internal class UnionSchemaImpl(
     override val shapeId: ShapeId,
     override val traits: Collection<Trait>,
-    membersProvider: () -> List<MemberSchema>,
+    override val members: List<MemberSchema>,
 ) : UnionSchema {
     override val type: ShapeType = ShapeType.UNION
-    override val members: List<MemberSchema> by lazy(membersProvider)
     private val byName: Map<String, MemberSchema> by lazy { members.associateBy { it.memberName } }
 
     override fun member(name: String): MemberSchema? = byName[name]
@@ -35,21 +34,16 @@ public class UnionSchemaBuilder internal constructor(private val shapeId: ShapeI
     }
 
     /** Declare a member with an eagerly-known [target]. */
-    public fun member(name: String, target: Schema, vararg traits: Trait): Unit = member(name, lazyOf(target), *traits)
+    public fun member(name: String, target: Schema, vararg traits: Trait) {
+        members += MemberSchemaImpl(shapeId.withMember(name), traits.toList(), target)
+    }
 
     /** Declare a member whose [target] is resolved lazily (for recursive/cyclic shapes). */
     public fun member(name: String, target: Lazy<Schema>, vararg traits: Trait) {
-        members += MemberSchemaImpl(
-            shapeId = shapeId.withMember(name),
-            traits = traits.toList(),
-            targetProvider = { target.value },
-        )
+        members += MemberSchemaImpl(shapeId.withMember(name), traits.toList(), target)
     }
 
-    internal fun build(): UnionSchema {
-        val snapshot = members.toList()
-        return UnionSchemaImpl(shapeId, traits.toList()) { snapshot }
-    }
+    internal fun build(): UnionSchema = UnionSchemaImpl(shapeId, traits.toList(), members.toList())
 }
 
 public fun UnionSchema(id: ShapeId, block: UnionSchemaBuilder.() -> Unit): UnionSchema = UnionSchemaBuilder(id).apply(block).build()
