@@ -21,11 +21,11 @@ import kotlin.test.assertTrue
 
 class SchemaTest {
     // com.example#Bird { name: String @jsonName("bird_name"), colors: ColorList }
-    private val birdSchema: StructureSchema = StructureSchema(shapeId("com.example#Bird")) {
+    private val birdSchema: StructureSchema = StructureSchema(ShapeId("com.example#Bird")) {
         member("name", PreludeSchemas.String, JsonNameTrait("bird_name"))
         member(
             "colors",
-            ListSchema(shapeId("com.example#ColorList")) {
+            ListSchema(ShapeId("com.example#ColorList")) {
                 element(PreludeSchemas.String)
             },
         )
@@ -68,8 +68,8 @@ class SchemaTest {
     @Test
     fun testMemberCarriesOnlyItsOwnTraits() {
         // the target carries a trait; the member declares its own — a member reports ONLY its own
-        val target = SimpleSchema(shapeId("com.example#Named"), ShapeType.STRING, TimestampFormatTrait(TimestampFormat.ISO_8601))
-        val schema = StructureSchema(shapeId("com.example#Holder")) {
+        val target = SimpleSchema(ShapeId("com.example#Named"), ShapeType.STRING, TimestampFormatTrait(TimestampFormat.ISO_8601))
+        val schema = StructureSchema(ShapeId("com.example#Holder")) {
             member("field", target, JsonNameTrait("f"))
         }
         val field = assertNotNull(schema.member("field"))
@@ -83,8 +83,8 @@ class SchemaTest {
     @Test
     fun testEffectiveTraitFallsBackToMemberTarget() {
         // @timestampFormat("date-time") timestamp Instant + structure Holder { at: Instant }
-        val target = SimpleSchema(shapeId("com.example#Instant"), ShapeType.TIMESTAMP, TimestampFormatTrait(TimestampFormat.ISO_8601))
-        val schema = StructureSchema(shapeId("com.example#Holder")) {
+        val target = SimpleSchema(ShapeId("com.example#Instant"), ShapeType.TIMESTAMP, TimestampFormatTrait(TimestampFormat.ISO_8601))
+        val schema = StructureSchema(ShapeId("com.example#Holder")) {
             member("at", target)
         }
         val at = assertNotNull(schema.member("at"))
@@ -94,8 +94,8 @@ class SchemaTest {
 
     @Test
     fun testEffectiveTraitPrefersTheMemberOverItsTarget() {
-        val target = SimpleSchema(shapeId("com.example#Instant"), ShapeType.TIMESTAMP, TimestampFormatTrait(TimestampFormat.ISO_8601))
-        val schema = StructureSchema(shapeId("com.example#Holder")) {
+        val target = SimpleSchema(ShapeId("com.example#Instant"), ShapeType.TIMESTAMP, TimestampFormatTrait(TimestampFormat.ISO_8601))
+        val schema = StructureSchema(ShapeId("com.example#Holder")) {
             member("at", target, TimestampFormatTrait(TimestampFormat.RFC_5322))
         }
         val at = assertNotNull(schema.member("at"))
@@ -104,7 +104,7 @@ class SchemaTest {
 
     @Test
     fun testEffectiveTraitAbsentFromMemberAndTarget() {
-        val schema = StructureSchema(shapeId("com.example#Holder")) {
+        val schema = StructureSchema(ShapeId("com.example#Holder")) {
             member("at", PreludeSchemas.Timestamp)
         }
         val at = assertNotNull(schema.member("at"))
@@ -113,8 +113,8 @@ class SchemaTest {
 
     @Test
     fun testEffectiveTraitOnNonMemberSchemaConsultsNothingElse() {
-        val instant = SimpleSchema(shapeId("com.example#Instant"), ShapeType.TIMESTAMP, TimestampFormatTrait(TimestampFormat.ISO_8601))
-        val list = ListSchema(shapeId("com.example#InstantList")) {
+        val instant = SimpleSchema(ShapeId("com.example#Instant"), ShapeType.TIMESTAMP, TimestampFormatTrait(TimestampFormat.ISO_8601))
+        val list = ListSchema(ShapeId("com.example#InstantList")) {
             element(instant)
         }
         // an aggregate resolves only its own traits — it never reaches into the shapes it contains
@@ -132,7 +132,7 @@ class SchemaTest {
 
     @Test
     fun testMapSchemaNavigation() {
-        val schema = MapSchema(shapeId("com.example#StringMap")) {
+        val schema = MapSchema(ShapeId("com.example#StringMap")) {
             key(PreludeSchemas.String)
             value(PreludeSchemas.Integer)
         }
@@ -143,7 +143,7 @@ class SchemaTest {
 
     @Test
     fun testUnionSchema() {
-        val schema = UnionSchema(shapeId("com.example#Shape")) {
+        val schema = UnionSchema(ShapeId("com.example#Shape")) {
             member("circle", PreludeSchemas.Double)
             member("square", PreludeSchemas.Double)
         }
@@ -156,10 +156,10 @@ class SchemaTest {
     fun testRecursiveSchemaViaLazyMember() {
         // com.example#RecursiveValue { m: Map<String, RecursiveValue> }
         lateinit var schema: StructureSchema
-        schema = StructureSchema(shapeId("com.example#RecursiveValue")) {
+        schema = StructureSchema(ShapeId("com.example#RecursiveValue")) {
             member(
                 "m",
-                MapSchema(shapeId("com.example#RecursiveValueMap")) {
+                MapSchema(ShapeId("com.example#RecursiveValueMap")) {
                     key(PreludeSchemas.String)
                     value(lazy { schema })
                 },
@@ -182,7 +182,7 @@ class SchemaTest {
     @Test
     fun testSimpleSchemaRejectsNonSimpleType() {
         assertFailsWith<IllegalArgumentException> {
-            SimpleSchema(shapeId("com.example#Nope"), ShapeType.STRUCTURE)
+            SimpleSchema(ShapeId("com.example#Nope"), ShapeType.STRUCTURE)
         }
     }
 
@@ -213,7 +213,7 @@ class SchemaTest {
 
     @Test
     fun testContainerLevelTraits() {
-        val schema = StructureSchema(shapeId("com.example#S")) {
+        val schema = StructureSchema(ShapeId("com.example#S")) {
             trait(JsonNameTrait("s"))
             member("x", PreludeSchemas.String)
         }
@@ -225,7 +225,7 @@ class SchemaTest {
 
     @Test
     fun testMapKeyAndValueMemberNames() {
-        val schema = MapSchema(shapeId("com.example#M")) {
+        val schema = MapSchema(ShapeId("com.example#M")) {
             key(PreludeSchemas.String)
             value(PreludeSchemas.Integer)
         }
@@ -235,7 +235,7 @@ class SchemaTest {
 
     @Test
     fun testListElementMemberName() {
-        val schema = ListSchema(shapeId("com.example#L")) {
+        val schema = ListSchema(ShapeId("com.example#L")) {
             element(PreludeSchemas.String)
         }
         assertEquals("member", schema.element.memberName)
@@ -243,7 +243,7 @@ class SchemaTest {
 
     @Test
     fun testUnionMemberNotFound() {
-        val schema = UnionSchema(shapeId("com.example#U")) {
+        val schema = UnionSchema(ShapeId("com.example#U")) {
             member("a", PreludeSchemas.String)
         }
         assertNull(schema.member("missing"))
@@ -252,17 +252,17 @@ class SchemaTest {
     @Test
     fun testListMissingElementFails() {
         assertFailsWith<IllegalArgumentException> {
-            ListSchema(shapeId("com.example#L")) { /* no element */ }
+            ListSchema(ShapeId("com.example#L")) { /* no element */ }
         }
     }
 
     @Test
     fun testMapMissingKeyOrValueFails() {
         assertFailsWith<IllegalArgumentException> {
-            MapSchema(shapeId("com.example#M")) { value(PreludeSchemas.String) } // no key
+            MapSchema(ShapeId("com.example#M")) { value(PreludeSchemas.String) } // no key
         }
         assertFailsWith<IllegalArgumentException> {
-            MapSchema(shapeId("com.example#M")) { key(PreludeSchemas.String) } // no value
+            MapSchema(ShapeId("com.example#M")) { key(PreludeSchemas.String) } // no value
         }
     }
 

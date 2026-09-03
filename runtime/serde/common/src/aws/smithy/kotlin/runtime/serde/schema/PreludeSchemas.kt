@@ -8,7 +8,7 @@ package aws.smithy.kotlin.runtime.serde.schema
  * Shared, trait-free [SimpleSchema] singletons for the Smithy prelude simple shapes (`smithy.api#*`).
  */
 public object PreludeSchemas {
-    private fun prelude(name: String, type: ShapeType): SimpleSchema = SimpleSchemaImpl(shapeId("smithy.api", name), type, emptyList())
+    private fun prelude(name: String, type: ShapeType): SimpleSchema = SimpleSchemaImpl(ShapeId("smithy.api", name), type, emptyList())
 
     public val Blob: SimpleSchema = prelude("Blob", ShapeType.BLOB)
     public val Boolean: SimpleSchema = prelude("Boolean", ShapeType.BOOLEAN)

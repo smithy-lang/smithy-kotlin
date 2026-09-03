@@ -393,9 +393,9 @@ public abstract interface class aws/smithy/kotlin/runtime/serde/schema/ShapeId {
 }
 
 public final class aws/smithy/kotlin/runtime/serde/schema/ShapeIdKt {
-	public static final fun shapeId (Ljava/lang/String;)Laws/smithy/kotlin/runtime/serde/schema/ShapeId;
-	public static final fun shapeId (Ljava/lang/String;Ljava/lang/String;)Laws/smithy/kotlin/runtime/serde/schema/ShapeId;
-	public static final fun shapeId (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)Laws/smithy/kotlin/runtime/serde/schema/MemberShapeId;
+	public static final fun MemberShapeId (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)Laws/smithy/kotlin/runtime/serde/schema/MemberShapeId;
+	public static final fun ShapeId (Ljava/lang/String;)Laws/smithy/kotlin/runtime/serde/schema/ShapeId;
+	public static final fun ShapeId (Ljava/lang/String;Ljava/lang/String;)Laws/smithy/kotlin/runtime/serde/schema/ShapeId;
 	public static final fun withMember (Laws/smithy/kotlin/runtime/serde/schema/ShapeId;Ljava/lang/String;)Laws/smithy/kotlin/runtime/serde/schema/MemberShapeId;
 }
 

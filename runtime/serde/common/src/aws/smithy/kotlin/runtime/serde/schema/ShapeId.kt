@@ -57,7 +57,7 @@ private data class MemberShapeIdImpl(
  *
  * @throws IllegalArgumentException if [absoluteId] is not a well-formed shape id.
  */
-public fun shapeId(absoluteId: String): ShapeId {
+public fun ShapeId(absoluteId: String): ShapeId {
     val hash = absoluteId.indexOf('#')
     require(hash > 0 && hash < absoluteId.length - 1) {
         "invalid shape id '$absoluteId': expected 'namespace#name' or 'namespace#name\$member'"
@@ -76,8 +76,8 @@ public fun shapeId(absoluteId: String): ShapeId {
     }
 }
 
-/** Construct a [MemberShapeId] from parts. */
-public fun shapeId(namespace: String, name: String, member: String): MemberShapeId = MemberShapeIdImpl(namespace, name, member)
-
 /** Construct a [ShapeId] from parts. */
-public fun shapeId(namespace: String, name: String): ShapeId = ShapeIdImpl(namespace, name)
+public fun ShapeId(namespace: String, name: String): ShapeId = ShapeIdImpl(namespace, name)
+
+/** Construct a [MemberShapeId] from parts. */
+public fun MemberShapeId(namespace: String, name: String, member: String): MemberShapeId = MemberShapeIdImpl(namespace, name, member)

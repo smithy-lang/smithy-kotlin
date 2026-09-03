@@ -13,7 +13,7 @@ import kotlin.test.assertNotEquals
 class ShapeIdTest {
     @Test
     fun testConstructsShapeId() {
-        val id = shapeId("com.example", "Bird")
+        val id = ShapeId("com.example", "Bird")
         assertEquals("com.example", id.namespace)
         assertEquals("Bird", id.name)
         assertEquals("com.example#Bird", id.absoluteId)
@@ -21,7 +21,7 @@ class ShapeIdTest {
 
     @Test
     fun testParsesShapeId() {
-        val id = shapeId("com.example#Bird")
+        val id = ShapeId("com.example#Bird")
         assertEquals("com.example", id.namespace)
         assertEquals("Bird", id.name)
         assertEquals("com.example#Bird", id.absoluteId)
@@ -29,7 +29,7 @@ class ShapeIdTest {
 
     @Test
     fun testParsesMemberShapeId() {
-        val id = shapeId("com.example#Bird\$name")
+        val id = ShapeId("com.example#Bird\$name")
         val member = assertIs<MemberShapeId>(id)
         assertEquals("com.example", member.namespace)
         assertEquals("Bird", member.name)
@@ -39,32 +39,32 @@ class ShapeIdTest {
 
     @Test
     fun testWithMember() {
-        val id = shapeId("com.example", "Bird").withMember("colors")
+        val id = ShapeId("com.example", "Bird").withMember("colors")
         assertEquals("colors", id.member)
         assertEquals("com.example#Bird\$colors", id.absoluteId)
     }
 
     @Test
     fun testWithMemberReplacesExisting() {
-        val id = shapeId("com.example#Bird\$name").withMember("colors")
+        val id = ShapeId("com.example#Bird\$name").withMember("colors")
         assertEquals("colors", id.member)
         assertEquals("com.example#Bird\$colors", id.absoluteId)
     }
 
     @Test
     fun testEquality() {
-        assertEquals(shapeId("com.example#Bird"), shapeId("com.example", "Bird"))
+        assertEquals(ShapeId("com.example#Bird"), ShapeId("com.example", "Bird"))
         assertEquals(
-            shapeId("com.example#Bird\$name"),
-            shapeId("com.example", "Bird").withMember("name"),
+            ShapeId("com.example#Bird\$name"),
+            ShapeId("com.example", "Bird").withMember("name"),
         )
         // a plain shape id and a member id never compare equal
-        assertNotEquals<ShapeId>(shapeId("com.example#Bird"), shapeId("com.example#Bird\$name"))
+        assertNotEquals<ShapeId>(ShapeId("com.example#Bird"), ShapeId("com.example#Bird\$name"))
     }
 
     @Test
     fun testConstructsMemberShapeIdFromParts() {
-        val id = shapeId("com.example", "Bird", "name")
+        val id = MemberShapeId("com.example", "Bird", "name")
         assertEquals("com.example", id.namespace)
         assertEquals("Bird", id.name)
         assertEquals("name", id.member)
@@ -73,25 +73,25 @@ class ShapeIdTest {
 
     @Test
     fun testEqualHashCodes() {
-        assertEquals(shapeId("com.example#Bird").hashCode(), shapeId("com.example", "Bird").hashCode())
+        assertEquals(ShapeId("com.example#Bird").hashCode(), ShapeId("com.example", "Bird").hashCode())
         assertEquals(
-            shapeId("com.example#Bird\$name").hashCode(),
-            shapeId("com.example", "Bird", "name").hashCode(),
+            ShapeId("com.example#Bird\$name").hashCode(),
+            MemberShapeId("com.example", "Bird", "name").hashCode(),
         )
     }
 
     @Test
     fun testRejectsMalformedId() {
-        assertFailsWith<IllegalArgumentException> { shapeId("no-hash") }
-        assertFailsWith<IllegalArgumentException> { shapeId("#Bird") }
-        assertFailsWith<IllegalArgumentException> { shapeId("com.example#") }
-        assertFailsWith<IllegalArgumentException> { shapeId("com.example#Bird\$") }
+        assertFailsWith<IllegalArgumentException> { ShapeId("no-hash") }
+        assertFailsWith<IllegalArgumentException> { ShapeId("#Bird") }
+        assertFailsWith<IllegalArgumentException> { ShapeId("com.example#") }
+        assertFailsWith<IllegalArgumentException> { ShapeId("com.example#Bird\$") }
     }
 
     @Test
     fun testRejectsEmptyParts() {
-        assertFailsWith<IllegalArgumentException> { shapeId("", "Bird") }
-        assertFailsWith<IllegalArgumentException> { shapeId("com.example", "") }
-        assertFailsWith<IllegalArgumentException> { shapeId("com.example", "Bird", "") }
+        assertFailsWith<IllegalArgumentException> { ShapeId("", "Bird") }
+        assertFailsWith<IllegalArgumentException> { ShapeId("com.example", "") }
+        assertFailsWith<IllegalArgumentException> { MemberShapeId("com.example", "Bird", "") }
     }
 }
