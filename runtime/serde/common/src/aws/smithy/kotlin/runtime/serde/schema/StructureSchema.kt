@@ -27,6 +27,7 @@ internal class StructureSchemaImpl(
 public class StructureSchemaBuilder internal constructor(private val shapeId: ShapeId) {
     private val traits = mutableListOf<Trait>()
     private val members = mutableListOf<MemberSchema>()
+    private val memberNames = mutableSetOf<String>()
 
     /** Add a root-level trait. */
     public fun trait(trait: Trait) {
@@ -39,6 +40,10 @@ public class StructureSchemaBuilder internal constructor(private val shapeId: Sh
     public fun member(member: MemberSchema) {
         require(member.shapeId.namespace == shapeId.namespace && member.shapeId.name == shapeId.name) {
             "structure $shapeId cannot contain ${member.shapeId}, which belongs to another shape"
+        }
+        // Smithy requires shape ids -- and so member names -- to be unique case-insensitively
+        require(memberNames.add(member.memberName.lowercase())) {
+            "structure $shapeId already has a member named '${member.memberName}' (case-insensitively)"
         }
         members += member
     }

@@ -264,4 +264,42 @@ class SchemaTest {
         assertEquals("com.example#Bird\$name", name.shapeId.absoluteId)
         assertEquals("name", name.shapeId.member)
     }
+
+    @Test
+    fun testStructureRejectsDuplicateMemberNames() {
+        val id = ShapeId("com.example#S")
+        assertFailsWith<IllegalArgumentException> {
+            StructureSchema(id) {
+                member(MemberSchema(id.withMember("x"), PreludeSchemas.String))
+                member(MemberSchema(id.withMember("x"), PreludeSchemas.Integer))
+            }
+        }
+        // Smithy member names must be unique case-insensitively
+        assertFailsWith<IllegalArgumentException> {
+            StructureSchema(id) {
+                member(MemberSchema(id.withMember("x"), PreludeSchemas.String))
+                member(MemberSchema(id.withMember("X"), PreludeSchemas.Integer))
+            }
+        }
+    }
+
+    @Test
+    fun testUnionRejectsDuplicateMemberNames() {
+        val id = ShapeId("com.example#U")
+        assertFailsWith<IllegalArgumentException> {
+            UnionSchema(id) {
+                member(MemberSchema(id.withMember("a"), PreludeSchemas.String))
+                member(MemberSchema(id.withMember("A"), PreludeSchemas.Integer))
+            }
+        }
+    }
+
+    @Test
+    fun testMemberFromAnotherShapeIsRejected() {
+        val id = ShapeId("com.example#S")
+        val other = ShapeId("com.example#Other")
+        assertFailsWith<IllegalArgumentException> {
+            StructureSchema(id) { member(MemberSchema(other.withMember("x"), PreludeSchemas.String)) }
+        }
+    }
 }
