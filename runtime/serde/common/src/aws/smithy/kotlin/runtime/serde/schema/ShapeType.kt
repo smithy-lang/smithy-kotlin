@@ -4,41 +4,32 @@
  */
 package aws.smithy.kotlin.runtime.serde.schema
 
-public enum class ShapeType {
+public enum class ShapeType(public val isSimple: Boolean) {
     // simple
-    BLOB,
-    BOOLEAN,
-    STRING,
-    TIMESTAMP,
-    BYTE,
-    SHORT,
-    INTEGER,
-    LONG,
-    FLOAT,
-    DOUBLE,
-    BIG_INTEGER,
-    BIG_DECIMAL,
-    DOCUMENT,
-    ENUM,
-    INT_ENUM,
+    BLOB(true),
+    BOOLEAN(true),
+    STRING(true),
+    TIMESTAMP(true),
+    BYTE(true),
+    SHORT(true),
+    INTEGER(true),
+    LONG(true),
+    FLOAT(true),
+    DOUBLE(true),
+    BIG_INTEGER(true),
+    BIG_DECIMAL(true),
+    DOCUMENT(true),
+    ENUM(true),
+    INT_ENUM(true),
 
     // aggregate
-    LIST,
-    MAP,
-    STRUCTURE,
-    UNION,
-    MEMBER,
+    LIST(false),
+    MAP(false),
+    STRUCTURE(false),
+    UNION(false),
+    MEMBER(false),
 
     // service
-    SERVICE,
-    OPERATION,
-    ;
-
-    public val isSimple: Boolean
-        get() = when (this) {
-            BLOB, BOOLEAN, STRING, TIMESTAMP, BYTE, SHORT, INTEGER, LONG,
-            FLOAT, DOUBLE, BIG_INTEGER, BIG_DECIMAL, DOCUMENT, ENUM, INT_ENUM,
-            -> true
-            else -> false
-        }
+    SERVICE(false),
+    OPERATION(false),
 }
