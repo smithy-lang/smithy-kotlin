@@ -21,9 +21,6 @@ internal class ListSchemaImpl(
 
 /**
  * Create a [ListSchema] whose element is [element].
- *
- * Per the Smithy spec a list has exactly one member, named `member`, so [element] must be identified by this list's
- * `$member` shape id.
  */
 public fun ListSchema(id: ShapeId, element: MemberSchema, vararg traits: Trait): ListSchema {
     val expected = id.withMember("member")

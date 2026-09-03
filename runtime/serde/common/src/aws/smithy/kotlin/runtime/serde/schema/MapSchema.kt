@@ -23,9 +23,6 @@ internal class MapSchemaImpl(
 
 /**
  * Create a [MapSchema] whose key is [key] and value is [value].
- *
- * Per the Smithy spec a map has exactly two members, named `key` and `value`, so each must be identified by this
- * map's corresponding shape id.
  */
 public fun MapSchema(id: ShapeId, key: MemberSchema, value: MemberSchema, vararg traits: Trait): MapSchema {
     val expectedKey = id.withMember("key")
