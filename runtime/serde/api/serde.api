@@ -381,8 +381,8 @@ public abstract interface annotation class aws/smithy/kotlin/runtime/serde/schem
 }
 
 public final class aws/smithy/kotlin/runtime/serde/schema/SchemaKt {
-	public static final fun getEffectiveTrait (Laws/smithy/kotlin/runtime/serde/schema/Schema;Laws/smithy/kotlin/runtime/serde/schema/ShapeId;)Laws/smithy/kotlin/runtime/serde/schema/trait/Trait;
-	public static final fun getTrait (Laws/smithy/kotlin/runtime/serde/schema/Schema;Laws/smithy/kotlin/runtime/serde/schema/ShapeId;)Laws/smithy/kotlin/runtime/serde/schema/trait/Trait;
+	public static final fun getEffectiveTraitOrNull (Laws/smithy/kotlin/runtime/serde/schema/Schema;Laws/smithy/kotlin/runtime/serde/schema/ShapeId;)Laws/smithy/kotlin/runtime/serde/schema/trait/Trait;
+	public static final fun getTraitOrNull (Laws/smithy/kotlin/runtime/serde/schema/Schema;Laws/smithy/kotlin/runtime/serde/schema/ShapeId;)Laws/smithy/kotlin/runtime/serde/schema/trait/Trait;
 	public static final fun hasTrait (Laws/smithy/kotlin/runtime/serde/schema/Schema;Laws/smithy/kotlin/runtime/serde/schema/ShapeId;)Z
 }
 

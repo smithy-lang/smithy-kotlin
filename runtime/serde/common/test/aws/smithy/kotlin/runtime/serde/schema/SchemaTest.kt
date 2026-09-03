@@ -58,11 +58,11 @@ class SchemaTest {
     fun testTraitLookupById() {
         val name = assertNotNull(birdSchema.member("name"))
         assertTrue(name.hasTrait(JsonNameTrait.ID))
-        val jsonName = assertNotNull(name.getTrait<JsonNameTrait>(JsonNameTrait.ID))
+        val jsonName = assertNotNull(name.getTraitOrNull<JsonNameTrait>(JsonNameTrait.ID))
         assertEquals("bird_name", jsonName.value)
 
         assertFalse(name.hasTrait(XmlNameTrait.ID))
-        assertNull(name.getTrait<XmlNameTrait>(XmlNameTrait.ID))
+        assertNull(name.getTraitOrNull<XmlNameTrait>(XmlNameTrait.ID))
     }
 
     @Test
@@ -88,8 +88,8 @@ class SchemaTest {
             member("at", target)
         }
         val at = assertNotNull(schema.member("at"))
-        assertNull(at.getTrait<TimestampFormatTrait>(TimestampFormatTrait.ID))
-        assertEquals(TimestampFormat.ISO_8601, at.getEffectiveTrait<TimestampFormatTrait>(TimestampFormatTrait.ID)?.format)
+        assertNull(at.getTraitOrNull<TimestampFormatTrait>(TimestampFormatTrait.ID))
+        assertEquals(TimestampFormat.ISO_8601, at.getEffectiveTraitOrNull<TimestampFormatTrait>(TimestampFormatTrait.ID)?.format)
     }
 
     @Test
@@ -99,7 +99,7 @@ class SchemaTest {
             member("at", target, TimestampFormatTrait(TimestampFormat.RFC_5322))
         }
         val at = assertNotNull(schema.member("at"))
-        assertEquals(TimestampFormat.RFC_5322, at.getEffectiveTrait<TimestampFormatTrait>(TimestampFormatTrait.ID)?.format)
+        assertEquals(TimestampFormat.RFC_5322, at.getEffectiveTraitOrNull<TimestampFormatTrait>(TimestampFormatTrait.ID)?.format)
     }
 
     @Test
@@ -108,7 +108,7 @@ class SchemaTest {
             member("at", PreludeSchemas.Timestamp)
         }
         val at = assertNotNull(schema.member("at"))
-        assertNull(at.getEffectiveTrait<TimestampFormatTrait>(TimestampFormatTrait.ID))
+        assertNull(at.getEffectiveTraitOrNull<TimestampFormatTrait>(TimestampFormatTrait.ID))
     }
 
     @Test
@@ -118,16 +118,16 @@ class SchemaTest {
             element(instant)
         }
         // an aggregate resolves only its own traits — it never reaches into the shapes it contains
-        assertNull(list.getEffectiveTrait<TimestampFormatTrait>(TimestampFormatTrait.ID))
+        assertNull(list.getEffectiveTraitOrNull<TimestampFormatTrait>(TimestampFormatTrait.ID))
         // while the element member, being a member, does reach its target
         assertEquals(
             TimestampFormat.ISO_8601,
-            list.element.getEffectiveTrait<TimestampFormatTrait>(TimestampFormatTrait.ID)?.format,
+            list.element.getEffectiveTraitOrNull<TimestampFormatTrait>(TimestampFormatTrait.ID)?.format,
         )
 
         // the same holds for the target itself, which is not a member either
-        assertNull(instant.getEffectiveTrait<JsonNameTrait>(JsonNameTrait.ID))
-        assertEquals(TimestampFormat.ISO_8601, instant.getEffectiveTrait<TimestampFormatTrait>(TimestampFormatTrait.ID)?.format)
+        assertNull(instant.getEffectiveTraitOrNull<JsonNameTrait>(JsonNameTrait.ID))
+        assertEquals(TimestampFormat.ISO_8601, instant.getEffectiveTraitOrNull<TimestampFormatTrait>(TimestampFormatTrait.ID)?.format)
     }
 
     @Test
@@ -218,7 +218,7 @@ class SchemaTest {
             member("x", PreludeSchemas.String)
         }
         assertTrue(schema.hasTrait(JsonNameTrait.ID))
-        assertEquals("s", schema.getTrait<JsonNameTrait>(JsonNameTrait.ID)?.value)
+        assertEquals("s", schema.getTraitOrNull<JsonNameTrait>(JsonNameTrait.ID)?.value)
         // the member did not inherit the container's trait
         assertFalse(schema.member("x")!!.hasTrait(JsonNameTrait.ID))
     }

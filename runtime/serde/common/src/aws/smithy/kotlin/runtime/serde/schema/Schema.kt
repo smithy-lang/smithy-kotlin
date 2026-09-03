@@ -30,7 +30,7 @@ public sealed interface Schema {
  * The trait identified by [id] declared directly on this shape, or `null` if absent.
  */
 @Suppress("UNCHECKED_CAST")
-public fun <T : Trait> Schema.getTrait(id: ShapeId): T? = traits.find { it.id == id } as T?
+public fun <T : Trait> Schema.getTraitOrNull(id: ShapeId): T? = traits.find { it.id == id } as T?
 
 /**
  * True if a trait identified by [id] is present on this shape.
@@ -39,10 +39,9 @@ public fun Schema.hasTrait(id: ShapeId): Boolean = traits.any { it.id == id }
 
 /**
  * The *effective* trait identified by [id]: the one declared on this shape if present, otherwise — for a
- * [MemberSchema] only — the one declared on the shape the member targets.
+ * [MemberSchema] only — the one declared on the shape the member targets. `null` if neither declares it.
  */
-@Suppress("UNCHECKED_CAST")
-public fun <T : Trait> Schema.getEffectiveTrait(id: ShapeId): T? = getTrait(id) ?: (this as? MemberSchema)?.target?.getTrait(id)
+public fun <T : Trait> Schema.getEffectiveTraitOrNull(id: ShapeId): T? = getTraitOrNull(id) ?: (this as? MemberSchema)?.target?.getTraitOrNull(id)
 
 /** DSL marker keeping an outer builder's receiver out of scope inside a nested block. */
 @DslMarker
