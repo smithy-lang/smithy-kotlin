@@ -4,11 +4,7 @@
  */
 package aws.smithy.kotlin.runtime.serde.schema
 
-import aws.smithy.kotlin.runtime.serde.schema.trait.HttpHeaderTrait
-import aws.smithy.kotlin.runtime.serde.schema.trait.HttpQueryTrait
-import aws.smithy.kotlin.runtime.serde.schema.trait.JsonNameTrait
-import aws.smithy.kotlin.runtime.serde.schema.trait.TimestampFormatTrait
-import aws.smithy.kotlin.runtime.serde.schema.trait.XmlNameTrait
+import aws.smithy.kotlin.runtime.serde.schema.trait.SerdeTraits
 import aws.smithy.kotlin.runtime.time.TimestampFormat
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -22,7 +18,7 @@ import kotlin.test.assertTrue
 class SchemaTest {
     // com.example#Bird { name: String @jsonName("bird_name"), colors: ColorList }
     private val birdSchema: StructureSchema = StructureSchema(ShapeId("com.example#Bird")) {
-        member("name", PreludeSchemas.String, JsonNameTrait("bird_name"))
+        member("name", PreludeSchemas.String, SerdeTraits.JsonNameTrait("bird_name"))
         member(
             "colors",
             ListSchema(ShapeId("com.example#ColorList")) {
@@ -57,49 +53,49 @@ class SchemaTest {
     @Test
     fun testTraitLookupById() {
         val name = assertNotNull(birdSchema.member("name"))
-        assertTrue(name.hasTrait(JsonNameTrait.ID))
-        val jsonName = assertNotNull(name.getTraitOrNull<JsonNameTrait>(JsonNameTrait.ID))
+        assertTrue(name.hasTrait(SerdeTraits.JsonNameTrait.ID))
+        val jsonName = assertNotNull(name.getTraitOrNull<SerdeTraits.JsonNameTrait>(SerdeTraits.JsonNameTrait.ID))
         assertEquals("bird_name", jsonName.value)
 
-        assertFalse(name.hasTrait(XmlNameTrait.ID))
-        assertNull(name.getTraitOrNull<XmlNameTrait>(XmlNameTrait.ID))
+        assertFalse(name.hasTrait(SerdeTraits.XmlNameTrait.ID))
+        assertNull(name.getTraitOrNull<SerdeTraits.XmlNameTrait>(SerdeTraits.XmlNameTrait.ID))
     }
 
     @Test
     fun testMemberCarriesOnlyItsOwnTraits() {
         // the target carries a trait; the member declares its own — a member reports ONLY its own
-        val target = SimpleSchema(ShapeId("com.example#Named"), ShapeType.STRING, TimestampFormatTrait(TimestampFormat.ISO_8601))
+        val target = SimpleSchema(ShapeId("com.example#Named"), ShapeType.STRING, SerdeTraits.TimestampFormatTrait(TimestampFormat.ISO_8601))
         val schema = StructureSchema(ShapeId("com.example#Holder")) {
-            member("field", target, JsonNameTrait("f"))
+            member("field", target, SerdeTraits.JsonNameTrait("f"))
         }
         val field = assertNotNull(schema.member("field"))
-        assertTrue(field.hasTrait(JsonNameTrait.ID))
-        assertFalse(field.hasTrait(TimestampFormatTrait.ID)) // target traits are NOT merged in
+        assertTrue(field.hasTrait(SerdeTraits.JsonNameTrait.ID))
+        assertFalse(field.hasTrait(SerdeTraits.TimestampFormatTrait.ID)) // target traits are NOT merged in
         assertEquals(1, field.traits.size)
         // the target still carries its own trait
-        assertTrue(field.target.hasTrait(TimestampFormatTrait.ID))
+        assertTrue(field.target.hasTrait(SerdeTraits.TimestampFormatTrait.ID))
     }
 
     @Test
     fun testEffectiveTraitFallsBackToMemberTarget() {
         // @timestampFormat("date-time") timestamp Instant + structure Holder { at: Instant }
-        val target = SimpleSchema(ShapeId("com.example#Instant"), ShapeType.TIMESTAMP, TimestampFormatTrait(TimestampFormat.ISO_8601))
+        val target = SimpleSchema(ShapeId("com.example#Instant"), ShapeType.TIMESTAMP, SerdeTraits.TimestampFormatTrait(TimestampFormat.ISO_8601))
         val schema = StructureSchema(ShapeId("com.example#Holder")) {
             member("at", target)
         }
         val at = assertNotNull(schema.member("at"))
-        assertNull(at.getTraitOrNull<TimestampFormatTrait>(TimestampFormatTrait.ID))
-        assertEquals(TimestampFormat.ISO_8601, at.getEffectiveTraitOrNull<TimestampFormatTrait>(TimestampFormatTrait.ID)?.format)
+        assertNull(at.getTraitOrNull<SerdeTraits.TimestampFormatTrait>(SerdeTraits.TimestampFormatTrait.ID))
+        assertEquals(TimestampFormat.ISO_8601, at.getEffectiveTraitOrNull<SerdeTraits.TimestampFormatTrait>(SerdeTraits.TimestampFormatTrait.ID)?.format)
     }
 
     @Test
     fun testEffectiveTraitPrefersTheMemberOverItsTarget() {
-        val target = SimpleSchema(ShapeId("com.example#Instant"), ShapeType.TIMESTAMP, TimestampFormatTrait(TimestampFormat.ISO_8601))
+        val target = SimpleSchema(ShapeId("com.example#Instant"), ShapeType.TIMESTAMP, SerdeTraits.TimestampFormatTrait(TimestampFormat.ISO_8601))
         val schema = StructureSchema(ShapeId("com.example#Holder")) {
-            member("at", target, TimestampFormatTrait(TimestampFormat.RFC_5322))
+            member("at", target, SerdeTraits.TimestampFormatTrait(TimestampFormat.RFC_5322))
         }
         val at = assertNotNull(schema.member("at"))
-        assertEquals(TimestampFormat.RFC_5322, at.getEffectiveTraitOrNull<TimestampFormatTrait>(TimestampFormatTrait.ID)?.format)
+        assertEquals(TimestampFormat.RFC_5322, at.getEffectiveTraitOrNull<SerdeTraits.TimestampFormatTrait>(SerdeTraits.TimestampFormatTrait.ID)?.format)
     }
 
     @Test
@@ -108,26 +104,26 @@ class SchemaTest {
             member("at", PreludeSchemas.Timestamp)
         }
         val at = assertNotNull(schema.member("at"))
-        assertNull(at.getEffectiveTraitOrNull<TimestampFormatTrait>(TimestampFormatTrait.ID))
+        assertNull(at.getEffectiveTraitOrNull<SerdeTraits.TimestampFormatTrait>(SerdeTraits.TimestampFormatTrait.ID))
     }
 
     @Test
     fun testEffectiveTraitOnNonMemberSchemaConsultsNothingElse() {
-        val instant = SimpleSchema(ShapeId("com.example#Instant"), ShapeType.TIMESTAMP, TimestampFormatTrait(TimestampFormat.ISO_8601))
+        val instant = SimpleSchema(ShapeId("com.example#Instant"), ShapeType.TIMESTAMP, SerdeTraits.TimestampFormatTrait(TimestampFormat.ISO_8601))
         val list = ListSchema(ShapeId("com.example#InstantList")) {
             element(instant)
         }
         // an aggregate resolves only its own traits — it never reaches into the shapes it contains
-        assertNull(list.getEffectiveTraitOrNull<TimestampFormatTrait>(TimestampFormatTrait.ID))
+        assertNull(list.getEffectiveTraitOrNull<SerdeTraits.TimestampFormatTrait>(SerdeTraits.TimestampFormatTrait.ID))
         // while the element member, being a member, does reach its target
         assertEquals(
             TimestampFormat.ISO_8601,
-            list.element.getEffectiveTraitOrNull<TimestampFormatTrait>(TimestampFormatTrait.ID)?.format,
+            list.element.getEffectiveTraitOrNull<SerdeTraits.TimestampFormatTrait>(SerdeTraits.TimestampFormatTrait.ID)?.format,
         )
 
         // the same holds for the target itself, which is not a member either
-        assertNull(instant.getEffectiveTraitOrNull<JsonNameTrait>(JsonNameTrait.ID))
-        assertEquals(TimestampFormat.ISO_8601, instant.getEffectiveTraitOrNull<TimestampFormatTrait>(TimestampFormatTrait.ID)?.format)
+        assertNull(instant.getEffectiveTraitOrNull<SerdeTraits.JsonNameTrait>(SerdeTraits.JsonNameTrait.ID))
+        assertEquals(TimestampFormat.ISO_8601, instant.getEffectiveTraitOrNull<SerdeTraits.TimestampFormatTrait>(SerdeTraits.TimestampFormatTrait.ID)?.format)
     }
 
     @Test
@@ -214,13 +210,13 @@ class SchemaTest {
     @Test
     fun testContainerLevelTraits() {
         val schema = StructureSchema(ShapeId("com.example#S")) {
-            trait(JsonNameTrait("s"))
+            trait(SerdeTraits.JsonNameTrait("s"))
             member("x", PreludeSchemas.String)
         }
-        assertTrue(schema.hasTrait(JsonNameTrait.ID))
-        assertEquals("s", schema.getTraitOrNull<JsonNameTrait>(JsonNameTrait.ID)?.value)
+        assertTrue(schema.hasTrait(SerdeTraits.JsonNameTrait.ID))
+        assertEquals("s", schema.getTraitOrNull<SerdeTraits.JsonNameTrait>(SerdeTraits.JsonNameTrait.ID)?.value)
         // the member did not inherit the container's trait
-        assertFalse(schema.member("x")!!.hasTrait(JsonNameTrait.ID))
+        assertFalse(schema.member("x")!!.hasTrait(SerdeTraits.JsonNameTrait.ID))
     }
 
     @Test
