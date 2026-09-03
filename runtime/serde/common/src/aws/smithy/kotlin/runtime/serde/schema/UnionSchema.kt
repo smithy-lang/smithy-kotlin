@@ -33,14 +33,14 @@ public class UnionSchemaBuilder internal constructor(private val shapeId: ShapeI
         traits.add(trait)
     }
 
-    /** Declare a member with an eagerly-known [target]. */
-    public fun member(name: String, target: Schema, vararg traits: Trait) {
-        members += MemberSchemaImpl(shapeId.withMember(name), traits.toList(), target)
-    }
-
-    /** Declare a member whose [target] is resolved lazily (for recursive/cyclic shapes). */
-    public fun member(name: String, target: Lazy<Schema>, vararg traits: Trait) {
-        members += MemberSchemaImpl(shapeId.withMember(name), traits.toList(), target)
+    /**
+     * Declare [member], which must be identified by one of this union's `$member` shape ids.
+     */
+    public fun member(member: MemberSchema) {
+        require(member.shapeId.namespace == shapeId.namespace && member.shapeId.name == shapeId.name) {
+            "union $shapeId cannot contain ${member.shapeId}, which belongs to another shape"
+        }
+        members += member
     }
 
     internal fun build(): UnionSchema = UnionSchemaImpl(shapeId, traits.toList(), members.toList())

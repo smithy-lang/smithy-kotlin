@@ -432,8 +432,7 @@ public abstract interface class aws/smithy/kotlin/runtime/serde/schema/Structure
 }
 
 public final class aws/smithy/kotlin/runtime/serde/schema/StructureSchemaBuilder {
-	public final fun member (Ljava/lang/String;Laws/smithy/kotlin/runtime/serde/schema/Schema;[Laws/smithy/kotlin/runtime/serde/schema/trait/Trait;)V
-	public final fun member (Ljava/lang/String;Lkotlin/Lazy;[Laws/smithy/kotlin/runtime/serde/schema/trait/Trait;)V
+	public final fun member (Laws/smithy/kotlin/runtime/serde/schema/MemberSchema;)V
 	public final fun trait (Laws/smithy/kotlin/runtime/serde/schema/trait/Trait;)V
 }
 
@@ -447,8 +446,7 @@ public abstract interface class aws/smithy/kotlin/runtime/serde/schema/UnionSche
 }
 
 public final class aws/smithy/kotlin/runtime/serde/schema/UnionSchemaBuilder {
-	public final fun member (Ljava/lang/String;Laws/smithy/kotlin/runtime/serde/schema/Schema;[Laws/smithy/kotlin/runtime/serde/schema/trait/Trait;)V
-	public final fun member (Ljava/lang/String;Lkotlin/Lazy;[Laws/smithy/kotlin/runtime/serde/schema/trait/Trait;)V
+	public final fun member (Laws/smithy/kotlin/runtime/serde/schema/MemberSchema;)V
 	public final fun trait (Laws/smithy/kotlin/runtime/serde/schema/trait/Trait;)V
 }
 

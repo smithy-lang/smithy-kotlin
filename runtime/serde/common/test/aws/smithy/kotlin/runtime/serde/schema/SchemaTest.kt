@@ -20,12 +20,10 @@ class SchemaTest {
     private val colorListId = ShapeId("com.example#ColorList")
     private val colorList = ListSchema(colorListId, MemberSchema(colorListId.withMember("member"), PreludeSchemas.String))
 
-    private val birdSchema: StructureSchema = StructureSchema(ShapeId("com.example#Bird")) {
-        member("name", PreludeSchemas.String, SerdeTraits.JsonNameTrait("bird_name"))
-        member(
-            "colors",
-            colorList,
-        )
+    private val birdId = ShapeId("com.example#Bird")
+    private val birdSchema: StructureSchema = StructureSchema(birdId) {
+        member(MemberSchema(birdId.withMember("name"), PreludeSchemas.String, SerdeTraits.JsonNameTrait("bird_name")))
+        member(MemberSchema(birdId.withMember("colors"), colorList))
     }
 
     @Test
@@ -66,8 +64,9 @@ class SchemaTest {
     fun testMemberCarriesOnlyItsOwnTraits() {
         // the target carries a trait; the member declares its own — a member reports ONLY its own
         val target = SimpleSchema(ShapeId("com.example#Named"), ShapeType.STRING, SerdeTraits.TimestampFormatTrait(TimestampFormat.ISO_8601))
-        val schema = StructureSchema(ShapeId("com.example#Holder")) {
-            member("field", target, SerdeTraits.JsonNameTrait("f"))
+        val schemaId = ShapeId("com.example#Holder")
+        val schema = StructureSchema(schemaId) {
+            member(MemberSchema(schemaId.withMember("field"), target, SerdeTraits.JsonNameTrait("f")))
         }
         val field = assertNotNull(schema.member("field"))
         assertTrue(field.hasTrait(SerdeTraits.JsonNameTrait.ID))
@@ -81,8 +80,9 @@ class SchemaTest {
     fun testEffectiveTraitFallsBackToMemberTarget() {
         // @timestampFormat("date-time") timestamp Instant + structure Holder { at: Instant }
         val target = SimpleSchema(ShapeId("com.example#Instant"), ShapeType.TIMESTAMP, SerdeTraits.TimestampFormatTrait(TimestampFormat.ISO_8601))
-        val schema = StructureSchema(ShapeId("com.example#Holder")) {
-            member("at", target)
+        val schemaId = ShapeId("com.example#Holder")
+        val schema = StructureSchema(schemaId) {
+            member(MemberSchema(schemaId.withMember("at"), target))
         }
         val at = assertNotNull(schema.member("at"))
         assertNull(at.getTraitOrNull<SerdeTraits.TimestampFormatTrait>(SerdeTraits.TimestampFormatTrait.ID))
@@ -92,8 +92,9 @@ class SchemaTest {
     @Test
     fun testEffectiveTraitPrefersTheMemberOverItsTarget() {
         val target = SimpleSchema(ShapeId("com.example#Instant"), ShapeType.TIMESTAMP, SerdeTraits.TimestampFormatTrait(TimestampFormat.ISO_8601))
-        val schema = StructureSchema(ShapeId("com.example#Holder")) {
-            member("at", target, SerdeTraits.TimestampFormatTrait(TimestampFormat.RFC_5322))
+        val schemaId = ShapeId("com.example#Holder")
+        val schema = StructureSchema(schemaId) {
+            member(MemberSchema(schemaId.withMember("at"), target, SerdeTraits.TimestampFormatTrait(TimestampFormat.RFC_5322)))
         }
         val at = assertNotNull(schema.member("at"))
         assertEquals(TimestampFormat.RFC_5322, at.getEffectiveTraitOrNull<SerdeTraits.TimestampFormatTrait>(SerdeTraits.TimestampFormatTrait.ID)?.format)
@@ -101,8 +102,9 @@ class SchemaTest {
 
     @Test
     fun testEffectiveTraitAbsentFromMemberAndTarget() {
-        val schema = StructureSchema(ShapeId("com.example#Holder")) {
-            member("at", PreludeSchemas.Timestamp)
+        val schemaId = ShapeId("com.example#Holder")
+        val schema = StructureSchema(schemaId) {
+            member(MemberSchema(schemaId.withMember("at"), PreludeSchemas.Timestamp))
         }
         val at = assertNotNull(schema.member("at"))
         assertNull(at.getEffectiveTraitOrNull<SerdeTraits.TimestampFormatTrait>(SerdeTraits.TimestampFormatTrait.ID))
@@ -141,9 +143,10 @@ class SchemaTest {
 
     @Test
     fun testUnionSchema() {
-        val schema = UnionSchema(ShapeId("com.example#Shape")) {
-            member("circle", PreludeSchemas.Double)
-            member("square", PreludeSchemas.Double)
+        val schemaId = ShapeId("com.example#Shape")
+        val schema = UnionSchema(schemaId) {
+            member(MemberSchema(schemaId.withMember("circle"), PreludeSchemas.Double))
+            member(MemberSchema(schemaId.withMember("square"), PreludeSchemas.Double))
         }
         assertEquals(ShapeType.UNION, schema.type)
         assertEquals(2, schema.members.size)
@@ -155,13 +158,16 @@ class SchemaTest {
         // com.example#RecursiveValue { m: Map<String, RecursiveValue> }
         val mapId = ShapeId("com.example#RecursiveValueMap")
         lateinit var schema: StructureSchema
-        schema = StructureSchema(ShapeId("com.example#RecursiveValue")) {
+        val structId = ShapeId("com.example#RecursiveValue")
+        schema = StructureSchema(structId) {
             member(
-                "m",
-                MapSchema(
-                    mapId,
-                    MemberSchema(mapId.withMember("key"), PreludeSchemas.String),
-                    MemberSchema(mapId.withMember("value"), lazy { schema }),
+                MemberSchema(
+                    structId.withMember("m"),
+                    MapSchema(
+                        mapId,
+                        MemberSchema(mapId.withMember("key"), PreludeSchemas.String),
+                        MemberSchema(mapId.withMember("value"), lazy { schema }),
+                    ),
                 ),
             )
         }
@@ -213,9 +219,10 @@ class SchemaTest {
 
     @Test
     fun testContainerLevelTraits() {
-        val schema = StructureSchema(ShapeId("com.example#S")) {
+        val schemaId = ShapeId("com.example#S")
+        val schema = StructureSchema(schemaId) {
             trait(SerdeTraits.JsonNameTrait("s"))
-            member("x", PreludeSchemas.String)
+            member(MemberSchema(schemaId.withMember("x"), PreludeSchemas.String))
         }
         assertTrue(schema.hasTrait(SerdeTraits.JsonNameTrait.ID))
         assertEquals("s", schema.getTraitOrNull<SerdeTraits.JsonNameTrait>(SerdeTraits.JsonNameTrait.ID)?.value)
@@ -244,8 +251,9 @@ class SchemaTest {
 
     @Test
     fun testUnionMemberNotFound() {
-        val schema = UnionSchema(ShapeId("com.example#U")) {
-            member("a", PreludeSchemas.String)
+        val schemaId = ShapeId("com.example#U")
+        val schema = UnionSchema(schemaId) {
+            member(MemberSchema(schemaId.withMember("a"), PreludeSchemas.String))
         }
         assertNull(schema.member("missing"))
     }
