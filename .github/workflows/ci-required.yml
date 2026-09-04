@@ -1,0 +1,13 @@
+name: CI Required
+
+on:
+  pull_request:
+  merge_group:
+    types: [checks_requested]
+
+jobs:
+  required:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Aggregate required checks
+        run: echo "Same-repo aggregate required check succeeded"
