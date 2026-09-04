@@ -9,6 +9,15 @@ on:
   merge_group:
     types: [checks_requested]
   workflow_dispatch:
+  workflow_call:
+    inputs:
+      ref:
+        type: string
+        required: false
+        default: ''
+    secrets:
+      CI_AWS_ROLE_ARN:
+        required: true
 
 permissions:
   id-token: write
@@ -43,6 +52,7 @@ jobs:
       - name: Checkout sources
         uses: actions/checkout@v4
         with:
+          ref: ${{ inputs.ref }}
           path: 'smithy-kotlin'
 
       - name: Setup build
@@ -95,6 +105,7 @@ jobs:
   # macOS ARM images build and test for targets: jvm, macosArm64, iosSimulatorArm64, watchosSimulatorArm65, tvosSimulatorArm64
   # macos x64 images build and test for targets: jvm, macosX64, iosX64, tvosX64, watchosX64
   macos:
+    if: ${{ github.event_name != 'workflow_call' }}
     strategy:
       fail-fast: false
       matrix:
@@ -106,6 +117,7 @@ jobs:
       - name: Checkout sources
         uses: actions/checkout@v4
         with:
+          ref: ${{ inputs.ref }}
           path: 'smithy-kotlin'
 
       - name: Setup build
@@ -175,6 +187,7 @@ jobs:
       - name: Checkout sources
         uses: actions/checkout@v4
         with:
+          ref: ${{ inputs.ref }}
           path: 'smithy-kotlin'
 
       - name: Configure AWS Credentials
@@ -222,11 +235,13 @@ jobs:
 
   # windows JVM
   windows:
+    if: ${{ github.event_name != 'workflow_call' }}
     runs-on: windows-2022
     steps:
       - name: Checkout sources
         uses: actions/checkout@v4
         with:
+          ref: ${{ inputs.ref }}
           path: 'smithy-kotlin'
 
       - name: Setup build
@@ -259,6 +274,7 @@ jobs:
       - name: Checkout sources
         uses: actions/checkout@v4
         with:
+          ref: ${{ inputs.ref }}
           path: 'smithy-kotlin'
 
       - name: Setup build
@@ -328,6 +344,7 @@ jobs:
       - name: Checkout sources
         uses: actions/checkout@v4
         with:
+          ref: ${{ inputs.ref }}
           path: 'smithy-kotlin'
 
       - name: Setup build
@@ -386,6 +403,7 @@ jobs:
     - name: Checkout sources
       uses: actions/checkout@v4
       with:
+        ref: ${{ inputs.ref }}
         path: 'smithy-kotlin'
 
     - name: Setup build
