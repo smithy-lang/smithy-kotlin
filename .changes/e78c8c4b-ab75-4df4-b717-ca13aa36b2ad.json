@@ -1,0 +1,5 @@
+{
+  "id": "e78c8c4b-ab75-4df4-b717-ca13aa36b2ad",
+  "type": "feature",
+  "description": "Add `IdentityProvider.invalidate` so that a caching provider can be told the identity it supplied was rejected by the target service, and publish the resolved identity and the provider that supplied it on the operation context"
+}
