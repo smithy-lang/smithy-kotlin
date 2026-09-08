@@ -20,6 +20,18 @@ public interface IdentityProvider {
      * @return An [Identity] that can be used to connect to the service
      */
     public suspend fun resolve(attributes: Attributes = emptyAttributes()): Identity
+
+    /**
+     * Signals that [rejectedIdentity] was rejected by a target service with an authentication error, and that any
+     * cached copy of it should be refreshed before it is used again.
+     *
+     * Implementations that cache MUST ignore the call if the identity they hold is not [rejectedIdentity] — a
+     * concurrent refresh may already have replaced it. Implementations MUST NOT discard the cached identity and
+     * MUST NOT bypass any refresh rate limiting; the identity is marked for refresh, not deleted.
+     *
+     * The default implementation does nothing, which is correct for any provider that does not cache.
+     */
+    public suspend fun invalidate(rejectedIdentity: Identity) {}
 }
 
 /**
