@@ -574,6 +574,8 @@ public final class aws/smithy/kotlin/runtime/http/operation/HttpOperationContext
 	public final fun getOperationAttributes ()Laws/smithy/kotlin/runtime/collections/AttributeKey;
 	public final fun getOperationInput ()Laws/smithy/kotlin/runtime/collections/AttributeKey;
 	public final fun getOperationMetrics ()Laws/smithy/kotlin/runtime/collections/AttributeKey;
+	public final fun getResolvedIdentity ()Laws/smithy/kotlin/runtime/collections/AttributeKey;
+	public final fun getResolvedIdentityProvider ()Laws/smithy/kotlin/runtime/collections/AttributeKey;
 	public final fun getSdkInvocationId ()Laws/smithy/kotlin/runtime/collections/AttributeKey;
 	public final fun getSocketReadTimeout ()Laws/smithy/kotlin/runtime/collections/AttributeKey;
 }
