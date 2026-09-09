@@ -10,6 +10,7 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 import kotlin.test.assertFalse
+import kotlin.test.assertNotEquals
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 import kotlin.test.assertSame
@@ -176,6 +177,37 @@ class SchemaTest {
         val map = m.target as MapSchema
         // resolving the self-referential value target does not blow up and points back at the structure
         assertSame(schema, map.value.target)
+
+        // members exclude their target from equality/rendering, so a cyclic schema stays safe to compare and print
+        assertEquals(schema, schema)
+        assertEquals(schema.hashCode(), schema.hashCode())
+        assertTrue(schema.toString().contains("com.example#RecursiveValue"))
+    }
+
+    @Test
+    fun testSchemasAreStructurallyEqual() {
+        fun bird() = StructureSchema(birdId) {
+            member(MemberSchema(birdId.withMember("name"), PreludeSchemas.String, SerdeTraits.JsonNameTrait("bird_name")))
+            member(MemberSchema(birdId.withMember("colors"), colorList))
+        }
+
+        assertEquals(bird(), bird())
+        assertEquals(bird().hashCode(), bird().hashCode())
+        assertEquals(PreludeSchemas.String, SimpleSchema(ShapeId("smithy.api#String"), ShapeType.STRING))
+
+        // differing traits make otherwise identical shapes unequal
+        val renamed = StructureSchema(birdId) {
+            member(MemberSchema(birdId.withMember("name"), PreludeSchemas.String, SerdeTraits.JsonNameTrait("other")))
+            member(MemberSchema(birdId.withMember("colors"), colorList))
+        }
+        assertNotEquals(bird(), renamed)
+    }
+
+    @Test
+    fun testSchemaToStringIncludesShapeId() {
+        assertTrue(birdSchema.toString().contains("com.example#Bird"))
+        assertTrue(colorList.toString().contains("com.example#ColorList"))
+        assertTrue(PreludeSchemas.String.toString().contains("smithy.api#String"))
     }
 
     @Test

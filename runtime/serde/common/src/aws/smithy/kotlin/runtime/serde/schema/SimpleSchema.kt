@@ -8,7 +8,7 @@ import aws.smithy.kotlin.runtime.serde.schema.trait.Trait
 
 public sealed interface SimpleSchema : Schema
 
-internal class SimpleSchemaImpl(
+internal data class SimpleSchemaImpl(
     override val shapeId: ShapeId,
     override val type: ShapeType,
     override val traits: Collection<Trait>,
@@ -16,7 +16,6 @@ internal class SimpleSchemaImpl(
     init {
         require(type.isSimple) { "$type is not a simple shape type" }
     }
-    override fun toString(): String = "SimpleSchema($shapeId: $type)"
 }
 
 public fun SimpleSchema(id: ShapeId, type: ShapeType, vararg traits: Trait): SimpleSchema = SimpleSchemaImpl(id, type, traits.toList())

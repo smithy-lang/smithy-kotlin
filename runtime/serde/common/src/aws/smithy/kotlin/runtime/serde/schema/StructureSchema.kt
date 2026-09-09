@@ -11,7 +11,7 @@ public sealed interface StructureSchema : Schema {
     public fun member(name: String): MemberSchema?
 }
 
-internal class StructureSchemaImpl(
+internal data class StructureSchemaImpl(
     override val shapeId: ShapeId,
     override val traits: Collection<Trait>,
     override val members: List<MemberSchema>,
@@ -20,7 +20,6 @@ internal class StructureSchemaImpl(
     private val byName: Map<String, MemberSchema> by lazy { members.associateBy { it.memberName } }
 
     override fun member(name: String): MemberSchema? = byName[name]
-    override fun toString(): String = "StructureSchema($shapeId)"
 }
 
 @SchemaDsl

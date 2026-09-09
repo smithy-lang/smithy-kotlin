@@ -11,7 +11,7 @@ public sealed interface UnionSchema : Schema {
     public fun member(name: String): MemberSchema?
 }
 
-internal class UnionSchemaImpl(
+internal data class UnionSchemaImpl(
     override val shapeId: ShapeId,
     override val traits: Collection<Trait>,
     override val members: List<MemberSchema>,
@@ -20,7 +20,6 @@ internal class UnionSchemaImpl(
     private val byName: Map<String, MemberSchema> by lazy { members.associateBy { it.memberName } }
 
     override fun member(name: String): MemberSchema? = byName[name]
-    override fun toString(): String = "UnionSchema($shapeId)"
 }
 
 @SchemaDsl

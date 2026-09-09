@@ -10,13 +10,12 @@ public sealed interface ListSchema : Schema {
     public val element: MemberSchema
 }
 
-internal class ListSchemaImpl(
+internal data class ListSchemaImpl(
     override val shapeId: ShapeId,
     override val traits: Collection<Trait>,
     override val element: MemberSchema,
 ) : ListSchema {
     override val type: ShapeType = ShapeType.LIST
-    override fun toString(): String = "ListSchema($shapeId)"
 }
 
 /**

@@ -12,7 +12,7 @@ import aws.smithy.kotlin.runtime.time.TimestampFormat
  */
 public object SerdeTraits {
     /** The wire name for a member under JSON protocols. */
-    public class JsonNameTrait(public val value: String) : Trait {
+    public data class JsonNameTrait(public val value: String) : Trait {
         public companion object {
             public val ID: ShapeId = ShapeId("smithy.api#jsonName")
         }
@@ -21,7 +21,7 @@ public object SerdeTraits {
     }
 
     /** The wire name for a member under XML protocols. */
-    public class XmlNameTrait(public val value: String) : Trait {
+    public data class XmlNameTrait(public val value: String) : Trait {
         public companion object {
             public val ID: ShapeId = ShapeId("smithy.api#xmlName")
         }
@@ -44,7 +44,7 @@ public object SerdeTraits {
     }
 
     /** The XML namespace ([uri], optional [prefix]) applied to a shape's element. */
-    public class XmlNamespaceTrait(public val uri: String, public val prefix: String? = null) : Trait {
+    public data class XmlNamespaceTrait(public val uri: String, public val prefix: String? = null) : Trait {
         public companion object {
             public val ID: ShapeId = ShapeId("smithy.api#xmlNamespace")
         }
@@ -53,7 +53,7 @@ public object SerdeTraits {
     }
 
     /** The media type of a string/blob payload. */
-    public class MediaTypeTrait(public val value: String) : Trait {
+    public data class MediaTypeTrait(public val value: String) : Trait {
         public companion object {
             public val ID: ShapeId = ShapeId("smithy.api#mediaType")
         }
@@ -62,7 +62,7 @@ public object SerdeTraits {
     }
 
     /** Overrides the protocol default timestamp format for a shape/member. */
-    public class TimestampFormatTrait(public val format: TimestampFormat) : Trait {
+    public data class TimestampFormatTrait(public val format: TimestampFormat) : Trait {
         public companion object {
             public val ID: ShapeId = ShapeId("smithy.api#timestampFormat")
         }
@@ -71,7 +71,7 @@ public object SerdeTraits {
     }
 
     /** The error [code] and HTTP [httpResponseCode] for an awsQuery error shape. */
-    public class AwsQueryErrorTrait(public val code: String, public val httpResponseCode: Int) : Trait {
+    public data class AwsQueryErrorTrait(public val code: String, public val httpResponseCode: Int) : Trait {
         public companion object {
             public val ID: ShapeId = ShapeId("aws.protocols#awsQueryError")
         }
@@ -136,7 +136,7 @@ public object SerdeTraits {
     }
 
     /** Bind the member to the HTTP header [name]. */
-    public class HttpHeaderTrait(public val name: String) : Trait {
+    public data class HttpHeaderTrait(public val name: String) : Trait {
         public companion object {
             public val ID: ShapeId = ShapeId("smithy.api#httpHeader")
         }
@@ -159,7 +159,7 @@ public object SerdeTraits {
     }
 
     /** Bind a map member to HTTP headers sharing the given [prefix]. */
-    public class HttpPrefixHeadersTrait(public val prefix: String) : Trait {
+    public data class HttpPrefixHeadersTrait(public val prefix: String) : Trait {
         public companion object {
             public val ID: ShapeId = ShapeId("smithy.api#httpPrefixHeaders")
         }
@@ -168,7 +168,7 @@ public object SerdeTraits {
     }
 
     /** Bind the member to the query-string parameter [name]. */
-    public class HttpQueryTrait(public val name: String) : Trait {
+    public data class HttpQueryTrait(public val name: String) : Trait {
         public companion object {
             public val ID: ShapeId = ShapeId("smithy.api#httpQuery")
         }
@@ -198,7 +198,7 @@ public object SerdeTraits {
     }
 
     /** Binds an input member to the endpoint-rules context parameter [name]. */
-    public class ContextParamTrait(public val name: String) : Trait {
+    public data class ContextParamTrait(public val name: String) : Trait {
         public companion object {
             public val ID: ShapeId = ShapeId("smithy.rules#contextParam")
         }

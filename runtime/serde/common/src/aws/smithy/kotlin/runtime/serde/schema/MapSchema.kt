@@ -11,14 +11,13 @@ public sealed interface MapSchema : Schema {
     public val value: MemberSchema
 }
 
-internal class MapSchemaImpl(
+internal data class MapSchemaImpl(
     override val shapeId: ShapeId,
     override val traits: Collection<Trait>,
     override val key: MemberSchema,
     override val value: MemberSchema,
 ) : MapSchema {
     override val type: ShapeType = ShapeType.MAP
-    override fun toString(): String = "MapSchema($shapeId)"
 }
 
 /**

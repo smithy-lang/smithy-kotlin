@@ -28,7 +28,12 @@ internal class MemberSchemaImpl(
     override val memberName: String = shapeId.member
 
     override val target: Schema get() = lazyTarget.value
-    override fun toString(): String = "MemberSchema($shapeId)"
+
+    override fun equals(other: Any?): Boolean = this === other || (other is MemberSchemaImpl && shapeId == other.shapeId && traits == other.traits)
+
+    override fun hashCode(): Int = 31 * shapeId.hashCode() + traits.hashCode()
+
+    override fun toString(): String = "MemberSchemaImpl(shapeId=$shapeId, traits=$traits)"
 }
 
 /** Create a [MemberSchema] identified by [id] that targets [target]. */
