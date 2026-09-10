@@ -1,0 +1,6 @@
+{
+  "id": "704d2a32-9d3f-454f-9625-70d337c9e35e",
+  "type": "bugfix",
+  "description": "Allow the new retry behavior flag on the standard retry token bucket to be set by callers so it can be enabled from configuration sources other than the `SMITHY_NEW_RETRIES_2026` setting",
+  "module": "runtime-core"
+}
