@@ -1,0 +1,252 @@
+public abstract class aws/smithy/kotlin/runtime/telemetry/metrics/aggregation/AggregatingTelemetryProvider : aws/smithy/kotlin/runtime/telemetry/TelemetryProvider, java/io/Closeable {
+	public fun <init> (Laws/smithy/kotlin/runtime/telemetry/metrics/aggregation/AggregationConfig;Laws/smithy/kotlin/runtime/telemetry/logging/LoggerProvider;Ljava/lang/String;)V
+	protected final fun collect ()Ljava/util/List;
+	public abstract fun flush (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	protected final fun getAggregating ()Laws/smithy/kotlin/runtime/telemetry/metrics/aggregation/SdkMeterProvider;
+	public fun getContextManager ()Laws/smithy/kotlin/runtime/telemetry/context/ContextManager;
+	protected final fun getLogger ()Laws/smithy/kotlin/runtime/telemetry/logging/Logger;
+	public final fun getLoggerProvider ()Laws/smithy/kotlin/runtime/telemetry/logging/LoggerProvider;
+	public final fun getMeterProvider ()Laws/smithy/kotlin/runtime/telemetry/metrics/MeterProvider;
+	public fun getTracerProvider ()Laws/smithy/kotlin/runtime/telemetry/trace/TracerProvider;
+}
+
+public final class aws/smithy/kotlin/runtime/telemetry/metrics/aggregation/AggregationConfig {
+	public fun <init> (Ljava/util/Set;Ljava/util/Set;II)V
+	public synthetic fun <init> (Ljava/util/Set;Ljava/util/Set;IIILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun component1 ()Ljava/util/Set;
+	public final fun component2 ()Ljava/util/Set;
+	public final fun component3 ()I
+	public final fun component4 ()I
+	public final fun copy (Ljava/util/Set;Ljava/util/Set;II)Laws/smithy/kotlin/runtime/telemetry/metrics/aggregation/AggregationConfig;
+	public static synthetic fun copy$default (Laws/smithy/kotlin/runtime/telemetry/metrics/aggregation/AggregationConfig;Ljava/util/Set;Ljava/util/Set;IIILjava/lang/Object;)Laws/smithy/kotlin/runtime/telemetry/metrics/aggregation/AggregationConfig;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getDetailedMetrics ()Ljava/util/Set;
+	public final fun getDimensions ()Ljava/util/Set;
+	public final fun getMaxCardinality ()I
+	public final fun getMaxDistinctValues ()I
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class aws/smithy/kotlin/runtime/telemetry/metrics/aggregation/Dimension {
+	public fun <init> (Ljava/lang/String;Ljava/lang/String;)V
+	public final fun component1 ()Ljava/lang/String;
+	public final fun component2 ()Ljava/lang/String;
+	public final fun copy (Ljava/lang/String;Ljava/lang/String;)Laws/smithy/kotlin/runtime/telemetry/metrics/aggregation/Dimension;
+	public static synthetic fun copy$default (Laws/smithy/kotlin/runtime/telemetry/metrics/aggregation/Dimension;Ljava/lang/String;Ljava/lang/String;ILjava/lang/Object;)Laws/smithy/kotlin/runtime/telemetry/metrics/aggregation/Dimension;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getName ()Ljava/lang/String;
+	public final fun getValue ()Ljava/lang/String;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public abstract interface class aws/smithy/kotlin/runtime/telemetry/metrics/aggregation/FlushMode {
+}
+
+public final class aws/smithy/kotlin/runtime/telemetry/metrics/aggregation/FlushMode$OnDemand : aws/smithy/kotlin/runtime/telemetry/metrics/aggregation/FlushMode {
+	public static final field INSTANCE Laws/smithy/kotlin/runtime/telemetry/metrics/aggregation/FlushMode$OnDemand;
+	public fun equals (Ljava/lang/Object;)Z
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class aws/smithy/kotlin/runtime/telemetry/metrics/aggregation/FlushMode$Periodic : aws/smithy/kotlin/runtime/telemetry/metrics/aggregation/FlushMode {
+	public synthetic fun <init> (JILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public synthetic fun <init> (JLkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun component1-UwyO8pc ()J
+	public final fun copy-LRDsOJo (J)Laws/smithy/kotlin/runtime/telemetry/metrics/aggregation/FlushMode$Periodic;
+	public static synthetic fun copy-LRDsOJo$default (Laws/smithy/kotlin/runtime/telemetry/metrics/aggregation/FlushMode$Periodic;JILjava/lang/Object;)Laws/smithy/kotlin/runtime/telemetry/metrics/aggregation/FlushMode$Periodic;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getInterval-UwyO8pc ()J
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class aws/smithy/kotlin/runtime/telemetry/metrics/aggregation/InstrumentDescriptor {
+	public fun <init> (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V
+	public synthetic fun <init> (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun component1 ()Ljava/lang/String;
+	public final fun component2 ()Ljava/lang/String;
+	public final fun component3 ()Ljava/lang/String;
+	public final fun component4 ()Ljava/lang/String;
+	public final fun copy (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)Laws/smithy/kotlin/runtime/telemetry/metrics/aggregation/InstrumentDescriptor;
+	public static synthetic fun copy$default (Laws/smithy/kotlin/runtime/telemetry/metrics/aggregation/InstrumentDescriptor;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;ILjava/lang/Object;)Laws/smithy/kotlin/runtime/telemetry/metrics/aggregation/InstrumentDescriptor;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getDescription ()Ljava/lang/String;
+	public final fun getName ()Ljava/lang/String;
+	public final fun getScope ()Ljava/lang/String;
+	public final fun getUnits ()Ljava/lang/String;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class aws/smithy/kotlin/runtime/telemetry/metrics/aggregation/MetricData {
+	public fun <init> (Laws/smithy/kotlin/runtime/telemetry/metrics/aggregation/InstrumentDescriptor;Laws/smithy/kotlin/runtime/time/Instant;Ljava/util/List;)V
+	public final fun component1 ()Laws/smithy/kotlin/runtime/telemetry/metrics/aggregation/InstrumentDescriptor;
+	public final fun component2 ()Laws/smithy/kotlin/runtime/time/Instant;
+	public final fun component3 ()Ljava/util/List;
+	public final fun copy (Laws/smithy/kotlin/runtime/telemetry/metrics/aggregation/InstrumentDescriptor;Laws/smithy/kotlin/runtime/time/Instant;Ljava/util/List;)Laws/smithy/kotlin/runtime/telemetry/metrics/aggregation/MetricData;
+	public static synthetic fun copy$default (Laws/smithy/kotlin/runtime/telemetry/metrics/aggregation/MetricData;Laws/smithy/kotlin/runtime/telemetry/metrics/aggregation/InstrumentDescriptor;Laws/smithy/kotlin/runtime/time/Instant;Ljava/util/List;ILjava/lang/Object;)Laws/smithy/kotlin/runtime/telemetry/metrics/aggregation/MetricData;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getDescriptor ()Laws/smithy/kotlin/runtime/telemetry/metrics/aggregation/InstrumentDescriptor;
+	public final fun getPoints ()Ljava/util/List;
+	public final fun getTimestamp ()Laws/smithy/kotlin/runtime/time/Instant;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public abstract interface class aws/smithy/kotlin/runtime/telemetry/metrics/aggregation/MetricExporter {
+	public static final field Companion Laws/smithy/kotlin/runtime/telemetry/metrics/aggregation/MetricExporter$Companion;
+	public abstract fun export (Ljava/util/List;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun onAttach ()V
+	public abstract fun shutdown (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+}
+
+public final class aws/smithy/kotlin/runtime/telemetry/metrics/aggregation/MetricExporter$Companion {
+	public final fun getNone ()Laws/smithy/kotlin/runtime/telemetry/metrics/aggregation/MetricExporter;
+}
+
+public final class aws/smithy/kotlin/runtime/telemetry/metrics/aggregation/MetricExporter$DefaultImpls {
+	public static fun onAttach (Laws/smithy/kotlin/runtime/telemetry/metrics/aggregation/MetricExporter;)V
+}
+
+public final class aws/smithy/kotlin/runtime/telemetry/metrics/aggregation/MetricPoint {
+	public fun <init> (Ljava/util/List;Laws/smithy/kotlin/runtime/telemetry/metrics/aggregation/MetricValue;)V
+	public final fun component1 ()Ljava/util/List;
+	public final fun component2 ()Laws/smithy/kotlin/runtime/telemetry/metrics/aggregation/MetricValue;
+	public final fun copy (Ljava/util/List;Laws/smithy/kotlin/runtime/telemetry/metrics/aggregation/MetricValue;)Laws/smithy/kotlin/runtime/telemetry/metrics/aggregation/MetricPoint;
+	public static synthetic fun copy$default (Laws/smithy/kotlin/runtime/telemetry/metrics/aggregation/MetricPoint;Ljava/util/List;Laws/smithy/kotlin/runtime/telemetry/metrics/aggregation/MetricValue;ILjava/lang/Object;)Laws/smithy/kotlin/runtime/telemetry/metrics/aggregation/MetricPoint;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getDimensions ()Ljava/util/List;
+	public final fun getValue ()Laws/smithy/kotlin/runtime/telemetry/metrics/aggregation/MetricValue;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public abstract interface class aws/smithy/kotlin/runtime/telemetry/metrics/aggregation/MetricReader {
+	public abstract fun close (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public abstract fun flush (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public abstract fun install (Laws/smithy/kotlin/runtime/telemetry/metrics/aggregation/SdkMeterProvider;Laws/smithy/kotlin/runtime/telemetry/logging/Logger;)V
+}
+
+public abstract interface class aws/smithy/kotlin/runtime/telemetry/metrics/aggregation/MetricValue {
+}
+
+public final class aws/smithy/kotlin/runtime/telemetry/metrics/aggregation/MetricValue$Distribution : aws/smithy/kotlin/runtime/telemetry/metrics/aggregation/MetricValue {
+	public fun <init> (Ljava/util/Map;Z)V
+	public synthetic fun <init> (Ljava/util/Map;ZILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun component1 ()Ljava/util/Map;
+	public final fun component2 ()Z
+	public final fun copy (Ljava/util/Map;Z)Laws/smithy/kotlin/runtime/telemetry/metrics/aggregation/MetricValue$Distribution;
+	public static synthetic fun copy$default (Laws/smithy/kotlin/runtime/telemetry/metrics/aggregation/MetricValue$Distribution;Ljava/util/Map;ZILjava/lang/Object;)Laws/smithy/kotlin/runtime/telemetry/metrics/aggregation/MetricValue$Distribution;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getTruncated ()Z
+	public final fun getValues ()Ljava/util/Map;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class aws/smithy/kotlin/runtime/telemetry/metrics/aggregation/MetricValue$LastValue : aws/smithy/kotlin/runtime/telemetry/metrics/aggregation/MetricValue {
+	public fun <init> (D)V
+	public final fun component1 ()D
+	public final fun copy (D)Laws/smithy/kotlin/runtime/telemetry/metrics/aggregation/MetricValue$LastValue;
+	public static synthetic fun copy$default (Laws/smithy/kotlin/runtime/telemetry/metrics/aggregation/MetricValue$LastValue;DILjava/lang/Object;)Laws/smithy/kotlin/runtime/telemetry/metrics/aggregation/MetricValue$LastValue;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getValue ()D
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class aws/smithy/kotlin/runtime/telemetry/metrics/aggregation/MetricValue$Sum : aws/smithy/kotlin/runtime/telemetry/metrics/aggregation/MetricValue {
+	public fun <init> (DZ)V
+	public final fun component1 ()D
+	public final fun component2 ()Z
+	public final fun copy (DZ)Laws/smithy/kotlin/runtime/telemetry/metrics/aggregation/MetricValue$Sum;
+	public static synthetic fun copy$default (Laws/smithy/kotlin/runtime/telemetry/metrics/aggregation/MetricValue$Sum;DZILjava/lang/Object;)Laws/smithy/kotlin/runtime/telemetry/metrics/aggregation/MetricValue$Sum;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getMonotonic ()Z
+	public final fun getValue ()D
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class aws/smithy/kotlin/runtime/telemetry/metrics/aggregation/MetricValue$Summary : aws/smithy/kotlin/runtime/telemetry/metrics/aggregation/MetricValue {
+	public fun <init> (JDDD)V
+	public final fun component1 ()J
+	public final fun component2 ()D
+	public final fun component3 ()D
+	public final fun component4 ()D
+	public final fun copy (JDDD)Laws/smithy/kotlin/runtime/telemetry/metrics/aggregation/MetricValue$Summary;
+	public static synthetic fun copy$default (Laws/smithy/kotlin/runtime/telemetry/metrics/aggregation/MetricValue$Summary;JDDDILjava/lang/Object;)Laws/smithy/kotlin/runtime/telemetry/metrics/aggregation/MetricValue$Summary;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getCount ()J
+	public final fun getMax ()D
+	public final fun getMin ()D
+	public final fun getSum ()D
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class aws/smithy/kotlin/runtime/telemetry/metrics/aggregation/PeriodicMetricReader : aws/smithy/kotlin/runtime/telemetry/metrics/aggregation/MetricReader {
+	public static final field Companion Laws/smithy/kotlin/runtime/telemetry/metrics/aggregation/PeriodicMetricReader$Companion;
+	public synthetic fun <init> (Laws/smithy/kotlin/runtime/telemetry/metrics/aggregation/PeriodicMetricReader$Builder;Lkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun close (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun flush (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun install (Laws/smithy/kotlin/runtime/telemetry/metrics/aggregation/SdkMeterProvider;Laws/smithy/kotlin/runtime/telemetry/logging/Logger;)V
+}
+
+public final class aws/smithy/kotlin/runtime/telemetry/metrics/aggregation/PeriodicMetricReader$Builder {
+	public fun <init> ()V
+	public final fun getExporter ()Laws/smithy/kotlin/runtime/telemetry/metrics/aggregation/MetricExporter;
+	public final fun getFlushMode ()Laws/smithy/kotlin/runtime/telemetry/metrics/aggregation/FlushMode;
+	public final fun setExporter (Laws/smithy/kotlin/runtime/telemetry/metrics/aggregation/MetricExporter;)V
+	public final fun setFlushMode (Laws/smithy/kotlin/runtime/telemetry/metrics/aggregation/FlushMode;)V
+}
+
+public final class aws/smithy/kotlin/runtime/telemetry/metrics/aggregation/PeriodicMetricReader$Companion {
+	public final fun invoke-dnQKTGw (Lkotlin/time/Duration;Lkotlin/jvm/functions/Function1;)Laws/smithy/kotlin/runtime/telemetry/metrics/aggregation/PeriodicMetricReader;
+	public static synthetic fun invoke-dnQKTGw$default (Laws/smithy/kotlin/runtime/telemetry/metrics/aggregation/PeriodicMetricReader$Companion;Lkotlin/time/Duration;Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)Laws/smithy/kotlin/runtime/telemetry/metrics/aggregation/PeriodicMetricReader;
+}
+
+public final class aws/smithy/kotlin/runtime/telemetry/metrics/aggregation/SdkMeterProvider : aws/smithy/kotlin/runtime/telemetry/metrics/MeterProvider {
+	public static final field Companion Laws/smithy/kotlin/runtime/telemetry/metrics/aggregation/SdkMeterProvider$Companion;
+	public fun getOrCreateMeter (Ljava/lang/String;)Laws/smithy/kotlin/runtime/telemetry/metrics/Meter;
+}
+
+public final class aws/smithy/kotlin/runtime/telemetry/metrics/aggregation/SdkMeterProvider$Companion {
+}
+
+public final class aws/smithy/kotlin/runtime/telemetry/metrics/aggregation/SdkTelemetryProvider : aws/smithy/kotlin/runtime/telemetry/metrics/aggregation/AggregatingTelemetryProvider {
+	public static final field Companion Laws/smithy/kotlin/runtime/telemetry/metrics/aggregation/SdkTelemetryProvider$Companion;
+	public synthetic fun <init> (Laws/smithy/kotlin/runtime/telemetry/metrics/aggregation/SdkTelemetryProvider$Builder;Lkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun close ()V
+	public fun flush (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+}
+
+public final class aws/smithy/kotlin/runtime/telemetry/metrics/aggregation/SdkTelemetryProvider$Builder {
+	public fun <init> ()V
+	public final fun getDetailedMetrics ()Ljava/util/Set;
+	public final fun getDimensions ()Ljava/util/Set;
+	public final fun getExporter ()Laws/smithy/kotlin/runtime/telemetry/metrics/aggregation/MetricExporter;
+	public final fun getFlushMode ()Laws/smithy/kotlin/runtime/telemetry/metrics/aggregation/FlushMode;
+	public final fun getLoggerProvider ()Laws/smithy/kotlin/runtime/telemetry/logging/LoggerProvider;
+	public final fun getMaxCardinality ()I
+	public final fun getMetricReader ()Laws/smithy/kotlin/runtime/telemetry/metrics/aggregation/MetricReader;
+	public final fun setDetailedMetrics (Ljava/util/Set;)V
+	public final fun setDimensions (Ljava/util/Set;)V
+	public final fun setExporter (Laws/smithy/kotlin/runtime/telemetry/metrics/aggregation/MetricExporter;)V
+	public final fun setFlushMode (Laws/smithy/kotlin/runtime/telemetry/metrics/aggregation/FlushMode;)V
+	public final fun setLoggerProvider (Laws/smithy/kotlin/runtime/telemetry/logging/LoggerProvider;)V
+	public final fun setMaxCardinality (I)V
+	public final fun setMetricReader (Laws/smithy/kotlin/runtime/telemetry/metrics/aggregation/MetricReader;)V
+}
+
+public final class aws/smithy/kotlin/runtime/telemetry/metrics/aggregation/SdkTelemetryProvider$Companion {
+	public final fun invoke (Lkotlin/jvm/functions/Function1;)Laws/smithy/kotlin/runtime/telemetry/metrics/aggregation/SdkTelemetryProvider;
+}
+
+public final class aws/smithy/kotlin/runtime/telemetry/metrics/aggregation/internal/ManagedTelemetryProviderKt {
+	public static final fun manage (Laws/smithy/kotlin/runtime/telemetry/TelemetryProvider;)Laws/smithy/kotlin/runtime/telemetry/TelemetryProvider;
+}
+
