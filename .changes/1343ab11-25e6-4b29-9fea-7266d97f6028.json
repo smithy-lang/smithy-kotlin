@@ -1,0 +1,6 @@
+{
+    "id": "1343ab11-25e6-4b29-9fea-7266d97f6028",
+    "type": "feature",
+    "description": "Generated clients now reference count telemetry providers they create, so a provider the SDK constructs is closed with the last client using it. Providers supplied by the caller are unaffected and remain the caller's to close",
+    "module": "codegen"
+}
