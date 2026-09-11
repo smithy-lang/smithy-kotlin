@@ -1,5 +1,11 @@
 # Changelog
 
+## [1.7.10] - 09/11/2026
+
+### Fixes
+* (**http-client-engine-okhttp**) Retry network faults that occur while reading a response body on the OkHttp engine by wrapping body-read IO errors (dropped connection, truncated body, socket read timeout) as a retryable HttpException instead of letting them escape as a raw IOException the retry policy treats as non-retryable
+* (**runtime-core**) Allow the new retry behavior flag on the standard retry token bucket to be set by callers so it can be enabled from configuration sources other than the `SMITHY_NEW_RETRIES_2026` setting
+
 ## [1.7.9] - 09/01/2026
 
 ### Features
