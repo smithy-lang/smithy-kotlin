@@ -1,0 +1,6 @@
+{
+  "id": "f525540c-9597-4987-8907-42d2bf4b83f4",
+  "type": "bugfix",
+  "description": "Retry network faults that occur while reading a response body on the OkHttp engine by wrapping body-read IO errors (dropped connection, truncated body, socket read timeout) as a retryable HttpException instead of letting them escape as a raw IOException the retry policy treats as non-retryable",
+  "module": "http-client-engine-okhttp"
+}
