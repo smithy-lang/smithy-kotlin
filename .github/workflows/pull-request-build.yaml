@@ -10,7 +10,7 @@ concurrency:
 
 env:
   # constants
-  DOWNLOAD_FOLDER: '.build-scripts/'
+  DOWNLOAD_FOLDER: '.build-scripts'
   SCRIPT_LOCATION: 'workflows/start-pull-request-build/pull-request-build-v1.sh'
 
   # custom variables
@@ -28,7 +28,7 @@ jobs:
       contents: read
     steps:
       - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@main
+        uses: aws-actions/configure-aws-credentials@v6.2.4
         with:
           role-to-assume: '${{ env.IAM_ROLE_ARN }}'
           role-session-name: PullRequestBuildGitHubAction
