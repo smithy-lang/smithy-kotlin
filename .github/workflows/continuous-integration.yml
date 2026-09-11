@@ -25,7 +25,7 @@ permissions:
 
 # Allow one instance of this workflow per pull request, and cancel older runs when new changes are pushed
 concurrency:
-  group: ci-pr-${{ github.ref }}
+  group: ci-pr-${{ inputs.ref || github.ref }}
   cancel-in-progress: true
 
 env:
@@ -105,7 +105,7 @@ jobs:
   # macOS ARM images build and test for targets: jvm, macosArm64, iosSimulatorArm64, watchosSimulatorArm65, tvosSimulatorArm64
   # macos x64 images build and test for targets: jvm, macosX64, iosX64, tvosX64, watchosX64
   macos:
-    if: ${{ github.event_name != 'workflow_call' }}
+    if: ${{ github.event_name != 'pull_request_target' }}
     strategy:
       fail-fast: false
       matrix:
@@ -235,7 +235,7 @@ jobs:
 
   # windows JVM
   windows:
-    if: ${{ github.event_name != 'workflow_call' }}
+    if: ${{ github.event_name != 'pull_request_target' }}
     runs-on: windows-2022
     steps:
       - name: Checkout sources
