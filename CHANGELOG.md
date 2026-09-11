@@ -1,5 +1,21 @@
 # Changelog
 
+## [1.7.10] - 09/11/2026
+
+### Fixes
+* (**http-client-engine-okhttp**) Retry network faults that occur while reading a response body on the OkHttp engine by wrapping body-read IO errors (dropped connection, truncated body, socket read timeout) as a retryable HttpException instead of letting them escape as a raw IOException the retry policy treats as non-retryable
+* (**runtime-core**) Allow the new retry behavior flag on the standard retry token bucket to be set by callers so it can be enabled from configuration sources other than the `SMITHY_NEW_RETRIES_2026` setting
+
+## [1.7.9] - 09/01/2026
+
+### Features
+* (**serde**) Optimize CBOR, JSON, and form-url serialization by caching each field's pre-encoded name (and each query literal's pre-encoded key/value pair) on its descriptor instead of re-encoding on every field write
+* Optimize JSON and CBOR deserialization by resolving struct field names through a cached O(1) field index with an in-order cursor instead of a linear scan over the field list
+* Optimize serde performance by hoisting generated object/field descriptors to file-level scope so they are constructed once instead of on every serialize/deserialize invocation
+
+### Miscellaneous
+* (**serde-cbor**) Reduce allocations in CBOR serialization and deserialization by encoding/decoding values through free functions instead of intermediate wrapper objects, and skipping fields, indefinite-length strings, and decimal fractions without materializing wrapper values
+
 ## [1.7.8] - 08/18/2026
 
 ### Features

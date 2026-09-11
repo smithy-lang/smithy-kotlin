@@ -12,6 +12,7 @@ import aws.smithy.kotlin.runtime.http.engine.ProxyConfig
 import aws.smithy.kotlin.runtime.http.engine.internal.HttpClientMetrics
 import aws.smithy.kotlin.runtime.http.request.HttpRequest
 import aws.smithy.kotlin.runtime.http.response.HttpResponse
+import aws.smithy.kotlin.runtime.io.SdkBuffer
 import aws.smithy.kotlin.runtime.io.SdkSource
 import aws.smithy.kotlin.runtime.io.internal.toSdk
 import aws.smithy.kotlin.runtime.net.*
@@ -116,7 +117,14 @@ public fun OkHttpResponse.toSdkResponse(): HttpResponse {
 
             // -1 is used by okhttp as transfer-encoding chunked
             override val contentLength: Long? = if (body.contentLength() >= 0L) body.contentLength() else null
-            override fun readFrom(): SdkSource = body.source().toSdk()
+
+            // Route lazy body reads through mapOkHttpExceptions so a body-phase IO fault surfaces as a retryable HttpException
+            override fun readFrom(): SdkSource {
+                val source = body.source().toSdk()
+                return object : SdkSource by source {
+                    override fun read(sink: SdkBuffer, limit: Long): Long = mapOkHttpExceptions { source.read(sink, limit) }
+                }
+            }
         }
     }
 

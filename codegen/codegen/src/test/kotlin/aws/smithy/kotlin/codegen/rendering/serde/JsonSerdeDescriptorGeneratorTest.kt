@@ -39,9 +39,9 @@ class JsonSerdeDescriptorGeneratorTest {
         JsonSerdeDescriptorGenerator(renderingCtx).render()
 
         val expectedDescriptors = """
-                val INTVAL_DESCRIPTOR = SdkFieldDescriptor(SerialKind.Integer, JsonSerialName("intVal"))
-                val STRVAL_DESCRIPTOR = SdkFieldDescriptor(SerialKind.String, JsonSerialName("strVal"))
-                val OBJ_DESCRIPTOR = SdkObjectDescriptor.build {
+                private val INTVAL_DESCRIPTOR = SdkFieldDescriptor(SerialKind.Integer, JsonSerialName("intVal"))
+                private val STRVAL_DESCRIPTOR = SdkFieldDescriptor(SerialKind.String, JsonSerialName("strVal"))
+                private val OBJ_DESCRIPTOR = SdkObjectDescriptor.build {
                     field(INTVAL_DESCRIPTOR)
                     field(STRVAL_DESCRIPTOR)
                 }
@@ -84,9 +84,9 @@ class JsonSerdeDescriptorGeneratorTest {
         JsonSerdeDescriptorGenerator(renderingCtx).render()
 
         val expectedDescriptors = """
-    val PAYLOAD_DESCRIPTOR = SdkFieldDescriptor(SerialKind.List, JsonSerialName("payload"))
-    val PAYLOAD_C0_DESCRIPTOR = SdkFieldDescriptor(SerialKind.List)
-    val OBJ_DESCRIPTOR = SdkObjectDescriptor.build {
+    private val PAYLOAD_DESCRIPTOR = SdkFieldDescriptor(SerialKind.List, JsonSerialName("payload"))
+    private val PAYLOAD_C0_DESCRIPTOR = SdkFieldDescriptor(SerialKind.List)
+    private val OBJ_DESCRIPTOR = SdkObjectDescriptor.build {
         field(PAYLOAD_DESCRIPTOR)
     }
     """.formatForTest("")
