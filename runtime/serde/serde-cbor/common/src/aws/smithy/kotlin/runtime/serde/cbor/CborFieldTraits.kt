@@ -6,15 +6,28 @@
 package aws.smithy.kotlin.runtime.serde.cbor
 
 import aws.smithy.kotlin.runtime.InternalApi
+import aws.smithy.kotlin.runtime.io.SdkBuffer
 import aws.smithy.kotlin.runtime.serde.FieldTrait
 import aws.smithy.kotlin.runtime.serde.SdkFieldDescriptor
+import aws.smithy.kotlin.runtime.serde.cbor.encoding.Major
 import aws.smithy.kotlin.runtime.serde.expectTrait
 
 /**
  * Specifies a CBOR name that a field is encoded into.
  */
 @InternalApi
-public data class CborSerialName(public val name: String) : FieldTrait
+public data class CborSerialName(public val name: String) : FieldTrait {
+    override val serialName: String
+        get() = name
+
+    internal val encoded: ByteArray by lazy {
+        val bytes = name.encodeToByteArray()
+        SdkBuffer().apply {
+            writeArgument(Major.STRING, bytes.size.toULong())
+            write(bytes)
+        }.readByteArray()
+    }
+}
 
 /**
  * Provides the serialized name of the field.
@@ -22,3 +35,9 @@ public data class CborSerialName(public val name: String) : FieldTrait
 @InternalApi
 public val SdkFieldDescriptor.serialName: String
     get() = expectTrait<CborSerialName>().name
+
+/**
+ * Provides the pre-encoded CBOR bytes for the field's serialized name.
+ */
+internal val SdkFieldDescriptor.serialNameBytes: ByteArray
+    get() = expectTrait<CborSerialName>().encoded

@@ -53,7 +53,7 @@ dependencies {
     implementation(project(":runtime:serde:serde-xml"))
     implementation(project(":runtime:smithy-test"))
 
-    testImplementation(libs.kotlin.test.junit5)
+    testImplementation(libs.kotlin.test)
 }
 
 val generatedSrcDir = project.layout.projectDirectory.dir("generated-src/main/kotlin")

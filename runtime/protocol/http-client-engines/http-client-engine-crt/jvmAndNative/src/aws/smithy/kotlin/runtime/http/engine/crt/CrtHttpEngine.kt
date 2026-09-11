@@ -64,7 +64,7 @@ public class CrtHttpEngine(public override val config: CrtHttpEngineConfig) : Ht
         val conn = connectionManager.acquire(request)
         logger.trace { "Acquired connection ${conn.id} (${conn.version})" }
 
-        val respHandler = SdkStreamResponseHandler(conn, callContext)
+        val respHandler = SdkStreamResponseHandler(conn, callContext, config.initialWindowSizeBytes)
         callContext.job.invokeOnCompletion {
             logger.trace { "completing handler; cause=$it" }
             // ensures the stream is driven to completion regardless of what the downstream consumer does

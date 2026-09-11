@@ -21,12 +21,15 @@ import aws.smithy.kotlin.codegen.rendering.ShapeValueGenerator
 import aws.smithy.kotlin.codegen.rendering.endpoints.EndpointProviderGenerator
 import aws.smithy.kotlin.codegen.rendering.serde.CborSerdeDescriptorGenerator
 import aws.smithy.kotlin.codegen.rendering.serde.DeserializeStructGenerator
+import aws.smithy.kotlin.codegen.rendering.serde.DeserializeUnionGenerator
 import aws.smithy.kotlin.codegen.rendering.serde.documentDeserializer
 import aws.smithy.kotlin.codegen.utils.getOrNull
+import software.amazon.smithy.codegen.core.CodegenException
 import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.model.shapes.OperationShape
 import software.amazon.smithy.model.shapes.Shape
 import software.amazon.smithy.model.shapes.StructureShape
+import software.amazon.smithy.model.shapes.UnionShape
 import software.amazon.smithy.model.traits.TimestampFormatTrait
 import software.amazon.smithy.protocoltests.traits.HttpRequestTestCase
 import software.amazon.smithy.rulesengine.traits.EndpointRuleSetTrait
@@ -66,34 +69,60 @@ open class HttpProtocolUnitTestRequestGenerator protected constructor(builder: B
         renderOperationBlock(test)
     }
 
-    private fun renderStructDeserializer(writer: KotlinWriter, shape: Shape): Symbol {
+    private fun renderDocumentDeserializer(writer: KotlinWriter, shape: Shape): Symbol {
         val symbol = ctx.symbolProvider.toSymbol(shape)
         val deserializeFnName = "deserialize" + StringUtils.capitalize(symbol.name) + "Document"
         return shape.documentDeserializer(ctx.settings, symbol) { blockWriter ->
+            descriptorGenerator(blockWriter, shape).render()
+
             blockWriter.withBlock("internal fun #L(deserializer: #T): #T {", "}", deserializeFnName, RuntimeTypes.Serde.Deserializer, symbol) {
-                val renderingCtx = RenderingContext(blockWriter, shape, model, symbolProvider, ctx.settings)
-                val descriptorGenerator = CborSerdeDescriptorGenerator(renderingCtx)
-
-                val deserializeStructGenerator = DeserializeStructGenerator(
-                    ctx,
-                    shape.members().toMutableList(),
-                    blockWriter,
-                    TimestampFormatTrait.Format.EPOCH_SECONDS,
-                )
-
-                blockWriter.write("val builder = #T.Builder()", symbol)
-                blockWriter.write("")
-
-                blockWriter.call { descriptorGenerator.render() }
-                blockWriter.call { deserializeStructGenerator.render() }
+                if (shape is UnionShape) {
+                    blockWriter.write("var value: #T? = null", symbol)
+                } else {
+                    blockWriter.write("val builder = #T.Builder()", symbol)
+                }
 
                 blockWriter.write("")
-                blockWriter.write("builder.correctErrors()")
-                blockWriter.write("return builder.build()")
+
+                blockWriter.call { deserializeDocumentGenerator(blockWriter, shape, symbol).render() }
+
+                blockWriter.write("")
+
+                if (shape is UnionShape) {
+                    blockWriter.write(
+                        "return value ?: throw #T(#S)",
+                        RuntimeTypes.Serde.DeserializationException,
+                        "Deserialized union value unexpectedly null: ${symbol.name}",
+                    )
+                } else {
+                    blockWriter.write("builder.correctErrors()")
+                    blockWriter.write("return builder.build()")
+                }
             }
         }.also {
             writer.addImport(it)
         }
+    }
+
+    private fun descriptorGenerator(writer: KotlinWriter, shape: Shape) = CborSerdeDescriptorGenerator(RenderingContext(writer, shape, model, symbolProvider, ctx.settings))
+
+    private fun deserializeDocumentGenerator(writer: KotlinWriter, shape: Shape, symbol: Symbol) = when (shape) {
+        is StructureShape -> DeserializeStructGenerator(
+            ctx,
+            shape.members().toMutableList(),
+            writer,
+            TimestampFormatTrait.Format.EPOCH_SECONDS,
+        )
+
+        is UnionShape -> DeserializeUnionGenerator(
+            ctx,
+            symbol.name,
+            shape.members().toMutableList(),
+            writer,
+            TimestampFormatTrait.Format.EPOCH_SECONDS,
+        )
+
+        else -> throw CodegenException("Unexpected shape type ${shape.type}, expected a structure or union")
     }
 
     /**
@@ -111,9 +140,9 @@ open class HttpProtocolUnitTestRequestGenerator protected constructor(builder: B
 
                 val serdeIndex = SerdeIndex.of(ctx.model)
                 serdeIndex.requiresDocumentDeserializer(inputShape).forEach {
-                    renderStructDeserializer(writer, it)
+                    renderDocumentDeserializer(writer, it)
                 }
-                val inputDeserializer = renderStructDeserializer(writer, inputShape)
+                val inputDeserializer = renderDocumentDeserializer(writer, inputShape)
 
                 writer.write("")
                 writer.withBlock("suspend fun assertCborBodiesEqual(expected: #1T?, actual: #1T?) {", "}", RuntimeTypes.Http.HttpBody) {

@@ -14,7 +14,12 @@ import aws.smithy.kotlin.runtime.serde.expectTrait
  * Specifies a name that a field is encoded into for Json elements.
  */
 @InternalApi
-public data class JsonSerialName(public val name: String) : FieldTrait
+public data class JsonSerialName(public val name: String) : FieldTrait {
+    override val serialName: String
+        get() = name
+
+    internal val escaped: String by lazy { "\"${name.escape()}\"" }
+}
 
 /**
  * Provides the serialized name of the field.
@@ -22,6 +27,12 @@ public data class JsonSerialName(public val name: String) : FieldTrait
 @InternalApi
 public val SdkFieldDescriptor.serialName: String
     get() = expectTrait<JsonSerialName>().name
+
+/**
+ * Provides the pre-escaped, quoted JSON name of the field (see [JsonSerialName.escaped]).
+ */
+internal val SdkFieldDescriptor.escapedSerialName: String
+    get() = expectTrait<JsonSerialName>().escaped
 
 /**
  * Indicates to deserializers to ignore field/key

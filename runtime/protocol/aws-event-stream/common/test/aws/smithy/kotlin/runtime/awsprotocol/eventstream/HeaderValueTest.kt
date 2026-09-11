@@ -5,6 +5,7 @@
 
 package aws.smithy.kotlin.runtime.awsprotocol.eventstream
 
+import aws.smithy.kotlin.runtime.PlannedRemoval
 import aws.smithy.kotlin.runtime.time.Instant
 import aws.smithy.kotlin.runtime.util.Uuid
 import io.kotest.matchers.string.shouldContain
@@ -12,6 +13,7 @@ import kotlin.test.Test
 import kotlin.test.assertContentEquals
 import kotlin.test.assertEquals
 import kotlin.test.assertFails
+import kotlin.uuid.Uuid as KotlinUuid
 
 class HeaderValueTest {
 
@@ -26,8 +28,14 @@ class HeaderValueTest {
         assertContentEquals("foo".encodeToByteArray(), HeaderValue.ByteArray("foo".encodeToByteArray()).expectByteArray())
         val ts = Instant.now()
         assertEquals(ts, HeaderValue.Timestamp(ts).expectTimestamp())
+        @Suppress("DEPRECATION")
+        @OptIn(PlannedRemoval::class)
         val uuid = Uuid.random()
+        @Suppress("DEPRECATION")
+        @OptIn(PlannedRemoval::class)
         assertEquals(uuid, HeaderValue.Uuid(uuid).expectUuid())
+        val uuid4 = KotlinUuid.random()
+        assertEquals(uuid4, HeaderValue.Uuid4(uuid4).expectUuid4())
 
         assertFails {
             HeaderValue.Int32(12).expectString()

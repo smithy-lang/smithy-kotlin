@@ -24,10 +24,10 @@ kotlin {
             dependencies {
                 implementation(project(":runtime:protocol:http"))
                 implementation(project(":runtime:protocol:http-test"))
+                implementation(project(":runtime:testing"))
                 implementation(libs.ktor.http.cio)
                 implementation(libs.ktor.utils)
                 implementation(libs.kotlin.test.junit5)
-                implementation(libs.junit.jupiter.params)
                 implementation(libs.kotlinx.serialization.json)
             }
         }

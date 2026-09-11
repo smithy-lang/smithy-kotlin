@@ -21,7 +21,6 @@ import kotlin.io.path.createTempFile
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
-import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.seconds
 
 class ConnectionTest : AbstractEngineTest() {
@@ -257,7 +256,6 @@ class ConnectionTest : AbstractEngineTest() {
     ) {
         engineConfig {
             this as OkHttpEngineConfig.Builder
-            connectionIdlePollingInterval = 200.milliseconds
             connectionIdleTimeout = 10.seconds // Longer than the server-side timeout
         }
 

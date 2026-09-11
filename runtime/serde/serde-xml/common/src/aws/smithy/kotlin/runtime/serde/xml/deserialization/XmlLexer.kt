@@ -6,6 +6,7 @@ package aws.smithy.kotlin.runtime.serde.xml.deserialization
 
 import aws.smithy.kotlin.runtime.InternalApi
 import aws.smithy.kotlin.runtime.serde.DeserializationException
+import aws.smithy.kotlin.runtime.serde.DeserializationRecursionException
 import aws.smithy.kotlin.runtime.serde.xml.XmlToken
 import aws.smithy.kotlin.runtime.text.codePointToChars
 
@@ -220,6 +221,7 @@ public class XmlLexer(internal val source: StringTextStream) {
             }
 
             state = nextState
+            DeserializationRecursionException.assertDepth(nextState.depth)
             XmlToken.BeginElement(nextState.depth, name, attributes, nsDeclarations)
         }
 

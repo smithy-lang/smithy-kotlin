@@ -36,22 +36,6 @@ public class AwsChunkedSource(
     trailingHeaders: DeferredHeaders = DeferredHeaders.Empty,
     private val coroutineContext: CoroutineContext,
 ) : SdkSource {
-    @Deprecated(
-        "This overload causes `runBlocking` to be called without a CoroutineContext which leads to forgetting " +
-            "logging context. This overload will be removed in minor version 1.7.",
-        ReplaceWith(
-            "AwsChunkedSource(delegate, signer, signingConfig, previousSignature, trailingHeaders, coroutineContext)",
-            "kotlin.coroutines.coroutineContext",
-        ),
-    )
-    @PlannedRemoval(major = 1, minor = 7)
-    public constructor(
-        delegate: SdkSource,
-        signer: AwsSigner,
-        signingConfig: AwsSigningConfig,
-        previousSignature: ByteArray,
-        trailingHeaders: DeferredHeaders = DeferredHeaders.Empty,
-    ) : this(delegate, signer, signingConfig, previousSignature, trailingHeaders, EmptyCoroutineContext)
 
     private val chunkReader = AwsChunkedReader(
         delegate.asStream(),

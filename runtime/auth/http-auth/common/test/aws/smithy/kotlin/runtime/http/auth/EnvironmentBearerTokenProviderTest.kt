@@ -17,7 +17,7 @@ class EnvironmentBearerTokenProviderTest {
         val provider = EnvironmentBearerTokenProvider(
             "TEST_SYS_PROPS_TOKEN",
             "TEST_ENV_TOKEN",
-            TestPlatformProvider(
+            TestPlatformProvider.of(
                 env = mapOf("TEST_ENV_TOKEN" to "test-env-bearer-token"),
             ),
         )
@@ -32,7 +32,7 @@ class EnvironmentBearerTokenProviderTest {
         val provider = EnvironmentBearerTokenProvider(
             "TEST_SYS_PROPS_TOKEN",
             "TEST_ENV_TOKEN",
-            TestPlatformProvider(
+            TestPlatformProvider.of(
                 props = mapOf("TEST_SYS_PROPS_TOKEN" to "test-sys-props-bearer-token"),
             ),
         )
@@ -47,7 +47,7 @@ class EnvironmentBearerTokenProviderTest {
         val provider = EnvironmentBearerTokenProvider(
             "TEST_SYS_PROPS_TOKEN",
             "TEST_ENV_TOKEN",
-            TestPlatformProvider(
+            TestPlatformProvider.of(
                 props = mapOf("TEST_SYS_PROPS_TOKEN" to "test-sys-props-bearer-token"),
                 env = mapOf("TEST_ENV_TOKEN" to "test-env-bearer-token"),
             ),
@@ -63,7 +63,7 @@ class EnvironmentBearerTokenProviderTest {
         val provider = EnvironmentBearerTokenProvider(
             "MISSING_TEST_TOKEN",
             "MISSING_TEST_TOKEN",
-            TestPlatformProvider(
+            TestPlatformProvider.of(
                 env = mapOf("TEST_TOKEN" to "test-env-bearer-token"),
                 props = mapOf("TEST_TOKEN" to "test-sys-props-bearer-token"),
             ),

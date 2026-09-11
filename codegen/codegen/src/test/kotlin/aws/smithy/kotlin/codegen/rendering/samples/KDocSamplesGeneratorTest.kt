@@ -12,11 +12,11 @@ import aws.smithy.kotlin.codegen.test.newTestContext
 import aws.smithy.kotlin.codegen.test.shouldContainOnlyOnceWithDiff
 import aws.smithy.kotlin.codegen.test.toCodegenContext
 import aws.smithy.kotlin.codegen.test.toSmithyModel
-import org.junit.jupiter.api.Test
 import software.amazon.smithy.model.shapes.OperationShape
 import software.amazon.smithy.model.shapes.ShapeId
 import software.amazon.smithy.model.traits.DocumentationTrait
 import software.amazon.smithy.model.transform.ModelTransformer
+import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 

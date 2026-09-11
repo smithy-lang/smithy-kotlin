@@ -1,6 +1,9 @@
 name: Pull request metrics
+
 on:
   pull_request:
+  merge_group:
+    types: [checks_requested]
 
 jobs:
   artifact-size-metrics:

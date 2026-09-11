@@ -54,7 +54,7 @@ class ServiceClientConfigGeneratorTest {
         contents.assertBalancedBracesAndParens()
 
         val expectedCtor = """
-public class Config private constructor(builder: Builder) : HttpAuthConfig, HttpClientConfig, HttpEngineConfig by builder.buildHttpEngineConfig(), IdempotencyTokenConfig, RetryClientConfig, RetryStrategyClientConfig by builder.buildRetryStrategyClientConfig(), SdkClientConfig, TelemetryConfig, TimeoutConfig {
+public class Config private constructor(builder: Builder) : HttpAuthConfig, HttpClientConfig, HttpEngineConfig by builder.buildHttpEngineConfig(), IdempotencyTokenConfig, LogRedactionConfig, RetryClientConfig, RetryStrategyClientConfig by builder.buildRetryStrategyClientConfig(), SdkClientConfig, TelemetryConfig, TimeoutConfig {
 """
         contents.shouldContainWithDiff(expectedCtor)
 
@@ -68,13 +68,14 @@ public class Config private constructor(builder: Builder) : HttpAuthConfig, Http
     override val idempotencyTokenProvider: IdempotencyTokenProvider = builder.idempotencyTokenProvider ?: IdempotencyTokenProvider.Default
     override val interceptors: kotlin.collections.List<aws.smithy.kotlin.runtime.http.interceptors.HttpInterceptor> = builder.interceptors
     override val logMode: LogMode = builder.logMode ?: LogMode.Default
+    override val logRedactedHeaders: kotlin.collections.Set<kotlin.String> = builder.logRedactedHeaders
     override val retryPolicy: RetryPolicy<Any?> = builder.retryPolicy ?: StandardRetryPolicy.Default
     override val telemetryProvider: TelemetryProvider = builder.telemetryProvider ?: TelemetryProvider.Global
 """
         contents.shouldContainWithDiff(expectedProps)
 
         val expectedBuilder = """
-    public class Builder : HttpAuthConfig.Builder, HttpClientConfig.Builder, HttpEngineConfig.Builder by HttpEngineConfigImpl.BuilderImpl(), IdempotencyTokenConfig.Builder, RetryClientConfig.Builder, RetryStrategyClientConfig.Builder by RetryStrategyClientConfigImpl.BuilderImpl(), SdkClientConfig.Builder<Config>, TelemetryConfig.Builder, TimeoutConfig.Builder {
+    public class Builder : HttpAuthConfig.Builder, HttpClientConfig.Builder, HttpEngineConfig.Builder by HttpEngineConfigImpl.BuilderImpl(), IdempotencyTokenConfig.Builder, LogRedactionConfig.Builder, RetryClientConfig.Builder, RetryStrategyClientConfig.Builder by RetryStrategyClientConfigImpl.BuilderImpl(), SdkClientConfig.Builder<Config>, TelemetryConfig.Builder, TimeoutConfig.Builder {
         /**
          * A reader-friendly name for the client.
          */
@@ -141,6 +142,14 @@ public class Config private constructor(builder: Builder) : HttpAuthConfig, Http
          * debug purposes.
          */
         override var logMode: LogMode? = null
+
+        /**
+         * Set of HTTP header names whose values will be replaced with "*** Sensitive Data Redacted ***" in
+         * request/response debug logging. Matching is case-insensitive. Empty by default
+         * (no headers are redacted). See [PotentiallySensitiveHeaders][aws.smithy.kotlin.runtime.http.PotentiallySensitiveHeaders] for
+         * a pre-built set of commonly-sensitive headers.
+         */
+        override var logRedactedHeaders: kotlin.collections.MutableSet<kotlin.String> = kotlin.collections.mutableSetOf()
 
         /**
          * The policy to use for evaluating operation results and determining whether/how to retry.
@@ -280,6 +289,7 @@ public class Config private constructor(builder: Builder) {
     override val idempotencyTokenProvider: IdempotencyTokenProvider = builder.idempotencyTokenProvider ?: IdempotencyTokenProvider.Default
     override val interceptors: kotlin.collections.List<aws.smithy.kotlin.runtime.http.interceptors.HttpInterceptor> = builder.interceptors
     override val logMode: LogMode = builder.logMode ?: LogMode.LogRequest
+    override val logRedactedHeaders: kotlin.collections.Set<kotlin.String> = builder.logRedactedHeaders
     override val retryPolicy: RetryPolicy<Any?> = builder.retryPolicy ?: StandardRetryPolicy.Default
     override val telemetryProvider: TelemetryProvider = builder.telemetryProvider ?: TelemetryProvider.Global"""
         contents.shouldContainWithDiff(expectedConfigValues)

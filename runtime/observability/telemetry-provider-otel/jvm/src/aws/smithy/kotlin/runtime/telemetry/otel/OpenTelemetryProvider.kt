@@ -5,7 +5,6 @@
 
 package aws.smithy.kotlin.runtime.telemetry.otel
 
-import aws.smithy.kotlin.runtime.ExperimentalApi
 import aws.smithy.kotlin.runtime.telemetry.GlobalTelemetryProvider
 import aws.smithy.kotlin.runtime.telemetry.TelemetryProvider
 import aws.smithy.kotlin.runtime.telemetry.context.ContextManager
@@ -22,7 +21,6 @@ import io.opentelemetry.api.OpenTelemetry
  * A provider is taken explicitly because OpenTelemetry does not provide a logging API, only a log bridge for
  * existing logging implementations.
  */
-@ExperimentalApi
 public class OpenTelemetryProvider(
     private val otel: OpenTelemetry,
     override val loggerProvider: LoggerProvider = GlobalTelemetryProvider.instance.loggerProvider,

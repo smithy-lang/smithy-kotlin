@@ -355,6 +355,7 @@ open class HttpProtocolClientGenerator(
             putIfAbsent(RuntimeTypes.HttpClient.Operation.HttpOperationContext, "CallTimeout", nullable = true)
             putIfAbsent(RuntimeTypes.SmithyClient.SdkClientOption, "ClientName")
             putIfAbsent(RuntimeTypes.SmithyClient.SdkClientOption, "LogMode")
+            putIfAbsent(RuntimeTypes.SmithyClient.SdkClientOption, "LogRedactedHeaders")
             if (ctx.service.hasIdempotentTokenMember(ctx.model)) {
                 putIfAbsent(RuntimeTypes.SmithyClient.SdkClientOption, "IdempotencyTokenProvider", nullable = true)
             }
