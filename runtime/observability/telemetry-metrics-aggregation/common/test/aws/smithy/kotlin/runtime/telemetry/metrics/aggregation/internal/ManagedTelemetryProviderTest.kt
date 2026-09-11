@@ -39,11 +39,8 @@ class ManagedTelemetryProviderTest {
     }
 
     /**
-     * A provider that holds nothing is returned untouched.
-     *
-     * Wrapping it would add a share count that never releases anything, and — more to the point — would make
-     * `addIfManaged` start tracking a resource with no lifecycle, so client close would begin taking a lock
-     * and mutating state for `TelemetryProvider.None`.
+     * A provider that holds nothing is returned untouched, so client close does not take a lock and mutate
+     * state for `TelemetryProvider.None`.
      */
     @Test
     fun testNonCloseableProviderIsNotWrapped() {
@@ -51,10 +48,8 @@ class ManagedTelemetryProviderTest {
     }
 
     /**
-     * A closeable provider is wrapped, and the wrapper forwards every telemetry member to the delegate.
-     *
-     * Forwarding is what makes wrapping invisible: a wrapper that returned its own `None` members would
-     * silently disable telemetry for every client that received it.
+     * The wrapper forwards every telemetry member. A wrapper returning its own `None` members would silently
+     * disable telemetry for every client that received it.
      */
     @Test
     fun testCloseableProviderIsWrappedAndForwards() {
@@ -76,10 +71,8 @@ class ManagedTelemetryProviderTest {
     }
 
     /**
-     * The delegate is closed only when the last user releases it.
-     *
-     * This is the property that makes one provider safe to hand to several clients: closing the first client
-     * must not stop metrics for the others.
+     * The delegate closes only on the last unshare - what makes one provider safe to hand to several clients,
+     * since closing the first must not stop metrics for the others.
      */
     @Test
     fun testDelegateClosesOnlyAfterLastUnshare() {

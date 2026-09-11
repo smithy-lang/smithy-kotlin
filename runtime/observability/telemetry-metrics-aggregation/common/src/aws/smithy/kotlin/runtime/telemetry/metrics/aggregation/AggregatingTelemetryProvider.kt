@@ -10,95 +10,171 @@ import aws.smithy.kotlin.runtime.telemetry.TelemetryProvider
 import aws.smithy.kotlin.runtime.telemetry.context.ContextManager
 import aws.smithy.kotlin.runtime.telemetry.logging.Logger
 import aws.smithy.kotlin.runtime.telemetry.logging.LoggerProvider
+import aws.smithy.kotlin.runtime.telemetry.logging.getLogger
 import aws.smithy.kotlin.runtime.telemetry.metrics.MeterProvider
 import aws.smithy.kotlin.runtime.telemetry.trace.TracerProvider
+import aws.smithy.kotlin.runtime.util.PlatformProvider
+import kotlinx.coroutines.runBlocking
 
 /**
- * Base for [TelemetryProvider]s that aggregate measurements in process before emitting them.
+ * A [TelemetryProvider] that aggregates metrics in process and exports them periodically.
  *
- * Holds every part that does not vary between aggregating providers — the instrument registry and its
- * accumulators, dimension keying, the cardinality guard, and the diagnostics logger — and leaves exactly
- * one thing to subclasses: **what triggers a collection and what happens to the result.**
+ * `TelemetryProvider` has no lifecycle member, so this type is additively [Closeable].
  *
- * Two consumers are anticipated:
+ * Ownership follows creation, per the SDK-wide managed-resource convention: a provider the caller
+ * constructs is the caller's to close, which is what makes one provider safe to share across clients. A
+ * provider the SDK builds on the caller's behalf is wrapped for reference counting and closed by the last
+ * client using it.
  *
- * - [SdkTelemetryProvider] — collects on an interval via a [MetricReader] and hands the batch to a
- *   [MetricExporter]. This is the CloudWatch path.
- * - A future EMF provider — collects at the end of each client call and writes one document, replacing
- *   `telemetry-provider-emf`'s current one-document-per-measurement behaviour. No timer, no reader.
+ * Metrics only. `tracerProvider` and `contextManager` are `None`; claiming to provide tracing would
+ * silently discard spans. Other backends plug in at [MetricExporter], or at [MetricReader] to also control
+ * when collection happens.
  *
- * The granularity difference between those two is the *only* difference, which is the point: it is
- * expressible as an override of when [collect] runs.
+ * @see aws.smithy.kotlin.runtime.telemetry.metrics.aggregation.internal.manage
  *
- * ### Why the aggregation state is composed, not inherited
- *
- * [SdkMeterProvider] is held as a field rather than being the superclass. Aggregation is reused *without
- * variation*, and composition is the right tool for that — subclassing it would invite a subclass to
- * override accumulator behaviour, which is precisely the part that must stay identical for the two
- * consumers' results to be comparable.
- *
- * ### Why this class is not part of the supported API
- *
- * An abstract class pins its protected surface: every `protected` member becomes something third-party
- * subclasses may depend on and that cannot change without a breaking release. `@InternalApi` keeps that
- * surface free to change — the class must be `public` only because [SdkTelemetryProvider], which is
- * supported, extends it, and Kotlin does not allow a public subclass of an internal class. Promoting it to
- * supported later is a compatible change; retracting it would not be. The extension point for callers and
- * for other backends is [MetricExporter].
- *
- * @param config dimension allowlist, aggregation fidelity, and the growth bounds.
- * @param loggerProvider where the pipeline's own diagnostics go.
- * @param loggerName names the logger so diagnostics are attributable to the concrete provider.
+ * ```kotlin
+ * AggregatingTelemetryProvider {
+ *     exporter = CloudWatchMetricExporter { namespace = "MyApp" }
+ * }.use { telemetry ->
+ *     S3Client { telemetryProvider = telemetry }.use { s3 -> /* ... */ }
+ * }
+ * ```
  */
-@InternalApi
-public abstract class AggregatingTelemetryProvider(
-    config: AggregationConfig,
-    final override val loggerProvider: LoggerProvider,
-    loggerName: String,
+public class AggregatingTelemetryProvider private constructor(
+    builder: Builder,
 ) : TelemetryProvider,
     Closeable {
-    /**
-     * Diagnostics for the pipeline itself — cardinality overflow, export failures, dropped datums. Routed
-     * through the caller's [LoggerProvider] so they land wherever the application's logs go.
-     *
-     * `protected` because subclasses must pass it to whatever drives collection; [loggerName] is a
-     * constructor parameter so each provider's diagnostics are attributable to it rather than all appearing
-     * under a shared base-class name.
-     */
-    protected val logger: Logger = loggerProvider.getOrCreateLogger(loggerName)
+    // Forwarding the caller's provider means the pipeline's own diagnostics -- cardinality overflow, export
+    // failures, dropped datums -- land wherever the application's logs already go.
+    override val loggerProvider: LoggerProvider = builder.loggerProvider
 
-    /**
-     * `protected` because a subclass that delegates collection to a [MetricReader] must hand the reader the
-     * provider it collects from ([MetricReader.install]); one that emits directly can ignore this and use
-     * [collect].
-     */
-    protected val aggregating: SdkMeterProvider = SdkMeterProvider(config, logger)
+    private val logger: Logger = loggerProvider.getLogger<AggregatingTelemetryProvider>()
 
-    /**
-     * `final`: the whole contract of this class is that instruments accumulate the same way for every
-     * subclass. A subclass substituting its own [MeterProvider] would inherit the lifecycle plumbing while
-     * silently opting out of the aggregation, which is the one mistake this factoring exists to prevent.
-     */
-    final override val meterProvider: MeterProvider = aggregating
+    private val aggregating = AggregatingMeterProvider(
+        AggregationConfig(
+            dimensions = builder.dimensions,
+            detailedMetrics = builder.detailedMetrics,
+            maxCardinality = builder.maxCardinality,
+        ),
+        logger,
+    )
 
-    // Open, not final, and both defaulted to None: this base is about metrics, so a subclass that also
-    // implements tracing (an EMF provider plausibly would) must be able to supply a real one. Defaults are
-    // None rather than abstract so a metrics-only subclass declares nothing.
+    override val meterProvider: MeterProvider = aggregating
     override val tracerProvider: TracerProvider = TracerProvider.None
     override val contextManager: ContextManager = ContextManager.None
 
-    /**
-     * Snapshot and reset every accumulator.
-     *
-     * Delta temporality: each call returns what accumulated since the previous call, so calling it from two
-     * places would split one interval across two batches. Subclasses must funnel all collection through a
-     * single trigger.
-     *
-     * `protected`, not public: this is reset-on-read state, and a public collect on the provider would let
-     * application code silently steal an interval from whatever is actually publishing.
-     */
-    protected fun collect(): List<MetricData> = aggregating.collect()
+    private val reader: MetricReader = builder.resolveReader()
 
-    /** Collect and emit immediately, whatever "emit" means for the subclass. */
-    public abstract suspend fun flush()
+    init {
+        // Eagerly, not on first record: a lazily-started reader would never publish for an application
+        // whose instruments are created by code paths that happen not to run.
+        @OptIn(InternalApi::class)
+        reader.install(aggregating, logger)
+    }
+
+    /**
+     * Collect and export now. Call this at the end of each AWS Lambda invocation - under
+     * [FlushMode.OnDemand] nothing is published until it is. Harmless in periodic mode.
+     */
+    public suspend fun flush(): Unit = reader.flush()
+
+    /**
+     * Final flush, then release. Idempotent; recording after close is a no-op rather than a throw.
+     *
+     * `runBlocking` because `Closeable.close()` does not suspend and the final flush must complete or the
+     * last interval is lost. The blocking window is one export.
+     */
+    override fun close() {
+        runBlocking { reader.close() }
+    }
+
+    public companion object {
+        public operator fun invoke(block: Builder.() -> Unit): AggregatingTelemetryProvider = AggregatingTelemetryProvider(Builder().apply(block))
+    }
+
+    public class Builder {
+        /**
+         * When metrics are collected and where they go. Set this for more than one destination or interval;
+         * for a single destination prefer [exporter]. The two are mutually exclusive.
+         */
+        public var metricReader: MetricReader? = null
+
+        /**
+         * Shorthand for a single destination on the default interval - equivalent to
+         * `metricReader = PeriodicMetricReader { exporter = ... }`, with [flushMode] applied if set. Setting
+         * this and [metricReader] fails at construction rather than leaving one exporter silently inert.
+         */
+        public var exporter: MetricExporter? = null
+
+        /**
+         * Overrides the platform-derived flush mode of the reader built from [exporter]; rejected alongside
+         * [metricReader], which carries its own. Nullable so "not configured" stays distinguishable from
+         * "explicitly periodic" - only the former is overridden by Lambda detection.
+         */
+        public var flushMode: FlushMode? = null
+
+        /**
+         * Attribute names promoted to backend dimensions.
+         *
+         * Defaults to service and operation name, matching the AWS SDK for Java v2. Both are bounded by what
+         * the application was compiled against, and without them every service and operation collapses into
+         * one series per instrument.
+         *
+         * Each name added multiplies the number of billable metrics, so prefer attributes whose values are
+         * fixed at compile time; anything from a remote response (error codes, endpoints) is unbounded in
+         * principle, which is why [maxCardinality] exists.
+         *
+         * String literals because this module does not depend on `http-client`, where the interceptor that
+         * populates them lives.
+         */
+        public var dimensions: Set<String> = setOf("rpc.service", "rpc.method")
+
+        /**
+         * Instruments that publish full distributions instead of summary statistics. Populate only for
+         * instruments whose percentiles are actually read - see [DistributionAggregator] for the cost.
+         */
+        public var detailedMetrics: Set<String> = emptySet()
+
+        /**
+         * Distinct attribute sets per instrument before overflow bucketing. Raising this to accommodate an
+         * unbounded dimension converts a capped cost into an uncapped one; fix the dimension instead.
+         */
+        public var maxCardinality: Int = 1_000
+
+        /**
+         * Destination for the pipeline's own diagnostics - cardinality overflow, export failures, dropped
+         * datums. Silenced by default; setting a real provider is the first step in troubleshooting missing
+         * metrics.
+         */
+        public var loggerProvider: LoggerProvider = LoggerProvider.None
+
+        /** Test seam for simulating the Lambda environment. */
+        internal var platform: PlatformProvider = PlatformProvider.System
+
+        /**
+         * Reconcile [metricReader] and the [exporter] shorthand into the one reader the provider drives.
+         * Neither set is not an error - it yields a reader over [MetricExporter.None], so misconfigured
+         * telemetry cannot stop an application booting.
+         */
+        internal fun resolveReader(): MetricReader {
+            val reader = metricReader
+            if (reader != null) {
+                require(exporter == null) {
+                    "Set either metricReader or exporter, not both. The exporter shorthand builds a " +
+                        "PeriodicMetricReader; configure the exporter on your reader instead."
+                }
+                require(flushMode == null) {
+                    "flushMode configures the reader built by the exporter shorthand. With an explicit " +
+                        "metricReader, set it on that reader."
+                }
+                return reader
+            }
+
+            return PeriodicMetricReader {
+                exporter = this@Builder.exporter ?: MetricExporter.None
+                flushMode = this@Builder.flushMode
+                platform = this@Builder.platform
+            }
+        }
+    }
 }

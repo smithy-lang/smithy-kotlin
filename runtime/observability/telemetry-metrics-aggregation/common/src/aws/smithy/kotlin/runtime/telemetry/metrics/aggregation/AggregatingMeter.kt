@@ -15,21 +15,17 @@ import aws.smithy.kotlin.runtime.telemetry.metrics.MonotonicCounter
 import aws.smithy.kotlin.runtime.telemetry.metrics.UpDownCounter
 
 /**
- * [Meter] backed by the aggregation pipeline.
+ * [Meter] backed by the aggregation pipeline. All seven factories return working instruments, including real
+ * handles from the async three rather than [AsyncMeasurementHandle.None].
  *
- * Every one of the seven factories on [Meter] returns a working instrument. In particular the three
- * async factories return real handles rather than [AsyncMeasurementHandle.None]; silently dropping
- * gauges and async up-down counters is the defect this module exists to avoid, and a conformance test
- * over all seven factories guards against it regressing.
+ * Stateless apart from its constructor arguments - state lives in [InstrumentRegistry] - so one instance can
+ * be shared.
  *
- * Stateless apart from its two constructor arguments — all state lives in [InstrumentRegistry] — so it
- * is safe to hand the same instance to any number of callers.
- *
- * @param scope the instrumentation scope this meter was created for. Retained and stamped onto every
- *   descriptor rather than discarded, so exporters can attribute a metric to its source.
+ * @param scope the instrumentation scope, stamped onto every descriptor so exporters can attribute a metric
+ *   to its source.
  * @param registry the shared instrument state this meter's instruments record into.
  */
-internal class SdkMeter(
+internal class AggregatingMeter(
     private val scope: String,
     private val registry: InstrumentRegistry,
 ) : Meter {
@@ -37,9 +33,9 @@ internal class SdkMeter(
     /** Bundles the four identity fields, so `scope` cannot be forgotten at one of seven call sites. */
     private fun descriptor(name: String, units: String?, description: String?) = InstrumentDescriptor(scope, name, units, description)
 
-    override fun createMonotonicCounter(name: String, units: String?, description: String?): MonotonicCounter = SdkMonotonicCounter(registry.sync(descriptor(name, units, description)) { SumAggregator(monotonic = true) })
+    override fun createMonotonicCounter(name: String, units: String?, description: String?): MonotonicCounter = AggregatingMonotonicCounter(registry.sync(descriptor(name, units, description)) { SumAggregator(monotonic = true) })
 
-    override fun createUpDownCounter(name: String, units: String?, description: String?): UpDownCounter = SdkUpDownCounter(registry.sync(descriptor(name, units, description)) { SumAggregator(monotonic = false) })
+    override fun createUpDownCounter(name: String, units: String?, description: String?): UpDownCounter = AggregatingUpDownCounter(registry.sync(descriptor(name, units, description)) { SumAggregator(monotonic = false) })
 
     override fun createLongHistogram(name: String, units: String?, description: String?): LongHistogram {
         val fidelity = registry.histogramFidelity(name)
@@ -52,14 +48,11 @@ internal class SdkMeter(
     }
 
     /**
-     * Shared by the `Long` and `Double` histogram factories, which differ only in the typed wrapper they
-     * return.
+     * Shared by the `Long` and `Double` histogram factories, which differ only in the typed wrapper returned.
      *
-     * The aggregator factory is a lambda so it runs only when the instrument is first created; on repeat
-     * calls the existing state is reused and no aggregator is allocated. Note the consequence: if an
-     * instrument was first created before `detailedMetrics` was reconsidered, its aggregation is already
-     * fixed. That is intentional — switching aggregation on a live instrument would discard accumulated
-     * data mid-interval.
+     * The aggregator factory is a lambda so it runs only on first creation; repeat calls reuse the existing
+     * state. An instrument's aggregation is therefore fixed once created, since switching it on a live
+     * instrument would discard accumulated data mid-interval.
      */
     private fun histogramInstrument(
         name: String,
@@ -69,20 +62,14 @@ internal class SdkMeter(
     ) = registry.sync(descriptor(name, units, description)) {
         when (fidelity) {
             HistogramFidelity.SUMMARY -> SummaryAggregator()
-            // Routed through the registry so the configured maxDistinctValues bound is applied.
-            // Constructing DistributionAggregator() directly here would silently take the default bound
-            // and quietly ignore the user's setting.
+            // Via the registry, so the configured maxDistinctValues applies rather than the default.
             HistogramFidelity.DISTRIBUTION -> registry.newDistribution()
         }
     }
 
     /*
-     * The three async factories. Each adapts its differently-typed callback to the registry's single
-     * untyped shape, which is why AsyncSink exposes asLong()/asDouble() views rather than implementing
-     * both AsyncMeasurement types itself.
-     *
-     * Note createAsyncUpDownCounter takes a Long callback: the telemetry API has no
-     * createDoubleUpDownCounter, so there is no Double variant to implement here.
+     * The three async factories, each adapting its differently-typed callback to the registry's single untyped
+     * shape. createAsyncUpDownCounter takes a Long callback because the telemetry API has no Double variant.
      */
 
     override fun createLongGauge(
@@ -107,11 +94,8 @@ internal class SdkMeter(
     ): AsyncMeasurementHandle = registerAsync(name, units, description) { callback(it.asLong()) }
 
     /**
-     * Register and wrap the returned id in a handle.
-     *
-     * Note what this does *not* do: it never invokes [invoke]. Sampling a gauge at registration would
-     * produce a measurement outside any collection cycle, timestamped whenever the application happened
-     * to construct its instruments — typically at startup, before the value being measured is
+     * Register and wrap the returned id in a handle. Never invokes [invoke]: sampling at registration would
+     * produce a measurement outside any collection cycle, timestamped at startup before the measured value is
      * meaningful.
      */
     private fun registerAsync(
@@ -121,6 +105,6 @@ internal class SdkMeter(
         invoke: (AsyncInstrument.AsyncSink) -> Unit,
     ): AsyncMeasurementHandle {
         val id = registry.registerAsync(descriptor(name, units, description), invoke)
-        return SdkAsyncMeasurementHandle(registry, id)
+        return AggregatingAsyncMeasurementHandle(registry, id)
     }
 }

@@ -16,20 +16,17 @@ import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Duration.Companion.seconds
 
 /**
- * Reader behaviour that is about *sequencing* rather than arithmetic: what runs, in what order, and how
- * often.
+ * Reader sequencing: what runs, in what order, how often.
  *
- * Every test here drives [FlushMode.OnDemand] and calls [PeriodicMetricReader.flush] explicitly. The timer
- * path is deliberately not exercised with wall-clock delays — the reader owns its own
- * `CoroutineScope(Dispatchers.Default)`, so it does not observe `runTest`'s virtual time, and a test that
- * waited for a real tick would trade a real assertion for a flaky one. What the timer path adds over the
- * on-demand path is one `delay()`; what it shares — collection, export, error handling, shutdown ordering —
- * is all covered below through [PeriodicMetricReader.flush].
+ * Every test drives [FlushMode.OnDemand] and flushes explicitly. The reader owns a
+ * `CoroutineScope(Dispatchers.Default)` and so does not observe `runTest`'s virtual time, and waiting on a
+ * real tick would trade an assertion for a flake. All the timer path adds over the on-demand path is one
+ * `delay()`.
  */
 class PeriodicMetricReaderTest {
     private val logger = LoggerProvider.None.getOrCreateLogger("test")
 
-    private fun provider() = SdkMeterProvider(AggregationConfig(dimensions = emptySet()), logger)
+    private fun provider() = AggregatingMeterProvider(AggregationConfig(dimensions = emptySet()), logger)
 
     private fun reader(
         exporter: MetricExporter,
@@ -40,29 +37,7 @@ class PeriodicMetricReaderTest {
         this.platform = platform
     }
 
-    /**
-     * An exporter learns it has been installed before it is ever asked to export, and exactly once.
-     *
-     * `onAttach` is how an exporter refuses to be shared, so it is worthless if it fires late or twice.
-     */
-    @Test
-    fun testExporterIsAttachedOnceBeforeAnyExport() {
-        val exporter = RecordingMetricExporter()
-        val reader = reader(exporter)
-
-        reader.install(provider(), logger)
-
-        assertEquals(1, exporter.attachCount)
-        assertTrue(exporter.batches.isEmpty())
-    }
-
-    /**
-     * Nothing is published until [PeriodicMetricReader.flush] is called in on-demand mode, and then exactly
-     * the recorded metrics are.
-     *
-     * This is the Lambda contract in two assertions: no background publishing, and a flush that actually
-     * drains.
-     */
+    /** The Lambda contract in two assertions: no background publishing, and a flush that actually drains. */
     @Test
     fun testOnDemandPublishesOnlyOnFlush() = runTest {
         val exporter = RecordingMetricExporter()
@@ -79,12 +54,7 @@ class PeriodicMetricReaderTest {
         assertEquals("c", exporter.batches.single().single().descriptor.name)
     }
 
-    /**
-     * An idle cycle does not call the exporter at all.
-     *
-     * Not merely an optimization for CloudWatch: `PutMetricData` is billed per request, so a reader that
-     * published empty batches would charge users for idleness.
-     */
+    /** An idle cycle does not call the exporter: `PutMetricData` is billed per request. */
     @Test
     fun testEmptyCycleSkipsExport() = runTest {
         val exporter = RecordingMetricExporter()
@@ -94,11 +64,8 @@ class PeriodicMetricReaderTest {
     }
 
     /**
-     * A throwing exporter is contained: the failure does not propagate to the caller of `flush`, and the
-     * reader stays usable.
-     *
-     * A `flush()` that rethrew would surface a telemetry defect inside application code — in Lambda, at the
-     * end of the handler, where it would fail the invocation.
+     * A throwing exporter does not propagate to the caller of `flush` - in Lambda that would fail the
+     * invocation - and the reader stays usable rather than latching shut.
      */
     @Test
     fun testExportFailureIsContained() = runTest {
@@ -111,18 +78,14 @@ class PeriodicMetricReaderTest {
         counter.add(1)
         reader.flush()
 
-        // Still working after the failure: a second cycle is attempted rather than the reader latching shut.
         counter.add(1)
         reader.flush()
         assertEquals(2, exporter.batches.size)
     }
 
     /**
-     * Close performs a final flush *before* shutting the exporter down, and shuts it down once.
-     *
-     * The ordering is the whole point: reversed, the last interval — which contains whatever happened
-     * immediately before shutdown, often the most interesting part — would be collected and then handed to
-     * a closed exporter.
+     * Close flushes before shutting the exporter down. Reversed, the last interval - often the most
+     * interesting part - would be collected and handed to a closed exporter.
      */
     @Test
     fun testCloseFlushesBeforeShutdown() = runTest {
@@ -139,10 +102,8 @@ class PeriodicMetricReaderTest {
     }
 
     /**
-     * Close is idempotent, and flushing a closed reader is a no-op rather than a throw.
-     *
-     * Both are normal outcomes of ordinary teardown — a `use { }` block around a provider whose owner also
-     * closes it, or a flush racing shutdown — and neither should surface as an error.
+     * Double close and flush-after-close are both inert. Both arise from ordinary teardown - nested `use { }`
+     * blocks, a flush racing shutdown - and neither should surface as an error.
      */
     @Test
     fun testCloseIsIdempotentAndFlushAfterCloseIsInert() = runTest {
@@ -161,11 +122,8 @@ class PeriodicMetricReaderTest {
     }
 
     /**
-     * Lambda is detected from the environment and defaults to on-demand.
-     *
-     * Timer-driven publishing is unreliable there — the execution environment is frozen between
-     * invocations, so a scheduled `delay()` may not resume until the next one, or ever — and getting this
-     * default wrong means silently losing metrics on the single most common serverless platform.
+     * Lambda defaults to on-demand. A timer is unreliable there - the environment is frozen between
+     * invocations, so a scheduled `delay()` may not resume until the next one, or ever.
      */
     @Test
     fun testLambdaEnvironmentDefaultsToOnDemand() {
@@ -185,11 +143,8 @@ class PeriodicMetricReaderTest {
     }
 
     /**
-     * The `interval` convenience argument is equivalent to setting [FlushMode.Periodic] in the block, and an
-     * explicit [FlushMode] in the block wins over environment detection.
-     *
-     * The second half matters most: an explicitly configured periodic reader must stay periodic even on
-     * Lambda, because a caller who asked for a timer there has presumably arranged for it to work.
+     * An explicit [FlushMode] wins over environment detection: a caller who asked for a timer on Lambda has
+     * presumably arranged for it to work.
      */
     @Test
     fun testExplicitFlushModeOverridesEnvironment() = runTest {
@@ -204,9 +159,7 @@ class PeriodicMetricReaderTest {
         }
         reader.install(provider(), logger)
 
-        // Installed with a timer despite the Lambda environment; no export has happened yet because the
-        // first tick is a full interval away.
-        assertEquals(1, exporter.attachCount)
+        // Nothing exported yet: the first tick is a full interval away.
         assertTrue(exporter.batches.isEmpty())
         reader.close()
     }

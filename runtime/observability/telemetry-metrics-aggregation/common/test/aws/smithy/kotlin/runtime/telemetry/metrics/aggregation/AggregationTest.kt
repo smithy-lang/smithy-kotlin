@@ -11,28 +11,17 @@ import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
 /**
- * Aggregation semantics — the part of the pipeline where a mistake produces *plausible* numbers rather than
- * an error, so it needs tests more than the rest of the code does.
+ * Per-cycle aggregation semantics, where a mistake produces plausible numbers rather than an error.
  *
- * These call `provider.collect()` directly instead of driving a [PeriodicMetricReader], because the
- * behaviour under test is per-cycle aggregation, not scheduling. One `collect()` call is one collection
- * cycle, which makes "what does the second interval report?" expressible as two statements rather than a
- * timing assumption.
+ * These call `provider.collect()` directly rather than driving a [PeriodicMetricReader]: one call is one
+ * collection cycle, which makes "what does the second interval report?" an assertion rather than a timing
+ * assumption.
  */
 class AggregationTest {
-    /**
-     * `dimensions = emptySet()` by default so points collapse to a single series and assertions can use
-     * `.single()`. Tests that care about dimensions opt in explicitly.
-     */
-    private fun provider(config: AggregationConfig = AggregationConfig(dimensions = emptySet())) = SdkMeterProvider(config, LoggerProvider.None.getOrCreateLogger("test"))
+    /** Defaults to no dimensions so points collapse to a single series and assertions can use `.single()`. */
+    private fun provider(config: AggregationConfig = AggregationConfig(dimensions = emptySet())) = AggregatingMeterProvider(config, LoggerProvider.None.getOrCreateLogger("test"))
 
-    /**
-     * Sync counters are delta: each cycle reports what happened *during* that cycle.
-     *
-     * Guards the aggregation reset. Without it the counter would report a running total, and because a
-     * rising total looks entirely reasonable on a chart, nothing else in the system would notice —
-     * CloudWatch's `Sum` statistic would then double-count on every re-aggregation.
-     */
+    /** Sync counters are delta: each cycle reports only what happened during it, never a running total. */
     @Test
     fun testSyncCounterIsDelta() {
         val p = provider()
@@ -42,18 +31,11 @@ class AggregationTest {
         counter.add(2)
         assertEquals(MetricValue.Sum(5.0, monotonic = true), p.collect().single().points.single().value)
 
-        // Second interval reports only the new delta, not a running total.
         counter.add(1)
         assertEquals(MetricValue.Sum(1.0, monotonic = true), p.collect().single().points.single().value)
     }
 
-    /**
-     * An instrument with no activity is omitted entirely rather than exported as zero.
-     *
-     * Keeps backend cost proportional to traffic. Asserted explicitly because the natural
-     * "reset the accumulator and report it" implementation would publish a zero every cycle for the life of
-     * the process, which for CloudWatch is a billable metric per idle series.
-     */
+    /** An idle instrument is omitted rather than exported as zero, which for CloudWatch would be billable. */
     @Test
     fun testIdleInstrumentIsNotCollected() {
         val p = provider()
@@ -65,13 +47,10 @@ class AggregationTest {
     }
 
     /**
-     * Async instruments are absolute — the mirror image of the delta test above, and the single
-     * highest-risk behaviour in this module.
+     * Async instruments are absolute - the mirror image of [testSyncCounterIsDelta].
      *
-     * A callback reports the current state of something, so consecutive readings are snapshots, not
-     * increments. `depth` moving 7 -> 10 means the queue is 10 deep, not that 3 items arrived; a pipeline
-     * that applied the sync counter's delta logic here would publish 3, which is a coherent and completely
-     * wrong number. Asserting 10 explicitly is what stops a future refactor from unifying the two paths.
+     * `depth` moving 7 -> 10 means the queue is 10 deep, not that 3 items arrived. Applying the sync
+     * counter's delta logic here would publish 3, a coherent and completely wrong number.
      */
     @Test
     fun testAsyncUpDownCounterIsAbsoluteNotDelta() {
@@ -81,18 +60,11 @@ class AggregationTest {
 
         assertEquals(MetricValue.LastValue(7.0), p.collect().single().points.single().value)
 
-        // An absolute instrument re-reports the current value; it must NOT be diffed to 3.
         depth = 10
         assertEquals(MetricValue.LastValue(10.0), p.collect().single().points.single().value)
     }
 
-    /**
-     * `stop()` actually deregisters, so a stopped gauge stops being invoked.
-     *
-     * Async callbacks are held by the registry for the provider's lifetime, so a leak here is a retained
-     * reference to whatever the callback closes over — and it keeps publishing a metric the caller believes
-     * is gone.
-     */
+    /** `stop()` deregisters, so a stopped gauge is neither invoked nor retained. */
     @Test
     fun testGaugeHandleStopDeregisters() {
         val p = provider()
@@ -104,13 +76,8 @@ class AggregationTest {
     }
 
     /**
-     * One faulty callback must not take the collection cycle with it.
-     *
-     * Callbacks are user code running on the SDK's collection loop, so they will throw eventually. Two
-     * properties matter and both are asserted: `good` is still collected in the *same* cycle (the loop does
-     * not abort at the first throw), and the *next* cycle still works (the failure did not poison the loop
-     * or unregister anything). The second assertion is the one that catches a well-meaning
-     * "cancel the scope on error" change.
+     * A throwing callback takes neither the rest of the cycle nor the loop with it. The second assertion is
+     * the one that catches a well-meaning "cancel the scope on error" change.
      */
     @Test
     fun testThrowingCallbackDoesNotSuppressOtherInstruments() {
@@ -120,17 +87,12 @@ class AggregationTest {
         meter.createLongGauge("good", { it.record(42) })
 
         assertEquals(listOf("good"), p.collect().map { it.descriptor.name })
-        // The loop survives: a later cycle still collects.
         assertEquals(listOf("good"), p.collect().map { it.descriptor.name })
     }
 
     /**
-     * Histograms default to `Summary` and upgrade to `Distribution` only by name.
-     *
-     * This is the cost/fidelity default from the AWS SDK for Java v2's `detailedMetrics`, and it is a
-     * default worth pinning: `Summary` is four numbers regardless of traffic, while `Distribution` grows
-     * with the number of distinct values. Flipping the default would silently multiply payload size for
-     * every existing user.
+     * Histograms default to `Summary` and upgrade to `Distribution` only by name. Worth pinning: `Summary` is
+     * four numbers regardless of traffic, so flipping the default would multiply payload size for everyone.
      */
     @Test
     fun testHistogramDefaultsToSummaryAndOptsInToDistribution() {
@@ -146,10 +108,8 @@ class AggregationTest {
     }
 
     /**
-     * Only allowlisted attributes become dimensions; everything else is folded into the same series.
-     *
-     * The allowlist is the cost control, so the *negative* half is the important assertion: two
-     * measurements differing only in a non-allowlisted attribute must produce one point, not two.
+     * Only allowlisted attributes become dimensions. The negative half is the point: two measurements
+     * differing only in a non-allowlisted attribute must produce one point, not two.
      */
     @Test
     fun testOnlyAllowlistedAttributesBecomeDimensions() {
@@ -177,12 +137,8 @@ class AggregationTest {
     }
 
     /**
-     * Cardinality overflow is bucketed, not dropped and not admitted.
-     *
-     * `maxCardinality = 2` rather than the real default of 1000 so the guard is reachable in a few lines.
-     * Three series is the point of the assertion: the two that fit, plus one `overflow=true` bucket that
-     * keeps the excess *visible*. Silently dropping would make a cardinality explosion look like a traffic
-     * drop — the operator would investigate the wrong thing entirely.
+     * Cardinality overflow is bucketed, not dropped: dropping would make an explosion look like a traffic
+     * drop. `maxCardinality = 2` instead of the real default so the guard is reachable in a few lines.
      */
     @Test
     fun testCardinalityGuardBucketsOverflow() {
@@ -197,13 +153,9 @@ class AggregationTest {
     }
 
     /**
-     * A distribution is bounded in *distinct values*, which is a second, independent unboundedness axis —
-     * the cardinality guard above does nothing here.
-     *
-     * A single series recording continuous values (latency in nanoseconds, say) produces an unbounded value
-     * map inside one dimension set. `maxDistinctValues = 4` forces the cap immediately. The `truncated`
-     * flag is asserted as well as the size: capping silently would make the summary statistics wrong with
-     * no indication of why.
+     * Distinct values within one series are bounded too - a second axis the cardinality guard does nothing
+     * about. `truncated` is asserted alongside the size: capping silently would make the statistics wrong
+     * with no indication of why.
      */
     @Test
     fun testDistributionIsBounded() {
@@ -223,11 +175,8 @@ class AggregationTest {
     }
 
     /**
-     * Instrumentation scope is preserved rather than flattened.
-     *
-     * Easy to get wrong and impossible to notice from the numbers: an implementation that ignores the
-     * `scope` argument of `getOrCreateMeter` still satisfies the interface and still publishes plausible
-     * metrics, it just permanently loses the ability to attribute them to a component.
+     * Instrumentation scope survives to the collected data. An implementation that ignored `scope` would
+     * still satisfy the interface and still publish plausible metrics, just unattributable ones.
      */
     @Test
     fun testScopeIsCarriedThroughToCollectedData() {

@@ -17,7 +17,7 @@ kotlin {
         commonMain {
             dependencies {
                 // `api`, not `implementation`: this module's public surface exposes telemetry-api
-                // types directly. SdkMeterProvider IS-A MeterProvider, and callers must be able to
+                // types directly. AggregatingMeterProvider IS-A MeterProvider, and callers must be able to
                 // name MeterProvider/Meter/Attributes without adding telemetry-api to their own
                 // build. Downgrading this to `implementation` produces "cannot access class" errors
                 // at the call site. telemetry-api in turn exposes runtime-core (Instant,

@@ -23,32 +23,30 @@ import kotlin.time.Duration
 import kotlin.time.Duration.Companion.minutes
 
 /**
- * Determines when collection happens.
- *
- * A sealed interface rather than a `Duration?` where null means on-demand: the two modes differ in
- * behaviour, not just in timing, and `null` would leave a reader that never publishes looking like a
- * misconfiguration rather than a deliberate choice.
+ * Determines when collection happens. A sealed interface rather than a nullable `Duration` because the two
+ * modes differ in behaviour, not just timing.
  */
 public sealed interface FlushMode {
     /**
      * Collect on a timer.
      *
-     * @param interval one minute by default, matching the AWS SDK for Java v2's upload frequency and
-     *   CloudWatch's standard-resolution period. Shorter intervals do not improve granularity at
-     *   `storageResolution = 60` — CloudWatch aggregates into 60-second periods regardless — so lowering
-     *   this mostly buys extra `PutMetricData` calls and cost.
+     * @param interval one minute by default, matching the AWS SDK for Java v2 and CloudWatch's
+     *   standard-resolution period. At `storageResolution = 60` a shorter interval buys extra
+     *   `PutMetricData` calls rather than granularity.
      */
-    public data class Periodic(public val interval: Duration = 1.minutes) : FlushMode
+    public class Periodic(public val interval: Duration = 1.minutes) : FlushMode {
+        override fun equals(other: Any?): Boolean = other is Periodic && other.interval == interval
+        override fun hashCode(): Int = interval.hashCode()
+        override fun toString(): String = "Periodic(interval=$interval)"
+    }
 
     /**
-     * Collect only when [PeriodicMetricReader.flush] is called explicitly.
+     * Collect only when [PeriodicMetricReader.flush] is called explicitly. The default under AWS Lambda,
+     * where the environment is frozen between invocations and a scheduled `delay()` may not resume until
+     * the next one, or ever.
      *
-     * The default under AWS Lambda, where the execution environment is frozen between invocations: a
-     * `delay()` scheduled during one invocation may not resume until the next, or ever, so timer-driven
-     * publishing loses whatever is buffered when the freeze happens.
-     *
-     * Trade-off: gauge resolution equals flush frequency, because async callbacks are sampled only during
-     * collection. A gauge in this mode reports its value at each invocation boundary, not continuously.
+     * Gauge resolution equals flush frequency here, since async callbacks are sampled only during
+     * collection.
      */
     public data object OnDemand : FlushMode
 }
@@ -56,30 +54,13 @@ public sealed interface FlushMode {
 /**
  * Drives collection cycles and hands the results to a [MetricExporter].
  *
- * ### Scope ownership — why this class owns a `CoroutineScope` at all
+ * `TelemetryProvider` has no lifecycle member and there is no ambient scope to inherit, so the reader owns
+ * its own: a `SupervisorJob`, so one bad cycle cannot silently end collection for the process lifetime, on
+ * `Dispatchers.Default`, which is daemon-backed on the JVM so a forgotten [close] leaks one coroutine
+ * rather than hanging shutdown.
  *
- * `TelemetryProvider` declares no lifecycle member: no `close()`, no `shutdown()`, and it does not extend
- * `Closeable`. It is four read-only properties. Nothing in the telemetry contract will ever tell this
- * reader to stop, and there is no ambient scope to inherit. So the reader creates and owns one, and every
- * part of that construction is a deliberate choice:
- *
- * - **`SupervisorJob`** — with a regular `Job`, one failed child cancels the parent scope, and collection
- *   would end permanently after a single bad cycle. The failure would be silent, which is the worst
- *   property a telemetry component can have.
- * - **`Dispatchers.Default`** — daemon-backed on the JVM, so the worst case of a forgotten [close] is a
- *   leak until process exit rather than a process that refuses to exit. A bespoke thread pool with
- *   non-daemon threads would turn a missing `close()` into a hung shutdown, which users would rightly
- *   report as a bug in the SDK.
- *
- * The residual weakness is acknowledged rather than hidden: a caller who never closes the provider leaks
- * one coroutine. That cost is absorbed here deliberately: the alternative is a lifecycle member on the
- * shared telemetry interfaces, which have none and are used by providers that need none.
- *
- * ### Construction
- *
- * Built by the caller and assigned to [SdkTelemetryProvider.Builder.metricReader], or created implicitly
- * by that builder's [exporter][SdkTelemetryProvider.Builder.exporter] shorthand for the single-destination
- * case:
+ * Built by the caller and assigned to [AggregatingTelemetryProvider.Builder.metricReader], or created implicitly by
+ * that builder's [exporter][AggregatingTelemetryProvider.Builder.exporter] shorthand:
  *
  * ```kotlin
  * PeriodicMetricReader(interval = 30.seconds) {
@@ -94,69 +75,49 @@ public class PeriodicMetricReader private constructor(builder: Builder) : Metric
 
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
 
-    // A coroutine Mutex, not a lock: it suspends rather than blocking a dispatcher thread, and `export`
-    // is a suspend function so a blocking lock could not be held across it anyway. Serializes
-    // collect+export so a user's flush() cannot interleave with a timer tick — two concurrent cycles
-    // would each drain half the aggregators and publish two partial batches.
+    // Suspends rather than blocking a dispatcher thread, and `export` suspends so a blocking lock could not
+    // be held across it. Serializes collect+export so flush() cannot interleave with a timer tick and drain
+    // half the aggregators into each of two partial batches.
     private val exportMutex = Mutex()
 
-    // Atomic because close() may be called from any thread while the timer runs on another, and
-    // compareAndSet is what makes close() idempotent without a lock.
+    // close() may be called from any thread while the timer runs on another; compareAndSet is what makes it
+    // idempotent without a lock.
     private val closed = atomic(false)
 
     private var timer: Job? = null
 
-    // `lateinit` because of a genuine circularity: the provider needs the reader it collects with, and the
-    // reader needs the provider to collect from. Resolved by two-phase init — construct, then
-    // install(provider, logger) — rather than by passing a factory lambda, which would make the ordering
-    // harder to see. Only ever assigned from install().
-    private lateinit var provider: SdkMeterProvider
-
-    // Also deferred to install(): the logger comes from the provider's LoggerProvider, which the caller
-    // configures on the provider builder, not here. A reader constructed standalone therefore cannot have
-    // one yet.
+    // `lateinit` for a genuine circularity: the provider needs the reader it collects with, and the reader
+    // needs the provider to collect from. Both are assigned only from install().
+    private lateinit var provider: AggregatingMeterProvider
     private lateinit var logger: Logger
 
     /**
      * Bind the provider and logger and, in [FlushMode.Periodic], start the timer.
      *
-     * Called once by [SdkTelemetryProvider]'s initializer. Calling it twice would start a second timer and
-     * double-publish, which is why [MetricReader] keeps it off the supported surface.
+     * Called once by [AggregatingTelemetryProvider]'s initializer. A second call would start a second timer and
+     * double-publish, which is why [MetricReader] keeps this off the supported surface.
      */
     @InternalApi
-    override fun install(provider: SdkMeterProvider, logger: Logger) {
-        // Before anything else: let the exporter refuse to be shared. Done here rather than in
-        // Builder.build() because a Builder is single-use, so the second attachment of a *reused exporter*
-        // — or of a reused reader — happens in a second, otherwise-innocent-looking builder. Throwing
-        // during construction is the one place in this design where a telemetry misconfiguration is fatal,
-        // and it is deliberate: the alternative is two collection loops silently corrupting each other's
-        // sums, which no amount of logging makes debuggable.
-        exporter.onAttach()
-
+    override fun install(provider: AggregatingMeterProvider, logger: Logger) {
         this.provider = provider
         this.logger = logger
         val mode = flushMode ?: defaultFlushMode(platform)
         if (mode is FlushMode.Periodic) {
             timer = scope.launch {
                 while (isActive) {
-                    // delay() before the first collect, not after: an immediate collect at startup would
-                    // publish a near-empty interval and, worse, would race application code that has not
-                    // finished registering its gauges.
+                    // delay() first: an immediate collect would publish a near-empty interval and race
+                    // application code that has not finished registering its gauges.
                     delay(mode.interval)
                     collectAndExport()
                 }
             }
         }
-        // In OnDemand mode no coroutine is launched at all — nothing to leak, and nothing that can be
-        // caught mid-cycle by a Lambda freeze.
+        // OnDemand launches no coroutine - nothing to leak, and nothing a Lambda freeze can catch mid-cycle.
     }
 
     /**
-     * Collect and export immediately.
-     *
-     * Safe to call concurrently and safe to call after [close] — a closed reader returns without publishing
-     * rather than throwing, because a flush racing shutdown is a normal outcome of ordinary teardown and
-     * should not surface as an error in application code.
+     * Collect and export immediately. Safe to call concurrently, and after [close] - a flush racing shutdown
+     * is ordinary teardown, so a closed reader returns without publishing rather than throwing.
      */
     override suspend fun flush() {
         if (closed.value) return
@@ -164,15 +125,14 @@ public class PeriodicMetricReader private constructor(builder: Builder) : Metric
     }
 
     /**
-     * One collection cycle. The single place where collection and export are sequenced, so the error
-     * handling below applies uniformly to the timer path and the [flush] path.
+     * One collection cycle. The only place collection and export are sequenced, so this error handling
+     * applies to both the timer path and [flush].
      */
     private suspend fun collectAndExport() = exportMutex.withLock {
         val metrics = try {
             provider.collect()
         } catch (e: CancellationException) {
-            // Rethrown, never swallowed. Cancellation is a control-flow signal — from close() or from scope
-            // teardown — and catching it would make this coroutine uncancellable, turning a clean shutdown
+            // Never swallowed: catching it would make this coroutine uncancellable and turn a clean shutdown
             // into a hang.
             throw e
         } catch (e: Exception) {
@@ -181,47 +141,35 @@ public class PeriodicMetricReader private constructor(builder: Builder) : Metric
             return@withLock
         }
 
-        // Skip the export entirely when nothing was recorded. Avoids a pointless publish call — and its
-        // cost — during idle periods.
+        // No pointless publish call, or its cost, during idle periods.
         if (metrics.isEmpty()) return@withLock
 
         try {
             exporter.export(metrics)
-            // Logged at DEBUG on the success path so that "is the pipeline running at all?" is answerable
-            // without a backend round-trip. The warnings below only fire on failure, which leaves the
-            // silent-but-healthy case indistinguishable from a reader that never ticks.
+            // On the success path too, so "is the pipeline running at all?" is answerable without a backend
+            // round-trip.
             logger.debug { "collected and exported ${metrics.size} instrument(s)" }
         } catch (e: CancellationException) {
             throw e
         } catch (e: Exception) {
-            // Exporters are contractually non-throwing, so reaching here means a buggy exporter. Guarded
-            // anyway: an uncaught throw would kill this cycle and, without the SupervisorJob above, could
-            // take the whole scope with it.
+            // Exporters are contractually non-throwing, so this means a buggy one. Guarded anyway.
             logger.warn(e) { "metric export failed; dropped ${metrics.size} instrument(s)" }
         }
     }
 
-    /**
-     * Stop the timer, perform a final flush, then release the exporter and the scope.
-     *
-     * Idempotent: a second call returns immediately.
-     */
+    /** Stop the timer, flush a final time, then release the exporter and the scope. Idempotent. */
     override suspend fun close() {
-        // compareAndSet, not a plain read-then-write: two concurrent close() calls must not both proceed to
-        // flush and shutdown, which would double-export and double-shutdown.
+        // Two concurrent close() calls must not both flush and shut down.
         if (!closed.compareAndSet(expect = false, update = true)) return
 
         // Cancel the timer first so it cannot start a cycle that races the final flush.
         timer?.cancel()
         try {
-            // Ordering is load-bearing: flush BEFORE exporter.shutdown(). Reversed, the last interval —
-            // often the most interesting one, since it contains whatever happened just before shutdown —
-            // would be collected and then handed to a closed exporter.
+            // Flush before shutdown; reversed, the last interval would be handed to a closed exporter.
             collectAndExport()
         } finally {
-            // In `finally` so a failing final flush still releases the exporter's resources. runCatching
-            // because shutdown() is the last chance to release anything; letting it throw here would skip
-            // scope.cancel() and leak the coroutine we are trying to stop.
+            // In `finally` so a failing flush still releases the exporter, and caught so a failing shutdown
+            // does not skip scope.cancel() and leak the coroutine being stopped.
             runCatching { exporter.shutdown() }
                 .onFailure { logger.warn(it) { "exporter shutdown failed" } }
             scope.cancel()
@@ -230,9 +178,8 @@ public class PeriodicMetricReader private constructor(builder: Builder) : Metric
 
     public companion object {
         /**
-         * Set by the Lambda runtime for every function. Chosen over `AWS_EXECUTION_ENV` because that
-         * variable is absent in some container-based Lambda deployments, and over `AWS_LAMBDA_RUNTIME_API`
-         * because that one is specific to custom runtimes.
+         * Set by the Lambda runtime for every function. Preferred over `AWS_EXECUTION_ENV`, absent in some
+         * container-based deployments, and `AWS_LAMBDA_RUNTIME_API`, specific to custom runtimes.
          */
         internal const val ENV_LAMBDA_FUNCTION: String = "AWS_LAMBDA_FUNCTION_NAME"
 
@@ -252,16 +199,11 @@ public class PeriodicMetricReader private constructor(builder: Builder) : Metric
         )
 
         /**
-         * Pick a flush mode from the environment. Lives here rather than on the provider because the timer
-         * this decides about is owned here.
+         * Pick a flush mode from the environment. Lambda freezes the environment between invocations, so a
+         * scheduled timer may not resume until the next one - or at all - losing whatever is buffered.
+         * Defaulting to on-demand there costs only that the handler must call [AggregatingTelemetryProvider.flush].
          *
-         * Lambda freezes the execution environment between invocations, so a timer scheduled during one
-         * invocation may not resume until the next — or at all, if the environment is reclaimed — losing
-         * whatever is buffered. Defaulting to on-demand there makes the common case correct without
-         * configuration; the cost is that the handler must call [SdkTelemetryProvider.flush].
-         *
-         * @param platform injected rather than reading the environment directly so tests can exercise both
-         *   branches without mutating process state.
+         * @param platform injected so tests can exercise both branches without mutating process state.
          */
         internal fun defaultFlushMode(platform: PlatformProvider): FlushMode = if (platform.getenv(ENV_LAMBDA_FUNCTION) != null) {
             FlushMode.OnDemand
@@ -272,24 +214,18 @@ public class PeriodicMetricReader private constructor(builder: Builder) : Metric
 
     public class Builder {
         /**
-         * Where this reader's collected metrics go. Effectively required.
-         *
-         * Defaults to [MetricExporter.None] rather than being a required parameter so that a misconfigured
-         * reader degrades to "collects but publishes nothing" instead of throwing during application
-         * startup. Telemetry misconfiguration should not prevent an application booting.
+         * Where this reader's collected metrics go. Effectively required, but defaulted so a misconfigured
+         * reader collects and publishes nothing rather than preventing an application booting.
          */
         public var exporter: MetricExporter = MetricExporter.None
 
         /**
-         * Overrides the platform-derived default.
-         *
-         * Nullable rather than pre-set to [FlushMode.Periodic] so that "not configured" is distinguishable
-         * from "explicitly configured as periodic" — only the former should be overridden by Lambda
-         * detection.
+         * Overrides the platform-derived default. Nullable so "not configured" stays distinguishable from
+         * "explicitly periodic" - only the former is overridden by Lambda detection.
          */
         public var flushMode: FlushMode? = null
 
-        /** Internal seam for tests to simulate the Lambda environment. Not part of the public API. */
+        /** Test seam for simulating the Lambda environment. */
         internal var platform: PlatformProvider = PlatformProvider.System
     }
 }

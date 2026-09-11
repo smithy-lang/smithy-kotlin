@@ -17,20 +17,18 @@ import kotlin.test.assertTrue
 import kotlin.time.Duration.Companion.minutes
 
 /**
- * Provider construction and wiring — the configuration mistakes whose absence would leave a configured
- * exporter publishing nothing.
+ * Provider construction and wiring - the configuration mistakes that would leave a configured exporter
+ * publishing nothing.
  */
-class SdkTelemetryProviderTest {
+class AggregatingTelemetryProviderTest {
     /**
-     * The ambiguous combination must fail loudly. Asserting on the *message* as well as the type, because
-     * the whole value of this check is that it tells the caller which of the two to remove — an
-     * `IllegalArgumentException` with no guidance would be little better than the silent behaviour it
-     * replaces.
+     * Asserts on the message as well as the type: the value of this check is telling the caller which of the
+     * two to remove.
      */
     @Test
     fun testExporterAndMetricReaderAreMutuallyExclusive() {
         val e = assertFailsWith<IllegalArgumentException> {
-            SdkTelemetryProvider {
+            AggregatingTelemetryProvider {
                 exporter = MetricExporter.None
                 metricReader = PeriodicMetricReader(1.minutes) { exporter = MetricExporter.None }
             }
@@ -42,7 +40,7 @@ class SdkTelemetryProviderTest {
     @Test
     fun testReaderSettingsRejectedWithExplicitReader() {
         assertFailsWith<IllegalArgumentException> {
-            SdkTelemetryProvider {
+            AggregatingTelemetryProvider {
                 metricReader = PeriodicMetricReader(1.minutes) { exporter = MetricExporter.None }
                 flushMode = FlushMode.OnDemand
             }
@@ -50,34 +48,29 @@ class SdkTelemetryProviderTest {
     }
 
     /**
-     * The opposite direction, and just as important: configuring *neither* is not an error. A telemetry
-     * misconfiguration must not stop an application from booting, so this degrades to a provider that
-     * records and collects but publishes nowhere.
+     * Configuring neither is not an error: a telemetry misconfiguration must not stop an application from
+     * booting, so this degrades to recording and collecting but publishing nowhere.
      */
     @Test
     fun testNeitherExporterNorReaderStillBuilds() {
-        val provider = SdkTelemetryProvider { }
-        assertIs<SdkMeterProvider>(provider.meterProvider)
+        val provider = AggregatingTelemetryProvider { }
+        assertIs<AggregatingMeterProvider>(provider.meterProvider)
         provider.close()
     }
 
     /**
-     * The reader supplied by the caller is the one installed and driven.
-     *
-     * Guards the two-phase initialization: a provider that constructed its own reader instead — or that
-     * forgot to call `install` — would look correct at every use site and publish nothing.
+     * Guards the two-phase initialization: a provider that built its own reader, or forgot to `install`,
+     * would look correct at every use site and publish nothing.
      */
     @Test
     fun testSuppliedReaderIsInstalledAndDriven() = runTest {
         val exporter = RecordingMetricExporter()
-        val provider = SdkTelemetryProvider {
+        val provider = AggregatingTelemetryProvider {
             metricReader = PeriodicMetricReader {
                 this.exporter = exporter
                 flushMode = FlushMode.OnDemand
             }
         }
-
-        assertEquals(1, exporter.attachCount)
 
         provider.meterProvider.getOrCreateMeter("t").createMonotonicCounter("c").add(1)
         provider.flush()
@@ -87,42 +80,33 @@ class SdkTelemetryProviderTest {
     }
 
     /**
-     * `close()` reaches the exporter through the reader, so `use { }` on the provider is a complete
-     * shutdown.
-     *
-     * The non-suspending `close()` bridges to the reader's suspending one; if that bridge were dropped, the
-     * final interval would be lost silently at process exit.
+     * `close()` reaches the exporter through the reader. The non-suspending `close()` bridges to the reader's
+     * suspending one; without that bridge the final interval would be lost silently at process exit.
      */
     @Test
     fun testCloseShutsDownTheExporter() {
         val exporter = RecordingMetricExporter()
-        SdkTelemetryProvider { this.exporter = exporter }.close()
+        AggregatingTelemetryProvider { this.exporter = exporter }.close()
 
         assertEquals(1, exporter.shutdownCount)
     }
 
-    /**
-     * Repeated `getOrCreateMeter` calls for one scope return the same meter, so instruments created through
-     * either reference accumulate into the same series.
-     */
+    /** One meter per scope, so instruments created through either reference share a series. */
     @Test
     fun testMeterIsCachedPerScope() {
-        SdkTelemetryProvider { }.use { provider ->
+        AggregatingTelemetryProvider { }.use { provider ->
             val first = provider.meterProvider.getOrCreateMeter("scope")
             assertSame(first, provider.meterProvider.getOrCreateMeter("scope"))
         }
     }
 
     /**
-     * Tracing and context are explicitly absent rather than half-implemented.
-     *
-     * A metrics pipeline that returned a bespoke `TracerProvider` would silently discard spans — exactly the
-     * failure mode this module exists to eliminate for gauges. `None` is honest: callers who need tracing
-     * see it is not offered.
+     * Tracing and context are `None` rather than half-implemented: a bespoke `TracerProvider` here would
+     * silently discard spans.
      */
     @Test
     fun testTracingIsNotClaimed() {
-        SdkTelemetryProvider { }.use { provider ->
+        AggregatingTelemetryProvider { }.use { provider ->
             assertSame(TracerProvider.None, provider.tracerProvider)
             assertSame(ContextManager.None, provider.contextManager)
         }
