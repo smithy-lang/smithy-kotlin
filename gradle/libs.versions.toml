@@ -20,7 +20,7 @@ binary-compatibility-validator-version = "0.18.2"
 kotlin-multiplatform-bignum-version = "0.3.10"
 kotlinx-datetime-version = "0.8.0"
 kotlinx-io-version = "0.9.1"
-publish-plugin-version = "2.1.1"
+publish-plugin-version = "2.2.0"
 smithy-gradle-plugin-version = "1.5.0"
 
 # codegen
