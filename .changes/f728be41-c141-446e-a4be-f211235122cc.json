@@ -1,0 +1,9 @@
+{
+    "id": "f728be41-c141-446e-a4be-f211235122cc",
+    "type": "feature",
+    "description": "Add `telemetry-metrics-aggregation`, a backend-agnostic metrics aggregation module providing `SdkTelemetryProvider`, delta aggregation for counters/histograms/gauges, a cardinality guard, and a `PeriodicMetricReader` that drives a pluggable `MetricExporter`",
+    "module": "telemetry-metrics-aggregation",
+    "issues": [
+        "https://github.com/aws/aws-sdk-kotlin/issues/984"
+    ]
+}
