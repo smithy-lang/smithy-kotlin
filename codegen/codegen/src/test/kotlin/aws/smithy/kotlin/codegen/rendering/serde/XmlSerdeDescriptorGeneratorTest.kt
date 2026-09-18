@@ -47,9 +47,9 @@ class XmlSerdeDescriptorGeneratorTest {
         val contents = getContents(snippet, "FooRequest")
 
         val expectedDescriptors = """
-            val INTVAL_DESCRIPTOR = SdkFieldDescriptor(SerialKind.Integer, XmlSerialName("intVal"))
-            val STRVAL_DESCRIPTOR = SdkFieldDescriptor(SerialKind.String, XmlSerialName("strVal"))
-            val OBJ_DESCRIPTOR = SdkObjectDescriptor.build {
+            private val INTVAL_DESCRIPTOR = SdkFieldDescriptor(SerialKind.Integer, XmlSerialName("intVal"))
+            private val STRVAL_DESCRIPTOR = SdkFieldDescriptor(SerialKind.String, XmlSerialName("strVal"))
+            private val OBJ_DESCRIPTOR = SdkObjectDescriptor.build {
                 trait(XmlSerialName("FooRequest"))
                 field(INTVAL_DESCRIPTOR)
                 field(STRVAL_DESCRIPTOR)
@@ -86,9 +86,9 @@ class XmlSerdeDescriptorGeneratorTest {
         """
 
         val expectedOperationDescriptors = """
-            val PAYLOAD_DESCRIPTOR = SdkFieldDescriptor(SerialKind.List, XmlSerialName("payload"))
-            val PAYLOAD_C0_DESCRIPTOR = SdkFieldDescriptor(SerialKind.List, XmlSerialName("member"))
-            val OBJ_DESCRIPTOR = SdkObjectDescriptor.build {
+            private val PAYLOAD_DESCRIPTOR = SdkFieldDescriptor(SerialKind.List, XmlSerialName("payload"))
+            private val PAYLOAD_C0_DESCRIPTOR = SdkFieldDescriptor(SerialKind.List, XmlSerialName("member"))
+            private val OBJ_DESCRIPTOR = SdkObjectDescriptor.build {
                 trait(XmlSerialName("FooRequest"))
                 field(PAYLOAD_DESCRIPTOR)
             }
@@ -98,8 +98,8 @@ class XmlSerdeDescriptorGeneratorTest {
         operationContents.shouldContainOnlyOnceWithDiff(expectedOperationDescriptors)
 
         val expectedDocumentDescriptors = """
-            val SOMEVAL_DESCRIPTOR = SdkFieldDescriptor(SerialKind.String, XmlSerialName("someVal"))
-            val OBJ_DESCRIPTOR = SdkObjectDescriptor.build {
+            private val SOMEVAL_DESCRIPTOR = SdkFieldDescriptor(SerialKind.String, XmlSerialName("someVal"))
+            private val OBJ_DESCRIPTOR = SdkObjectDescriptor.build {
                 trait(XmlSerialName("Bar"))
                 field(SOMEVAL_DESCRIPTOR)
             }
@@ -135,8 +135,8 @@ class XmlSerdeDescriptorGeneratorTest {
         """
 
         val expectedDescriptors = """
-            val STRUCTLIST_DESCRIPTOR = SdkFieldDescriptor(SerialKind.List, XmlSerialName("structList"))
-            val OBJ_DESCRIPTOR = SdkObjectDescriptor.build {
+            private val STRUCTLIST_DESCRIPTOR = SdkFieldDescriptor(SerialKind.List, XmlSerialName("structList"))
+            private val OBJ_DESCRIPTOR = SdkObjectDescriptor.build {
                 trait(XmlSerialName("FooUnion"))
                 field(STRUCTLIST_DESCRIPTOR)
             }
@@ -174,9 +174,9 @@ class XmlSerdeDescriptorGeneratorTest {
         """
 
         val expectedDescriptors = """
-            val LISTVAL_DESCRIPTOR = SdkFieldDescriptor(SerialKind.List, XmlSerialName("listVal"), Flattened)
-            val MAPVAL_DESCRIPTOR = SdkFieldDescriptor(SerialKind.Map, XmlSerialName("mapVal"), Flattened)
-            val OBJ_DESCRIPTOR = SdkObjectDescriptor.build {
+            private val LISTVAL_DESCRIPTOR = SdkFieldDescriptor(SerialKind.List, XmlSerialName("listVal"), Flattened)
+            private val MAPVAL_DESCRIPTOR = SdkFieldDescriptor(SerialKind.Map, XmlSerialName("mapVal"), Flattened)
+            private val OBJ_DESCRIPTOR = SdkObjectDescriptor.build {
                 trait(XmlSerialName("CustomFooRequest"))
                 field(LISTVAL_DESCRIPTOR)
                 field(MAPVAL_DESCRIPTOR)
@@ -206,9 +206,9 @@ class XmlSerdeDescriptorGeneratorTest {
         """
 
         val expectedDescriptors = """
-            val INTVAL_DESCRIPTOR = SdkFieldDescriptor(SerialKind.Integer, XmlSerialName("baz:notIntVal"), XmlAttribute)
-            val STRVAL_DESCRIPTOR = SdkFieldDescriptor(SerialKind.String, XmlSerialName("strVal"), XmlAttribute)
-            val OBJ_DESCRIPTOR = SdkObjectDescriptor.build {
+            private val INTVAL_DESCRIPTOR = SdkFieldDescriptor(SerialKind.Integer, XmlSerialName("baz:notIntVal"), XmlAttribute)
+            private val STRVAL_DESCRIPTOR = SdkFieldDescriptor(SerialKind.String, XmlSerialName("strVal"), XmlAttribute)
+            private val OBJ_DESCRIPTOR = SdkObjectDescriptor.build {
                 trait(XmlSerialName("FooRequest"))
                 trait(XmlNamespace("http://foo.com", "baz"))
                 field(INTVAL_DESCRIPTOR)
@@ -246,9 +246,9 @@ class XmlSerdeDescriptorGeneratorTest {
         """
 
         val expectedDescriptors = """
-            val LISTVAL_DESCRIPTOR = SdkFieldDescriptor(SerialKind.List, XmlSerialName("listVal"), XmlCollectionName("item"))
-            val MAPVAL_DESCRIPTOR = SdkFieldDescriptor(SerialKind.Map, XmlSerialName("mapVal"), XmlMapName(key = "baz", value = "qux"))
-            val OBJ_DESCRIPTOR = SdkObjectDescriptor.build {
+            private val LISTVAL_DESCRIPTOR = SdkFieldDescriptor(SerialKind.List, XmlSerialName("listVal"), XmlCollectionName("item"))
+            private val MAPVAL_DESCRIPTOR = SdkFieldDescriptor(SerialKind.Map, XmlSerialName("mapVal"), XmlMapName(key = "baz", value = "qux"))
+            private val OBJ_DESCRIPTOR = SdkObjectDescriptor.build {
                 trait(XmlSerialName("FooRequest"))
                 field(LISTVAL_DESCRIPTOR)
                 field(MAPVAL_DESCRIPTOR)

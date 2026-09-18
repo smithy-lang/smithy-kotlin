@@ -41,8 +41,8 @@ class RestXmlSerdeDescriptorGeneratorTest {
         )
 
         val expectedDescriptors = """
-            val FOO_DESCRIPTOR = SdkFieldDescriptor(SerialKind.String, XmlSerialName("foo"))
-            val MESSAGE_DESCRIPTOR = SdkFieldDescriptor(SerialKind.String, XmlSerialName("message"), XmlAliasName("Message"))
+            private val FOO_DESCRIPTOR = SdkFieldDescriptor(SerialKind.String, XmlSerialName("foo"))
+            private val MESSAGE_DESCRIPTOR = SdkFieldDescriptor(SerialKind.String, XmlSerialName("message"), XmlAliasName("Message"))
         """.formatForTest("")
 
         generated.shouldContainOnlyOnceWithDiff(expectedDescriptors)
@@ -59,7 +59,7 @@ class RestXmlSerdeDescriptorGeneratorTest {
         )
 
         val expectedDescriptors = """
-            val MESSAGE_DESCRIPTOR = SdkFieldDescriptor(SerialKind.String, XmlSerialName("message"))
+            private val MESSAGE_DESCRIPTOR = SdkFieldDescriptor(SerialKind.String, XmlSerialName("message"))
         """.formatForTest("")
 
         generated.shouldContainOnlyOnceWithDiff(expectedDescriptors)

@@ -6,6 +6,7 @@ public final class aws/smithy/kotlin/runtime/serde/formurl/FormUrlCollectionName
 	public static synthetic fun copy$default (Laws/smithy/kotlin/runtime/serde/formurl/FormUrlCollectionName;Ljava/lang/String;ILjava/lang/Object;)Laws/smithy/kotlin/runtime/serde/formurl/FormUrlCollectionName;
 	public fun equals (Ljava/lang/Object;)Z
 	public final fun getMember ()Ljava/lang/String;
+	public fun getSerialName ()Ljava/lang/String;
 	public fun hashCode ()I
 	public fun toString ()Ljava/lang/String;
 }
@@ -16,6 +17,7 @@ public final class aws/smithy/kotlin/runtime/serde/formurl/FormUrlCollectionName
 
 public final class aws/smithy/kotlin/runtime/serde/formurl/FormUrlFlattened : aws/smithy/kotlin/runtime/serde/FieldTrait {
 	public static final field INSTANCE Laws/smithy/kotlin/runtime/serde/formurl/FormUrlFlattened;
+	public fun getSerialName ()Ljava/lang/String;
 }
 
 public final class aws/smithy/kotlin/runtime/serde/formurl/FormUrlMapName : aws/smithy/kotlin/runtime/serde/FieldTrait {
@@ -29,6 +31,7 @@ public final class aws/smithy/kotlin/runtime/serde/formurl/FormUrlMapName : aws/
 	public static synthetic fun copy$default (Laws/smithy/kotlin/runtime/serde/formurl/FormUrlMapName;Ljava/lang/String;Ljava/lang/String;ILjava/lang/Object;)Laws/smithy/kotlin/runtime/serde/formurl/FormUrlMapName;
 	public fun equals (Ljava/lang/Object;)Z
 	public final fun getKey ()Ljava/lang/String;
+	public fun getSerialName ()Ljava/lang/String;
 	public final fun getValue ()Ljava/lang/String;
 	public fun hashCode ()I
 	public fun toString ()Ljava/lang/String;
@@ -45,6 +48,7 @@ public final class aws/smithy/kotlin/runtime/serde/formurl/FormUrlSerialName : a
 	public static synthetic fun copy$default (Laws/smithy/kotlin/runtime/serde/formurl/FormUrlSerialName;Ljava/lang/String;ILjava/lang/Object;)Laws/smithy/kotlin/runtime/serde/formurl/FormUrlSerialName;
 	public fun equals (Ljava/lang/Object;)Z
 	public final fun getName ()Ljava/lang/String;
+	public fun getSerialName ()Ljava/lang/String;
 	public fun hashCode ()I
 	public fun toString ()Ljava/lang/String;
 }
@@ -61,6 +65,7 @@ public final class aws/smithy/kotlin/runtime/serde/formurl/QueryLiteral : aws/sm
 	public static synthetic fun copy$default (Laws/smithy/kotlin/runtime/serde/formurl/QueryLiteral;Ljava/lang/String;Ljava/lang/String;ILjava/lang/Object;)Laws/smithy/kotlin/runtime/serde/formurl/QueryLiteral;
 	public fun equals (Ljava/lang/Object;)Z
 	public final fun getKey ()Ljava/lang/String;
+	public fun getSerialName ()Ljava/lang/String;
 	public final fun getValue ()Ljava/lang/String;
 	public fun hashCode ()I
 	public fun toString ()Ljava/lang/String;
