@@ -5,7 +5,6 @@
 
 package aws.smithy.kotlin.runtime.telemetry.micrometer
 
-import aws.smithy.kotlin.runtime.ExperimentalApi
 import aws.smithy.kotlin.runtime.telemetry.GlobalTelemetryProvider
 import aws.smithy.kotlin.runtime.telemetry.TelemetryProvider
 import aws.smithy.kotlin.runtime.telemetry.context.ContextManager
@@ -23,7 +22,6 @@ import io.micrometer.core.instrument.Metrics
  * A provider is taken explicitly because Micrometer does not provide a logging API, only a log bridge for
  * existing logging implementations.
  */
-@ExperimentalApi
 public class MicrometerTelemetryProvider(
     meterRegistry: MeterRegistry = Metrics.globalRegistry,
     override val loggerProvider: LoggerProvider = GlobalTelemetryProvider.instance.loggerProvider,

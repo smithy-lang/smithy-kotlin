@@ -8,8 +8,8 @@ import aws.smithy.kotlin.codegen.test.formatForTest
 import aws.smithy.kotlin.codegen.test.newTestContext
 import aws.smithy.kotlin.codegen.test.shouldContainOnlyOnceWithDiff
 import aws.smithy.kotlin.codegen.test.toCodegenContext
-import org.junit.jupiter.api.Test
 import software.amazon.smithy.build.MockManifest
+import kotlin.test.Test
 
 class DefaultEndpointDiscovererGeneratorTest {
     private val renderedCodegen: String = run {

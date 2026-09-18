@@ -4,7 +4,6 @@
  */
 package aws.smithy.kotlin.runtime.http.engine.okhttp
 
-import aws.smithy.kotlin.runtime.ExperimentalApi
 import aws.smithy.kotlin.runtime.InternalApi
 import aws.smithy.kotlin.runtime.http.engine.EngineAttributes
 import aws.smithy.kotlin.runtime.http.engine.internal.HttpClientMetrics
@@ -31,7 +30,6 @@ import kotlin.time.TimeSource
 internal const val TELEMETRY_SCOPE = "aws.smithy.kotlin.runtime.http.engine.okhttp"
 
 // see https://square.github.io/okhttp/features/events/#eventlistener for example callback flow
-@OptIn(ExperimentalApi::class)
 @InternalApi
 public class HttpEngineEventListener(
     private val pool: ConnectionPool,

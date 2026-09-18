@@ -573,7 +573,6 @@ internal class SmokeTestOperationDeserializer: HttpDeserializer.NonStreaming<Smo
                 add(PercentEncoding.SmithyLabel.encode(input.baz.toString()))
             }
             parameters.decodedParameters(PercentEncoding.SmithyLabel) {
-                require(input.garply?.isNotBlank() == true) { "garply is bound to the URI and must be a non-blank value" }
                 if (input.corge != null) add("corge", input.corge)
                 if (input.garply != null) add("garply", input.garply)
                 if (input.grault != null) add("grault", input.grault)

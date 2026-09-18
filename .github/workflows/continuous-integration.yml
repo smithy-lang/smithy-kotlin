@@ -6,6 +6,8 @@ on:
       - main
       - '*-main'
   pull_request:
+  merge_group:
+    types: [checks_requested]
   workflow_dispatch:
 
 permissions:
@@ -175,6 +177,12 @@ jobs:
         with:
           path: 'smithy-kotlin'
 
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.CI_AWS_ROLE_ARN }}
+          aws-region: us-west-2
+
       - name: Configure Gradle
         uses: aws/aws-kotlin-repo-tools/.github/actions/configure-gradle@main
         with:
@@ -184,8 +192,17 @@ jobs:
         uses: ./smithy-kotlin/.github/actions/setup-build
 
       - name: Configure CRT Docker Images
-        run: |
-          ./aws-crt-kotlin/docker-images/build-all.sh
+        uses: nick-fields/retry@v4
+        with:
+          max_attempts: 3
+          retry_on: error
+          timeout_minutes: 30
+          command: |
+            ./aws-crt-kotlin/docker-images/build-all.sh
+          on_retry_command: |
+            echo "Docker image build failed. Waiting for 10s before trying again..."
+            sleep 10        
+
 
       - name: Build and Test on Linux with Cross-Compile
         working-directory: ./smithy-kotlin
@@ -373,15 +390,6 @@ jobs:
 
     - name: Setup build
       uses: ./smithy-kotlin/.github/actions/setup-build
-
-    - name: Checkout tools
-      uses: actions/checkout@v4
-      with:
-        path: 'aws-kotlin-repo-tools'
-        repository: 'aws/aws-kotlin-repo-tools'
-        ref: '0.2.3'
-        sparse-checkout: |
-          .github
 
     - name: Checkout aws-sdk-kotlin
       uses: ./aws-kotlin-repo-tools/.github/actions/checkout-head

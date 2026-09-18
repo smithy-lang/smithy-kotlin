@@ -273,6 +273,7 @@ class EventListenerChainTest {
         override fun isExecuted(): Boolean = false
         override fun request(): Request = Request.Builder().url("https://example.com").build()
         override fun timeout(): okio.Timeout = okio.Timeout()
+        override fun addEventListener(eventListener: EventListener) = error("Not used by mock call")
         override fun <T : Any> tag(type: KClass<T>): T = error("Not used by mock call")
         override fun <T> tag(type: Class<out T>): T = error("Not used by mock call")
         override fun <T : Any> tag(type: KClass<T>, computeIfAbsent: () -> T): T = error("Not used by mock call")

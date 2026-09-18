@@ -24,6 +24,11 @@ internal inline fun SdkBuffer.commonSkip(byteCount: Long) = wrapOkio { inner.ski
 
 internal inline fun SdkBuffer.commonReadByte(): Byte = wrapOkio { inner.readByte() }
 
+internal inline fun SdkBuffer.commonPeekByte(): Byte = wrapOkio {
+    inner.require(1L)
+    inner[0L]
+}
+
 internal inline fun SdkBuffer.commonReadShort(): Short = wrapOkio { inner.readShort() }
 
 internal inline fun SdkBuffer.commonReadShortLe(): Short = wrapOkio { inner.readShortLe() }
