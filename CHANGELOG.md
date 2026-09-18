@@ -1,5 +1,11 @@
 # Changelog
 
+## [1.7.11] - 09/18/2026
+
+### Features
+* (**codegen**) Generated clients now reference count telemetry providers they create, so a provider the SDK constructs is closed with the last client using it. Providers supplied by the caller are unaffected and remain the caller's to close
+* [#984](https://github.com/aws/aws-sdk-kotlin/issues/984) (**telemetry-metrics-aggregation**) Add `telemetry-metrics-aggregation`, a backend-agnostic metrics aggregation module providing `SdkTelemetryProvider`, delta aggregation for counters/histograms/gauges, a cardinality guard, and a `PeriodicMetricReader` that drives a pluggable `MetricExporter`
+
 ## [1.7.10] - 09/11/2026
 
 ### Fixes
