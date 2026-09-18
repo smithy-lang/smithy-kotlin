@@ -10,6 +10,8 @@ import aws.smithy.kotlin.runtime.collections.AttributeKey
 import aws.smithy.kotlin.runtime.collections.Attributes
 import aws.smithy.kotlin.runtime.collections.emptyAttributes
 import aws.smithy.kotlin.runtime.http.HttpCall
+import aws.smithy.kotlin.runtime.identity.Identity
+import aws.smithy.kotlin.runtime.identity.IdentityProvider
 import aws.smithy.kotlin.runtime.operation.ExecutionContext
 import aws.smithy.kotlin.runtime.time.Instant
 import kotlin.time.Duration
@@ -89,6 +91,18 @@ public object HttpOperationContext {
      * An operation-level override for the socket read timeout.
      */
     public val SocketReadTimeout: AttributeKey<Duration> = AttributeKey("aws.smithy.kotlin#SocketReadTimeout")
+
+    /**
+     * The identity that was resolved for the current attempt.
+     */
+    public val ResolvedIdentity: AttributeKey<Identity> = AttributeKey("aws.smithy.kotlin#ResolvedIdentity")
+
+    /**
+     * The identity provider that resolved [ResolvedIdentity]. Published so that components reacting to an
+     * authentication failure can signal it back to the provider that supplied the credentials.
+     */
+    public val ResolvedIdentityProvider: AttributeKey<IdentityProvider> =
+        AttributeKey("aws.smithy.kotlin#ResolvedIdentityProvider")
 }
 
 internal val ExecutionContext.operationMetrics: OperationMetrics

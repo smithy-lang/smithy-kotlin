@@ -26,6 +26,19 @@ class IdentityProviderChainTest {
         override suspend fun resolve(attributes: Attributes): TestIdentity = name?.let { TestIdentity(it) } ?: error("no identity available")
     }
 
+    private class RecordingProvider(
+        private val failOnInvalidate: Boolean = false,
+    ) : IdentityProvider {
+        val invalidated = mutableListOf<Identity>()
+
+        override suspend fun resolve(attributes: Attributes): TestIdentity = TestIdentity("recorded")
+
+        override suspend fun invalidate(rejectedIdentity: Identity) {
+            invalidated.add(rejectedIdentity)
+            if (failOnInvalidate) error("this provider cannot invalidate")
+        }
+    }
+
     @Test
     fun testNoProviders() {
         assertFails("at least one provider") {
@@ -57,5 +70,38 @@ class IdentityProviderChainTest {
         ex.message.shouldContain("No identity could be resolved from the chain: TestChain -> TestProvider -> TestProvider")
 
         assertEquals(2, ex.suppressedExceptions.size)
+    }
+
+    @Test
+    fun testInvalidateReachesEveryProvider() = runTest {
+        // The chain does not know which provider supplied the identity - a profile file can be re-read between
+        // resolutions - so every member is told and each decides whether it holds the rejected value.
+        val first = RecordingProvider()
+        val second = RecordingProvider()
+        val chain = TestChain(first, second)
+        val rejected = TestIdentity("rejected")
+
+        chain.invalidate(rejected)
+
+        assertEquals(listOf<Identity>(rejected), first.invalidated)
+        assertEquals(listOf<Identity>(rejected), second.invalidated)
+    }
+
+    @Test
+    fun testOneProviderFailingDoesNotPreventTheOthersBeingTold() = runTest {
+        val failing = RecordingProvider(failOnInvalidate = true)
+        val healthy = RecordingProvider()
+        val chain = TestChain(failing, healthy)
+        val rejected = TestIdentity("rejected")
+
+        chain.invalidate(rejected)
+
+        assertEquals(listOf<Identity>(rejected), healthy.invalidated)
+    }
+
+    @Test
+    fun testInvalidateIsANoOpForProvidersThatDoNotCache() = runTest {
+        // the default body does nothing, which is correct for a provider with nothing cached to mark
+        TestChain(TestProvider("ident1")).invalidate(TestIdentity("rejected"))
     }
 }
