@@ -217,20 +217,19 @@ public class ResilientCachingCredentialsProvider(
         val policy = policyFor(fetched.refreshBehavior)
         val now = clock.now()
 
-        // An already-expired response is a failed refresh for every provider, not just the static-stability ones:
-        // the source is reachable but no longer producing fresh credentials. Not gated on policy —
-        // what differs by policy is whether the retained credentials may be *used* past expiry (staleOrThrow), not
-        // whether an expired response counts as a failure.
-        if (fetched.expiration?.let { it <= now } == true) {
-            // Fall back to the previous entry, which keeps its own policy — it describes its own credentials.
-            val fallback = previous ?: timing.entryFor(fetched, policy, now)
-            val extended = onExpiredResponse(fallback)
-
-            // On a cold cache the expired response is itself the only entry, so whether it may be served is the same
-            // question staleOrThrow asks of a retained one: a static-stability source keeps signing with what it has,
-            // and anything else must not be handed an already-expired credential.
-            if (previous == null) staleOrThrow(extended, null)
-            return extended
+        // An already-expired response means the source is reachable but is no longer producing fresh credentials. For a
+        // static-stability provider that counts as a failed refresh: the previously cached set is retained rather than
+        // replaced by the expired one, and the backoff is applied, so the caller keeps signing with credentials that
+        // were valid when they were issued.
+        //
+        // A provider outside that scope keeps the behavior it already had, and the response is installed and returned
+        // like any other. Refusing to sign with a credential the source just handed back is not this layer's call to
+        // make — whether the credential is still accepted is the target service's answer, and for these sources we have
+        // no visibility into what that service is.
+        if (policy.staticStability && fetched.expiration?.let { it <= now } == true) {
+            // Fall back to the previous entry, which keeps its own policy — it describes its own credentials. On a cold
+            // cache the expired response is the only entry there is, and static stability is what lets it be served.
+            return onExpiredResponse(previous ?: timing.entryFor(fetched, policy, now))
         }
 
         val entry = timing.entryFor(fetched, policy, now)

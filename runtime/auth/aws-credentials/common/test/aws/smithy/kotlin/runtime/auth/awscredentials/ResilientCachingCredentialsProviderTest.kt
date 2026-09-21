@@ -264,10 +264,21 @@ class ResilientCachingCredentialsProviderTest {
             "a static-stability source keeps signing with what it has, as it does standalone today",
         )
 
+        val plainExpired = testCredentials("AKID1", epoch - 1.minutes)
         val plainSource = TestCredentialsProvider(
-            listOf(Result.success(testCredentials("AKID1", epoch - 1.minutes))),
+            listOf(Result.success(plainExpired), Result.success(testCredentials("AKID2", epoch + 1.hours))),
         )
-        assertFailsWith<CredentialsProviderException> { cache(plainSource, clock).resolve() }
+        val plainCache = cache(plainSource, clock)
+        assertSame(
+            plainExpired,
+            plainCache.resolve(),
+            "a source this feature does not govern keeps its existing behavior: the response is passed through",
+        )
+
+        // An expired response from such a source is not a failed refresh, so no backoff was installed and the next
+        // resolution goes straight back to it rather than being refused.
+        assertEquals("AKID2", plainCache.resolve().accessKeyId)
+        assertEquals(2, plainSource.callCount)
     }
 
     // --- backoff ---
