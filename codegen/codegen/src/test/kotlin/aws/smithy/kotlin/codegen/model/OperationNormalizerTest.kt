@@ -173,6 +173,37 @@ class OperationNormalizerTest {
         ex.message!!.shouldContain("com.test#FooResponse")
     }
 
+    @Test
+    fun `it fails on conflicting rename of a shape with traits`() {
+        // any applied trait (e.g. documentation) must not exempt a shape from conflict checking
+        val model = """
+            namespace com.test
+            service Example {
+                version: "1.0.0",
+                operations: [Foo]
+            }
+
+            operation Foo {
+                output: MyOutput
+            }
+
+            structure MyOutput {
+                foo: FooResponse,
+            }
+
+            @documentation("a documented shape")
+            structure FooResponse {
+                foo: String
+            }
+        """.toSmithyModel(applyDefaultTransforms = false)
+
+        val ex = assertFailsWith(CodegenException::class) {
+            OperationNormalizer.transform(model, ShapeId.from("com.test#Example"))
+        }
+        ex.message!!.shouldContain("renaming operation inputs or outputs will result in a conflict for:")
+        ex.message!!.shouldContain("com.test#FooResponse")
+    }
+
     private val exampleService = ShapeId.from("com.test#Example")
 
     private fun Model.closureIds(): Set<ShapeId> = Walker(this).walkShapes(expectShape(exampleService)).map { it.id }.toSet()
@@ -363,6 +394,50 @@ class OperationNormalizerTest {
         val ex = assertFailsWith(CodegenException::class) {
             OperationNormalizer.transform(model, exampleService)
         }
+        ex.message!!.shouldContain("com.test#FooRequest (conflicts with smithy.kotlin.synthetic.test#FooRequest; referenced by: smithy.kotlin.synthetic.test#GetOtherResponse)")
+    }
+
+    @Test
+    fun `it fails when a remaining reference to a shape with traits conflicts with a synthetic clone`() {
+        // Same as above, but any applied trait (e.g. documentation) must not exempt a shape from conflict checking.
+        // FooRequest is Bar's output, so validateTransform exempts it and this exercises the post-redirect check.
+        val model = """
+            namespace com.test
+            service Example {
+                version: "1.0.0",
+                operations: [Foo, Bar, GetOther]
+            }
+
+            operation Foo {
+                input: FooInput
+            }
+
+            operation Bar {
+                output: FooRequest
+            }
+
+            operation GetOther {
+                output: Other
+            }
+
+            structure FooInput {
+                v: String
+            }
+
+            @documentation("a documented shape")
+            structure FooRequest {
+                v: String
+            }
+
+            structure Other {
+                foo: FooRequest
+            }
+        """.toSmithyModel(applyDefaultTransforms = false)
+
+        val ex = assertFailsWith(CodegenException::class) {
+            OperationNormalizer.transform(model, exampleService)
+        }
+        ex.message!!.shouldContain("normalizing operation inputs or outputs left shapes in the service closure")
         ex.message!!.shouldContain("com.test#FooRequest (conflicts with smithy.kotlin.synthetic.test#FooRequest; referenced by: smithy.kotlin.synthetic.test#GetOtherResponse)")
     }
 }

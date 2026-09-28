@@ -18,7 +18,7 @@ import software.amazon.smithy.model.knowledge.TopDownIndex
 import software.amazon.smithy.model.neighbor.NeighborProvider
 import software.amazon.smithy.model.neighbor.Walker
 import software.amazon.smithy.model.shapes.*
-import software.amazon.smithy.model.traits.Trait
+import software.amazon.smithy.model.traits.TraitDefinition
 import software.amazon.smithy.model.traits.UnitTypeTrait
 import software.amazon.smithy.model.transform.ModelTransformer
 
@@ -120,7 +120,10 @@ object OperationNormalizer {
         val closureIds = closure.map { it.id }.toSet()
 
         val conflicts = closure
-            .filter { it.id !in cloneIds && !it.hasTrait<Trait>() && KotlinSymbolProvider.isTypeGeneratedForShape(it) }
+            .filter {
+                // trait definitions (which are also structures) don't generate types
+                it.id !in cloneIds && !it.hasTrait<TraitDefinition>() && KotlinSymbolProvider.isTypeGeneratedForShape(it)
+            }
             .mapNotNull { shape -> clonesByName[shape.defaultName(service)]?.let { shape to it } }
         if (conflicts.isEmpty()) return
 
@@ -151,7 +154,7 @@ object OperationNormalizer {
         val shapes = Walker(model).iterateShapes(model.expectShape(service))
         val shapesResultingInType = shapes.asSequence().filter {
             // remove trait definitions (which are also structures)
-            !it.hasTrait<Trait>() && KotlinSymbolProvider.isTypeGeneratedForShape(it)
+            !it.hasTrait<TraitDefinition>() && KotlinSymbolProvider.isTypeGeneratedForShape(it)
         }.toList()
 
         val possibleConflicts = shapesResultingInType.filter { it.id.name in newNames }
