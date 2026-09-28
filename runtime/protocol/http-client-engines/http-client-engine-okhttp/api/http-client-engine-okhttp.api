@@ -47,6 +47,7 @@ public final class aws/smithy/kotlin/runtime/http/engine/okhttp/OkHttpCall : aws
 public final class aws/smithy/kotlin/runtime/http/engine/okhttp/OkHttpDns : okhttp3/Dns {
 	public fun <init> (Laws/smithy/kotlin/runtime/net/HostResolver;)V
 	public fun lookup (Ljava/lang/String;)Ljava/util/List;
+	public fun newCall (Lokhttp3/Dns$Request;)Lokhttp3/Dns$Call;
 }
 
 public final class aws/smithy/kotlin/runtime/http/engine/okhttp/OkHttpEngine : aws/smithy/kotlin/runtime/http/engine/HttpClientEngineBase {

@@ -81,12 +81,15 @@ private class FormUrlStructSerializer(
     private val buffer
         get() = parent.buffer
 
+    // pre-encoded UTF-8 bytes of [prefix]
+    private val prefixBytes: ByteArray = if (prefix.isNotBlank()) prefix.encodeToByteArray() else EMPTY_BYTES
+
     init {
         structDescriptor.traits.mapNotNull { it as? QueryLiteral }
             .forEach { literal ->
-                writeField(literal.toDescriptor()) {
-                    serializeString(literal.value)
-                }
+                if (buffer.size > 0L) buffer.writeUtf8("&")
+                buffer.write(prefixBytes)
+                buffer.write(literal.encoded)
             }
     }
 
@@ -94,8 +97,8 @@ private class FormUrlStructSerializer(
         if (buffer.size > 0L) {
             buffer.writeUtf8("&")
         }
-        if (prefix.isNotBlank()) buffer.writeUtf8(prefix)
-        buffer.writeUtf8(descriptor.serialName)
+        buffer.write(prefixBytes)
+        buffer.write(descriptor.serialNameBytes)
         buffer.writeUtf8("=")
         block()
     }
@@ -220,7 +223,7 @@ private class FormUrlListSerializer(
         if (buffer.size == initialBufferPos) {
             // explicit serialization of an empty list
             if (buffer.size > 0L) buffer.writeUtf8("&")
-            buffer.writeUtf8(descriptor.serialName)
+            buffer.write(descriptor.serialNameBytes)
             buffer.writeUtf8("=")
         }
     }
@@ -364,6 +367,8 @@ private class FormUrlMapSerializer(
     override fun endMap() {}
 }
 
+private val EMPTY_BYTES = ByteArray(0)
+
 private fun SdkBuffer.commonWriteNumber(value: Number): Unit = writeUtf8(value.toString())
 
 // like checkNotNull() but throws the correct serialization exception
@@ -377,10 +382,14 @@ private inline fun <T : Any> checkNotSparse(value: T?): T {
     return value
 }
 
-private fun QueryLiteral.toDescriptor(): SdkFieldDescriptor = SdkFieldDescriptor(SerialKind.String, FormUrlSerialName(key))
-
 private val SdkFieldDescriptor.serialName: String
     get() = expectTrait<FormUrlSerialName>().name
+
+/**
+ * Provides the pre-encoded UTF-8 bytes for the field's serialized form-url name.
+ */
+internal val SdkFieldDescriptor.serialNameBytes: ByteArray
+    get() = expectTrait<FormUrlSerialName>().encoded
 
 private fun SdkFieldDescriptor.copyWithNewSerialName(newName: String): SdkFieldDescriptor {
     val newTraits = traits.filterNot { it is FormUrlSerialName }.toMutableSet()
