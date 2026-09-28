@@ -50,10 +50,15 @@ class Ec2Query : QueryHttpBindingProtocolGenerator() {
     }
 }
 
-private class Ec2QuerySerdeFormUrlDescriptorGenerator(
-    ctx: RenderingContext<Shape>,
-    memberShapes: List<MemberShape>? = null,
-) : QuerySerdeFormUrlDescriptorGenerator(ctx, memberShapes) {
+private class Ec2QuerySerdeFormUrlDescriptorGenerator : QuerySerdeFormUrlDescriptorGenerator {
+    constructor(ctx: RenderingContext<Shape>, memberShapes: List<MemberShape>?) : super(ctx, memberShapes)
+
+    constructor(
+        ctx: RenderingContext<Shape>,
+        memberShapes: List<MemberShape>?,
+        isOperationInputBody: Boolean,
+    ) : super(ctx, memberShapes, isOperationInputBody)
+
     /**
      * The serialized name for a shape. See
      * [EC2 query protocol](https://awslabs.github.io/smithy/1.0/spec/aws/aws-ec2-query-protocol.html#query-key-resolution)
@@ -98,6 +103,18 @@ private class Ec2QuerySerializerGenerator(
         members: List<MemberShape>,
         writer: KotlinWriter,
     ): FormUrlSerdeDescriptorGenerator = Ec2QuerySerdeFormUrlDescriptorGenerator(ctx.toRenderingContext(protocolGenerator, shape, writer), members)
+
+    override fun descriptorGenerator(
+        ctx: ProtocolGenerator.GenerationContext,
+        shape: Shape,
+        members: List<MemberShape>,
+        writer: KotlinWriter,
+        isOperationInputBody: Boolean,
+    ): FormUrlSerdeDescriptorGenerator = Ec2QuerySerdeFormUrlDescriptorGenerator(
+        ctx.toRenderingContext(protocolGenerator, shape, writer),
+        members,
+        isOperationInputBody,
+    )
 }
 
 private class Ec2QueryParserGenerator(
