@@ -1,0 +1,5 @@
+{
+    "id": "ed2d6262-e4dd-4684-af98-53fcafb93ccf",
+    "type": "bugfix",
+    "description": "Correctly generate classes for operation output structures which are reused as structure members in other operations"
+}
