@@ -10,6 +10,7 @@ import aws.smithy.kotlin.runtime.collections.Attributes
 import aws.smithy.kotlin.runtime.io.Closeable
 import aws.smithy.kotlin.runtime.telemetry.logging.logger
 import aws.smithy.kotlin.runtime.telemetry.trace.withSpan
+import kotlin.coroutines.coroutineContext
 
 // TODO - support caching the provider that actually resolved credentials such that future calls don't involve going through the full chain
 
@@ -47,6 +48,19 @@ public abstract class IdentityProviderChain<P : IdentityProvider, I : Identity>(
 
         throw chainException.value
     }
+
+    override suspend fun invalidate(rejectedIdentity: Identity) {
+        val logger = coroutineContext.logger<IdentityProviderChain<*, *>>()
+        providers.forEach { provider ->
+            try {
+                provider.invalidate(rejectedIdentity)
+            } catch (ex: Exception) {
+                // one provider failing to invalidate must not prevent the others from being told
+                logger.debug(ex) { "failed to invalidate identity on $provider" }
+            }
+        }
+    }
+
     override fun close() {
         val exceptions = providers.mapNotNull {
             try {
