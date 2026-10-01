@@ -5,6 +5,7 @@
 
 package aws.smithy.kotlin.runtime.auth.awscredentials
 
+import aws.smithy.kotlin.runtime.PlannedRemoval
 import aws.smithy.kotlin.runtime.collections.Attributes
 import aws.smithy.kotlin.runtime.time.Instant
 import aws.smithy.kotlin.runtime.time.ManualClock
@@ -16,6 +17,9 @@ import kotlin.test.assertFailsWith
 import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Duration.Companion.seconds
 
+// The subject of this class is deprecated and scheduled for removal; these cases pin its behavior until it goes.
+@Suppress("DEPRECATION")
+@OptIn(PlannedRemoval::class)
 class CachedCredentialsProviderTest {
     private val epoch = Instant.fromIso8601("2020-10-16T03:56:00Z")
     private val testExpiration = epoch + 30.minutes
@@ -60,6 +64,26 @@ class CachedCredentialsProviderTest {
         val expected = Credentials("AKID", "secret", expiration = expectedExpiration)
         assertEquals(expected, creds)
         assertEquals(1, source.callCount)
+    }
+
+    @Test
+    fun testStatedExpirationIsNotTruncated() = runTest {
+        // The source states 30 minutes, which is longer than the 15 minute default for undated credentials. The stated
+        // expiration wins: a resolution 20 minutes in is still served from the cache.
+        val source = TestCredentialsProvider(expiration = testExpiration)
+        val provider = CachedCredentialsProvider(source, clock = testClock)
+        val expected = Credentials("AKID", "secret", expiration = testExpiration)
+        assertEquals(expected, provider.resolve())
+        assertEquals(1, source.callCount)
+
+        testClock.advance(20.minutes)
+        assertEquals(expected, provider.resolve())
+        assertEquals(1, source.callCount)
+
+        // past the stated expiration, so this one reloads
+        testClock.advance(11.minutes)
+        provider.resolve()
+        assertEquals(2, source.callCount)
     }
 
     @Test

@@ -1,0 +1,6 @@
+{
+  "id": "facfca04-9efb-4599-b0ae-f7d1839d808c",
+  "type": "documentation",
+  "description": "Deprecate `CachedCredentialsProvider` and `CredentialsProvider.cached`. Credentials providers now cache and refresh their own credentials, and do so with behavior this wrapper does not implement: a refresh ahead of expiration, continued use of the cached credentials for a bounded window when a refresh fails, a rate limit on refresh attempts after a failure, and immediate propagation of a non-recoverable error. Remove the wrapper and use the provider directly",
+  "requiresMinorVersionBump": true
+}
