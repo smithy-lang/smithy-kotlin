@@ -47,6 +47,7 @@ public final class aws/smithy/kotlin/runtime/http/engine/okhttp/OkHttpCall : aws
 public final class aws/smithy/kotlin/runtime/http/engine/okhttp/OkHttpDns : okhttp3/Dns {
 	public fun <init> (Laws/smithy/kotlin/runtime/net/HostResolver;)V
 	public fun lookup (Ljava/lang/String;)Ljava/util/List;
+	public fun newCall (Lokhttp3/Dns$Request;)Lokhttp3/Dns$Call;
 }
 
 public final class aws/smithy/kotlin/runtime/http/engine/okhttp/OkHttpEngine : aws/smithy/kotlin/runtime/http/engine/HttpClientEngineBase {
@@ -74,6 +75,7 @@ public final class aws/smithy/kotlin/runtime/http/engine/okhttp/OkHttpEngineConf
 	public final fun getHostnameVerifier ()Ljavax/net/ssl/HostnameVerifier;
 	public final fun getKeyManager ()Ljavax/net/ssl/KeyManager;
 	public final fun getMaxConcurrencyPerHost-pVg5ArA ()I
+	public final fun getMaxIdleConnections-pVg5ArA ()I
 	public final fun getRetryOnConnectionFailure ()Z
 	public final fun getTrustManager ()Ljavax/net/ssl/X509TrustManager;
 	public final fun setKeyManager (Ljavax/net/ssl/KeyManager;)V
@@ -89,6 +91,7 @@ public final class aws/smithy/kotlin/runtime/http/engine/okhttp/OkHttpEngineConf
 	public final fun getHostnameVerifier ()Ljavax/net/ssl/HostnameVerifier;
 	public final fun getKeyManager ()Ljavax/net/ssl/KeyManager;
 	public final fun getMaxConcurrencyPerHost-0hXNFcg ()Lkotlin/UInt;
+	public final fun getMaxIdleConnections-0hXNFcg ()Lkotlin/UInt;
 	public final fun getRetryOnConnectionFailure ()Z
 	public fun getTelemetryProvider ()Laws/smithy/kotlin/runtime/telemetry/TelemetryProvider;
 	public final fun getTrustManager ()Ljavax/net/ssl/X509TrustManager;
@@ -98,6 +101,7 @@ public final class aws/smithy/kotlin/runtime/http/engine/okhttp/OkHttpEngineConf
 	public final fun setHostnameVerifier (Ljavax/net/ssl/HostnameVerifier;)V
 	public final fun setKeyManager (Ljavax/net/ssl/KeyManager;)V
 	public final fun setMaxConcurrencyPerHost-ExVfyTY (Lkotlin/UInt;)V
+	public final fun setMaxIdleConnections-ExVfyTY (Lkotlin/UInt;)V
 	public fun setTelemetryProvider (Laws/smithy/kotlin/runtime/telemetry/TelemetryProvider;)V
 	public final fun setTrustManager (Ljavax/net/ssl/X509TrustManager;)V
 }

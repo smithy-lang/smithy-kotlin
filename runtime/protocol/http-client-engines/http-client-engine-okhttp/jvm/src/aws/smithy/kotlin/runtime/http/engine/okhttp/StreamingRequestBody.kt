@@ -17,6 +17,7 @@ import okhttp3.MediaType
 import okhttp3.RequestBody
 import okio.BufferedSink
 import java.io.IOException
+import kotlin.coroutines.ContinuationInterceptor
 import kotlin.coroutines.CoroutineContext
 
 /**
@@ -66,7 +67,7 @@ public class StreamingRequestBody(
         } else {
             // remove the current dispatcher (if it exists) and use the internal
             // runBlocking dispatcher that blocks the *current* thread
-            val blockingContext = context.minusKey(CoroutineDispatcher)
+            val blockingContext = context.minusKey(ContinuationInterceptor)
 
             // Non-duplex (aka "normal") requests MUST write all of their request body
             // before this function returns. Requests are given a background thread to

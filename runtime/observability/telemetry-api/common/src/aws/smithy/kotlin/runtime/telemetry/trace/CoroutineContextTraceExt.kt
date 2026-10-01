@@ -5,7 +5,6 @@
 
 package aws.smithy.kotlin.runtime.telemetry.trace
 
-import aws.smithy.kotlin.runtime.ExperimentalApi
 import aws.smithy.kotlin.runtime.InternalApi
 import aws.smithy.kotlin.runtime.collections.Attributes
 import aws.smithy.kotlin.runtime.collections.emptyAttributes
@@ -60,7 +59,6 @@ public suspend inline fun <R> Tracer.withSpan(
  * Executes [block] within the scope of [TraceSpan]. The [block] of code is executed
  * with a new coroutine context that contains the [span] set in the context.
  */
-@OptIn(ExperimentalApi::class)
 @InternalApi
 public suspend inline fun <R> withSpan(
     span: TraceSpan,
@@ -109,7 +107,6 @@ public suspend inline fun <reified T, R> withSpan(
  * within the scope of the new span. The [block] of code is executed with a new coroutine
  * context that contains the newly created span set.
  */
-@OptIn(ExperimentalApi::class)
 @InternalApi
 public suspend inline fun <R> withSpan(
     sourceComponent: String,

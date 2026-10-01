@@ -16,5 +16,16 @@ internal fun Application.headerTests() {
                 call.respond(HttpStatusCode.OK)
             }
         }
+
+        route("echo-headers") {
+            get {
+                // Echo back all request headers as response headers prefixed with "x-echo-"
+                // and return the count of headers whose name starts with "x-]]" (injection marker)
+                val injectedCount = call.request.headers.names()
+                    .count { it.startsWith("x-injected", ignoreCase = true) }
+                call.response.header("x-injected-count", injectedCount.toString())
+                call.respond(HttpStatusCode.OK)
+            }
+        }
     }
 }

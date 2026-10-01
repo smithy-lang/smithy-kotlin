@@ -91,6 +91,15 @@ public final class aws/smithy/kotlin/runtime/client/LogMode$LogResponseWithBody 
 	public fun toString ()Ljava/lang/String;
 }
 
+public abstract interface class aws/smithy/kotlin/runtime/client/LogRedactionConfig {
+	public abstract fun getLogRedactedHeaders ()Ljava/util/Set;
+}
+
+public abstract interface class aws/smithy/kotlin/runtime/client/LogRedactionConfig$Builder {
+	public abstract fun getLogRedactedHeaders ()Ljava/util/Set;
+	public abstract fun setLogRedactedHeaders (Ljava/util/Set;)V
+}
+
 public abstract interface class aws/smithy/kotlin/runtime/client/ProtocolRequestInterceptorContext : aws/smithy/kotlin/runtime/client/RequestInterceptorContext {
 	public abstract fun getProtocolRequest ()Ljava/lang/Object;
 }
@@ -178,6 +187,7 @@ public final class aws/smithy/kotlin/runtime/client/SdkClientOption {
 	public final fun getEndpointDiscoveryEnabled ()Laws/smithy/kotlin/runtime/collections/AttributeKey;
 	public final fun getIdempotencyTokenProvider ()Laws/smithy/kotlin/runtime/collections/AttributeKey;
 	public final fun getLogMode ()Laws/smithy/kotlin/runtime/collections/AttributeKey;
+	public final fun getLogRedactedHeaders ()Laws/smithy/kotlin/runtime/collections/AttributeKey;
 	public final fun getOperationName ()Laws/smithy/kotlin/runtime/collections/AttributeKey;
 	public final fun getServiceName ()Laws/smithy/kotlin/runtime/collections/AttributeKey;
 }
@@ -185,6 +195,7 @@ public final class aws/smithy/kotlin/runtime/client/SdkClientOption {
 public final class aws/smithy/kotlin/runtime/client/SdkClientOptionKt {
 	public static final fun getIdempotencyTokenProvider (Laws/smithy/kotlin/runtime/operation/ExecutionContext;)Laws/smithy/kotlin/runtime/client/IdempotencyTokenProvider;
 	public static final fun getLogMode (Laws/smithy/kotlin/runtime/operation/ExecutionContext;)Laws/smithy/kotlin/runtime/client/LogMode;
+	public static final fun getLogRedactedHeaders (Laws/smithy/kotlin/runtime/operation/ExecutionContext;)Ljava/util/Set;
 	public static final fun getOperationName (Laws/smithy/kotlin/runtime/operation/ExecutionContext;)Ljava/lang/String;
 	public static final fun getServiceName (Laws/smithy/kotlin/runtime/operation/ExecutionContext;)Ljava/lang/String;
 }

@@ -1,0 +1,31 @@
+{
+  "version": "1.0",
+  "sources": ["model/enums.smithy"],
+  "projections": {
+    "enum-tests": {
+      "transforms": [
+        {
+          "name": "includeServices",
+          "args": {
+            "services": [
+              "smithy.kotlin.enums#EnumTestService"
+            ]
+          }
+        }
+      ],
+      "plugins": {
+        "kotlin-codegen": {
+          "service": "smithy.kotlin.enums#EnumTestService",
+          "package": {
+            "name": "smithy.kotlin.enums",
+            "version": "0.0.1"
+          },
+          "build": {
+            "rootProject": false,
+            "generateDefaultBuildFiles": false
+          }
+        }
+      }
+    }
+  }
+}

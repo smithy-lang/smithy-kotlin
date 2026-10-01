@@ -17,6 +17,7 @@ import aws.smithy.kotlin.runtime.io.SdkByteReadChannel
 import aws.smithy.kotlin.runtime.net.Host
 import aws.smithy.kotlin.runtime.net.Scheme
 import aws.smithy.kotlin.runtime.net.url.Url
+import aws.smithy.kotlin.runtime.operation.ExecutionContext
 import kotlinx.coroutines.test.runTest
 import kotlin.test.*
 
@@ -65,12 +66,12 @@ class HttpRequestBuilderTest {
         }
 
         assertTrue(builder.body is HttpBody.ChannelContent)
-        val actualNoContent = dumpRequest(builder, false)
+        val actualNoContent = dumpRequest(builder, ExecutionContext(), false)
         val expectedNoContent = "GET /debug/test?foo=bar\r\nHost: test.amazon.com\r\nContent-Length: ${content.length}\r\nx-baz: quux;qux\r\n\r\n"
         assertTrue(builder.body is HttpBody.ChannelContent)
         assertEquals(expectedNoContent, actualNoContent)
 
-        val actualWithContent = dumpRequest(builder, true)
+        val actualWithContent = dumpRequest(builder, ExecutionContext(), true)
         assertTrue(builder.body is HttpBody.SourceContent)
         val expectedWithContent = "$expectedNoContent$content"
         assertEquals(expectedWithContent, actualWithContent)
@@ -96,8 +97,71 @@ class HttpRequestBuilderTest {
             body = ByteArrayContent("foobar".encodeToByteArray()),
         )
 
-        val actual = dumpRequest(req.toBuilder(), true)
+        val actual = dumpRequest(req.toBuilder(), ExecutionContext(), true)
         val expected = "POST /debug/test?q1=foo\r\nHost: test.amazon.com\r\nContent-Length: 6\r\nx-baz: bar\r\nx-quux: qux\r\n\r\nfoobar"
+        assertEquals(expected, actual)
+    }
+
+    @Test
+    fun testDumpRequestRedactsHeaders() = runTest {
+        val builder = HttpRequestBuilder().apply {
+            url {
+                host = Host.Domain("test.amazon.com")
+                path.encoded = "/debug/test"
+            }
+            headers {
+                append("Authorization", "AWS4-HMAC-SHA256 Credential=...")
+                append("X-Amz-Security-Token", "secret-token")
+                append("x-safe-header", "visible-value")
+            }
+        }
+
+        // Header names are normalized to lowercase by HeadersBuilder (backed by CaseInsensitiveMap)
+        val context = ExecutionContext().apply {
+            set(LOG_REDACTED_HEADERS_KEY, setOf("Authorization", "X-Amz-Security-Token"))
+        }
+        val actual = dumpRequest(builder, context, false)
+        val expected = "GET /debug/test\r\nHost: test.amazon.com\r\nauthorization: *** Sensitive Data Redacted ***\r\nx-amz-security-token: *** Sensitive Data Redacted ***\r\nx-safe-header: visible-value\r\n\r\n"
+        assertEquals(expected, actual)
+    }
+
+    @Test
+    fun testDumpRequestRedactsCaseInsensitive() = runTest {
+        val builder = HttpRequestBuilder().apply {
+            url {
+                host = Host.Domain("test.amazon.com")
+                path.encoded = "/test"
+            }
+            headers {
+                append("authorization", "secret")
+                append("x-custom", "visible")
+            }
+        }
+
+        // Redaction set uses mixed case but still matches lowercase keys from HeadersBuilder
+        val context = ExecutionContext().apply {
+            set(LOG_REDACTED_HEADERS_KEY, setOf("Authorization"))
+        }
+        val actual = dumpRequest(builder, context, false)
+        val expected = "GET /test\r\nHost: test.amazon.com\r\nauthorization: *** Sensitive Data Redacted ***\r\nx-custom: visible\r\n\r\n"
+        assertEquals(expected, actual)
+    }
+
+    @Test
+    fun testDumpRequestNoRedactionByDefault() = runTest {
+        val builder = HttpRequestBuilder().apply {
+            url {
+                host = Host.Domain("test.amazon.com")
+                path.encoded = "/test"
+            }
+            headers {
+                // Appended as "Authorization" but stored lowercase by HeadersBuilder
+                append("Authorization", "AWS4-HMAC-SHA256 Credential=...")
+            }
+        }
+
+        val actual = dumpRequest(builder, ExecutionContext(), false)
+        val expected = "GET /test\r\nHost: test.amazon.com\r\nauthorization: AWS4-HMAC-SHA256 Credential=...\r\n\r\n"
         assertEquals(expected, actual)
     }
 }

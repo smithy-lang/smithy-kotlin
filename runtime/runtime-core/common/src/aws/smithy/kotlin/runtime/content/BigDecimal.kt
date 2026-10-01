@@ -5,6 +5,12 @@
 package aws.smithy.kotlin.runtime.content
 
 /**
+ * Maximum allowed magnitude for a [BigDecimal] exponent. Exponents beyond this limit would cause
+ * excessive memory allocation when the value is materialized as a plain string.
+ */
+public const val MAX_DECIMAL_FRACTION_EXPONENT: Int = 1000
+
+/**
  * A floating point decimal number with arbitrary precision.
  * @param value the [String] representation of this decimal number
  */
@@ -101,4 +107,16 @@ public expect class BigDecimal(value: String) :
      * @param other The value to compare against
      */
     public override operator fun compareTo(other: BigDecimal): Int
+}
+
+internal fun assertExponent(value: Int) {
+    require(value in -MAX_DECIMAL_FRACTION_EXPONENT..MAX_DECIMAL_FRACTION_EXPONENT) {
+        "BigDecimal exponent $value exceeds maximum allowed magnitude of $MAX_DECIMAL_FRACTION_EXPONENT"
+    }
+}
+
+internal fun assertExponent(value: Long) {
+    require(value in -MAX_DECIMAL_FRACTION_EXPONENT..MAX_DECIMAL_FRACTION_EXPONENT) {
+        "BigDecimal exponent $value exceeds maximum allowed magnitude of $MAX_DECIMAL_FRACTION_EXPONENT"
+    }
 }

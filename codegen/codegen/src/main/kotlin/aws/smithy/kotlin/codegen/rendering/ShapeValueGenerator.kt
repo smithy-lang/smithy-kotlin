@@ -144,7 +144,7 @@ class ShapeValueGenerator(
                     ")"
                 } else {
                     // blob params are spit out as strings
-                    ".encodeAsByteArray()"
+                    writer.format(".#T()", RuntimeTypes.SmithyTest.encodeAsByteArray)
                 }
             }
 

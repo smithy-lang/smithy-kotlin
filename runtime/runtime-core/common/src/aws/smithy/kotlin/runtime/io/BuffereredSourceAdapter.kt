@@ -13,6 +13,7 @@ internal expect class BufferedSourceAdapter(source: okio.BufferedSource) : SdkBu
     override fun read(sink: SdkBuffer, limit: Long): Long
     override fun readByte(): Byte
     override fun read(sink: ByteArray, offset: Int, limit: Int): Int
+    override fun peekByte(): Byte
     override fun readByteArray(): ByteArray
     override fun readInt(): Int
     override fun readIntLe(): Int
@@ -54,6 +55,11 @@ internal abstract class AbstractBufferedSourceAdapter(
     override fun skip(byteCount: Long): Unit = wrapOkio { delegate.skip(byteCount) }
 
     override fun readByte(): Byte = wrapOkio { delegate.readByte() }
+
+    override fun peekByte(): Byte = wrapOkio {
+        delegate.require(1L)
+        delegate.buffer[0L]
+    }
 
     override fun readShort(): Short = wrapOkio { delegate.readShort() }
 

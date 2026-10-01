@@ -166,6 +166,5 @@ class HttpClientEngineTest {
         assertFailsWith(HttpClientEngineClosedException::class) {
             client.call(SdkHttpRequest(HttpRequestBuilder()))
         }
-        Unit
     }
 }

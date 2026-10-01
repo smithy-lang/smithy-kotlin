@@ -25,6 +25,7 @@ kotlin {
                 // Coroutines' locking features are used in retry token bucket implementations
                 api(libs.kotlinx.coroutines.core)
                 implementation(libs.kotlinx.datetime)
+                implementation(libs.kotlinx.io.core)
             }
         }
 
