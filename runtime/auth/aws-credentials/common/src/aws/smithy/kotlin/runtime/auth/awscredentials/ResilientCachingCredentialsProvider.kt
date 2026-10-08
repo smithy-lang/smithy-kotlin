@@ -127,7 +127,7 @@ public class ResilientCachingCredentialsProvider(
             if (!current.mayAttemptRefresh(now)) return current.credentials
 
             try {
-                install(fetch(attributes), current).credentials
+                install(fetch(attributes, current), current).credentials
             } catch (ex: Exception) {
                 if (ex.isNonRecoverableCredentialsError()) {
                     errors.record(ex, jitter.errorCacheTtl())
@@ -180,7 +180,7 @@ public class ResilientCachingCredentialsProvider(
         }
 
         try {
-            install(fetch(attributes), current).credentials
+            install(fetch(attributes, current), current).credentials
         } catch (ex: Exception) {
             if (ex.isNonRecoverableCredentialsError()) {
                 errors.record(ex, jitter.errorCacheTtl())
@@ -197,9 +197,15 @@ public class ResilientCachingCredentialsProvider(
      *
      * [CallerOwnsCredentialsRefresh] is added to the attributes passed down so that a provider which would otherwise
      * pace or cache on its own resolves straight through instead - this instance is the lifecycle. The copy costs one
-     * small allocation per source call, not per request.
+     * small allocation per source call, not per request. [CallerHasCachedCredentials] tells the source whether a
+     * failure would leave this instance with credentials to fall back on.
      */
-    private suspend fun fetch(attributes: Attributes): Credentials = source.resolve(attributes.toMutableAttributes().apply { set(CallerOwnsCredentialsRefresh, true) })
+    private suspend fun fetch(attributes: Attributes, current: CacheEntry?): Credentials = source.resolve(
+        attributes.toMutableAttributes().apply {
+            set(CallerOwnsCredentialsRefresh, true)
+            set(CallerHasCachedCredentials, current != null)
+        },
+    )
 
     /**
      * Installs a freshly resolved credential, computing its policy and deadlines.
