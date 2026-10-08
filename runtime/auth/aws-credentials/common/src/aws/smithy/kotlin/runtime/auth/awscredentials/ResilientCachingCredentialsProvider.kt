@@ -92,6 +92,9 @@ public class ResilientCachingCredentialsProvider(
     // Read on every resolve without holding the lock, so it must be atomic. Written only under refreshLock.
     private val state = atomic<CacheEntry?>(null)
 
+    /** The cached entry, for tests that check its refresh deadlines. */
+    internal val cachedEntry: CacheEntry? get() = state.value
+
     private val closed = atomic(false)
 
     override suspend fun resolve(attributes: Attributes): Credentials {
