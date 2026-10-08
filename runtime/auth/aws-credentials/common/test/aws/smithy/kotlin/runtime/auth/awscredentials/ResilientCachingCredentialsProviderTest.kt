@@ -183,6 +183,29 @@ class ResilientCachingCredentialsProviderTest {
     }
 
     @Test
+    fun testCachingOnlyAsksTheSourceAgainOnceExpiredInsteadOfBackingOff() = runTest {
+        // Without static stability there is nothing to serve once the credentials expire, so a backoff would only fail
+        // every call for its whole length without asking a source that may already have recovered.
+        val clock = ManualClock(epoch)
+        val source = TestCredentialsProvider(
+            listOf(
+                Result.success(testCredentials("AKID1", epoch + 30.minutes)), // declares nothing -> CachingOnly
+                Result.failure(ClientException("source unavailable")),
+                Result.success(testCredentials("AKID2", epoch + 2.hours)),
+            ),
+        )
+        val provider = cache(source, clock)
+
+        provider.resolve()
+        clock.advance(1.hours)
+        assertFailsWith<CredentialsProviderException> { provider.resolve() }
+        clock.advance(1.minutes)
+
+        assertEquals("AKID2", provider.resolve().accessKeyId)
+        assertEquals(3, source.callCount)
+    }
+
+    @Test
     fun testCachingOnlyServesUnexpiredCredentialsAfterAFailedRefresh() = runTest {
         val clock = ManualClock(epoch)
         val cached = testCredentials("AKID1", epoch + 2.hours)

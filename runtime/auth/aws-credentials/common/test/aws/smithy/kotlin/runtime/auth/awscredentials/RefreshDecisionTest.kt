@@ -74,6 +74,19 @@ class RefreshDecisionTest {
     }
 
     @Test
+    fun testBackoffOnlyHoldsWhileThereIsSomethingToServe() {
+        val backoffUntil = epoch + 2.hours
+        val pastExpiry = epoch + 1.hours
+
+        val stable = entry(policy = RefreshPolicy.FullLifecycle, nextRefreshAllowedAt = backoffUntil)
+        assertEquals(false, stable.mayAttemptRefresh(pastExpiry), "static stability serves past expiry, so the backoff holds")
+
+        val cachingOnly = entry(policy = RefreshPolicy.CachingOnly, nextRefreshAllowedAt = backoffUntil)
+        assertEquals(false, cachingOnly.mayAttemptRefresh(pastExpiry - 1.seconds), "still valid, so the backoff holds")
+        assertEquals(true, cachingOnly.mayAttemptRefresh(pastExpiry), "nothing left to serve, so the source is asked again")
+    }
+
+    @Test
     fun testUsableAt() {
         val expiry = epoch + 1.hours
 

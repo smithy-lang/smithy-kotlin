@@ -187,7 +187,8 @@ public class ResilientCachingCredentialsProvider(
                 throw ex
             }
             if (current == null) throw ex // nothing cached: nothing to be stable against
-            onRefreshFailed(current, ex)
+            // With nothing left to serve there is no backoff to install, and no cached credentials to continue with.
+            if (current.usableAt(clock.now()) != null) onRefreshFailed(current, ex)
             staleOrThrow(current, ex)
         }
     }
