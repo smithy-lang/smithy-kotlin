@@ -72,13 +72,21 @@ internal fun testCredentials(
     expiration: Instant? = null,
     behavior: CredentialsRefreshBehavior? = null,
     providerName: String? = null,
+    acceptedPastExpiration: Boolean = false,
 ): Credentials = Credentials(
     accessKeyId = accessKeyId,
     secretAccessKey = "secret",
     sessionToken = null,
     expiration = expiration,
     providerName = providerName,
-    attributes = behavior?.let { attributesOf { CredentialsRefreshBehaviorKey to it } },
+    attributes = if (behavior == null && !acceptedPastExpiration) {
+        null
+    } else {
+        attributesOf {
+            behavior?.let { CredentialsRefreshBehaviorKey to it }
+            if (acceptedPastExpiration) AcceptedPastExpirationKey to true
+        }
+    },
 )
 
 /** Jitter pinned to fixed values so backoff assertions name an exact instant. */
