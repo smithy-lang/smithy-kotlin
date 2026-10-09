@@ -9,6 +9,7 @@ import aws.smithy.kotlin.runtime.collections.Attributes
 import aws.smithy.kotlin.runtime.collections.toMutableAttributes
 import aws.smithy.kotlin.runtime.identity.Identity
 import aws.smithy.kotlin.runtime.io.closeIfCloseable
+import aws.smithy.kotlin.runtime.telemetry.logging.debug
 import aws.smithy.kotlin.runtime.telemetry.logging.logger
 import aws.smithy.kotlin.runtime.telemetry.logging.trace
 import aws.smithy.kotlin.runtime.time.Clock
@@ -227,9 +228,20 @@ public class ResilientCachingCredentialsProvider(
         // make — whether the credential is still accepted is the target service's answer, and for these sources we have
         // no visibility into what that service is.
         if (policy.staticStability && fetched.expiration?.let { it <= now } == true) {
-            // Fall back to the previous entry, which keeps its own policy — it describes its own credentials. On a cold
-            // cache the expired response is the only entry there is, and static stability is what lets it be served.
-            return onExpiredResponse(previous ?: timing.entryFor(fetched, policy, now))
+            // Fall back to the previous entry, which keeps its own policy — it describes its own credentials.
+            if (previous != null) return onExpiredResponse(previous, fetched)
+
+            // On a cold cache the expired response is the only entry there is. A source whose expired credentials the
+            // target services still accept (IMDS) has it served with the backoff, as IMDS always has. From any other
+            // source it is handed back without being cached, as before this cache existed: whether it is still
+            // accepted is the target service's answer, and the next resolution asks the source again.
+            val entry = timing.entryFor(fetched, policy, now)
+            if (fetched.attributes.getOrNull(AcceptedPastExpirationKey) == true) return onExpiredFirstResponse(entry)
+            coroutineContext.debug<ResilientCachingCredentialsProvider> {
+                "the credential source returned credentials that have already expired (expiration=${fetched.expiration}); " +
+                    "returning them without caching"
+            }
+            return entry
         }
 
         val entry = timing.entryFor(fetched, policy, now)
@@ -252,13 +264,30 @@ public class ResilientCachingCredentialsProvider(
      * The source returned credentials that are already expired. Keep using what we have and back off, matching the
      * behavior IMDS implements today for its own credentials.
      */
-    private suspend fun onExpiredResponse(entry: CacheEntry): CacheEntry {
+    private suspend fun onExpiredResponse(entry: CacheEntry, fetched: Credentials): CacheEntry {
         val backoff = jitter.refreshBackoff()
         val updated = entry.withBackoff(clock.now(), backoff)
         state.value = updated
         coroutineContext.logger<ResilientCachingCredentialsProvider>().warn {
-            "Attempting credential expiration extension due to a credential service availability issue. " +
-                "A refresh of these credentials will be attempted again in ${backoff.inWholeSeconds} seconds."
+            "Credential refresh failed: the credential source returned credentials that have already expired " +
+                "(expiration=${fetched.expiration}). The SDK will continue using cached credentials. " +
+                "A refresh of these credentials will be attempted again after ${backoff.inWholeSeconds} seconds."
+        }
+        return updated
+    }
+
+    /**
+     * Nothing is cached and the source returned credentials that are already expired, from a source whose expired
+     * credentials the target services still accept. Serve them, and back off before asking the source again.
+     */
+    private suspend fun onExpiredFirstResponse(entry: CacheEntry): CacheEntry {
+        val backoff = jitter.refreshBackoff()
+        val updated = entry.withBackoff(clock.now(), backoff)
+        state.value = updated
+        coroutineContext.logger<ResilientCachingCredentialsProvider>().warn {
+            "The credential source returned credentials that have already expired (expiration=${entry.expiresAt}). " +
+                "No other credentials are cached, so the SDK will use these credentials. " +
+                "A refresh of these credentials will be attempted again after ${backoff.inWholeSeconds} seconds."
         }
         return updated
     }
