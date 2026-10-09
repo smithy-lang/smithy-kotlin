@@ -656,6 +656,25 @@ class ResilientCachingCredentialsProviderTest {
     }
 
     @Test
+    fun testTheSourceIsToldWhetherTheCacheHoldsCredentials() = runTest {
+        val clock = ManualClock(epoch)
+        val source = TestCredentialsProvider(
+            listOf(
+                Result.success(testCredentials("AKID1", epoch + 2.hours, stable)),
+                Result.success(testCredentials("AKID2", epoch + 4.hours, stable)),
+            ),
+        )
+        val cache = cache(source, clock)
+
+        cache.resolve()
+        assertEquals(false, source.lastAttributes?.getOrNull(CallerHasCachedCredentials), "a cold cache has nothing to fall back on")
+
+        clock.advance(2.hours - 30.seconds)
+        cache.resolve()
+        assertEquals(true, source.lastAttributes?.getOrNull(CallerHasCachedCredentials))
+    }
+
+    @Test
     fun testTheCallersOwnAttributesAreForwarded() = runTest {
         val clock = ManualClock(epoch)
         val key = aws.smithy.kotlin.runtime.collections.AttributeKey<String>("test#Marker")
