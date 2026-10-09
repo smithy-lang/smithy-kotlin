@@ -447,6 +447,33 @@ class ResilientCachingCredentialsProviderTest {
     }
 
     @Test
+    fun testEveryCallerWaitsForTheRefreshAfterAnInvalidation() = runTest {
+        // A rejection is visible to every caller until a refresh replaces the credentials, not only to the first: the
+        // others wait for the in-flight refresh rather than being handed the credentials the service just rejected.
+        val clock = ManualClock(epoch)
+        val first = testCredentials("AKID1", epoch + 2.hours, stable)
+        val gate = CompletableDeferred<Unit>()
+        val source = TestCredentialsProvider(
+            listOf(Result.success(first), Result.success(testCredentials("AKID2", epoch + 2.hours, stable))),
+            onResolve = { call -> if (call == 1) gate.await() },
+        )
+        val provider = cache(source, clock)
+
+        provider.resolve()
+        provider.invalidate(first)
+
+        val keys = coroutineScope {
+            val callers = List(4) { async { provider.resolve() } }
+            yield()
+            gate.complete(Unit)
+            callers.map { it.await().accessKeyId }
+        }
+
+        assertEquals(List(4) { "AKID2" }, keys)
+        assertEquals(2, source.callCount, "one refresh, shared by every caller")
+    }
+
+    @Test
     fun testInvalidationOfAValueWeNoLongerHoldIsANoOp() = runTest {
         val clock = ManualClock(epoch)
         val source = TestCredentialsProvider(

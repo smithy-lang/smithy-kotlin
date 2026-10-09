@@ -97,16 +97,23 @@ public class ResilientCachingCredentialsProvider(
     override suspend fun resolve(attributes: Attributes): Credentials {
         check(!closed.value) { "Credentials provider is closed" }
 
-        val entry = state.value
-        // A rejection naming the credentials we hold forces the mandatory path, which is still subject to the refresh
-        // backoff. One naming anything else refers to credentials already replaced, so it is discarded.
-        val invalidated = entry != null && invalidation.consumeIfMatches(entry.credentials)
-        if (entry == null) return refreshBlocking(attributes, invalidated = false)
+        val entry = state.value ?: return refreshBlocking(attributes)
+        // A rejection naming the credentials we hold forces every caller onto the mandatory path until a refresh
+        // replaces them, so none of them is handed the rejected credentials while that refresh is in flight. The path
+        // is still subject to the refresh backoff.
+        val invalidated = invalidation.isRejected(entry.credentials)
+        val now = clock.now()
 
-        return when (entry.urgency(clock.now(), invalidated)) {
+        return when (entry.urgency(now, invalidated)) {
             RefreshUrgency.None -> entry.credentials
             RefreshUrgency.Advisory -> refreshAdvisory(attributes, entry)
-            RefreshUrgency.Mandatory -> refreshBlocking(attributes, invalidated)
+            // The backoff is checked before the lock, so while it holds, callers are served without queuing on it.
+            RefreshUrgency.Mandatory -> if (entry.mayAttemptRefresh(now)) {
+                refreshBlocking(attributes)
+            } else {
+                errors.throwIfLive()
+                staleOrThrow(entry, null)
+            }
         }
     }
 
@@ -120,7 +127,9 @@ public class ResilientCachingCredentialsProvider(
         if (!refreshLock.tryLock()) return fallback.credentials
 
         return try {
-            // Re-check: another coroutine may have refreshed between the read and acquiring the lock.
+            // Re-check: another coroutine may have refreshed, or recorded a non-recoverable error, between the read
+            // and acquiring the lock.
+            errors.throwIfLive()
             val current = state.value ?: fallback
             val now = clock.now()
             if (current.urgency(now) == RefreshUrgency.None) return current.credentials
@@ -145,20 +154,15 @@ public class ResilientCachingCredentialsProvider(
      * Refresh, waiting for the lock. Used for the initial resolution, inside the mandatory window, and after a
      * rejection. On failure, [usableAt] decides whether the stale credentials are returned or the error is raised.
      *
-     * [invalidated] is passed in rather than re-read, because the resolve path already consumed the marker. Re-reading
-     * it here would find nothing and fall into the "already fresh enough" shortcut below, which would hand back the
-     * very credentials the service rejected.
+     * The rejection is read again here rather than passed in: it stays recorded until a refresh replaces the
+     * credentials it names, so a caller that waited for the lock while another refreshed sees it gone and returns the
+     * refreshed value, instead of refreshing a second time.
      */
-    private suspend fun refreshBlocking(
-        attributes: Attributes,
-        invalidated: Boolean,
-    ): Credentials = refreshLock.withLock {
+    private suspend fun refreshBlocking(attributes: Attributes): Credentials = refreshLock.withLock {
         errors.throwIfLive()
 
         val current = state.value
-        // Either the caller consumed a rejection for these credentials, or one arrived while we waited
-        // for the lock.
-        val rejected = invalidated || (current != null && invalidation.consumeIfMatches(current.credentials))
+        val rejected = current != null && invalidation.isRejected(current.credentials)
 
         if (current != null) {
             val now = clock.now()
@@ -173,9 +177,9 @@ public class ResilientCachingCredentialsProvider(
                     RefreshUrgency.Mandatory -> if (!eligible) return@withLock staleOrThrow(current, null)
                 }
             } else if (!eligible) {
-                // A rejection deliberately does not bypass the backoff. Re-arm so the next resolve tries again.
-                invalidation.rearm(current.credentials)
-                return@withLock current.credentials
+                // A rejection deliberately does not bypass the backoff. It stays recorded, so the refresh happens once
+                // the backoff lapses.
+                return@withLock staleOrThrow(current, null)
             }
         }
 
