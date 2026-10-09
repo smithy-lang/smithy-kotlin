@@ -56,11 +56,15 @@ internal fun CacheEntry?.urgency(now: Instant, invalidated: Boolean = false): Re
 }
 
 /**
- * Whether the backoff installed by the last failed refresh has elapsed.
+ * Whether a refresh may be attempted at [now]: the backoff installed by the last failed refresh has elapsed, or there
+ * is nothing to serve in the refresh's place.
  *
- * An entry that has never failed a refresh carries no deadline and is always eligible.
+ * An entry that has never failed a refresh carries no deadline and is always eligible. The backoff only spaces out
+ * refreshes while the cached credentials can still be served. Once they cannot ([usableAt] is null: credentials
+ * without static stability, past their expiration), every resolution asks the source again. Holding the backoff would
+ * fail every call for its whole length without asking a source that may already have recovered.
  */
-internal fun CacheEntry.mayAttemptRefresh(now: Instant): Boolean = nextRefreshAllowedAt?.let { now >= it } ?: true
+internal fun CacheEntry.mayAttemptRefresh(now: Instant): Boolean = usableAt(now) == null || nextRefreshAllowedAt?.let { now >= it } ?: true
 
 /**
  * The credentials this entry may still be used with at [now], or null if it may not be used at all.
