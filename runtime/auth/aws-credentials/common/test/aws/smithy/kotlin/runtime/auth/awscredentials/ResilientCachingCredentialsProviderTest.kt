@@ -183,6 +183,29 @@ class ResilientCachingCredentialsProviderTest {
     }
 
     @Test
+    fun testCachingOnlyAsksTheSourceAgainOnceExpiredInsteadOfBackingOff() = runTest {
+        // Without static stability there is nothing to serve once the credentials expire, so a backoff would only fail
+        // every call for its whole length without asking a source that may already have recovered.
+        val clock = ManualClock(epoch)
+        val source = TestCredentialsProvider(
+            listOf(
+                Result.success(testCredentials("AKID1", epoch + 30.minutes)), // declares nothing -> CachingOnly
+                Result.failure(ClientException("source unavailable")),
+                Result.success(testCredentials("AKID2", epoch + 2.hours)),
+            ),
+        )
+        val provider = cache(source, clock)
+
+        provider.resolve()
+        clock.advance(1.hours)
+        assertFailsWith<CredentialsProviderException> { provider.resolve() }
+        clock.advance(1.minutes)
+
+        assertEquals("AKID2", provider.resolve().accessKeyId)
+        assertEquals(3, source.callCount)
+    }
+
+    @Test
     fun testCachingOnlyServesUnexpiredCredentialsAfterAFailedRefresh() = runTest {
         val clock = ManualClock(epoch)
         val cached = testCredentials("AKID1", epoch + 2.hours)
@@ -421,6 +444,33 @@ class ResilientCachingCredentialsProviderTest {
 
         assertEquals("AKID2", provider.resolve().accessKeyId)
         assertEquals(2, source.callCount, "exactly one refresh")
+    }
+
+    @Test
+    fun testEveryCallerWaitsForTheRefreshAfterAnInvalidation() = runTest {
+        // A rejection is visible to every caller until a refresh replaces the credentials, not only to the first: the
+        // others wait for the in-flight refresh rather than being handed the credentials the service just rejected.
+        val clock = ManualClock(epoch)
+        val first = testCredentials("AKID1", epoch + 2.hours, stable)
+        val gate = CompletableDeferred<Unit>()
+        val source = TestCredentialsProvider(
+            listOf(Result.success(first), Result.success(testCredentials("AKID2", epoch + 2.hours, stable))),
+            onResolve = { call -> if (call == 1) gate.await() },
+        )
+        val provider = cache(source, clock)
+
+        provider.resolve()
+        provider.invalidate(first)
+
+        val keys = coroutineScope {
+            val callers = List(4) { async { provider.resolve() } }
+            yield()
+            gate.complete(Unit)
+            callers.map { it.await().accessKeyId }
+        }
+
+        assertEquals(List(4) { "AKID2" }, keys)
+        assertEquals(2, source.callCount, "one refresh, shared by every caller")
     }
 
     @Test
