@@ -163,6 +163,38 @@ class HttpAuthHandlerTest {
         assertMetricHasRpcAttributesAndContext(provider, "smithy.client.call.resolve_endpoint_duration")
     }
 
+    @Test
+    fun testResolvedIdentityAndProviderArePublished() = runTest {
+        // Nothing else in the pipeline sees which provider supplied the identity for this attempt, so a component
+        // reacting to an authentication failure has no way back to it unless both are published here.
+        val inner = object : Handler<SdkHttpRequest, Unit> {
+            override suspend fun call(request: SdkHttpRequest) = Unit
+        }
+        val ctx = ExecutionContext()
+        val interceptorExec = InterceptorExecutor<Unit, Unit>(ctx, emptyList(), OperationTypeInfo(Unit::class, Unit::class))
+        interceptorExec.readBeforeExecution(Unit)
+
+        val identityProvider = object : IdentityProvider {
+            override suspend fun resolve(attributes: Attributes): Identity = AnonymousIdentity
+        }
+        val scheme = object : AuthScheme {
+            override val schemeId: AuthSchemeId = AuthSchemeId.Anonymous
+            override fun identityProvider(identityProviderConfig: IdentityProviderConfig): IdentityProvider = identityProvider
+            override val signer: HttpSigner = AnonymousHttpSigner
+        }
+
+        val authConfig = OperationAuthConfig(
+            AuthSchemeResolver { listOf(AuthOption(AuthSchemeId.Anonymous)) },
+            listOf(scheme).associateBy(AuthScheme::schemeId),
+            AnonymousIdentityProvider.asIdentityProviderConfig(),
+        )
+        val op = AuthHandler<Unit, Unit>(inner, interceptorExec, authConfig)
+        op.call(SdkHttpRequest(ctx, HttpRequestBuilder()))
+
+        assertSame(AnonymousIdentity, ctx.getOrNull(HttpOperationContext.ResolvedIdentity))
+        assertSame(identityProvider, ctx.getOrNull(HttpOperationContext.ResolvedIdentityProvider))
+    }
+
     /**
      * Asserts that exactly one measurement was recorded for [name] and that it carries the rpc.service/rpc.method
      * attributes and the provider's current telemetry context.
