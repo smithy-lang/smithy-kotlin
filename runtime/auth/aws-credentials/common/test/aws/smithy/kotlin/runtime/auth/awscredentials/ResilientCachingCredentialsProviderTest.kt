@@ -274,18 +274,24 @@ class ResilientCachingCredentialsProviderTest {
 
     @Test
     fun testExpiredResponseOnAColdCacheFollowsThePolicy() = runTest {
-        // Nothing cached, so the expired response is the only entry there is and the policy alone decides. This is
-        // the case no existing test covered: standalone IMDS returns such a value today, and through the chain the
-        // same response now meets the expiration-extension path.
+        // Nothing cached, so the expired response is the only entry there is.
         val clock = ManualClock(epoch)
-        val expired = testCredentials("AKID1", epoch - 1.minutes, stable)
 
-        val stableSource = TestCredentialsProvider(listOf(Result.success(expired)))
-        assertSame(
-            expired,
-            cache(stableSource, clock).resolve(),
-            "a static-stability source keeps signing with what it has, as it does standalone today",
+        // A source whose expired credentials the target services still accept, as IMDS's are, is served.
+        val accepted = testCredentials("AKID1", epoch - 1.minutes, stable, acceptedPastExpiration = true)
+        val acceptedSource = TestCredentialsProvider(listOf(Result.success(accepted)))
+        assertSame(accepted, cache(acceptedSource, clock).resolve(), "served, and the backoff applies")
+
+        // Any other static-stability source has it handed back without being cached, as before this cache existed,
+        // so the next resolution asks the source again rather than backing off.
+        val expired = testCredentials("AKID1", epoch - 1.minutes, stable)
+        val stableSource = TestCredentialsProvider(
+            listOf(Result.success(expired), Result.success(testCredentials("AKID2", epoch + 1.hours, stable))),
         )
+        val stableCache = cache(stableSource, clock)
+        assertSame(expired, stableCache.resolve(), "the expired response is returned, not refused")
+        assertEquals("AKID2", stableCache.resolve().accessKeyId)
+        assertEquals(2, stableSource.callCount)
 
         val plainExpired = testCredentials("AKID1", epoch - 1.minutes)
         val plainSource = TestCredentialsProvider(
@@ -683,6 +689,25 @@ class ResilientCachingCredentialsProviderTest {
     }
 
     @Test
+    fun testTheSourceIsToldWhetherTheCacheHoldsCredentials() = runTest {
+        val clock = ManualClock(epoch)
+        val source = TestCredentialsProvider(
+            listOf(
+                Result.success(testCredentials("AKID1", epoch + 2.hours, stable)),
+                Result.success(testCredentials("AKID2", epoch + 4.hours, stable)),
+            ),
+        )
+        val cache = cache(source, clock)
+
+        cache.resolve()
+        assertEquals(false, source.lastAttributes?.getOrNull(CallerHasCachedCredentials), "a cold cache has nothing to fall back on")
+
+        clock.advance(2.hours - 30.seconds)
+        cache.resolve()
+        assertEquals(true, source.lastAttributes?.getOrNull(CallerHasCachedCredentials))
+    }
+
+    @Test
     fun testTheCallersOwnAttributesAreForwarded() = runTest {
         val clock = ManualClock(epoch)
         val key = aws.smithy.kotlin.runtime.collections.AttributeKey<String>("test#Marker")
@@ -762,7 +787,7 @@ class ResilientCachingCredentialsProviderTest {
         }
 
         val warning = logs.recordsAt(LogLevel.Warning).single()
-        assertTrue(warning.message.contains("credential expiration extension"), warning.message)
+        assertTrue(warning.message.contains("already expired"), warning.message)
     }
 
     // --- SelfManagedRefresh ---

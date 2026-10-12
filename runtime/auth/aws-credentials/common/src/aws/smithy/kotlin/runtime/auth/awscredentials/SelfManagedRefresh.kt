@@ -30,6 +30,19 @@ public val CallerOwnsCredentialsRefresh: AttributeKey<Boolean> =
     AttributeKey("aws.smithy.kotlin#CallerOwnsCredentialsRefresh")
 
 /**
+ * Set alongside [CallerOwnsCredentialsRefresh] when the cache already holds credentials it can fall back on if this
+ * call fails.
+ *
+ * A source that could answer a failed refresh with credentials it still holds itself should throw instead when this is
+ * set, so the cache sees the failure: it then serves what it holds and backs off. Answering with the held credentials
+ * would read as a successful refresh. When this is not set, the cache has nothing to fall back on, and answering with
+ * credentials that are still valid is the better outcome.
+ */
+@InternalApi
+public val CallerHasCachedCredentials: AttributeKey<Boolean> =
+    AttributeKey("aws.smithy.kotlin#CallerHasCachedCredentials")
+
+/**
  * Held by a [CredentialsProvider] that must implement the refresh lifecycle when it is used directly, but must not
  * when it sits under a cache that already does.
  *

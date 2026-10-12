@@ -29,6 +29,17 @@ public enum class CredentialsRefreshBehavior {
 public val CredentialsRefreshBehaviorKey: AttributeKey<CredentialsRefreshBehavior> =
     AttributeKey("aws.smithy.kotlin#CredentialsRefreshBehavior")
 
+/**
+ * Set to `true` by a provider whose credentials the target services still accept after their stated expiration, as
+ * they do for IMDS credentials.
+ *
+ * When nothing is cached yet, an already-expired response from such a source is served with the refresh backoff. From
+ * any other source it is returned without being cached, as it was before the cache existed, so the next resolution asks
+ * the source again.
+ */
+@InternalApi
+public val AcceptedPastExpirationKey: AttributeKey<Boolean> = AttributeKey("aws.smithy.kotlin#AcceptedPastExpiration")
+
 /** The [CredentialsRefreshBehavior] this value declares, or null if it declares none. */
 @InternalApi
 public val Credentials.refreshBehavior: CredentialsRefreshBehavior?
