@@ -1,0 +1,5 @@
+{
+    "id": "bae4784b-d8bc-40e2-b9bb-baf8508921c9",
+    "type": "bugfix",
+    "description": "Improve event stream header validation"
+}
