@@ -1,0 +1,5 @@
+{
+    "id": "6088b803-f41a-45e9-a52c-b5bdbe957bb5",
+    "type": "bugfix",
+    "description": "Preserve trailing zeroes in `BigDecimal` values on Kotlin/Native"
+}
