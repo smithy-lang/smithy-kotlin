@@ -4,30 +4,23 @@
  */
 package aws.smithy.kotlin.runtime.serde.cbor
 
-import aws.smithy.kotlin.runtime.io.SdkBuffer
 import aws.smithy.kotlin.runtime.io.SdkBufferedSink
 import aws.smithy.kotlin.runtime.io.SdkBufferedSource
-import aws.smithy.kotlin.runtime.serde.cbor.encoding.*
 import aws.smithy.kotlin.runtime.serde.cbor.encoding.Major
 import aws.smithy.kotlin.runtime.serde.cbor.encoding.Minor
 import aws.smithy.kotlin.runtime.serde.cbor.encoding.majorOf
 import aws.smithy.kotlin.runtime.serde.cbor.encoding.minorOf
 import aws.smithy.kotlin.runtime.serde.cbor.encoding.peekByte
 
-/**
- * Encode and write a CBOR [Value] to this [SdkBuffer]
- */
-internal fun SdkBuffer.write(value: Value) = value.encode(this)
-
 // Peek at the head byte to determine if the next encoded value represents a break in an indefinite-length list/map
-internal val SdkBufferedSource.nextValueIsIndefiniteBreak: kotlin.Boolean
+internal val SdkBufferedSource.nextValueIsIndefiniteBreak: Boolean
     get() {
         val head = peekByte(this)
         return majorOf(head) == Major.TYPE_7 && minorOf(head) == Minor.INDEFINITE.value
     }
 
 // Peek at the head byte to determine if the next encoded value represents null
-internal val SdkBufferedSource.nextValueIsNull: kotlin.Boolean
+internal val SdkBufferedSource.nextValueIsNull: Boolean
     get() {
         val head = peekByte(this)
         return majorOf(head) == Major.TYPE_7 && (minorOf(head) == Minor.NULL.value || minorOf(head) == Minor.UNDEFINED.value)

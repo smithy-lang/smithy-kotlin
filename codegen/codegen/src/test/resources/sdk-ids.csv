@@ -123,8 +123,6 @@ EMR
 EntityResolution
 EventBridge
 Evidently
-finspace data
-finspace
 Firehose
 fis
 FMS
@@ -325,7 +323,6 @@ synthetics
 Textract
 Timestream Query
 Timestream Write
-tnb
 Transcribe Streaming
 Transcribe
 Transfer
