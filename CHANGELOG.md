@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.7.13] - 10/22/2026
+
+## [1.7.12] - 10/21/2026
+
+### Fixes
+* Correctly generate classes for operation output structures which are reused as structure members in other operations
+* Improve event stream header validation
+
 ## [1.7.11] - 09/18/2026
 
 ### Features
