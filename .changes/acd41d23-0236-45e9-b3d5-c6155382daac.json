@@ -1,0 +1,5 @@
+{
+  "id": "acd41d23-0236-45e9-b3d5-c6155382daac",
+  "type": "feature",
+  "description": "Add a resilient caching credentials provider implementing two-window refresh timing, static stability, rate-limited retry after a failed refresh, and immediate propagation of non-recoverable errors, with the applicable behavior selected per resolved credential"
+}
