@@ -302,7 +302,7 @@ public actual abstract class SigningSuiteTestBase : HasSigner {
         }
 
         if (hasBody) {
-            val bytes = runBlocking { chan.readRemaining().readByteArray() }
+            val bytes = runBlocking { chan.readBuffer().readByteArray() }
             builder.body = HttpBody.fromBytes(bytes)
         }
 
