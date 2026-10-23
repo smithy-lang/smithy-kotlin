@@ -5,13 +5,17 @@
 package aws.smithy.kotlin.runtime.http.response
 
 import aws.smithy.kotlin.runtime.InternalApi
+import aws.smithy.kotlin.runtime.PlannedRemoval
 import aws.smithy.kotlin.runtime.ProtocolResponse
 import aws.smithy.kotlin.runtime.http.Headers
 import aws.smithy.kotlin.runtime.http.HttpBody
 import aws.smithy.kotlin.runtime.http.HttpStatusCode
+import aws.smithy.kotlin.runtime.http.LOG_REDACTED_HEADERS_KEY
+import aws.smithy.kotlin.runtime.http.SENSITIVE_DATA_REDACTED
 import aws.smithy.kotlin.runtime.http.content.ByteArrayContent
 import aws.smithy.kotlin.runtime.http.readAll
 import aws.smithy.kotlin.runtime.io.*
+import aws.smithy.kotlin.runtime.operation.ExecutionContext
 
 /**
  * Immutable container for an HTTP response
@@ -90,12 +94,41 @@ public fun ProtocolResponse.statusCode(): HttpStatusCode? {
  * @param dumpBody Flag controlling whether to also dump the body out. If true the body will be consumed and
  * replaced.
  */
+@Deprecated(
+    "Use the overload that accepts context parameter",
+    ReplaceWith("dumpResponse(response, context, dumpBody)"),
+)
+@PlannedRemoval(major = 1, minor = 8)
 @InternalApi
-public suspend fun dumpResponse(response: HttpResponse, dumpBody: Boolean): Pair<HttpResponse, String> {
+public suspend fun dumpResponse(
+    response: HttpResponse,
+    dumpBody: Boolean,
+): Pair<HttpResponse, String> = dumpResponse(response, ExecutionContext(), dumpBody)
+
+/**
+ * Dump a debug description of the response. Either the original response or a copy will be returned to the caller
+ * depending on if the body is consumed.
+ *
+ * @param context The execution context containing configuration such as redacted headers.
+ * @param dumpBody Flag controlling whether to also dump the body out. If true the body will be consumed and
+ * replaced.
+ */
+@InternalApi
+public suspend fun dumpResponse(
+    response: HttpResponse,
+    context: ExecutionContext,
+    dumpBody: Boolean,
+): Pair<HttpResponse, String> {
+    val redactedHeaders = context.getOrNull(LOG_REDACTED_HEADERS_KEY) ?: emptySet()
     val buffer = SdkBuffer()
     buffer.writeUtf8("HTTP ${response.status}\r\n")
     response.headers.forEach { key, values ->
-        buffer.writeUtf8(values.joinToString(separator = ";", prefix = "$key: ", postfix = "\r\n"))
+        val headerValue = if (redactedHeaders.any { it.equals(key, ignoreCase = true) }) {
+            SENSITIVE_DATA_REDACTED
+        } else {
+            values.joinToString(separator = ";")
+        }
+        buffer.writeUtf8("$key: $headerValue\r\n")
     }
     buffer.writeUtf8("\r\n")
 

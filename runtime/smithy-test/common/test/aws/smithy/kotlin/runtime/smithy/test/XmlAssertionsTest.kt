@@ -316,7 +316,5 @@ class XmlAssertionsTest {
         assertFails {
             assertXmlStringsEqual(expected, actual)
         }
-
-        Unit
     }
 }

@@ -56,10 +56,15 @@ class AwsQuery : QueryHttpBindingProtocolGenerator() {
     }
 }
 
-private class AwsQuerySerdeFormUrlDescriptorGenerator(
-    ctx: RenderingContext<Shape>,
-    memberShapes: List<MemberShape>? = null,
-) : QuerySerdeFormUrlDescriptorGenerator(ctx, memberShapes) {
+private class AwsQuerySerdeFormUrlDescriptorGenerator : QuerySerdeFormUrlDescriptorGenerator {
+    constructor(ctx: RenderingContext<Shape>, memberShapes: List<MemberShape>?) : super(ctx, memberShapes)
+
+    constructor(
+        ctx: RenderingContext<Shape>,
+        memberShapes: List<MemberShape>?,
+        isOperationInputBody: Boolean,
+    ) : super(ctx, memberShapes, isOperationInputBody)
+
     /**
      * The serialized name for a shape. See
      * [AWS query protocol](https://awslabs.github.io/smithy/1.0/spec/aws/aws-query-protocol.html#query-key-resolution)
@@ -82,6 +87,18 @@ private class AwsQuerySerializerGenerator(
         members: List<MemberShape>,
         writer: KotlinWriter,
     ): FormUrlSerdeDescriptorGenerator = AwsQuerySerdeFormUrlDescriptorGenerator(ctx.toRenderingContext(protocolGenerator, shape, writer), members)
+
+    override fun descriptorGenerator(
+        ctx: ProtocolGenerator.GenerationContext,
+        shape: Shape,
+        members: List<MemberShape>,
+        writer: KotlinWriter,
+        isOperationInputBody: Boolean,
+    ): FormUrlSerdeDescriptorGenerator = AwsQuerySerdeFormUrlDescriptorGenerator(
+        ctx.toRenderingContext(protocolGenerator, shape, writer),
+        members,
+        isOperationInputBody,
+    )
 }
 
 private class AwsQueryXmlParserGenerator(

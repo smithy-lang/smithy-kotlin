@@ -10,6 +10,7 @@ import aws.smithy.kotlin.runtime.businessmetrics.BusinessMetrics
 import aws.smithy.kotlin.runtime.businessmetrics.SmithyBusinessMetric
 import aws.smithy.kotlin.runtime.businessmetrics.emitBusinessMetric
 import aws.smithy.kotlin.runtime.client.LogMode
+import aws.smithy.kotlin.runtime.client.SdkClientOption
 import aws.smithy.kotlin.runtime.client.endpoints.authOptions
 import aws.smithy.kotlin.runtime.client.logMode
 import aws.smithy.kotlin.runtime.collections.attributesOf
@@ -281,14 +282,18 @@ internal class AuthHandler<Input, Output>(
 
         val schemeAttr = attributesOf {
             "auth.scheme_id" to authScheme.schemeId.id
+            request.context.getOrNull(SdkClientOption.ServiceName)?.let { "rpc.service" to it }
+            request.context.getOrNull(SdkClientOption.OperationName)?.let { "rpc.method" to it }
         }
+
+        val telemetryCtx = request.context.operationMetrics.provider.contextManager.current()
 
         // properties need to propagate from AuthOption to signer and identity provider
         request.context.merge(authOption.attributes)
 
         // resolve identity from the selected auth scheme
         val identityProvider = authScheme.identityProvider(authConfig.identityProviderConfig)
-        val identity = request.context.operationMetrics.resolveIdentityDuration.measureSeconds(schemeAttr) {
+        val identity = request.context.operationMetrics.resolveIdentityDuration.measureSeconds(schemeAttr, telemetryCtx) {
             identityProvider.resolve(request.context)
         }
 
@@ -298,7 +303,7 @@ internal class AuthHandler<Input, Output>(
         val resolveEndpointReq = ResolveEndpointRequest(request.context, request.subject.immutableView(), identity)
 
         if (endpointResolver != null) {
-            val endpoint = request.context.operationMetrics.resolveEndpointDuration.measureSeconds(request.context.operationAttributes) {
+            val endpoint = request.context.operationMetrics.resolveEndpointDuration.measureSeconds(schemeAttr, telemetryCtx) {
                 endpointResolver.resolve(resolveEndpointReq)
             }
             coroutineContext.debug<AuthHandler<*, *>> { "resolved endpoint: $endpoint" }
@@ -318,7 +323,7 @@ internal class AuthHandler<Input, Output>(
 
         val signingRequest = SignHttpRequest(modified.subject, identity, modified.context)
 
-        request.context.operationMetrics.signingDuration.measureSeconds(schemeAttr) {
+        request.context.operationMetrics.signingDuration.measureSeconds(schemeAttr, telemetryCtx) {
             authScheme.signer.sign(signingRequest)
         }
 
@@ -386,14 +391,14 @@ private suspend fun httpTraceMiddleware(request: SdkHttpRequest, next: Handler<S
     val logger = coroutineContext.logger("httpTraceMiddleware")
 
     if (logMode.isEnabled(LogMode.LogRequest) || logMode.isEnabled(LogMode.LogRequestWithBody)) {
-        val formattedReq = dumpRequest(request.subject, logMode.isEnabled(LogMode.LogRequestWithBody))
+        val formattedReq = dumpRequest(request.subject, request.context, logMode.isEnabled(LogMode.LogRequestWithBody))
         logger.debug { "HttpRequest:\n$formattedReq" }
     }
 
     var call = next.call(request)
 
     if (logMode.isEnabled(LogMode.LogResponse) || logMode.isEnabled(LogMode.LogResponseWithBody)) {
-        val (resp, formattedResp) = dumpResponse(call.response, logMode.isEnabled(LogMode.LogResponseWithBody))
+        val (resp, formattedResp) = dumpResponse(call.response, request.context, logMode.isEnabled(LogMode.LogResponseWithBody))
         call = call.copy(response = resp)
         logger.debug { "HttpResponse:\n$formattedResp" }
     } else {

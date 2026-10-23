@@ -22,6 +22,12 @@ public actual sealed interface SdkBufferedSource : SdkSource {
     public actual fun readByte(): Byte
 
     /**
+     * Read the next byte of this source **without consuming it**. Buffers a byte from the underlying
+     * source if necessary. Throws [EOFException] if the source is exhausted before a byte can be read.
+     */
+    public actual fun peekByte(): Byte
+
+    /**
      * Read two bytes from this source and returns a big-endian short.
      */
     public actual fun readShort(): Short

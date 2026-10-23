@@ -6,6 +6,7 @@ package aws.smithy.kotlin.runtime.auth.awssigning
 
 import aws.smithy.kotlin.runtime.auth.awscredentials.Credentials
 import aws.smithy.kotlin.runtime.time.Instant
+import aws.smithy.kotlin.runtime.time.TimestampFormat
 import kotlin.time.Duration
 
 public typealias ShouldSignHeaderPredicate = (String) -> Boolean
@@ -92,6 +93,18 @@ public class AwsSigningConfig(builder: Builder) {
      * construction time.
      */
     public val signingDate: Instant = builder.signingDate ?: Instant.now()
+
+    /**
+     * The signing date formatted as a condensed ISO-8601 timestamp (e.g., "20260714T163045Z").
+     * Pre-computed to avoid repeated formatting.
+     */
+    public val formattedSigningDate: String = signingDate.format(TimestampFormat.ISO_8601_CONDENSED)
+
+    /**
+     * The signing date formatted as a condensed ISO-8601 date only (e.g., "20260714").
+     * Pre-computed to avoid repeated formatting.
+     */
+    public val formattedSigningDateOnly: String = signingDate.format(TimestampFormat.ISO_8601_CONDENSED_DATE)
 
     /**
      * A predicate to control which headers are a part of the canonical request. Note that skipping auth-required

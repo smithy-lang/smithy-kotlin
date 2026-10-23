@@ -11,6 +11,7 @@ import aws.smithy.kotlin.runtime.http.HttpStatusCode
 import aws.smithy.kotlin.runtime.http.engine.HttpClientEngine
 import aws.smithy.kotlin.runtime.http.engine.HttpClientEngineBase
 import aws.smithy.kotlin.runtime.http.engine.HttpClientEngineConfig
+import aws.smithy.kotlin.runtime.http.engine.callContext
 import aws.smithy.kotlin.runtime.http.request.HttpRequest
 import aws.smithy.kotlin.runtime.http.response.HttpResponse
 import aws.smithy.kotlin.runtime.operation.ExecutionContext
@@ -30,7 +31,7 @@ public fun TestEngine(
     roundTripImpl: suspend (ExecutionContext, HttpRequest) -> HttpCall = { _, request ->
         val resp = HttpResponse(HttpStatusCode.OK, Headers.Empty, HttpBody.Empty)
         val now = Instant.now()
-        HttpCall(request, resp, now, now)
+        HttpCall(request, resp, now, now, callContext())
     },
 ): HttpClientEngine = object : HttpClientEngineBase(name) {
     override val config: HttpClientEngineConfig = HttpClientEngineConfig.Default

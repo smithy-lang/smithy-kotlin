@@ -8,6 +8,7 @@ package aws.smithy.kotlin.codegen
 import aws.smithy.kotlin.codegen.core.GenerationContext
 import aws.smithy.kotlin.codegen.core.KotlinDelegator
 import aws.smithy.kotlin.codegen.core.KotlinDependency
+import aws.smithy.kotlin.codegen.core.KotlinSymbolProvider
 import aws.smithy.kotlin.codegen.core.toRenderingContext
 import aws.smithy.kotlin.codegen.integration.KotlinIntegration
 import aws.smithy.kotlin.codegen.model.OperationNormalizer
@@ -25,6 +26,7 @@ import aws.smithy.kotlin.codegen.rendering.protocol.ProtocolGenerator
 import aws.smithy.kotlin.codegen.rendering.writeGradleBuild
 import software.amazon.smithy.build.FileManifest
 import software.amazon.smithy.build.PluginContext
+import software.amazon.smithy.codegen.core.CodegenException
 import software.amazon.smithy.codegen.core.SymbolProvider
 import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.knowledge.ServiceIndex
@@ -125,6 +127,7 @@ class CodegenVisitor(context: PluginContext) : ShapeVisitor.Default<Unit>() {
         logger.info("Walking shapes from ${settings.service} to find shapes to generate")
         val modelWithoutTraits = ModelTransformer.create().getModelWithoutTraitShapes(model)
         val serviceShapes = Walker(modelWithoutTraits).walkShapes(service)
+        validateNoSymbolCollisions(serviceShapes)
         serviceShapes.forEach { it.accept(this) }
 
         protocolGenerator?.apply {
@@ -164,6 +167,28 @@ class CodegenVisitor(context: PluginContext) : ShapeVisitor.Default<Unit>() {
         integrations.forEach { it.writeAdditionalFiles(baseGenerationContext, writers) }
 
         writers.flushWriters()
+    }
+
+    /**
+     * Fail if multiple shapes in the service closure would generate the same Kotlin type, which would otherwise
+     * render duplicate declarations into the same file.
+     */
+    private fun validateNoSymbolCollisions(shapes: Set<Shape>) {
+        val collisions = shapes
+            .filter(KotlinSymbolProvider::isTypeGeneratedForShape)
+            .groupBy { symbolProvider.toSymbol(it).fullName }
+            .filterValues { it.size > 1 }
+        if (collisions.isEmpty()) return
+
+        val formatted = collisions.entries.joinToString(separator = "\n") { (fullName, colliding) ->
+            " * $fullName: ${colliding.map { it.id }.sorted().joinToString()}"
+        }
+        throw CodegenException(
+            """multiple shapes in the closure of ${service.id} generate the same type:
+            |$formatted
+            |Fix by supplying a manual rename customization for the shapes listed.
+            """.trimMargin(),
+        )
     }
 
     override fun getDefault(shape: Shape?) { }
