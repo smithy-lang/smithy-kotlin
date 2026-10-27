@@ -1,0 +1,6 @@
+{
+  "id": "711e3413-2d96-48b7-8deb-40bffa535f37",
+  "type": "misc",
+  "description": "Move Kotlin/Native actuals that do not depend on platform interop into a shared `nativeAndWeb` source set in preparation for wasmJs support",
+  "module": "runtime-core"
+}
