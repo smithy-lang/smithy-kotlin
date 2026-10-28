@@ -72,29 +72,37 @@ internal fun testCredentials(
     expiration: Instant? = null,
     behavior: CredentialsRefreshBehavior? = null,
     providerName: String? = null,
-    acceptedPastExpiration: Boolean = false,
+    pacedRefresh: Boolean = false,
 ): Credentials = Credentials(
     accessKeyId = accessKeyId,
     secretAccessKey = "secret",
     sessionToken = null,
     expiration = expiration,
     providerName = providerName,
-    attributes = if (behavior == null && !acceptedPastExpiration) {
+    attributes = if (behavior == null && !pacedRefresh) {
         null
     } else {
         attributesOf {
             behavior?.let { CredentialsRefreshBehaviorKey to it }
-            if (acceptedPastExpiration) AcceptedPastExpirationKey to true
+            if (pacedRefresh) PacedRefreshKey to true
         }
     },
 )
 
-/** Jitter pinned to fixed values so backoff assertions name an exact instant. */
+/**
+ * Jitter pinned to fixed values so backoff assertions name an exact instant. Records the remaining lifetime each backoff
+ * was asked for.
+ */
 internal class TestJitter(
     private val backoff: Duration = 5.minutes,
     private val errorTtl: Duration = 2_000.milliseconds,
 ) : RefreshJitter {
-    override fun refreshBackoff(): Duration = backoff
+    val remainingLifetimes = mutableListOf<Duration>()
+
+    override fun refreshBackoff(remaining: Duration): Duration {
+        remainingLifetimes += remaining
+        return backoff
+    }
     override fun errorCacheTtl(): Duration = errorTtl
 }
 

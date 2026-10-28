@@ -9,7 +9,6 @@ import aws.smithy.kotlin.runtime.collections.Attributes
 import aws.smithy.kotlin.runtime.collections.toMutableAttributes
 import aws.smithy.kotlin.runtime.identity.Identity
 import aws.smithy.kotlin.runtime.io.closeIfCloseable
-import aws.smithy.kotlin.runtime.telemetry.logging.debug
 import aws.smithy.kotlin.runtime.telemetry.logging.logger
 import aws.smithy.kotlin.runtime.telemetry.logging.trace
 import aws.smithy.kotlin.runtime.time.Clock
@@ -28,8 +27,13 @@ import kotlin.time.Duration.Companion.seconds
  */
 @InternalApi
 public interface RefreshJitter {
-    /** Time to wait before another refresh is attempted after a failure. Uniform random 300-600s. */
-    public fun refreshBackoff(): Duration
+    /**
+     * Time to wait before another refresh is attempted after a failure, for cached credentials with [remaining] left
+     * before they expire (zero once expired, [Duration.INFINITE] when they state no expiration). Uniform random from
+     * 60s up to half of [remaining], with that upper bound kept between 90s and 600s, so credentials close to
+     * expiring are retried sooner.
+     */
+    public fun refreshBackoff(remaining: Duration): Duration
 
     /** How long a non-recoverable error is cached. Uniform random 1-5s. */
     public fun errorCacheTtl(): Duration
@@ -38,7 +42,10 @@ public interface RefreshJitter {
     public companion object {
         public val Default: RefreshJitter = object : RefreshJitter {
             private val random = Random.Default
-            override fun refreshBackoff(): Duration = random.nextInt(300, 601).seconds
+            override fun refreshBackoff(remaining: Duration): Duration {
+                val upper = (remaining / 2).coerceIn(90.seconds, 600.seconds)
+                return random.nextLong(60.seconds.inWholeMilliseconds, upper.inWholeMilliseconds + 1).milliseconds
+            }
             override fun errorCacheTtl(): Duration = random.nextInt(1_000, 5_001).milliseconds
         }
     }
@@ -225,11 +232,11 @@ public class ResilientCachingCredentialsProvider(
      * re-reads the config file on every resolve, so consecutive refreshes through one cache can legitimately
      * produce credentials from different providers with different policies.
      *
-     * A source that returns already-expired credentials is treated as a failed refresh, not a success — the
-     * credential-expiration-extension case, generalized from IMDS to every static-stability provider.
+     * A source that returns already-expired credentials while others are cached is treated as a failed refresh, not a
+     * success — the credential-expiration-extension case, generalized from IMDS to every static-stability provider.
      */
     private suspend fun install(fetched: Credentials, previous: CacheEntry?): CacheEntry {
-        val policy = policyFor(fetched.refreshBehavior)
+        val policy = policyFor(fetched)
         val now = clock.now()
 
         // An already-expired response means the source is reachable but is no longer producing fresh credentials. For a
@@ -237,28 +244,28 @@ public class ResilientCachingCredentialsProvider(
         // replaced by the expired one, and the backoff is applied, so the caller keeps signing with credentials that
         // were valid when they were issued.
         //
+        // On a cold cache the expired response is the only entry there is, so it is installed like any other below and
+        // returned. It is already past its mandatory deadline, so the next resolution refreshes, and the backoff applies
+        // only if that refresh fails too.
+        //
         // A provider outside that scope keeps the behavior it already had, and the response is installed and returned
         // like any other. Refusing to sign with a credential the source just handed back is not this layer's call to
         // make — whether the credential is still accepted is the target service's answer, and for these sources we have
         // no visibility into what that service is.
-        if (policy.staticStability && fetched.expiration?.let { it <= now } == true) {
+        val expired = fetched.expiration?.let { it <= now } == true
+        if (policy.staticStability && expired && previous != null) {
             // Fall back to the previous entry, which keeps its own policy — it describes its own credentials.
-            if (previous != null) return onExpiredResponse(previous, fetched)
-
-            // On a cold cache the expired response is the only entry there is. A source whose expired credentials the
-            // target services still accept (IMDS) has it served with the backoff, as IMDS always has. From any other
-            // source it is handed back without being cached, as before this cache existed: whether it is still
-            // accepted is the target service's answer, and the next resolution asks the source again.
-            val entry = timing.entryFor(fetched, policy, now)
-            if (fetched.attributes.getOrNull(AcceptedPastExpirationKey) == true) return onExpiredFirstResponse(entry)
-            coroutineContext.debug<ResilientCachingCredentialsProvider> {
-                "the credential source returned credentials that have already expired (expiration=${fetched.expiration}); " +
-                    "returning them without caching"
-            }
-            return entry
+            return onExpiredResponse(previous, fetched)
         }
 
         val entry = timing.entryFor(fetched, policy, now)
+        if (policy.staticStability && expired) {
+            coroutineContext.logger<ResilientCachingCredentialsProvider>().warn {
+                "The credential source returned credentials that have already expired (expiration=${fetched.expiration}). " +
+                    "No other credentials are cached, so the SDK will use these credentials and refresh them on the next " +
+                    "request for credentials."
+            }
+        }
         state.value = entry
         errors.clear()
         // Cleared unconditionally, including when the source hands back the same access key ID it just had - a
@@ -279,28 +286,13 @@ public class ResilientCachingCredentialsProvider(
      * behavior IMDS implements today for its own credentials.
      */
     private suspend fun onExpiredResponse(entry: CacheEntry, fetched: Credentials): CacheEntry {
-        val backoff = jitter.refreshBackoff()
-        val updated = entry.withBackoff(clock.now(), backoff)
+        val now = clock.now()
+        val backoff = jitter.refreshBackoff(entry.remainingLifetime(now))
+        val updated = entry.withBackoff(now, backoff)
         state.value = updated
         coroutineContext.logger<ResilientCachingCredentialsProvider>().warn {
             "Credential refresh failed: the credential source returned credentials that have already expired " +
                 "(expiration=${fetched.expiration}). The SDK will continue using cached credentials. " +
-                "A refresh of these credentials will be attempted again after ${backoff.inWholeSeconds} seconds."
-        }
-        return updated
-    }
-
-    /**
-     * Nothing is cached and the source returned credentials that are already expired, from a source whose expired
-     * credentials the target services still accept. Serve them, and back off before asking the source again.
-     */
-    private suspend fun onExpiredFirstResponse(entry: CacheEntry): CacheEntry {
-        val backoff = jitter.refreshBackoff()
-        val updated = entry.withBackoff(clock.now(), backoff)
-        state.value = updated
-        coroutineContext.logger<ResilientCachingCredentialsProvider>().warn {
-            "The credential source returned credentials that have already expired (expiration=${entry.expiresAt}). " +
-                "No other credentials are cached, so the SDK will use these credentials. " +
                 "A refresh of these credentials will be attempted again after ${backoff.inWholeSeconds} seconds."
         }
         return updated
@@ -314,8 +306,9 @@ public class ResilientCachingCredentialsProvider(
      * credential source's own error is included.
      */
     private suspend fun onRefreshFailed(entry: CacheEntry, ex: Throwable) {
-        val backoff = jitter.refreshBackoff()
-        state.value = entry.withBackoff(clock.now(), backoff)
+        val now = clock.now()
+        val backoff = jitter.refreshBackoff(entry.remainingLifetime(now))
+        state.value = entry.withBackoff(now, backoff)
         coroutineContext.logger<ResilientCachingCredentialsProvider>().warn(ex) {
             "Credential refresh failed: ${ex.message}. The SDK will continue using cached credentials. " +
                 "A refresh of these credentials will be attempted again after ${backoff.inWholeSeconds} seconds."

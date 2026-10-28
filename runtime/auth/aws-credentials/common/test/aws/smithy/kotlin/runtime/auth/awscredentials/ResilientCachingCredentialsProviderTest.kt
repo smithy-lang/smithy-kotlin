@@ -273,26 +273,53 @@ class ResilientCachingCredentialsProviderTest {
     }
 
     @Test
-    fun testExpiredResponseOnAColdCacheFollowsThePolicy() = runTest {
-        // Nothing cached, so the expired response is the only entry there is.
+    fun testExpiredResponseOnAColdCacheIsCachedAndRefreshedNext() = runTest {
+        // Nothing cached, so the expired response is the only entry there is: it is cached and returned, with no backoff.
         val clock = ManualClock(epoch)
-
-        // A source whose expired credentials the target services still accept, as IMDS's are, is served.
-        val accepted = testCredentials("AKID1", epoch - 1.minutes, stable, acceptedPastExpiration = true)
-        val acceptedSource = TestCredentialsProvider(listOf(Result.success(accepted)))
-        assertSame(accepted, cache(acceptedSource, clock).resolve(), "served, and the backoff applies")
-
-        // Any other static-stability source has it handed back without being cached, as before this cache existed,
-        // so the next resolution asks the source again rather than backing off.
         val expired = testCredentials("AKID1", epoch - 1.minutes, stable)
-        val stableSource = TestCredentialsProvider(
+        val source = TestCredentialsProvider(
             listOf(Result.success(expired), Result.success(testCredentials("AKID2", epoch + 1.hours, stable))),
         )
-        val stableCache = cache(stableSource, clock)
-        assertSame(expired, stableCache.resolve(), "the expired response is returned, not refused")
-        assertEquals("AKID2", stableCache.resolve().accessKeyId)
-        assertEquals(2, stableSource.callCount)
+        val jitter = TestJitter()
+        val provider = cache(source, clock, jitter = jitter)
 
+        assertSame(expired, provider.resolve(), "the expired response is returned, not refused")
+        assertSame(expired, provider.cachedEntry?.credentials, "and cached")
+        assertEquals(null, provider.cachedEntry?.nextRefreshAllowedAt, "no backoff is installed")
+
+        // It is past its mandatory deadline, so the next resolution refreshes.
+        assertEquals("AKID2", provider.resolve().accessKeyId)
+        assertEquals(2, source.callCount)
+        assertTrue(jitter.remainingLifetimes.isEmpty(), "no backoff was computed")
+    }
+
+    @Test
+    fun testExpiredResponseOnAColdCacheThenAnExpiredRefreshBacksOff() = runTest {
+        val clock = ManualClock(epoch)
+        val first = testCredentials("AKID1", epoch - 1.minutes, stable)
+        val source = TestCredentialsProvider(
+            listOf(
+                Result.success(first),
+                Result.success(testCredentials("AKID2", epoch - 1.minutes, stable)),
+                Result.success(testCredentials("AKID3", epoch + 1.hours, stable)),
+            ),
+        )
+        val jitter = TestJitter(backoff = 75.seconds)
+        val provider = cache(source, clock, jitter = jitter)
+
+        provider.resolve()
+        assertSame(first, provider.resolve(), "an expired refresh response is a failed refresh: the cached entry is kept")
+        assertEquals(listOf(Duration.ZERO), jitter.remainingLifetimes, "the backoff is computed for expired credentials")
+        assertSame(first, provider.resolve(), "the backoff holds")
+        assertEquals(2, source.callCount)
+
+        clock.advance(75.seconds)
+        assertEquals("AKID3", provider.resolve().accessKeyId)
+    }
+
+    @Test
+    fun testExpiredResponseOnAColdCacheFromAnUngovernedSourceIsPassedThrough() = runTest {
+        val clock = ManualClock(epoch)
         val plainExpired = testCredentials("AKID1", epoch - 1.minutes)
         val plainSource = TestCredentialsProvider(
             listOf(Result.success(plainExpired), Result.success(testCredentials("AKID2", epoch + 1.hours))),
@@ -337,6 +364,113 @@ class ResilientCachingCredentialsProviderTest {
         clock.advance(4.minutes)
         assertEquals("AKID2", provider.resolve().accessKeyId)
         assertEquals(3, source.callCount, "exactly one attempt once it lapses")
+    }
+
+    @Test
+    fun testBackoffIsComputedFromTheRemainingLifetime() = runTest {
+        val clock = ManualClock(epoch)
+        val source = TestCredentialsProvider(
+            listOf(
+                Result.success(testCredentials("AKID1", epoch + 2.hours, stable)),
+                Result.failure(ClientException("unavailable")),
+                Result.failure(ClientException("unavailable")),
+            ),
+        )
+        val jitter = TestJitter(backoff = 5.minutes)
+        val provider = cache(source, clock, jitter = jitter)
+
+        provider.resolve()
+        clock.advance(1.hours + 30.minutes) // advisory, 30 minutes left
+        provider.resolve()
+        clock.advance(40.minutes) // expired 10 minutes ago, backoff long lapsed
+        provider.resolve()
+
+        assertEquals(listOf(30.minutes, Duration.ZERO), jitter.remainingLifetimes)
+    }
+
+    @Test
+    fun testBackoffForUndatedCredentialsUsesTheUpperBound() = runTest {
+        val clock = ManualClock(epoch)
+        val source = TestCredentialsProvider(
+            listOf(
+                Result.success(testCredentials("AKID1", null, stable)),
+                Result.failure(ClientException("unavailable")),
+            ),
+        )
+        val jitter = TestJitter()
+        val provider = cache(source, clock, jitter = jitter)
+
+        provider.resolve()
+        clock.advance(15.minutes) // the default lifetime places the re-resolution point
+        provider.resolve()
+
+        assertEquals(listOf(Duration.INFINITE), jitter.remainingLifetimes)
+    }
+
+    @Test
+    fun testDefaultBackoffScalesWithTheRemainingLifetime() {
+        fun sample(remaining: Duration) = List(500) { RefreshJitter.Default.refreshBackoff(remaining) }
+
+        listOf(
+            Duration.ZERO to 90.seconds, // expired
+            3.minutes to 90.seconds,
+            5.minutes to 150.seconds,
+            10.minutes to 5.minutes,
+            20.minutes to 10.minutes,
+            6.hours to 10.minutes,
+            Duration.INFINITE to 10.minutes, // no stated expiration
+        ).forEach { (remaining, upper) ->
+            val values = sample(remaining)
+            assertTrue(values.all { it >= 60.seconds && it <= upper }, "remaining $remaining: ${values.min()}..${values.max()}")
+            assertTrue(values.max() - values.min() > (upper - 60.seconds) / 2, "remaining $remaining: jittered across the range")
+        }
+    }
+
+    @Test
+    fun testPacedRefreshLooksAgainAtTheDefaultLifetime() = runTest {
+        val clock = ManualClock(epoch)
+        val source = TestCredentialsProvider(
+            listOf(
+                Result.success(testCredentials("AKID1", epoch + 6.hours, stable, pacedRefresh = true)),
+                Result.success(testCredentials("AKID2", epoch + 6.hours, stable, pacedRefresh = true)),
+            ),
+        )
+        val provider = cache(source, clock, defaultLifetime = 15.minutes)
+
+        provider.resolve()
+        assertEquals(epoch + 15.minutes, provider.cachedEntry?.advisoryAt, "paced, rather than 5 hours in")
+
+        clock.advance(14.minutes)
+        assertEquals("AKID1", provider.resolve().accessKeyId)
+        clock.advance(1.minutes)
+        assertEquals("AKID2", provider.resolve().accessKeyId, "an advisory refresh once the pace has elapsed")
+        assertEquals(2, source.callCount)
+    }
+
+    @Test
+    fun testPacedRefreshFailureKeepsTheCachedCredentials() = runTest {
+        val clock = ManualClock(epoch)
+        val cached = testCredentials("AKID1", epoch + 6.hours, stable, pacedRefresh = true)
+        val source = TestCredentialsProvider(listOf(Result.success(cached), Result.failure(ClientException("IMDS down"))))
+        val jitter = TestJitter(backoff = 10.minutes)
+        val provider = cache(source, clock, jitter = jitter)
+
+        provider.resolve()
+        clock.advance(15.minutes)
+        assertSame(cached, provider.resolve(), "the early refresh is advisory: a failure is not raised")
+        assertSame(cached, provider.resolve(), "and the backoff holds")
+        assertEquals(2, source.callCount)
+        assertEquals(listOf(6.hours - 15.minutes), jitter.remainingLifetimes)
+    }
+
+    @Test
+    fun testCredentialsWithoutPacedRefreshFollowTheWindowTable() = runTest {
+        val clock = ManualClock(epoch)
+        val source = TestCredentialsProvider(listOf(Result.success(testCredentials("AKID1", epoch + 6.hours, stable))))
+        val provider = cache(source, clock, defaultLifetime = 15.minutes)
+
+        provider.resolve()
+        assertEquals(epoch + 5.hours, provider.cachedEntry?.advisoryAt)
     }
 
     @Test
