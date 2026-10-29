@@ -1,0 +1,8 @@
+{
+    "id": "15649b73-84c9-40f1-aa85-90d77fb5ef2b",
+    "type": "bugfix",
+    "description": "Restore dispatching of file IO to `Dispatchers.IO`. `readFileOrNull` and `writeFile` are no longer deprecated, and `readFileOrNull` again returns null on any IO error rather than throwing. Add suspending `Filesystem` APIs and deprecate the blocking ones",
+    "issues": [
+        "https://github.com/smithy-lang/smithy-kotlin/issues/1743"
+    ]
+}

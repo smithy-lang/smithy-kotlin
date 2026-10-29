@@ -24,7 +24,7 @@ class PlatformJVMTest {
 
     @Test
     fun itReadsFiles() = runTest {
-        val actual = PlatformProvider.System.readOrNull(tempFile.absolutePathString(), readAll = true)
+        val actual = PlatformProvider.System.readFileOrNull(tempFile.absolutePathString())
 
         assertNotNull(actual)
         assertEquals(fileContent, actual.decodeToString())
@@ -48,7 +48,7 @@ class PlatformJVMTest {
     }
 
     @Test
-    fun testFileExists() = runTest {
-        assertTrue(PlatformProvider.System.exists(tempFile.absolutePathString()))
+    fun testPathExists() = runTest {
+        assertTrue(PlatformProvider.System.pathExists(tempFile.absolutePathString()))
     }
 }

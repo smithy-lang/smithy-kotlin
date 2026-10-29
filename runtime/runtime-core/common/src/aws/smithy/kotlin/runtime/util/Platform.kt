@@ -39,8 +39,14 @@ internal expect object SystemDefaultProvider : PlatformProvider {
     override val filePathSeparator: String
 
     @OptIn(PlannedRemoval::class)
-    @Deprecated("Use exists() instead", replaceWith = ReplaceWith("exists(path)"))
+    @Deprecated("Use pathExists() instead", replaceWith = ReplaceWith("pathExists(path)"))
     override fun fileExists(path: String): Boolean
+
+    @OptIn(PlannedRemoval::class)
+    @Deprecated(
+        "Blocks the calling thread. Use writeFile() instead",
+        replaceWith = ReplaceWith("writeFile(path, data, writeType, mustExist, permissions)"),
+    )
     override fun write(
         path: String,
         data: ByteArray,
@@ -53,13 +59,8 @@ internal expect object SystemDefaultProvider : PlatformProvider {
     override fun getProperty(key: String): String?
     override fun getenv(key: String): String?
 
-    @OptIn(PlannedRemoval::class)
-    @Deprecated("Use readOrNull() instead", replaceWith = ReplaceWith("readOrNull(path, readAll = true)"))
     override suspend fun readFileOrNull(path: String): ByteArray?
 
-    @OptIn(PlannedRemoval::class)
-    @Deprecated("Use write() instead", replaceWith = ReplaceWith("write(path, data, WriteType.OVERWRITE)"))
-    override suspend fun writeFile(path: String, data: ByteArray)
     override val isJvm: Boolean
     override val isAndroid: Boolean
     override val isBrowser: Boolean
