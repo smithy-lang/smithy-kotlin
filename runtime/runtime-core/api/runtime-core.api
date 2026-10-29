@@ -2114,6 +2114,7 @@ public final class aws/smithy/kotlin/runtime/retries/delay/StandardRetryTokenBuc
 	public final fun getRetryCost ()I
 	public final fun getTimeoutRetryCost ()I
 	public final fun getUseCircuitBreakerMode ()Z
+	public final fun getUseNewRetries ()Z
 	public final fun setInitialTryCost (I)V
 	public final fun setInitialTrySuccessIncrement (I)V
 	public final fun setMaxCapacity (I)V
@@ -2121,6 +2122,7 @@ public final class aws/smithy/kotlin/runtime/retries/delay/StandardRetryTokenBuc
 	public final fun setRetryCost (I)V
 	public final fun setTimeoutRetryCost (I)V
 	public final fun setUseCircuitBreakerMode (Z)V
+	public final fun setUseNewRetries (Z)V
 }
 
 public final class aws/smithy/kotlin/runtime/retries/delay/StandardRetryTokenBucket$Config$Companion {
@@ -2411,6 +2413,7 @@ public abstract interface class aws/smithy/kotlin/runtime/util/Buildable {
 }
 
 public final class aws/smithy/kotlin/runtime/util/CachedValue : java/io/Closeable {
+	public fun <init> ()V
 	public synthetic fun <init> (Laws/smithy/kotlin/runtime/util/ExpiringValue;JLaws/smithy/kotlin/runtime/time/Clock;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public synthetic fun <init> (Laws/smithy/kotlin/runtime/util/ExpiringValue;JLaws/smithy/kotlin/runtime/time/Clock;Lkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public synthetic fun <init> (Ljava/lang/Object;Laws/smithy/kotlin/runtime/time/Instant;JLaws/smithy/kotlin/runtime/time/Clock;ILkotlin/jvm/internal/DefaultConstructorMarker;)V

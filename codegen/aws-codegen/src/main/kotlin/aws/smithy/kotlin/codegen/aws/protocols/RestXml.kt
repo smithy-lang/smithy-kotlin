@@ -270,6 +270,7 @@ class RestXmlSerializerGenerator(
             definitionFile = "${memberSymbol.name}PayloadSerializer.kt"
             renderBy = { writer ->
                 addNestedDocumentSerializers(ctx, targetShape, writer)
+                renderDescriptors(ctx, copyWithMemberTraits, targetShape.members().toList(), writer)
                 writer.dokka("Payload serializer for ${memberSymbol.name} with a different XML name trait (${xmlNameTrait.value})")
                 writer.withBlock("internal fun $name(input: #T): ByteArray {", "}", memberSymbol) {
                     write("val serializer = #T()", RuntimeTypes.Serde.SerdeXml.XmlSerializer)
