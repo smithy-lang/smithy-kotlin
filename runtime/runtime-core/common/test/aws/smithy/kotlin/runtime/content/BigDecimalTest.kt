@@ -68,4 +68,47 @@ class BigDecimalTest {
 
         assertEquals("12345678900", value.toPlainString())
     }
+
+    @Test
+    fun testTrailingZeroesPreservedByParsing() {
+        val tests = mapOf(
+            "0.10" to "0.10",
+            "-1.50" to "-1.50",
+            "0.0100" to "0.0100",
+            "0.00" to "0.00",
+            "100" to "100",
+            "100.000" to "100.000",
+            "1.00E+1" to "10.0",
+            "1.50E-2" to "0.0150",
+            "1.0E+2" to "100",
+        )
+        tests.forEach { (input, expected) ->
+            assertEquals(expected, BigDecimal(input).toPlainString(), "Wrong plain string for $input")
+        }
+    }
+
+    @Test
+    fun testTrailingZeroesDoNotAffectValue() {
+        val value = BigDecimal("32.10")
+        assertEquals(BigInteger("321"), value.mantissa)
+        assertEquals(1, value.exponent)
+        assertEquals(BigDecimal("32.1"), value)
+        assertEquals(BigDecimal("32.1").hashCode(), value.hashCode())
+        assertEquals(0, value.compareTo(BigDecimal("32.1")))
+    }
+
+    @Test
+    fun testTrailingZeroesPreservedByArithmetic() {
+        // Results take the larger of the operands' scales, as java.math.BigDecimal does
+        assertEquals("3.50", (BigDecimal("1.50") + BigDecimal("2")).toPlainString())
+        assertEquals("3.50", (BigDecimal("2") + BigDecimal("1.50")).toPlainString())
+        assertEquals("1.50", (BigDecimal("0.00") + BigDecimal("1.5")).toPlainString())
+        assertEquals("1.50", (BigDecimal("1.5") + BigDecimal("0.00")).toPlainString())
+        assertEquals("1.00", (BigDecimal("0.25") + BigDecimal("0.75")).toPlainString())
+        assertEquals("0.01", (BigDecimal("1.00") - BigDecimal("0.99")).toPlainString())
+        assertEquals("0.50", (BigDecimal("2") - BigDecimal("1.50")).toPlainString())
+        assertEquals("-0.50", (BigDecimal("1.50") - BigDecimal("2")).toPlainString())
+        assertEquals("0.00", (BigDecimal("1.50") - BigDecimal("1.50")).toPlainString())
+        assertEquals("3", (BigDecimal("1") + BigDecimal("2")).toPlainString())
+    }
 }
