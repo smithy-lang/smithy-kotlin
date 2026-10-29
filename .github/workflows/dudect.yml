@@ -1,0 +1,98 @@
+name: Timing leak tests
+
+# dudect-style constant-time checks for the pure-Kotlin ECDSA code in runtime-core. They are slow and sensitive to host
+# load, so they run weekly and when that code changes, not in the main CI workflow. Compilers don't promise to keep
+# constant-time source constant-time, so a toolchain bump can break this without any change to the code.
+#
+# Shared runners are noisy, and a test only fails if a rerun also exceeds the threshold, but an occasional false alarm
+# is still possible: keep this workflow out of the required PR checks and treat a red run as a prompt to rerun and look.
+#
+# Not covered: mingwX64, linuxArm64 and Apple targets other than macosArm64, which no CI job here builds natively.
+on:
+  schedule:
+    - cron: '0 7 * * 1'
+  pull_request:
+    paths:
+      - 'runtime/runtime-core/**/hashing/pure/**'
+      - 'runtime/runtime-core/common/src/aws/smithy/kotlin/runtime/hashing/Hmac.kt'
+      - 'runtime/runtime-core/build.gradle.kts'
+      - 'gradle.properties'
+      - 'gradle/libs.versions.toml'
+      - '.github/workflows/dudect.yml'
+  workflow_dispatch:
+
+permissions:
+  id-token: write
+  contents: read
+
+concurrency:
+  group: dudect-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  GRADLE_OPTS: "-Dorg.gradle.daemon=false -Dkotlin.incremental=false"
+
+jobs:
+  # JVM, and optimized linuxX64. Same setup as the linux job in continuous-integration.yml: the CRT Docker images are
+  # pulled from public ECR, which needs AWS credentials.
+  linux:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - name: Checkout sources
+        uses: actions/checkout@v4
+        with:
+          path: 'smithy-kotlin'
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.CI_AWS_ROLE_ARN }}
+          aws-region: us-west-2
+
+      - name: Configure Gradle
+        uses: aws/aws-kotlin-repo-tools/.github/actions/configure-gradle@main
+        with:
+          working-directory: 'smithy-kotlin'
+
+      - name: Setup build
+        uses: ./smithy-kotlin/.github/actions/setup-build
+
+      - name: Configure CRT Docker Images
+        uses: nick-fields/retry@v4
+        with:
+          max_attempts: 3
+          retry_on: error
+          timeout_minutes: 30
+          command: |
+            ./aws-crt-kotlin/docker-images/build-all.sh
+          on_retry_command: |
+            echo "Docker image build failed. Waiting for 10s before trying again..."
+            sleep 10
+
+      - name: Timing tests on JVM and linuxX64
+        working-directory: ./smithy-kotlin
+        shell: bash
+        run: |
+          # -i shows the DUDECT lines the tests print
+          ./gradlew -Pdudect :runtime:runtime-core:jvmTest -i
+          ./gradlew -Pdudect :runtime:runtime-core:dudectReleaseLinuxX64
+
+  # Optimized macosArm64: a different LLVM backend from linuxX64
+  macos:
+    runs-on: macos-15-xlarge
+    timeout-minutes: 90
+    steps:
+      - name: Checkout sources
+        uses: actions/checkout@v4
+        with:
+          path: 'smithy-kotlin'
+
+      - name: Setup build
+        uses: ./smithy-kotlin/.github/actions/setup-build
+
+      - name: Timing tests on macosArm64
+        working-directory: ./smithy-kotlin
+        shell: bash
+        run: |
+          ./gradlew -Pdudect :runtime:runtime-core:dudectReleaseMacosArm64
