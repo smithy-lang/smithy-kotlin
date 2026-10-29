@@ -89,6 +89,12 @@ internal fun CacheEntry.usableAt(now: Instant): Credentials? = if (policy.static
 internal fun CacheEntry.withBackoff(now: Instant, backoff: Duration): CacheEntry = copy(nextRefreshAllowedAt = now + backoff)
 
 /**
+ * How long the cached credentials have left at [now]: zero once they have expired, and [Duration.INFINITE] when the
+ * source stated no expiration. The refresh backoff scales with it.
+ */
+internal fun CacheEntry.remainingLifetime(now: Instant): Duration = expiresAt?.let { (it - now).coerceAtLeast(Duration.ZERO) } ?: Duration.INFINITE
+
+/**
  * Turns a resolved credential into a [CacheEntry], applying the configured window sizes.
  *
  * Separated from the cache because it is pure: the same inputs always produce the same deadlines, which is exactly
