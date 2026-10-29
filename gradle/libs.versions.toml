@@ -8,7 +8,7 @@ aws-kotlin-repo-tools-version = "0.6.4"
 # libs
 coroutines-version = "1.11.0"
 atomicfu-version = "0.33.0"
-okhttp-version = "5.5.0"
+okhttp-version = "5.5.1"
 okhttp4-version = "4.12.0"
 okio-version = "3.18.2"
 slf4j-version = "2.0.20"
