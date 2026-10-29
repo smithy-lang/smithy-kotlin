@@ -20,6 +20,44 @@ private fun HashFunction.hexDigest(input: ByteArray, repeat: Int = 1): String {
 
 private fun bytes(length: Int, values: (Int) -> Int): ByteArray = ByteArray(length) { values(it).toByte() }
 
+class PureCrc32KnownVectorsTest {
+    private val vectors = listOf(
+        "foobar".encodeToByteArray() to 2666930069U,
+        "123456789".encodeToByteArray() to 0xcbf43926U, // CRC-32/ISO-HDLC check value
+        byteArrayOf(0) to 3523407757U,
+        ByteArray(1024) { 0 } to 4021661486U,
+        ByteArray(1024) { -1 } to 3090874356U,
+    )
+
+    @Test
+    fun testVectors() {
+        for ((input, expected) in vectors) {
+            assertEquals(expected, PureCrc32().apply { update(input) }.digestValue())
+        }
+    }
+
+    @Test
+    fun testChainedChecksum() {
+        val input = "foobar".encodeToByteArray()
+        val crc = PureCrc32()
+        crc.update(input, 0, 3)
+        crc.update(input, 3, 3)
+        assertEquals(2666930069U, crc.digestValue())
+    }
+
+    @Test
+    fun testResetAndDigestResetValue() {
+        val crc = PureCrc32()
+        crc.update("foobar".encodeToByteArray())
+        crc.reset()
+        assertEquals(0U, crc.digestValue())
+
+        crc.update("foobar".encodeToByteArray())
+        assertEquals(2666930069U, crc.digestValue())
+        assertEquals(0U, crc.digestValue())
+    }
+}
+
 class PureMd5KnownVectorsTest {
     // https://www.ietf.org/rfc/rfc1321.txt
     private val vectors = listOf(
