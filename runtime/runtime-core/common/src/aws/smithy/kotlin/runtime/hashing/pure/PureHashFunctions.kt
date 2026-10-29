@@ -5,10 +5,19 @@
 package aws.smithy.kotlin.runtime.hashing.pure
 
 import aws.smithy.kotlin.runtime.InternalApi
+import aws.smithy.kotlin.runtime.hashing.Crc32Base
 import aws.smithy.kotlin.runtime.hashing.HashFunction
 
 // The public surface of this package. The implementation classes stay internal so their structure (block hooks,
 // state snapshots) isn't frozen into runtime-core's ABI.
+
+/** Pure-Kotlin CRC32 (IEEE 802.3) */
+@InternalApi
+public fun pureCrc32(): Crc32Base = PureCrc32()
+
+/** Pure-Kotlin CRC32C (Castagnoli) */
+@InternalApi
+public fun pureCrc32c(): Crc32Base = PureCrc32c()
 
 /** Pure-Kotlin MD5 */
 @InternalApi

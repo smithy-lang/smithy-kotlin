@@ -5,6 +5,7 @@
 package aws.smithy.kotlin.runtime.hashing.pure
 
 import aws.smithy.kotlin.runtime.hashing.hmac
+import aws.smithy.kotlin.runtime.text.encoding.encodeBase64String
 import kotlin.random.Random
 import kotlin.test.Test
 import kotlin.test.assertContentEquals
@@ -16,6 +17,27 @@ import kotlin.test.assertTrue
 private val sizes = listOf(0, 1, 55, 56, 57, 63, 64, 65, 127, 128, 1000, 100_003)
 
 private val blockHashes = listOf("md5", "sha1", "sha256")
+
+class PureCrc32cKnownVectorsTest {
+    @Test
+    fun testDigestValues() {
+        assertEquals(224353407U, PureCrc32c().apply { update("foobar".encodeToByteArray()) }.digestValue())
+        // CRC-32C/ISCSI check value
+        assertEquals(0xe3069283U, PureCrc32c().apply { update("123456789".encodeToByteArray()) }.digestValue())
+    }
+
+    @Test
+    fun testDigests() {
+        val vectors = listOf(
+            byteArrayOf(0) to "Un1TUQ==",
+            ByteArray(1024) { 0 } to "7q7efA==",
+            ByteArray(1024) { -1 } to "R+XN5A==",
+        )
+        for ((input, expected) in vectors) {
+            assertEquals(expected, PureCrc32c().apply { update(input) }.digest().encodeBase64String())
+        }
+    }
+}
 
 private data class PureHmacVector(val algorithm: String, val key: ByteArray, val data: ByteArray, val expected: String)
 

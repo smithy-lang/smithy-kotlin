@@ -872,6 +872,8 @@ public final class aws/smithy/kotlin/runtime/hashing/Sha256Kt {
 }
 
 public final class aws/smithy/kotlin/runtime/hashing/pure/PureHashFunctionsKt {
+	public static final fun pureCrc32 ()Laws/smithy/kotlin/runtime/hashing/Crc32Base;
+	public static final fun pureCrc32c ()Laws/smithy/kotlin/runtime/hashing/Crc32Base;
 	public static final fun pureHmacMd5 ([B)Lkotlin/jvm/functions/Function1;
 	public static final fun pureHmacSha1 ([B)Lkotlin/jvm/functions/Function1;
 	public static final fun pureHmacSha256 ([B)Lkotlin/jvm/functions/Function1;
