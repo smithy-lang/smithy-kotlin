@@ -871,6 +871,15 @@ public final class aws/smithy/kotlin/runtime/hashing/Sha256Kt {
 	public static final fun sha256 ([B)[B
 }
 
+public final class aws/smithy/kotlin/runtime/hashing/pure/PureHashFunctionsKt {
+	public static final fun pureHmacMd5 ([B)Lkotlin/jvm/functions/Function1;
+	public static final fun pureHmacSha1 ([B)Lkotlin/jvm/functions/Function1;
+	public static final fun pureHmacSha256 ([B)Lkotlin/jvm/functions/Function1;
+	public static final fun pureMd5 ()Laws/smithy/kotlin/runtime/hashing/HashFunction;
+	public static final fun pureSha1 ()Laws/smithy/kotlin/runtime/hashing/HashFunction;
+	public static final fun pureSha256 ()Laws/smithy/kotlin/runtime/hashing/HashFunction;
+}
+
 public final class aws/smithy/kotlin/runtime/io/CloseableKt {
 	public static final fun closeIfCloseable (Ljava/lang/Object;)V
 	public static final fun use (Ljava/io/Closeable;Lkotlin/jvm/functions/Function1;)Ljava/lang/Object;
