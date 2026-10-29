@@ -50,4 +50,31 @@ class Crc32Test {
         assertEquals("nvYflQ==", crc.digest().encodeBase64String()) // checksum of "foobar"
         assertEquals(0U, crc.digestValue())
     }
+
+    @Test
+    fun testCheckValue() {
+        // Standard CRC-32/ISO-HDLC check value, see https://reveng.sourceforge.io/crc-catalogue/all.htm
+        assertEquals(0xcbf43926U, "123456789".encodeToByteArray().crc32())
+    }
+
+    @Test
+    fun testNonAsciiInput() {
+        val crc = Crc32()
+        crc.update(byteArrayOf(0), 0, 1)
+        assertEquals("0gLvjQ==", crc.digest().encodeBase64String())
+    }
+
+    @Test
+    fun testLargeInput() {
+        val crc = Crc32()
+        crc.update(ByteArray(1024) { 0 })
+        assertEquals("77WvLg==", crc.digest().encodeBase64String())
+    }
+
+    @Test
+    fun testNegativeByteInput() {
+        val crc = Crc32()
+        crc.update(ByteArray(1024) { -1 })
+        assertEquals("uDr/9A==", crc.digest().encodeBase64String())
+    }
 }
