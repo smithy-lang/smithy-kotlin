@@ -4,7 +4,6 @@
  */
 package aws.smithy.kotlin.runtime.http.engine.internal
 
-import aws.smithy.kotlin.runtime.ExperimentalApi
 import aws.smithy.kotlin.runtime.InternalApi
 import aws.smithy.kotlin.runtime.collections.Attributes
 import aws.smithy.kotlin.runtime.collections.attributesOf
@@ -34,7 +33,6 @@ public object HttpClientMetricAttributes {
  * @param scope the instrumentation scope
  * @param provider the telemetry provider to instrument with
  */
-@OptIn(ExperimentalApi::class)
 @InternalApi
 public class HttpClientMetrics(
     scope: String,

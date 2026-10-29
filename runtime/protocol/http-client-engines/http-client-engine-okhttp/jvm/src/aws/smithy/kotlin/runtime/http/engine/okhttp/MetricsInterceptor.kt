@@ -20,6 +20,10 @@ public object MetricsInterceptor : Interceptor {
         val originalRequest = chain.request()
         val metrics = originalRequest.tag(SdkRequestTag::class.java)?.metrics ?: return chain.proceed(originalRequest)
 
+        if (metrics.bytesSent === MonotonicCounter.None && metrics.bytesReceived === MonotonicCounter.None) {
+            return chain.proceed(originalRequest)
+        }
+
         val attrs = attributesOf { "server.address" to "${originalRequest.url.host}:${originalRequest.url.port}" }
         val request = if (originalRequest.body != null) {
             originalRequest.newBuilder()

@@ -4,7 +4,11 @@
  */
 package aws.smithy.kotlin.runtime.serde.xml
 
+import aws.smithy.kotlin.runtime.serde.DeserializationException
+import aws.smithy.kotlin.runtime.serde.SdkFieldDescriptor
+import aws.smithy.kotlin.runtime.serde.SerialKind
 import aws.smithy.kotlin.runtime.serde.parseInt
+import aws.smithy.kotlin.runtime.time.TimestampFormat
 import kotlin.test.*
 
 class XmlTagReaderTest {
@@ -132,6 +136,20 @@ class XmlTagReaderTest {
             }
             // consume the current tag entirely before trying to process the next
             curr.drop()
+        }
+    }
+
+    /**
+     * tt/V2228436368/F20: "1e999999999" in an epoch-seconds XML text node should not be expanded and cause OOM
+     */
+    @Test
+    fun testEpochExponentDoesNotOOM() {
+        // F20: "1e999999999" in an epoch-seconds XML text node triggers expandExponent() → padEnd(999999999, '0') → OOM
+        val payload = "<Timestamp>1e999999999</Timestamp>".encodeToByteArray()
+        val fieldDescriptor = SdkFieldDescriptor(SerialKind.Timestamp, XmlSerialName("Timestamp"))
+        val deserializer = XmlPrimitiveDeserializer(payload, fieldDescriptor)
+        assertFailsWith<DeserializationException> {
+            deserializer.deserializeInstant(TimestampFormat.EPOCH_SECONDS)
         }
     }
 }

@@ -25,7 +25,16 @@ public actual class BigDecimal private constructor(private val delegate: JvmBigD
     }
 
     public actual constructor(value: String) : this(JvmBigDecimal(value))
-    public actual constructor(mantissa: BigInteger, exponent: Int) : this(JvmBigDecimal(mantissa.delegate, exponent))
+    public actual constructor(mantissa: BigInteger, exponent: Int) : this(
+        JvmBigDecimal(
+            mantissa.delegate,
+            mantissa.delegate.abs().toString().length - 1 - exponent,
+        ),
+    )
+
+    init {
+        assertExponent(delegate.scale())
+    }
 
     public actual fun toPlainString(): String = delegate.toPlainString()
     public actual override fun toString(): String = delegate.toString()
@@ -36,14 +45,19 @@ public actual class BigDecimal private constructor(private val delegate: JvmBigD
     public actual override fun toLong(): Long = delegate.toLong()
     public actual override fun toShort(): Short = delegate.toShort()
 
-    public actual override fun equals(other: Any?): Boolean = other is BigDecimal && delegate == other.delegate
-    public actual override fun hashCode(): Int = 31 + delegate.hashCode()
+    public actual override fun equals(other: Any?): Boolean = other is BigDecimal && (delegate.compareTo(other.delegate) == 0)
+
+    public actual override fun hashCode(): Int = 31 * normalized.hashCode()
+
+    private val normalized: JvmBigDecimal by lazy {
+        if (delegate.signum() == 0) JvmBigDecimal.ZERO else delegate.stripTrailingZeros()
+    }
 
     public actual val mantissa: BigInteger
-        get() = BigInteger(delegate.unscaledValue())
+        get() = BigInteger(normalized.unscaledValue())
 
     public actual val exponent: Int
-        get() = delegate.scale()
+        get() = if (delegate.signum() == 0) 0 else normalized.unscaledValue().abs().toString().length - 1 - normalized.scale()
 
     public val value: String = delegate.toString()
 
@@ -51,5 +65,5 @@ public actual class BigDecimal private constructor(private val delegate: JvmBigD
 
     public actual operator fun minus(other: BigDecimal): BigDecimal = coalesceOrCreate(delegate - other.delegate, this, other)
 
-    actual override fun compareTo(other: BigDecimal): Int = delegate.compareTo(other.delegate)
+    actual override fun compareTo(other: BigDecimal): Int = normalized.compareTo(other.normalized)
 }

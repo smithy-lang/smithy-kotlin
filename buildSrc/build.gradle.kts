@@ -15,4 +15,7 @@ repositories {
 dependencies {
     implementation(libs.dokka.gradle.plugin)
     implementation(libs.kotlin.gradle.plugin)
+    implementation(platform(libs.jackson.bom))
+    // https://github.com/gradle/gradle/issues/15383 — expose generated catalog accessors to precompiled plugins
+    implementation(files(libs.javaClass.superclass.protectionDomain.codeSource.location))
 }
