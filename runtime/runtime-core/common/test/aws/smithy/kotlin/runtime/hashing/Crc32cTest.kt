@@ -87,4 +87,10 @@ class Crc32cTest {
         val bytes = crc.digest()
         assertEquals("R+XN5A==", bytes.encodeBase64String())
     }
+
+    @Test
+    fun testCheckValue() {
+        // Standard CRC-32/ISCSI check value, see https://reveng.sourceforge.io/crc-catalogue/all.htm
+        assertEquals(0xe3069283U, "123456789".encodeToByteArray().crc32c())
+    }
 }
