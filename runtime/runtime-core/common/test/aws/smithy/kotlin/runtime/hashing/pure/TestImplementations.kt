@@ -15,7 +15,11 @@ internal const val PURE = "pure"
 
 internal fun hashFunction(implementation: String, algorithm: String): HashFunction = when (implementation) {
     RUNTIME -> algorithm.toHashFunctionOrThrow()
-    PURE -> pureMerkleDamgardHashSupplier(algorithm)()
+    PURE -> when (algorithm) {
+        "crc32" -> pureCrc32()
+        "crc32c" -> pureCrc32c()
+        else -> pureMerkleDamgardHashSupplier(algorithm)()
+    }
     else -> error("Unknown implementation $implementation")
 }
 
