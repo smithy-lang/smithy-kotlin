@@ -68,3 +68,36 @@ kotlin {
         }
     }
 }
+
+// The dudect timing tests for the pure-Kotlin hashing code are slow and sensitive to host load, so they only run with
+// -Pdudect, and then alone
+if (project.hasProperty("dudect")) {
+    // Native test binaries are debug builds by default, whose timing says little about optimized code. This adds an
+    // optimized one per target (dudect.kexe, built by linkDudectReleaseTest<Target>), and for the host's own target a
+    // dudectRelease<Target> task that runs only the timing tests in it.
+    kotlin.targets.withType<KotlinNativeTarget>().configureEach {
+        val target = this
+        binaries.test("dudect", listOf(org.jetbrains.kotlin.gradle.plugin.mpp.NativeBuildType.RELEASE))
+        if (target.konanTarget != org.jetbrains.kotlin.konan.target.HostManager.host) return@configureEach
+        val binary = binaries.getTest("dudect", org.jetbrains.kotlin.gradle.plugin.mpp.NativeBuildType.RELEASE)
+        tasks.register<Exec>("dudectRelease${target.name.replaceFirstChar { it.uppercase() }}") {
+            group = "verification"
+            description = "Runs DudectTimingTest from the optimized ${target.name} test binary"
+            dependsOn(binary.linkTaskName)
+            executable = binary.outputFile.absolutePath
+            args("--ktest_filter=*DudectTimingTest*")
+        }
+    }
+}
+
+tasks.withType<AbstractTestTask>().configureEach {
+    val dudect = "*DudectTimingTest"
+    if (project.hasProperty("dudect")) {
+        // The debug native test binaries would report timing results that prove nothing; use dudectRelease<Target>
+        if (this is org.jetbrains.kotlin.gradle.targets.native.tasks.KotlinNativeTest) enabled = false
+        filter.includeTestsMatching(dudect)
+        outputs.upToDateWhen { false }
+    } else {
+        filter.excludeTestsMatching(dudect)
+    }
+}
