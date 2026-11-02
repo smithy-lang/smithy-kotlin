@@ -100,30 +100,51 @@ class EcdsaJVMTest {
     }
 
     // Key pair and messages from RFC 6979 appendix A.2.5. Our signer uses random nonces, so the RFC's exact signatures
-    // can't be reproduced; instead verify against the RFC's known public key.
+    // can't be reproduced; instead verify against the RFC's known public key. SigV4a passes keys encoded by
+    // BigInteger.toByteArray(), so a key with its top bit set arrives as 33 bytes; cover the plain 32-byte form too.
     @Test
     fun testVerifyRfc6979Vectors() {
-        val privateKey = java.math.BigInteger("c9afa9d845ba75166b5c215767b1d6934e50c3db36e89b127b8a622b120f6721", 16)
-            .toByteArray()
-        val publicKey = rfc6979PublicKey()
+        val key = hex("c9afa9d845ba75166b5c215767b1d6934e50c3db36e89b127b8a622b120f6721")
+        val publicKey = publicKey(
+            "60fed4ba255a9d31c961eb74c6356d68c049b8923b61fa6ce669622e60f29fb6",
+            "7903fe1008b8bc99a41ae9e95628bc64f2f1b20c2d7e9f5177a3c294d4462299",
+        )
 
-        for (message in listOf("sample", "test")) {
-            val signature = ecdsaSecp256r1(privateKey, message.toByteArray())
-            val verifier = Signature.getInstance("SHA256withECDSA").apply {
-                initVerify(publicKey)
-                update(message.toByteArray())
+        assertSignsWithEncodings(publicKey, "33-byte" to byteArrayOf(0) + key, "32-byte" to key)
+    }
+
+    // A key whose top byte is zero, which BigInteger.toByteArray() encodes in 31 bytes. Public key computed with
+    // Python's cryptography package.
+    @Test
+    fun testVerifyShortKey() {
+        val key = hex("00afa9d845ba75166b5c215767b1d6934e50c3db36e89b127b8a622b120f6721")
+        val publicKey = publicKey(
+            "35102771251601d9be7efa29efb76a487f3283aaae356d08dde0fb746693a409",
+            "c9992e560344704c38d9966459a26cabc127cdc63dc9c77f59234507d5ac5055",
+        )
+
+        assertSignsWithEncodings(publicKey, "31-byte" to key.copyOfRange(1, 32), "32-byte" to key)
+    }
+
+    private fun assertSignsWithEncodings(publicKey: PublicKey, vararg encodings: Pair<String, ByteArray>) {
+        for ((name, privateKey) in encodings) {
+            for (message in listOf("sample", "test")) {
+                val signature = ecdsaSecp256r1(privateKey, message.toByteArray())
+                val verifier = Signature.getInstance("SHA256withECDSA").apply {
+                    initVerify(publicKey)
+                    update(message.toByteArray())
+                }
+                assertTrue(verifier.verify(signature), "signature for \"$message\" with $name key did not verify")
             }
-            assertTrue(verifier.verify(signature), "signature for \"$message\" did not verify")
         }
     }
 
-    private fun rfc6979PublicKey(): PublicKey {
+    private fun hex(value: String): ByteArray = value.chunked(2).map { it.toInt(16).toByte() }.toByteArray()
+
+    private fun publicKey(x: String, y: String): PublicKey {
         val params = AlgorithmParameters.getInstance("EC").apply { init(ECGenParameterSpec("secp256r1")) }
             .getParameterSpec(ECParameterSpec::class.java)
-        val point = ECPoint(
-            java.math.BigInteger("60fed4ba255a9d31c961eb74c6356d68c049b8923b61fa6ce669622e60f29fb6", 16),
-            java.math.BigInteger("7903fe1008b8bc99a41ae9e95628bc64f2f1b20c2d7e9f5177a3c294d4462299", 16),
-        )
+        val point = ECPoint(java.math.BigInteger(x, 16), java.math.BigInteger(y, 16))
         return KeyFactory.getInstance("EC").generatePublic(ECPublicKeySpec(point, params))
     }
 
