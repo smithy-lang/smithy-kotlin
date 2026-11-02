@@ -136,6 +136,51 @@ class HmacTest {
             assertEquals(expected, hmacTest(key, data, ::Sha1), "RFC 2202 HMAC-SHA1 case ${i + 1}")
         }
     }
+
+    // Boundary cases the RFCs don't cover: keys at and just past the 64-byte block size (the point where the key
+    // starts being hashed first), an empty key and an empty message. Expected values are from Python's hmac module.
+    @Test
+    fun testBoundaryCases() {
+        val pangram = PANGRAM.encodeToByteArray()
+        val cases = listOf<Triple<HashSupplier, String, List<String>>>(
+            Triple(
+                ::Md5,
+                "md5",
+                listOf(
+                    "3af3ae9b4276b5694b3c3e2911c7bf0f",
+                    "49df0426058f82bf4affb6e8a83e0f9a",
+                    "ad262969c53bc16032f160081c4a07a0",
+                    "63530468a04e386459855da0063b6596",
+                ),
+            ),
+            Triple(
+                ::Sha1,
+                "sha1",
+                listOf(
+                    "2cdb6f01c6cfaf55a26a1a80d0b0edce808c1333",
+                    "72b2d74c8b4ab3028edcee19e87e98360e43a7b0",
+                    "2ba7f707ad5f187c412de3106583c3111d668de8",
+                    "f42bb0eeb018ebbd4597ae7213711ec60760843f",
+                ),
+            ),
+            Triple(
+                ::Sha256,
+                "sha256",
+                listOf(
+                    "4903b1fc9f41bc1abe3ff7119c4e523b91288b11c03dab1e975816150df38144",
+                    "8e94e45cd66c660f34f8600065afcf80fe2ef70df6c16b95101753a6e1aab94a",
+                    "fb011e6154a19b9a4c767373c305275a5a69e8b68b0b4c9200c383dced19a416",
+                    "5d5d139563c95b5967b9bd9a8c9b233a9dedb45072794cd232dc1b74832607d0",
+                ),
+            ),
+        )
+        cases.forEach { (supplier, name, expected) ->
+            assertEquals(expected[0], hmacTest(bytes(64) { it }, pangram, supplier), "$name, 64-byte key")
+            assertEquals(expected[1], hmacTest(bytes(65) { it }, pangram, supplier), "$name, 65-byte key")
+            assertEquals(expected[2], hmacTest(ByteArray(0), pangram, supplier), "$name, empty key")
+            assertEquals(expected[3], hmacTest("key".encodeToByteArray(), ByteArray(0), supplier), "$name, empty message")
+        }
+    }
 }
 
 private const val RFC2202_LARGE_KEY = "Test Using Larger Than Block-Size Key - Hash Key First"
