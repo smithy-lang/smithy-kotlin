@@ -58,7 +58,7 @@ class Crc32Test {
     }
 
     @Test
-    fun testNonAsciiInput() {
+    fun testSingleZeroByte() {
         val crc = Crc32()
         crc.update(byteArrayOf(0), 0, 1)
         assertEquals("0gLvjQ==", crc.digest().encodeBase64String())
