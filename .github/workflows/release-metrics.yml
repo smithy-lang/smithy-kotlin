@@ -7,6 +7,7 @@ on:
 jobs:
   artifact-size-metrics:
     runs-on: ubuntu-latest
+    if: github.repository == 'smithy-lang/smithy-kotlin'
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
