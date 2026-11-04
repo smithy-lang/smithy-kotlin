@@ -12,6 +12,7 @@ import aws.smithy.kotlin.runtime.http.SdkHttpClient
 import aws.smithy.kotlin.runtime.http.operation.HttpOperationContext
 import aws.smithy.kotlin.runtime.http.operation.newTestOperation
 import aws.smithy.kotlin.runtime.http.operation.roundTrip
+import aws.smithy.kotlin.runtime.http.readAll
 import aws.smithy.kotlin.runtime.http.request.HttpRequestBuilder
 import aws.smithy.kotlin.runtime.httptest.TestEngine
 import aws.smithy.kotlin.runtime.io.SdkByteReadChannel
@@ -20,6 +21,7 @@ import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNull
+import kotlin.test.assertTrue
 
 class HttpChecksumRequiredInterceptorTest {
     private val client = SdkHttpClient(TestEngine())
@@ -83,6 +85,32 @@ class HttpChecksumRequiredInterceptorTest {
         op.roundTrip(client, Unit)
         val call = op.context.attributes[HttpOperationContext.HttpCallList].first()
         assertEquals(expected, call.request.headers["Content-MD5"])
+    }
+
+    @Test
+    fun itHandlesMd5ForAwsChunkedStreamingBody() = runTest {
+        val payload = "fooey".encodeToByteArray()
+        val channel = SdkByteReadChannel(payload)
+        val req = HttpRequestBuilder().apply {
+            body = object : HttpBody.ChannelContent() {
+                override val contentLength: Long = payload.size.toLong()
+                override val isOneShot: Boolean = true
+                override fun readFrom(): SdkByteReadChannel = channel
+            }
+        }
+        val op = newTestOperation<Unit, Unit>(req, Unit)
+
+        op.context.attributes[HttpOperationContext.DefaultChecksumAlgorithm] = "MD5"
+        op.interceptors.add(
+            HttpChecksumRequiredInterceptor(),
+        )
+
+        op.roundTrip(client, Unit)
+        val call = op.context.attributes[HttpOperationContext.HttpCallList].first()
+        assertEquals("vJLiaOiNxaxdWfYAYzdzFQ==", call.request.headers["Content-MD5"])
+        assertNull(call.request.headers["x-amz-trailer"])
+        assertTrue(call.request.trailingHeaders.isEmpty())
+        assertEquals("fooey", call.request.body.readAll()?.decodeToString())
     }
 
     @Test
