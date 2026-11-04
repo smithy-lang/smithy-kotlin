@@ -6,6 +6,7 @@
 package aws.smithy.kotlin.runtime.retries.delay
 
 import aws.smithy.kotlin.runtime.InternalApi
+import aws.smithy.kotlin.runtime.PlannedRemoval
 import aws.smithy.kotlin.runtime.retries.policy.RetryErrorType
 import aws.smithy.kotlin.runtime.util.DslFactory
 import aws.smithy.kotlin.runtime.util.PlatformEnvironProvider
@@ -198,11 +199,20 @@ public class StandardRetryTokenBucket internal constructor(
 
         /**
          * A mutable builder for a [Config]
-         * @param platform Ignored. Kept for binary compatibility. Defaults no longer depend on the environment.
          */
-        public class Builder(
-            @Suppress("UNUSED_PARAMETER") platform: PlatformEnvironProvider = PlatformProvider.System,
-        ) : RetryTokenBucket.Config.Builder {
+        public class Builder() : RetryTokenBucket.Config.Builder {
+            /**
+             * @param platform Ignored. Defaults do not depend on the environment.
+             */
+            @Deprecated(
+                "The platform is ignored. This constructor will be removed in a future release.",
+                ReplaceWith("Builder()"),
+            )
+            @PlannedRemoval(1, 9)
+            public constructor(
+                @Suppress("UNUSED_PARAMETER") platform: PlatformEnvironProvider = PlatformProvider.System,
+            ) : this()
+
             /**
              * Whether [RetryErrorType.Transient] (timeout) retries are charged [retryCost]. When `false`, they are
              * charged [timeoutRetryCost], as in the legacy cost model. Defaults to `true`.

@@ -6,6 +6,7 @@
 package aws.smithy.kotlin.runtime.retries.delay
 
 import aws.smithy.kotlin.runtime.InternalApi
+import aws.smithy.kotlin.runtime.PlannedRemoval
 import aws.smithy.kotlin.runtime.retries.RetryContext
 import aws.smithy.kotlin.runtime.retries.policy.RetryErrorType
 import aws.smithy.kotlin.runtime.util.DslFactory
@@ -132,11 +133,20 @@ public class ExponentialBackoffWithJitter(
 
         /**
          * A mutable builder for config for [ExponentialBackoffWithJitter]
-         * @param platform Ignored. Kept for binary compatibility. Defaults no longer depend on the environment.
          */
-        public class Builder(
-            @Suppress("UNUSED_PARAMETER") platform: PlatformEnvironProvider = PlatformProvider.System,
-        ) : DelayProvider.Config.Builder {
+        public class Builder() : DelayProvider.Config.Builder {
+            /**
+             * @param platform Ignored. Defaults do not depend on the environment.
+             */
+            @Deprecated(
+                "The platform is ignored. This constructor will be removed in a future release.",
+                ReplaceWith("Builder()"),
+            )
+            @PlannedRemoval(1, 9)
+            public constructor(
+                @Suppress("UNUSED_PARAMETER") platform: PlatformEnvironProvider = PlatformProvider.System,
+            ) : this()
+
             /**
              * The base delay for non-throttling errors
              */
