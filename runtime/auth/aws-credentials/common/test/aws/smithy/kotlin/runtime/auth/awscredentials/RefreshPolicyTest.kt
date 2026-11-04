@@ -86,4 +86,15 @@ class RefreshPolicyTest {
             testCredentials(behavior = CredentialsRefreshBehavior.NonRefreshable).refreshBehavior,
         )
     }
+
+    @Test
+    fun testPacedRefreshHoldsTheDeclaredPolicyToThePace() {
+        val stable = CredentialsRefreshBehavior.RefreshableWithStaticStability
+        assertSame(RefreshPolicy.FullLifecycle, policyFor(testCredentials(behavior = stable)))
+
+        val paced = policyFor(testCredentials(behavior = stable, pacedRefresh = true))
+        assertTrue(paced.pacedRefresh)
+        assertTrue(paced.staticStability, "pacing does not change static stability")
+        assertSame(RefreshPolicy.FullLifecycle.advisoryWindowFor, paced.advisoryWindowFor)
+    }
 }

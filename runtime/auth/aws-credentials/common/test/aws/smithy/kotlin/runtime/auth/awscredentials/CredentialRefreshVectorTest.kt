@@ -69,7 +69,7 @@ class CredentialRefreshVectorTest {
     @Test
     fun testVectors() = runTest {
         val cases = Json.parseToJsonElement(CREDENTIAL_REFRESH_TEST_VECTORS).jsonArray.map { it.jsonObject }
-        assertEquals(24, cases.size, "unexpected number of test cases; was the vector file updated?")
+        assertEquals(25, cases.size, "unexpected number of test cases; was the vector file updated?")
         cases.forEach { runCase(it) }
     }
 
@@ -117,14 +117,17 @@ class CredentialRefreshVectorTest {
 
                 "getCredentials" -> {
                     val expected = step["expected"]!!.jsonObject
-                    val freshKey = "AKID-FRESH-$id-$index"
-                    source.next = when (step["response"]?.jsonPrimitive?.content) {
+                    // The key the source answers with on this step. `newCredentials` expects it, including for stale
+                    // credentials, which an initial fetch caches and returns.
+                    val response = step["response"]?.jsonPrimitive?.content
+                    val freshKey = if (response == "staleCredentials") "AKID-STALE-$id-$index" else "AKID-FRESH-$id-$index"
+                    source.next = when (response) {
                         null -> null
                         "freshCredentials" -> {
                             val lifetime = step["lifetimeSeconds"]?.jsonPrimitive?.int?.seconds ?: defaultFreshLifetime
                             ({ source.credentials(freshKey, lifetime) })
                         }
-                        "staleCredentials" -> ({ source.credentials("AKID-STALE-$id-$index", (-1).minutes) })
+                        "staleCredentials" -> ({ source.credentials(freshKey, (-1).minutes) })
                         "error" -> ({ throw ClientException("credential source unavailable") })
                         "nonRecoverableError" -> ({ throw nonRecoverableError() })
                         else -> fail("$where: unknown response")
