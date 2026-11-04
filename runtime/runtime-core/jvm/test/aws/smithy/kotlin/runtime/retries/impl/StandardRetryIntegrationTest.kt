@@ -24,7 +24,13 @@ class StandardRetryIntegrationTest {
     fun testIntegrationCases() = runTest {
         val testCases = standardRetryIntegrationTestCases.deserializeYaml(StandardRetryTestCase.serializer())
         testCases.forEach { (name, tc) ->
-            val tokenBucket = StandardRetryTokenBucket { maxCapacity = tc.given.initialRetryTokens }
+            // These cases follow the legacy retry spec, so use its cost model
+            val tokenBucket = StandardRetryTokenBucket {
+                maxCapacity = tc.given.initialRetryTokens
+                retryCost = 5
+                timeoutRetryCost = 10
+                useNewRetries = false
+            }
             val retryer = StandardRetryStrategy {
                 maxAttempts = tc.given.maxAttempts
                 this.tokenBucket = tokenBucket
