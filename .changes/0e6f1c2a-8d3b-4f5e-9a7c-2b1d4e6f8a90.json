@@ -1,0 +1,5 @@
+{
+    "id": "0e6f1c2a-8d3b-4f5e-9a7c-2b1d4e6f8a90",
+    "type": "bugfix",
+    "description": "Fix `IllegalStateException` when sending an MD5 `httpChecksumRequired` checksum for a request body eligible for aws-chunked streaming"
+}
