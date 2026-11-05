@@ -867,6 +867,43 @@ class ResilientCachingCredentialsProviderTest {
     }
 
     @Test
+    fun testTheSourceIsToldWhichCredentialsWereRejected() = runTest {
+        val clock = ManualClock(epoch)
+        val first = testCredentials("AKID1", epoch + 2.hours, stable)
+        val source = TestCredentialsProvider(
+            listOf(
+                Result.success(first),
+                Result.success(testCredentials("AKID2", epoch + 2.hours, stable)),
+                Result.success(testCredentials("AKID3", epoch + 4.hours, stable)),
+            ),
+        )
+        val cache = cache(source, clock)
+
+        cache.resolve()
+        assertEquals(null, source.lastAttributes?.getOrNull(CallerRejectedAccessKeyId), "nothing was rejected")
+
+        cache.invalidate(first)
+        assertEquals("AKID2", cache.resolve().accessKeyId)
+        assertEquals("AKID1", source.lastAttributes?.getOrNull(CallerRejectedAccessKeyId), "the refresh names the rejected key")
+
+        // A rejection of credentials that were already replaced names nothing the cache holds.
+        cache.invalidate(first)
+        clock.advance(2.hours - 30.seconds)
+        cache.resolve()
+        assertEquals(null, source.lastAttributes?.getOrNull(CallerRejectedAccessKeyId))
+    }
+
+    @Test
+    fun testARejectedKeyFromTheCallerIsNotForwarded() = runTest {
+        val clock = ManualClock(epoch)
+        val source = TestCredentialsProvider(listOf(Result.success(testCredentials("AKID1", epoch + 2.hours, stable))))
+
+        cache(source, clock).resolve(attributesOf { CallerRejectedAccessKeyId to "AKID-OTHER" })
+
+        assertEquals(null, source.lastAttributes?.getOrNull(CallerRejectedAccessKeyId), "only this cache's own rejection is passed down")
+    }
+
+    @Test
     fun testTheCallersOwnAttributesAreForwarded() = runTest {
         val clock = ManualClock(epoch)
         val key = aws.smithy.kotlin.runtime.collections.AttributeKey<String>("test#Marker")
