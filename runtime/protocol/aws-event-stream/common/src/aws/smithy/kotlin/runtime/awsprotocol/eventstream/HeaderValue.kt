@@ -13,6 +13,9 @@ import aws.smithy.kotlin.runtime.time.epochMilliseconds
 import aws.smithy.kotlin.runtime.time.fromEpochMilliseconds
 import aws.smithy.kotlin.runtime.util.Uuid
 
+// max header value length is 32,767 encoded bytes (INT16_MAX)
+internal const val MAX_HEADER_VALUE_BYTE_LEN = Short.MAX_VALUE.toInt()
+
 internal enum class HeaderType(val value: Byte) {
     TRUE(0),
     FALSE(1),
@@ -112,14 +115,14 @@ public sealed class HeaderValue {
             dest.writeLong(value)
         }
         is ByteArray -> {
+            check(value.size in 0..MAX_HEADER_VALUE_BYTE_LEN) { "HeaderValue ByteArray too long" }
             dest.writeHeader(HeaderType.BYTE_ARRAY)
-            check(value.size in 0..UShort.MAX_VALUE.toInt()) { "HeaderValue ByteArray too long" }
             dest.writeShort(value.size.toShort())
             dest.write(value)
         }
         is String -> {
             val bytes = value.encodeToByteArray()
-            check(bytes.size in 0..UShort.MAX_VALUE.toInt()) { "HeaderValue String too long" }
+            check(bytes.size in 0..MAX_HEADER_VALUE_BYTE_LEN) { "HeaderValue String too long" }
             dest.writeHeader(HeaderType.STRING)
             dest.writeShort(bytes.size.toShort())
             dest.write(bytes)

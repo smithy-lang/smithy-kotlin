@@ -68,6 +68,7 @@ public final class aws/smithy/kotlin/runtime/telemetry/metrics/aggregation/Flush
 }
 
 public final class aws/smithy/kotlin/runtime/telemetry/metrics/aggregation/FlushMode$Periodic : aws/smithy/kotlin/runtime/telemetry/metrics/aggregation/FlushMode {
+	public fun <init> ()V
 	public synthetic fun <init> (JILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public synthetic fun <init> (JLkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public fun equals (Ljava/lang/Object;)Z

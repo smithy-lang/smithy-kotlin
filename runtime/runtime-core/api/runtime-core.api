@@ -2415,6 +2415,7 @@ public abstract interface class aws/smithy/kotlin/runtime/util/Buildable {
 }
 
 public final class aws/smithy/kotlin/runtime/util/CachedValue : java/io/Closeable {
+	public fun <init> ()V
 	public synthetic fun <init> (Laws/smithy/kotlin/runtime/util/ExpiringValue;JLaws/smithy/kotlin/runtime/time/Clock;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public synthetic fun <init> (Laws/smithy/kotlin/runtime/util/ExpiringValue;JLaws/smithy/kotlin/runtime/time/Clock;Lkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public synthetic fun <init> (Ljava/lang/Object;Laws/smithy/kotlin/runtime/time/Instant;JLaws/smithy/kotlin/runtime/time/Clock;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
