@@ -21,8 +21,8 @@ import kotlin.time.Duration.Companion.minutes
  * @param undatedCadence how often to re-resolve a value that carries no expiration. Null takes the cache's default
  * lifetime. A cadence may only move the re-read earlier than the default lifetime, never later.
  * @param pacedRefresh whether the re-read is held to that pace even when the value carries an expiration. True for
- * the sources this feature does not govern, so their timing stays what it is today; false for the ones it does, whose
- * re-read point follows the expiration through the window table.
+ * the sources this feature does not govern, so their timing stays what it is today, and for credentials that set
+ * [PacedRefreshKey]; false otherwise, so the re-read point follows the expiration through the window table.
  */
 @InternalApi
 public class RefreshPolicy internal constructor(
@@ -76,6 +76,15 @@ internal fun policyFor(behavior: CredentialsRefreshBehavior?): RefreshPolicy = w
     CredentialsRefreshBehavior.RefreshableWithStaticStability -> RefreshPolicy.FullLifecycle
     CredentialsRefreshBehavior.NonRefreshable -> RefreshPolicy.Passthrough
     null -> RefreshPolicy.CachingOnly
+}
+
+/**
+ * Selects the [RefreshPolicy] for [credentials]: the one for the [CredentialsRefreshBehavior] they declare, held to the
+ * cache's default pace when they also set [PacedRefreshKey].
+ */
+internal fun policyFor(credentials: Credentials): RefreshPolicy {
+    val policy = policyFor(credentials.refreshBehavior)
+    return if (credentials.attributes.getOrNull(PacedRefreshKey) == true) policy.copy(pacedRefresh = true) else policy
 }
 
 /**
