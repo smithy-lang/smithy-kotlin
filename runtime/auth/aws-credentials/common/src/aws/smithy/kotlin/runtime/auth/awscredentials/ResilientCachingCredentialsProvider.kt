@@ -216,11 +216,18 @@ public class ResilientCachingCredentialsProvider(
      * pace or cache on its own resolves straight through instead - this instance is the lifecycle. The copy costs one
      * small allocation per source call, not per request. [CallerHasCachedCredentials] tells the source whether a
      * failure would leave this instance with credentials to fall back on.
+     * [CallerRejectedAccessKeyId] names the cached credentials when a target service rejected them, so a source that
+     * would return them unchanged obtains new ones.
      */
     private suspend fun fetch(attributes: Attributes, current: CacheEntry?): Credentials = source.resolve(
         attributes.toMutableAttributes().apply {
             set(CallerOwnsCredentialsRefresh, true)
             set(CallerHasCachedCredentials, current != null)
+            if (current != null && invalidation.isRejected(current.credentials)) {
+                set(CallerRejectedAccessKeyId, current.credentials.accessKeyId)
+            } else {
+                remove(CallerRejectedAccessKeyId)
+            }
         },
     )
 
