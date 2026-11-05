@@ -48,6 +48,13 @@ jobs:
       - name: Setup build
         uses: ./smithy-kotlin/.github/actions/setup-build
 
+      - name: Install test JDK
+        id: test-jdk
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'corretto'
+          java-version: ${{ matrix.java-version }}
+
       - name: Configure JDK
         uses: actions/setup-java@v3
         with:
@@ -70,7 +77,11 @@ jobs:
         working-directory: ./smithy-kotlin
         shell: bash
         run: |
-          ./gradlew -Paws.kotlin.native=false -Ptest.java.version=${{ matrix.java-version }} jvmTest --stacktrace
+          # Gradle doesn't search setup-java's tool cache for toolchains, so point it at the test JDK
+          ./gradlew \
+            -Paws.kotlin.native=false \
+            -Porg.gradle.java.installations.paths=${{ steps.test-jdk.outputs.path }} \
+            -Ptest.java.version=${{ matrix.java-version }} jvmTest --stacktrace
 
       - name: Calculate duration
         id: end
