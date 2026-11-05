@@ -110,6 +110,8 @@ jobs:
       fail-fast: false
       matrix:
         os:
+          - macos-26-large  # x64
+          - macos-26-xlarge # ARM
           - macos-15-large  # x64
           - macos-15-xlarge # ARM
     runs-on: ${{ matrix.os }}
