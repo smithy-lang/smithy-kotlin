@@ -43,6 +43,17 @@ public val CallerHasCachedCredentials: AttributeKey<Boolean> =
     AttributeKey("aws.smithy.kotlin#CallerHasCachedCredentials")
 
 /**
+ * Set by [ResilientCachingCredentialsProvider] on the attributes it hands to its source when the refresh is due to a
+ * target service rejecting the cached credentials: the access key ID of those credentials, and absent otherwise.
+ *
+ * A source that would hand the same credentials back, because they come straight from a cached token that has not
+ * reached its own refresh window, must obtain new ones instead when the key matches what it would return.
+ */
+@InternalApi
+public val CallerRejectedAccessKeyId: AttributeKey<String> =
+    AttributeKey("aws.smithy.kotlin#CallerRejectedAccessKeyId")
+
+/**
  * Held by a [CredentialsProvider] that must implement the refresh lifecycle when it is used directly, but must not
  * when it sits under a cache that already does.
  *
