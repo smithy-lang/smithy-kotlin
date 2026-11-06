@@ -1,5 +1,14 @@
 # Changelog
 
+## [1.7.14] - 11/04/2026
+
+### Fixes
+* Fix `IllegalStateException` when sending an MD5 `httpChecksumRequired` checksum for a request body eligible for aws-chunked streaming
+* Preserve trailing zeroes in `BigDecimal` values on Kotlin/Native
+
+### Miscellaneous
+* Upgrade to Kotlin 2.4.21
+
 ## [1.7.13] - 10/22/2026
 
 ## [1.7.12] - 10/21/2026
