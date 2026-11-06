@@ -96,4 +96,13 @@ public object AwsSigningAttributes {
      * Flag indicating whether the X-Amz-Security-Token header should be omitted from the canonical request during signing.
      */
     public val OmitSessionToken: AttributeKey<Boolean> = AttributeKey("aws.smithy.kotlin.signing#OmitSessionToken")
+
+    /**
+     * Flag indicating whether request payloads should be signed. Default to `true`.
+     * When `false`, payload signing is skipped for HTTPS requests (using `UNSIGNED-PAYLOAD` instead).
+     * Note: This flag does not solely control request payload signing behavior. Other factors — such as the
+     * operation's auth scheme, the `unsignedPayload` trait, and `AwsHttpSigner.Config.isUnsignedPayload` — are
+     * also taken into account, and this flag does not override them.
+     */
+    public val PayloadSigningEnabled: AttributeKey<Boolean> = AttributeKey("aws.smithy.kotlin.signing#PayloadSigningEnabled")
 }

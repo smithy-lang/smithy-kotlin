@@ -6,6 +6,8 @@ on:
       - main
       - '*-main'
   pull_request:
+  merge_group:
+    types: [checks_requested]
   workflow_dispatch:
 
 permissions:
@@ -46,6 +48,13 @@ jobs:
       - name: Setup build
         uses: ./smithy-kotlin/.github/actions/setup-build
 
+      - name: Install test JDK
+        id: test-jdk
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'corretto'
+          java-version: ${{ matrix.java-version }}
+
       - name: Configure JDK
         uses: actions/setup-java@v3
         with:
@@ -68,7 +77,11 @@ jobs:
         working-directory: ./smithy-kotlin
         shell: bash
         run: |
-          ./gradlew -Paws.kotlin.native=false -Ptest.java.version=${{ matrix.java-version }} jvmTest --stacktrace
+          # Gradle doesn't search setup-java's tool cache for toolchains, so point it at the test JDK
+          ./gradlew \
+            -Paws.kotlin.native=false \
+            -Porg.gradle.java.installations.paths=${{ steps.test-jdk.outputs.path }} \
+            -Ptest.java.version=${{ matrix.java-version }} jvmTest --stacktrace
 
       - name: Calculate duration
         id: end
@@ -93,12 +106,19 @@ jobs:
   # macOS ARM images build and test for targets: jvm, macosArm64, iosSimulatorArm64, watchosSimulatorArm65, tvosSimulatorArm64
   # macos x64 images build and test for targets: jvm, macosX64, iosX64, tvosX64, watchosX64
   macos:
+    name: macos (${{ matrix.os }})
     strategy:
       fail-fast: false
       matrix:
-        os:
-          - macos-15-large  # x64
-          - macos-15-xlarge # ARM
+        include:
+          - os: macos-26-large  # x64
+            ios-device: iPhone 17
+          - os: macos-26-xlarge # ARM
+            ios-device: iPhone 17
+          - os: macos-15-large  # x64
+            ios-device: iPhone 16
+          - os: macos-15-xlarge # ARM
+            ios-device: iPhone 16
     runs-on: ${{ matrix.os }}
     steps:
       - name: Checkout sources
@@ -127,7 +147,7 @@ jobs:
           # FIXME K2. Re-enable warnings as errors after this warning is removed: https://youtrack.jetbrains.com/issue/KT-68532
           # echo "kotlinWarningsAsErrors=true" >> $GITHUB_WORKSPACE/local.properties              
           ./gradlew apiCheck
-          ./gradlew build
+          ./gradlew build -PiosSimulatorDevice="${{ matrix.ios-device }}"
 
       - name: Save Test Reports
         if: failure()
@@ -175,6 +195,12 @@ jobs:
         with:
           path: 'smithy-kotlin'
 
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.CI_AWS_ROLE_ARN }}
+          aws-region: us-west-2
+
       - name: Configure Gradle
         uses: aws/aws-kotlin-repo-tools/.github/actions/configure-gradle@main
         with:
@@ -184,8 +210,17 @@ jobs:
         uses: ./smithy-kotlin/.github/actions/setup-build
 
       - name: Configure CRT Docker Images
-        run: |
-          ./aws-crt-kotlin/docker-images/build-all.sh
+        uses: nick-fields/retry@v4
+        with:
+          max_attempts: 3
+          retry_on: error
+          timeout_minutes: 30
+          command: |
+            ./aws-crt-kotlin/docker-images/build-all.sh
+          on_retry_command: |
+            echo "Docker image build failed. Waiting for 10s before trying again..."
+            sleep 10        
+
 
       - name: Build and Test on Linux with Cross-Compile
         working-directory: ./smithy-kotlin
@@ -373,15 +408,6 @@ jobs:
 
     - name: Setup build
       uses: ./smithy-kotlin/.github/actions/setup-build
-
-    - name: Checkout tools
-      uses: actions/checkout@v4
-      with:
-        path: 'aws-kotlin-repo-tools'
-        repository: 'aws/aws-kotlin-repo-tools'
-        ref: '0.2.3'
-        sparse-checkout: |
-          .github
 
     - name: Checkout aws-sdk-kotlin
       uses: ./aws-kotlin-repo-tools/.github/actions/checkout-head

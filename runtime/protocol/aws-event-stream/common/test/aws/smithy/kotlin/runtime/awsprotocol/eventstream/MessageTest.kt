@@ -8,9 +8,9 @@ package aws.smithy.kotlin.runtime.awsprotocol.eventstream
 import aws.smithy.kotlin.runtime.io.EOFException
 import aws.smithy.kotlin.runtime.io.SdkBuffer
 import aws.smithy.kotlin.runtime.time.Instant
-import aws.smithy.kotlin.runtime.util.Uuid
 import io.kotest.matchers.string.shouldContain
 import kotlin.test.*
+import kotlin.uuid.Uuid
 
 fun sdkBufferOf(b: ByteArray): SdkBuffer = SdkBuffer().apply { write(b) }
 
@@ -104,7 +104,7 @@ class MessageTest {
             addHeader("bytes", HeaderValue.ByteArray("some bytes".encodeToByteArray()))
             addHeader("str", HeaderValue.String("some str"))
             addHeader("time", HeaderValue.Timestamp(Instant.fromEpochSeconds(5_000_000, 0)))
-            addHeader("uuid", HeaderValue.Uuid(Uuid(0xb79bc914de214e13u.toLong(), 0xb8b2bc47e85b7f0bu.toLong())))
+            addHeader("uuid", HeaderValue.Uuid4(Uuid.fromLongs(0xb79bc914de214e13u.toLong(), 0xb8b2bc47e85b7f0bu.toLong())))
         }
 
         val dest = SdkBuffer()
@@ -267,5 +267,116 @@ class MessageTest {
         assertFailsWith<IllegalStateException> {
             Message.decode(buffer)
         }.message.shouldContain("Not enough bytes to read header name; needed: 102; remaining: 70")
+    }
+
+    // A string value over the limit (65536 bytes) whose content begins with an encoded header entry is
+    // rejected, and nothing is written to dest.
+    @Test
+    fun testEncodeOversizedValueWithHeaderContentRejected() {
+        // Build the bytes of a valid encoded header entry: name ":message-type", string value "exception".
+        val innerName = ":message-type"
+        val innerValue = "exception"
+        val prefix = SdkBuffer()
+        Header(innerName, HeaderValue.String(innerValue)).encode(prefix)
+        val prefixBytes = prefix.readByteArray()
+
+        // All prefix bytes are <= 0x7F so they are single-byte UTF-8 and survive the String round-trip
+        // byte-for-byte. Pad with ASCII 'A' so the UTF-8 byte length is exactly 65536 (well over limit).
+        val overLimit = 65_536
+        val prefixStr = prefixBytes.decodeToString()
+        check(prefixStr.encodeToByteArray().size == prefixBytes.size) { "prefix must be ASCII-safe" }
+        val value = prefixStr + "A".repeat(overLimit - prefixBytes.size)
+        assertEquals(overLimit, value.encodeToByteArray().size)
+
+        val message = buildMessage {
+            addHeader("payload", HeaderValue.String(value))
+        }
+        val dest = SdkBuffer()
+        assertFailsWith<IllegalStateException> {
+            message.encode(dest)
+        }.message.shouldContain("HeaderValue String too long")
+        assertEquals(0L, dest.size, "no bytes should be written to dest when encoding is rejected")
+    }
+
+    // Failure atomicity. A valid header followed by an oversized one must leave dest empty. Covered for
+    // the string value path and separately for the byte-array value path, so both oversized-value
+    // rejections are exercised through Message.encode.
+    @Test
+    fun testEncodeOversizedStringHeaderAfterValidLeavesDestEmpty() {
+        val message = buildMessage {
+            addHeader("ok", HeaderValue.String("fine"))
+            addHeader("big", HeaderValue.String("a".repeat(MAX_HEADER_VALUE_BYTE_LEN + 1)))
+        }
+        val dest = SdkBuffer()
+        assertFailsWith<IllegalStateException> {
+            message.encode(dest)
+        }.message.shouldContain("HeaderValue String too long")
+        assertEquals(0L, dest.size, "no bytes should be written to dest when a header is rejected")
+    }
+
+    @Test
+    fun testEncodeOversizedByteArrayHeaderAfterValidLeavesDestEmpty() {
+        val message = buildMessage {
+            addHeader("ok", HeaderValue.String("fine"))
+            addHeader("big", HeaderValue.ByteArray(ByteArray(MAX_HEADER_VALUE_BYTE_LEN + 1) { 0x61 }))
+        }
+        val dest = SdkBuffer()
+        assertFailsWith<IllegalStateException> {
+            message.encode(dest)
+        }.message.shouldContain("HeaderValue ByteArray too long")
+        assertEquals(0L, dest.size, "no bytes should be written to dest when a header is rejected")
+    }
+
+    // Checks the encoded bytes directly against the wire format, independent of our own decoder. A single
+    // header with a max-length (32767-byte) string value must encode the length field as 0x7F 0xFF, and the
+    // prelude headers_length must equal 1 (name len) + nameLen + 1 (value type) + 2 (value len) + 32767.
+    @Test
+    fun testEncodeStringValueMaxLengthWireFormat() {
+        val name = "h" // 1 byte
+        val value = "a".repeat(MAX_HEADER_VALUE_BYTE_LEN)
+        val message = buildMessage {
+            addHeader(name, HeaderValue.String(value))
+        }
+        val dest = SdkBuffer()
+        message.encode(dest)
+        val bytes = dest.peek().readByteArray()
+
+        val nameLen = name.encodeToByteArray().size
+        val expectedHeadersLen = 1 + nameLen + 1 + 2 + MAX_HEADER_VALUE_BYTE_LEN
+
+        // Prelude layout: total_len(4) | headers_len(4) | prelude_crc(4), big-endian.
+        val headersLenField = ((bytes[4].toInt() and 0xff) shl 24) or
+            ((bytes[5].toInt() and 0xff) shl 16) or
+            ((bytes[6].toInt() and 0xff) shl 8) or
+            (bytes[7].toInt() and 0xff)
+        assertEquals(expectedHeadersLen, headersLenField, "headers_length field")
+
+        // Header entry begins right after the 12-byte prelude:
+        //   [name_len=0x01]['h'][value_type=STRING=0x07][value_len_hi][value_len_lo]...
+        // 32767 == 0x7FFF, so the big-endian length field is 0x7F 0xFF.
+        val valueLenHiIdx = 12 + 1 + nameLen + 1
+        assertEquals(0x7F, bytes[valueLenHiIdx].toInt() and 0xff, "value length high byte")
+        assertEquals(0xFF, bytes[valueLenHiIdx + 1].toInt() and 0xff, "value length low byte")
+    }
+
+    // Fixed-width header values. Round-trip is already exercised for Byte/Int16/Int32/Int64 by
+    // testRoundTripAllHeadersPayload. These guard the decode side: a truncated fixed-width value must
+    // fail (EOF) rather than silently decoding a short/garbage value.
+    @Test
+    fun testDecodeTruncatedFixedWidthValuesFail() {
+        // type tag present but value bytes truncated for each fixed-width header type.
+        val cases = mapOf(
+            "Byte" to byteArrayFrom(HeaderType.BYTE.value.toInt()), // needs 1, have 0
+            "Int16" to byteArrayFrom(HeaderType.INT16.value.toInt(), 0x01), // needs 2, have 1
+            "Int32" to byteArrayFrom(HeaderType.INT32.value.toInt(), 0x01, 0x02, 0x03), // needs 4, have 3
+            "Int64" to byteArrayFrom(HeaderType.INT64.value.toInt(), 0x01, 0x02, 0x03, 0x04), // needs 8, have 4
+            "Timestamp" to byteArrayFrom(HeaderType.TIMESTAMP.value.toInt(), 0x01, 0x02, 0x03), // needs 8
+            "Uuid" to byteArrayFrom(HeaderType.UUID.value.toInt(), 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08), // needs 16
+        )
+        for ((label, data) in cases) {
+            assertFailsWith<EOFException>("truncated $label value should fail") {
+                HeaderValue.decode(sdkBufferOf(data))
+            }
+        }
     }
 }

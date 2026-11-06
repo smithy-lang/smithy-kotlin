@@ -161,6 +161,11 @@ open class HttpProtocolClientGenerator(
     protected open fun renderInit(writer: KotlinWriter) {
         writer.withBlock("init {", "}") {
             write("managedResources.#T(config.httpClient)", RuntimeTypes.Core.IO.addIfManaged)
+            // Telemetry providers may hold resources (exporter connections, background collection). A
+            // provider the caller supplied is not `SdkManaged`, so `addIfManaged` skips it and closing this
+            // client does not close it; one the SDK created is reference counted and released with the last
+            // client using it.
+            write("managedResources.#T(config.telemetryProvider)", RuntimeTypes.Core.IO.addIfManaged)
             writer.declareSection(ClientInitializer, mapOf(ClientInitializer.GenerationContext to ctx))
         }
     }
@@ -355,6 +360,7 @@ open class HttpProtocolClientGenerator(
             putIfAbsent(RuntimeTypes.HttpClient.Operation.HttpOperationContext, "CallTimeout", nullable = true)
             putIfAbsent(RuntimeTypes.SmithyClient.SdkClientOption, "ClientName")
             putIfAbsent(RuntimeTypes.SmithyClient.SdkClientOption, "LogMode")
+            putIfAbsent(RuntimeTypes.SmithyClient.SdkClientOption, "LogRedactedHeaders")
             if (ctx.service.hasIdempotentTokenMember(ctx.model)) {
                 putIfAbsent(RuntimeTypes.SmithyClient.SdkClientOption, "IdempotencyTokenProvider", nullable = true)
             }

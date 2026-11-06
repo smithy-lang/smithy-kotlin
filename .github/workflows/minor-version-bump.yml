@@ -1,7 +1,12 @@
 name: Minor version bump check
+
 on:
   pull_request:
+  merge_group:
+    types: [checks_requested]
+
 permissions: { }
+
 jobs:
   minor-version-bump-check:
     permissions: {}

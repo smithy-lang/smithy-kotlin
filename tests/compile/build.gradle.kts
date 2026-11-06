@@ -25,10 +25,9 @@ dependencies {
     testImplementation(libs.smithy.protocol.test.traits)
     testImplementation(libs.smithy.aws.traits)
 
-    testImplementation(libs.junit.jupiter)
     testImplementation(libs.kotest.assertions.core.jvm)
     testImplementation(libs.kotlin.compile.testing)
-    testImplementation(libs.kotlin.test.junit5)
+    testImplementation(libs.kotlin.test)
 }
 
 tasks.test {

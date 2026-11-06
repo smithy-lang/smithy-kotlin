@@ -8,19 +8,12 @@ package aws.smithy.kotlin.codegen
 import aws.smithy.kotlin.codegen.test.TestModelDefault
 import aws.smithy.kotlin.codegen.test.toSmithyModel
 import aws.smithy.kotlin.codegen.utils.dq
-import org.junit.jupiter.api.extension.ExtensionContext
-import org.junit.jupiter.params.ParameterizedTest
-import org.junit.jupiter.params.provider.Arguments
-import org.junit.jupiter.params.provider.ArgumentsProvider
-import org.junit.jupiter.params.provider.ArgumentsSource
-import org.junit.jupiter.params.provider.CsvSource
-import org.junit.jupiter.params.support.ParameterDeclarations
+import aws.smithy.kotlin.runtime.testing.parameterized
 import software.amazon.smithy.codegen.core.CodegenException
 import software.amazon.smithy.model.knowledge.NullableIndex.CheckMode
 import software.amazon.smithy.model.knowledge.ServiceIndex
 import software.amazon.smithy.model.node.Node
 import software.amazon.smithy.model.shapes.ShapeId
-import java.util.stream.Stream
 import kotlin.test.*
 
 class KotlinSettingsTest {
@@ -297,15 +290,16 @@ class KotlinSettingsTest {
         }
     }
 
-    @ParameterizedTest(name = "{0} ==> {1}")
-    @CsvSource(
-        "client, CLIENT",
-        "clientCareful, CLIENT_CAREFUL",
-        "clientZeroValueV1, CLIENT_ZERO_VALUE_V1",
-        "clientZeroValueV1NoInput, CLIENT_ZERO_VALUE_V1_NO_INPUT",
-        "server, SERVER",
-    )
-    fun testNullabilityCheckMode(pluginSetting: String, expectedEnumString: String) {
+    @Test
+    fun testNullabilityCheckMode() = parameterized(
+        listOf(
+            "client" to "CLIENT",
+            "clientCareful" to "CLIENT_CAREFUL",
+            "clientZeroValueV1" to "CLIENT_ZERO_VALUE_V1",
+            "clientZeroValueV1NoInput" to "CLIENT_ZERO_VALUE_V1_NO_INPUT",
+            "server" to "SERVER",
+        ),
+    ) { (pluginSetting, expectedEnumString) ->
         val expected = CheckMode.valueOf(expectedEnumString)
         val contents = """
             {
@@ -317,12 +311,13 @@ class KotlinSettingsTest {
         assertEquals(expected, apiSettings.nullabilityCheckMode)
     }
 
-    @ParameterizedTest(name = "{0} ==> {1}")
-    @CsvSource(
-        "always, ALWAYS",
-        "whenDifferent, WHEN_DIFFERENT",
-    )
-    fun testDefaultValueSerializationMode(pluginSetting: String, expectedEnumString: String) {
+    @Test
+    fun testDefaultValueSerializationMode() = parameterized(
+        listOf(
+            "always" to "ALWAYS",
+            "whenDifferent" to "WHEN_DIFFERENT",
+        ),
+    ) { (pluginSetting, expectedEnumString) ->
         val expected = DefaultValueSerializationMode.valueOf(expectedEnumString)
         val contents = """
             {
@@ -334,13 +329,21 @@ class KotlinSettingsTest {
         assertEquals(expected, apiSettings.defaultValueSerializationMode)
     }
 
-    @ParameterizedTest
-    @ArgumentsSource(TestProtocolSelectionArgumentProvider::class)
-    fun testProtocolSelection(
-        protocolPriorityCsv: String,
-        serviceProtocolsCsv: String,
-        expectedProtocolName: String?,
-    ) {
+    @Test
+    fun testProtocolSelection() = parameterized(
+        listOf(
+            Triple(ALL_PROTOCOLS, "rpcv2Cbor, awsJson1_0", "rpcv2Cbor"),
+            Triple(ALL_PROTOCOLS, "rpcv2Cbor", "rpcv2Cbor"),
+            Triple(ALL_PROTOCOLS, "rpcv2Cbor, awsJson1_0, awsQuery", "rpcv2Cbor"),
+            Triple(ALL_PROTOCOLS, "awsJson1_0, awsQuery", "awsJson1_0"),
+            Triple(ALL_PROTOCOLS, "awsQuery", "awsQuery"),
+            Triple(NO_CBOR, "rpcv2Cbor, awsJson1_0", "awsJson1_0"),
+            Triple(NO_CBOR, "rpcv2Cbor", null),
+            Triple(NO_CBOR, "rpcv2Cbor, awsJson1_0, awsQuery", "awsJson1_0"),
+            Triple(NO_CBOR, "awsJson1_0, awsQuery", "awsJson1_0"),
+            Triple(NO_CBOR, "awsQuery", "awsQuery"),
+        ),
+    ) { (protocolPriorityCsv, serviceProtocolsCsv, expectedProtocolName) ->
         val serviceProtocols = serviceProtocolsCsv.csvToProtocolList()
         val serviceProtocolImports = serviceProtocols.joinToString("\n") { "use $it" }
         val serviceProtocolTraits = serviceProtocols.joinToString("\n") { "@${it.name}" }
@@ -383,72 +386,8 @@ class KotlinSettingsTest {
     }
 }
 
-/**
- * A junit [ArgumentsProvider] which supplies protocol selection parameterized test values sourced from the Smithy RPCv2
- * CBOR Support SEP § Smithy protocol selection tests.
- */
-class TestProtocolSelectionArgumentProvider : ArgumentsProvider {
-    companion object {
-        private const val ALL_PROTOCOLS = "rpcv2Cbor, awsJson1_0, awsJson1_1, restJson1, restXml, awsQuery, ec2Query"
-        private const val NO_CBOR = "awsJson1_0, awsJson1_1, restJson1, restXml, awsQuery, ec2Query"
-    }
-
-    override fun provideArguments(
-        parameters: ParameterDeclarations?,
-        context: ExtensionContext?,
-    ): Stream<out Arguments> = Stream.of(
-        Arguments.of(
-            ALL_PROTOCOLS,
-            "rpcv2Cbor, awsJson1_0",
-            "rpcv2Cbor",
-        ),
-        Arguments.of(
-            ALL_PROTOCOLS,
-            "rpcv2Cbor",
-            "rpcv2Cbor",
-        ),
-        Arguments.of(
-            ALL_PROTOCOLS,
-            "rpcv2Cbor, awsJson1_0, awsQuery",
-            "rpcv2Cbor",
-        ),
-        Arguments.of(
-            ALL_PROTOCOLS,
-            "awsJson1_0, awsQuery",
-            "awsJson1_0",
-        ),
-        Arguments.of(
-            ALL_PROTOCOLS,
-            "awsQuery",
-            "awsQuery",
-        ),
-        Arguments.of(
-            NO_CBOR,
-            "rpcv2Cbor, awsJson1_0",
-            "awsJson1_0",
-        ),
-        Arguments.of(
-            NO_CBOR,
-            "rpcv2Cbor",
-            null,
-        ),
-        Arguments.of(
-            NO_CBOR,
-            "rpcv2Cbor, awsJson1_0, awsQuery",
-            "awsJson1_0",
-        ),
-        Arguments.of(
-            NO_CBOR,
-            "awsJson1_0, awsQuery",
-            "awsJson1_0",
-        ),
-        Arguments.of(
-            NO_CBOR,
-            "awsQuery",
-            "awsQuery",
-        ),
-    )
-}
+private const val ALL_PROTOCOLS = "rpcv2Cbor, awsJson1_0, awsJson1_1, restJson1, restXml, awsQuery, ec2Query"
+private const val NO_CBOR = "awsJson1_0, awsJson1_1, restJson1, restXml, awsQuery, ec2Query"
 
 private val allProtocols = ApiSettings().protocolResolutionPriority
 private fun String.nameToProtocol() = allProtocols.single { protocol -> protocol.name == this }

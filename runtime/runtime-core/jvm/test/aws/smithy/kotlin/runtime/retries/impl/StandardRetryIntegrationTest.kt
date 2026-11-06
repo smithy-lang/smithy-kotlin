@@ -15,7 +15,6 @@ import aws.smithy.kotlin.runtime.retries.policy.RetryPolicy
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.currentTime
 import kotlinx.coroutines.test.runTest
-import org.junit.jupiter.api.assertThrows
 import kotlin.test.*
 import kotlin.time.Duration.Companion.milliseconds
 
@@ -52,7 +51,7 @@ class StandardRetryIntegrationTest {
                     assertEquals(Ok, result.getOrThrow().getOrThrow(), "Unexpected outcome for $name")
 
                 TestOutcome.MaxAttemptsExceeded -> {
-                    val e = assertThrows<HttpCodeException>("Expected exception for $name") {
+                    val e = assertFailsWith<HttpCodeException>("Expected exception for $name") {
                         result.getOrThrow()
                     }
 
@@ -60,7 +59,7 @@ class StandardRetryIntegrationTest {
                 }
 
                 TestOutcome.RetryQuotaExceeded -> {
-                    val e = assertThrows<HttpCodeException>("Expected exception for $name") {
+                    val e = assertFailsWith<HttpCodeException>("Expected exception for $name") {
                         result.getOrThrow()
                     }
 
