@@ -106,6 +106,7 @@ jobs:
   # macOS ARM images build and test for targets: jvm, macosArm64, iosSimulatorArm64, watchosSimulatorArm65, tvosSimulatorArm64
   # macos x64 images build and test for targets: jvm, macosX64, iosX64, tvosX64, watchosX64
   macos:
+    name: macos (${{ matrix.os }})
     strategy:
       fail-fast: false
       matrix:
