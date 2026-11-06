@@ -5,8 +5,8 @@
 
 package aws.smithy.kotlin.runtime.retries.delay
 
-import aws.smithy.kotlin.runtime.CoreSettings
 import aws.smithy.kotlin.runtime.InternalApi
+import aws.smithy.kotlin.runtime.PlannedRemoval
 import aws.smithy.kotlin.runtime.retries.policy.RetryErrorType
 import aws.smithy.kotlin.runtime.util.DslFactory
 import aws.smithy.kotlin.runtime.util.PlatformEnvironProvider
@@ -146,7 +146,8 @@ public class StandardRetryTokenBucket internal constructor(
         public val useCircuitBreakerMode: Boolean = builder.useCircuitBreakerMode
 
         /**
-         * Whether the new retry behavior is enabled. Resolved from the environment at build time.
+         * Whether [RetryErrorType.Transient] (timeout) retries are charged [retryCost]. When `false`, they are charged
+         * [timeoutRetryCost], as in the legacy cost model.
          */
         internal val useNewRetries: Boolean = builder.useNewRetries
 
@@ -172,12 +173,13 @@ public class StandardRetryTokenBucket internal constructor(
         public val refillUnitsPerSecond: Int = builder.refillUnitsPerSecond
 
         /**
-         * The amount of capacity to decrement for standard retries
+         * The amount of capacity to decrement for non-throttling retries, including timeouts
          */
         public val retryCost: Int = builder.retryCost
 
         /**
-         * The amount of capacity to decrement for timeout or throttling retries
+         * The amount of capacity to decrement for throttling retries. Also used for timeout retries when
+         * `useNewRetries` is `false`.
          */
         public val timeoutRetryCost: Int = builder.timeoutRetryCost
 
@@ -198,8 +200,24 @@ public class StandardRetryTokenBucket internal constructor(
         /**
          * A mutable builder for a [Config]
          */
-        public class Builder(platform: PlatformEnvironProvider = PlatformProvider.System) : RetryTokenBucket.Config.Builder {
-            public var useNewRetries: Boolean = CoreSettings.resolveNewRetriesEnabled(platform)
+        public class Builder() : RetryTokenBucket.Config.Builder {
+            /**
+             * @param platform Ignored. Defaults do not depend on the environment.
+             */
+            @Deprecated(
+                "The platform is ignored. This constructor will be removed in a future release.",
+                ReplaceWith("Builder()"),
+            )
+            @PlannedRemoval(1, 9)
+            public constructor(
+                @Suppress("UNUSED_PARAMETER") platform: PlatformEnvironProvider = PlatformProvider.System,
+            ) : this()
+
+            /**
+             * Whether [RetryErrorType.Transient] (timeout) retries are charged [retryCost]. When `false`, they are
+             * charged [timeoutRetryCost], as in the legacy cost model. Defaults to `true`.
+             */
+            public var useNewRetries: Boolean = true
 
             /**
              * When `true`, indicates that attempts to acquire tokens or schedule retries should fail if all capacity
@@ -234,14 +252,15 @@ public class StandardRetryTokenBucket internal constructor(
                 }
 
             /**
-             * The amount of capacity to decrement for standard retries
+             * The amount of capacity to decrement for non-throttling retries, including timeouts
              */
-            public var retryCost: Int = if (useNewRetries) 14 else 5
+            public var retryCost: Int = 14
 
             /**
-             * The amount of capacity to decrement for timeout or throttling retries
+             * The amount of capacity to decrement for throttling retries. Also used for timeout retries when
+             * [useNewRetries] is `false`.
              */
-            public var timeoutRetryCost: Int = if (useNewRetries) 5 else 10
+            public var timeoutRetryCost: Int = 5
         }
     }
 }

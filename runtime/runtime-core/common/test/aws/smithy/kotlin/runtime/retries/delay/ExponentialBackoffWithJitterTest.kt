@@ -20,12 +20,7 @@ import kotlin.time.Duration.Companion.seconds
 class ExponentialBackoffWithJitterTest {
     @Test
     fun testDefaults() {
-        val config = ExponentialBackoffWithJitter.Config(
-            ExponentialBackoffWithJitter.Config.Builder().apply {
-                initialDelay = 50.milliseconds
-                scaleFactor = 2.0
-            },
-        )
+        val config = ExponentialBackoffWithJitter.Config(ExponentialBackoffWithJitter.Config.Builder())
         assertEquals(50.milliseconds, config.initialDelay)
         assertEquals(2.0, config.scaleFactor)
         assertEquals(1.0, config.jitter)

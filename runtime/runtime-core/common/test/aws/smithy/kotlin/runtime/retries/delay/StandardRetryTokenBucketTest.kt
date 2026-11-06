@@ -13,6 +13,7 @@ import kotlinx.coroutines.test.testTimeSource
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertIs
+import kotlin.test.assertTrue
 import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.seconds
 import kotlin.time.TestTimeSource
@@ -26,10 +27,29 @@ class StandardRetryTokenBucketTest {
     fun testDefaults() {
         val config = StandardRetryTokenBucket.Config(StandardRetryTokenBucket.Config.Builder())
         assertEquals(500, config.maxCapacity)
-        assertEquals(5, config.retryCost)
-        assertEquals(10, config.timeoutRetryCost)
+        assertEquals(14, config.retryCost)
+        assertEquals(5, config.timeoutRetryCost)
         assertEquals(1, config.initialTrySuccessIncrement)
         assertEquals(0, config.initialTryCost)
+        assertTrue(config.useNewRetries)
+    }
+
+    @Test
+    fun testDefaultCostsPerErrorType() = runTest {
+        // Default bucket: throttling retries cost 5, every other retry (timeouts included) costs 14
+        mapOf(
+            RetryErrorType.Throttling to 5,
+            RetryErrorType.Transient to 14,
+            RetryErrorType.ClientSide to 14,
+            RetryErrorType.ServerSide to 14,
+        ).forEach { (errorType, cost) ->
+            val bucket = StandardRetryTokenBucket()
+
+            assertEquals(500, bucket.capacity)
+            val initialToken = bucket.acquireToken()
+            initialToken.scheduleRetry(errorType)
+            assertEquals(500 - cost, bucket.capacity, "Unexpected cost for $errorType")
+        }
     }
 
     @Test
@@ -69,7 +89,7 @@ class StandardRetryTokenBucketTest {
 
     @Test
     fun testRetryCapacityAdjustments() = runTest {
-        // Only Throttling gets the timeout/throttling cost; everything else pays retryCost
+        // Legacy cost model: Throttling and Transient pay timeoutRetryCost, everything else pays retryCost
         mapOf(
             RetryErrorType.Throttling to DEFAULT_TIMEOUT_RETRY_COST,
             RetryErrorType.Transient to DEFAULT_TIMEOUT_RETRY_COST,

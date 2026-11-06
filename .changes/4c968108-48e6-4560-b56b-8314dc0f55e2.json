@@ -1,0 +1,7 @@
+{
+    "id": "4c968108-48e6-4560-b56b-8314dc0f55e2",
+    "type": "feature",
+    "description": "⚠ **IMPORTANT**: Make the new retry behavior the default and remove the `SMITHY_NEW_RETRIES_2026` opt-in. `StandardRetryStrategy` and `AdaptiveRetryStrategy` now default to a 50 ms base delay, a scale factor of 2.0, a retry cost of 14 tokens (including timeouts), a throttling retry cost of 5 tokens, and long-polling backoff. `StandardRetryPolicy` now retries a service exception marked as throttling as a throttling error, whatever its error type.",
+    "module": "runtime-core",
+    "requiresMinorVersionBump": true
+}
