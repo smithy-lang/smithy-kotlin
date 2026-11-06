@@ -6,9 +6,12 @@ package aws.smithy.kotlin.runtime.businessmetrics
 
 import aws.smithy.kotlin.runtime.collections.get
 import aws.smithy.kotlin.runtime.operation.ExecutionContext
+import kotlinx.coroutines.currentCoroutineContext
+import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
+import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
 class BusinessMetricsUtilsTest {
@@ -63,5 +66,42 @@ class BusinessMetricsUtilsTest {
         val businessMetricIdentifier = SmithyBusinessMetric.GZIP_REQUEST_COMPRESSION.identifier
 
         assertEquals(businessMetricIdentifier, businessMetricToString)
+    }
+
+    private suspend fun scopedMetrics() = currentCoroutineContext()[ScopedBusinessMetricsContext]?.metrics
+
+    @Test
+    fun noScopedBusinessMetrics() = runTest {
+        assertNull(scopedMetrics())
+    }
+
+    @Test
+    fun withScopedBusinessMetrics() = runTest {
+        withScopedBusinessMetrics(SmithyBusinessMetric.WAITER) {
+            assertEquals(setOf(SmithyBusinessMetric.WAITER), scopedMetrics())
+        }
+        assertNull(scopedMetrics())
+    }
+
+    @Test
+    fun withMultipleScopedBusinessMetrics() = runTest {
+        withScopedBusinessMetrics(SmithyBusinessMetric.WAITER, SmithyBusinessMetric.PAGINATOR) {
+            assertEquals(setOf(SmithyBusinessMetric.WAITER, SmithyBusinessMetric.PAGINATOR), scopedMetrics())
+        }
+    }
+
+    @Test
+    fun nestedWithScopedBusinessMetrics() = runTest {
+        withScopedBusinessMetrics(SmithyBusinessMetric.WAITER) {
+            withScopedBusinessMetrics(SmithyBusinessMetric.PAGINATOR) {
+                assertEquals(setOf(SmithyBusinessMetric.WAITER, SmithyBusinessMetric.PAGINATOR), scopedMetrics())
+            }
+            assertEquals(setOf(SmithyBusinessMetric.WAITER), scopedMetrics())
+        }
+    }
+
+    @Test
+    fun withScopedBusinessMetricsReturnsResult() = runTest {
+        assertEquals(42, withScopedBusinessMetrics(SmithyBusinessMetric.WAITER) { 42 })
     }
 }

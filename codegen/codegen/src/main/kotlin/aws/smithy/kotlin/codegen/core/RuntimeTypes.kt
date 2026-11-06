@@ -121,6 +121,7 @@ object RuntimeTypes {
             val ServiceEndpointOverride = symbol("ServiceEndpointOverride")
             val emitBusinessMetric = symbol("emitBusinessMetric")
             val SmithyBusinessMetric = symbol("SmithyBusinessMetric")
+            val withScopedBusinessMetrics = symbol("withScopedBusinessMetrics")
         }
 
         object SmokeTests : RuntimeTypePackage(KotlinDependency.CORE, "smoketests") {
