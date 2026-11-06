@@ -4,6 +4,7 @@
  */
 package aws.smithy.kotlin.runtime.util
 
+import kotlinx.coroutines.test.runTest
 import java.io.File
 import java.nio.file.Files
 import java.nio.file.attribute.PosixFilePermissions
@@ -18,66 +19,66 @@ class WritePermissionsJVMTest {
         .toString()
 
     @Test
-    fun testWriteWithPermissions600() {
+    fun testWriteWithPermissions600() = runTest {
         val ps = PlatformProvider.System
-        if (ps.osInfo().family == OsFamily.Windows) return
+        if (ps.osInfo().family == OsFamily.Windows) return@runTest
 
         val path = tempPath()
-        ps.write(path, "secret".encodeToByteArray(), WriteType.OVERWRITE, permissions = "600")
+        ps.writeFile(path, "secret".encodeToByteArray(), WriteType.OVERWRITE, permissions = "600")
 
         val perms = Files.getPosixFilePermissions(File(path).toPath())
         assertEquals(PosixFilePermissions.fromString("rw-------"), perms)
-        assertContentEquals("secret".encodeToByteArray(), ps.read(path, readAll = true))
+        assertContentEquals("secret".encodeToByteArray(), ps.readFile(path))
     }
 
     @Test
-    fun testWriteWithPermissions644() {
+    fun testWriteWithPermissions644() = runTest {
         val ps = PlatformProvider.System
-        if (ps.osInfo().family == OsFamily.Windows) return
+        if (ps.osInfo().family == OsFamily.Windows) return@runTest
 
         val path = tempPath()
-        ps.write(path, "data".encodeToByteArray(), WriteType.OVERWRITE, permissions = "644")
+        ps.writeFile(path, "data".encodeToByteArray(), WriteType.OVERWRITE, permissions = "644")
 
         val perms = Files.getPosixFilePermissions(File(path).toPath())
         assertEquals(PosixFilePermissions.fromString("rw-r--r--"), perms)
     }
 
     @Test
-    fun testWritePermissionsIgnoredOnExistingFile() {
+    fun testWritePermissionsIgnoredOnExistingFile() = runTest {
         val ps = PlatformProvider.System
-        if (ps.osInfo().family == OsFamily.Windows) return
+        if (ps.osInfo().family == OsFamily.Windows) return@runTest
 
         val path = tempPath()
-        ps.write(path, "first".encodeToByteArray(), WriteType.OVERWRITE, permissions = "644")
+        ps.writeFile(path, "first".encodeToByteArray(), WriteType.OVERWRITE, permissions = "644")
         val originalPerms = Files.getPosixFilePermissions(File(path).toPath())
 
-        ps.write(path, "second".encodeToByteArray(), WriteType.OVERWRITE, permissions = "600")
+        ps.writeFile(path, "second".encodeToByteArray(), WriteType.OVERWRITE, permissions = "600")
 
         assertEquals(originalPerms, Files.getPosixFilePermissions(File(path).toPath()))
-        assertContentEquals("second".encodeToByteArray(), ps.read(path, readAll = true))
+        assertContentEquals("second".encodeToByteArray(), ps.readFile(path))
     }
 
     @Test
-    fun testWriteAppendWithPermissionsOnNewFile() {
+    fun testWriteAppendWithPermissionsOnNewFile() = runTest {
         val ps = PlatformProvider.System
-        if (ps.osInfo().family == OsFamily.Windows) return
+        if (ps.osInfo().family == OsFamily.Windows) return@runTest
 
         val path = tempPath()
-        ps.write(path, "hello".encodeToByteArray(), WriteType.APPEND, permissions = "600")
+        ps.writeFile(path, "hello".encodeToByteArray(), WriteType.APPEND, permissions = "600")
 
         val perms = Files.getPosixFilePermissions(File(path).toPath())
         assertEquals(PosixFilePermissions.fromString("rw-------"), perms)
-        assertContentEquals("hello".encodeToByteArray(), ps.read(path, readAll = true))
+        assertContentEquals("hello".encodeToByteArray(), ps.readFile(path))
     }
 
     @Test
-    fun testWriteWithNullPermissions() {
+    fun testWriteWithNullPermissions() = runTest {
         val ps = PlatformProvider.System
         val path = tempPath()
 
-        ps.write(path, "data".encodeToByteArray(), WriteType.OVERWRITE)
+        ps.writeFile(path, "data".encodeToByteArray(), WriteType.OVERWRITE)
 
-        assertTrue(ps.exists(path))
-        assertContentEquals("data".encodeToByteArray(), ps.read(path, readAll = true))
+        assertTrue(ps.pathExists(path))
+        assertContentEquals("data".encodeToByteArray(), ps.readFile(path))
     }
 }

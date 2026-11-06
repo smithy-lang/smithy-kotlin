@@ -2469,23 +2469,36 @@ public abstract interface class aws/smithy/kotlin/runtime/util/Filesystem {
 	public static synthetic fun atomicMove$default (Laws/smithy/kotlin/runtime/util/Filesystem;Ljava/lang/String;Ljava/lang/String;ZZILjava/lang/Object;)V
 	public fun createDir (Ljava/lang/String;Z)V
 	public static synthetic fun createDir$default (Laws/smithy/kotlin/runtime/util/Filesystem;Ljava/lang/String;ZILjava/lang/Object;)V
+	public fun createDirectories (Ljava/lang/String;ZLkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public static synthetic fun createDirectories$default (Laws/smithy/kotlin/runtime/util/Filesystem;Ljava/lang/String;ZLkotlin/coroutines/Continuation;ILjava/lang/Object;)Ljava/lang/Object;
 	public fun delete (Ljava/lang/String;Z)V
 	public static synthetic fun delete$default (Laws/smithy/kotlin/runtime/util/Filesystem;Ljava/lang/String;ZILjava/lang/Object;)V
 	public fun exists (Ljava/lang/String;)Z
 	public abstract fun fileExists (Ljava/lang/String;)Z
+	public fun fileSize (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public abstract fun getFilePathSeparator ()Ljava/lang/String;
 	public fun list (Ljava/lang/String;Z)Ljava/util/Collection;
 	public static synthetic fun list$default (Laws/smithy/kotlin/runtime/util/Filesystem;Ljava/lang/String;ZILjava/lang/Object;)Ljava/util/Collection;
+	public fun listDirectory (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun pathExists (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun read (Ljava/lang/String;JJZ)[B
 	public static synthetic fun read$default (Laws/smithy/kotlin/runtime/util/Filesystem;Ljava/lang/String;JJZILjava/lang/Object;)[B
+	public fun readFile (Ljava/lang/String;JJLkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun readFile (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public abstract fun readFileOrNull (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun readOrNull (Ljava/lang/String;JJZZ)[B
 	public static synthetic fun readOrNull$default (Laws/smithy/kotlin/runtime/util/Filesystem;Ljava/lang/String;JJZZILjava/lang/Object;)[B
+	public fun remove (Ljava/lang/String;ZLkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public static synthetic fun remove$default (Laws/smithy/kotlin/runtime/util/Filesystem;Ljava/lang/String;ZLkotlin/coroutines/Continuation;ILjava/lang/Object;)Ljava/lang/Object;
+	public fun rename (Ljava/lang/String;Ljava/lang/String;ZLkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public static synthetic fun rename$default (Laws/smithy/kotlin/runtime/util/Filesystem;Ljava/lang/String;Ljava/lang/String;ZLkotlin/coroutines/Continuation;ILjava/lang/Object;)Ljava/lang/Object;
 	public fun size (Ljava/lang/String;Z)J
 	public static synthetic fun size$default (Laws/smithy/kotlin/runtime/util/Filesystem;Ljava/lang/String;ZILjava/lang/Object;)J
 	public abstract fun write (Ljava/lang/String;[BLaws/smithy/kotlin/runtime/util/WriteType;ZLjava/lang/String;)V
 	public static synthetic fun write$default (Laws/smithy/kotlin/runtime/util/Filesystem;Ljava/lang/String;[BLaws/smithy/kotlin/runtime/util/WriteType;ZLjava/lang/String;ILjava/lang/Object;)V
-	public abstract fun writeFile (Ljava/lang/String;[BLkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun writeFile (Ljava/lang/String;[BLaws/smithy/kotlin/runtime/util/WriteType;ZLjava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun writeFile (Ljava/lang/String;[BLkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public static synthetic fun writeFile$default (Laws/smithy/kotlin/runtime/util/Filesystem;Ljava/lang/String;[BLaws/smithy/kotlin/runtime/util/WriteType;ZLjava/lang/String;Lkotlin/coroutines/Continuation;ILjava/lang/Object;)Ljava/lang/Object;
 }
 
 public final class aws/smithy/kotlin/runtime/util/Filesystem$Companion {
@@ -2500,18 +2513,32 @@ public final class aws/smithy/kotlin/runtime/util/Filesystem$DefaultImpls {
 	public static synthetic fun atomicMove$default (Laws/smithy/kotlin/runtime/util/Filesystem;Ljava/lang/String;Ljava/lang/String;ZZILjava/lang/Object;)V
 	public static fun createDir (Laws/smithy/kotlin/runtime/util/Filesystem;Ljava/lang/String;Z)V
 	public static synthetic fun createDir$default (Laws/smithy/kotlin/runtime/util/Filesystem;Ljava/lang/String;ZILjava/lang/Object;)V
+	public static fun createDirectories (Laws/smithy/kotlin/runtime/util/Filesystem;Ljava/lang/String;ZLkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public static synthetic fun createDirectories$default (Laws/smithy/kotlin/runtime/util/Filesystem;Ljava/lang/String;ZLkotlin/coroutines/Continuation;ILjava/lang/Object;)Ljava/lang/Object;
 	public static fun delete (Laws/smithy/kotlin/runtime/util/Filesystem;Ljava/lang/String;Z)V
 	public static synthetic fun delete$default (Laws/smithy/kotlin/runtime/util/Filesystem;Ljava/lang/String;ZILjava/lang/Object;)V
 	public static fun exists (Laws/smithy/kotlin/runtime/util/Filesystem;Ljava/lang/String;)Z
+	public static fun fileSize (Laws/smithy/kotlin/runtime/util/Filesystem;Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public static fun list (Laws/smithy/kotlin/runtime/util/Filesystem;Ljava/lang/String;Z)Ljava/util/Collection;
 	public static synthetic fun list$default (Laws/smithy/kotlin/runtime/util/Filesystem;Ljava/lang/String;ZILjava/lang/Object;)Ljava/util/Collection;
+	public static fun listDirectory (Laws/smithy/kotlin/runtime/util/Filesystem;Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public static fun pathExists (Laws/smithy/kotlin/runtime/util/Filesystem;Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public static fun read (Laws/smithy/kotlin/runtime/util/Filesystem;Ljava/lang/String;JJZ)[B
 	public static synthetic fun read$default (Laws/smithy/kotlin/runtime/util/Filesystem;Ljava/lang/String;JJZILjava/lang/Object;)[B
+	public static fun readFile (Laws/smithy/kotlin/runtime/util/Filesystem;Ljava/lang/String;JJLkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public static fun readFile (Laws/smithy/kotlin/runtime/util/Filesystem;Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public static fun readOrNull (Laws/smithy/kotlin/runtime/util/Filesystem;Ljava/lang/String;JJZZ)[B
 	public static synthetic fun readOrNull$default (Laws/smithy/kotlin/runtime/util/Filesystem;Ljava/lang/String;JJZZILjava/lang/Object;)[B
+	public static fun remove (Laws/smithy/kotlin/runtime/util/Filesystem;Ljava/lang/String;ZLkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public static synthetic fun remove$default (Laws/smithy/kotlin/runtime/util/Filesystem;Ljava/lang/String;ZLkotlin/coroutines/Continuation;ILjava/lang/Object;)Ljava/lang/Object;
+	public static fun rename (Laws/smithy/kotlin/runtime/util/Filesystem;Ljava/lang/String;Ljava/lang/String;ZLkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public static synthetic fun rename$default (Laws/smithy/kotlin/runtime/util/Filesystem;Ljava/lang/String;Ljava/lang/String;ZLkotlin/coroutines/Continuation;ILjava/lang/Object;)Ljava/lang/Object;
 	public static fun size (Laws/smithy/kotlin/runtime/util/Filesystem;Ljava/lang/String;Z)J
 	public static synthetic fun size$default (Laws/smithy/kotlin/runtime/util/Filesystem;Ljava/lang/String;ZILjava/lang/Object;)J
 	public static synthetic fun write$default (Laws/smithy/kotlin/runtime/util/Filesystem;Ljava/lang/String;[BLaws/smithy/kotlin/runtime/util/WriteType;ZLjava/lang/String;ILjava/lang/Object;)V
+	public static fun writeFile (Laws/smithy/kotlin/runtime/util/Filesystem;Ljava/lang/String;[BLaws/smithy/kotlin/runtime/util/WriteType;ZLjava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public static fun writeFile (Laws/smithy/kotlin/runtime/util/Filesystem;Ljava/lang/String;[BLkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public static synthetic fun writeFile$default (Laws/smithy/kotlin/runtime/util/Filesystem;Ljava/lang/String;[BLaws/smithy/kotlin/runtime/util/WriteType;ZLjava/lang/String;Lkotlin/coroutines/Continuation;ILjava/lang/Object;)Ljava/lang/Object;
 }
 
 public final class aws/smithy/kotlin/runtime/util/FlowUtilKt {
@@ -2545,17 +2572,26 @@ public final class aws/smithy/kotlin/runtime/util/MapFilesystem : aws/smithy/kot
 	public synthetic fun <init> (Ljava/util/Map;Ljava/lang/String;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public fun atomicMove (Ljava/lang/String;Ljava/lang/String;ZZ)V
 	public fun createDir (Ljava/lang/String;Z)V
+	public fun createDirectories (Ljava/lang/String;ZLkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun delete (Ljava/lang/String;Z)V
 	public fun exists (Ljava/lang/String;)Z
 	public fun fileExists (Ljava/lang/String;)Z
+	public fun fileSize (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun getFilePathSeparator ()Ljava/lang/String;
 	public final fun getFilePermissions (Ljava/lang/String;)Ljava/lang/String;
 	public fun list (Ljava/lang/String;Z)Ljava/util/Collection;
+	public fun listDirectory (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun pathExists (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun read (Ljava/lang/String;JJZ)[B
+	public fun readFile (Ljava/lang/String;JJLkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun readFile (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun readFileOrNull (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun readOrNull (Ljava/lang/String;JJZZ)[B
+	public fun remove (Ljava/lang/String;ZLkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun rename (Ljava/lang/String;Ljava/lang/String;ZLkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun size (Ljava/lang/String;Z)J
 	public fun write (Ljava/lang/String;[BLaws/smithy/kotlin/runtime/util/WriteType;ZLjava/lang/String;)V
+	public fun writeFile (Ljava/lang/String;[BLaws/smithy/kotlin/runtime/util/WriteType;ZLjava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun writeFile (Ljava/lang/String;[BLkotlin/coroutines/Continuation;)Ljava/lang/Object;
 }
 
@@ -2612,12 +2648,22 @@ public final class aws/smithy/kotlin/runtime/util/PlatformProvider$Companion {
 public final class aws/smithy/kotlin/runtime/util/PlatformProvider$DefaultImpls {
 	public static fun atomicMove (Laws/smithy/kotlin/runtime/util/PlatformProvider;Ljava/lang/String;Ljava/lang/String;ZZ)V
 	public static fun createDir (Laws/smithy/kotlin/runtime/util/PlatformProvider;Ljava/lang/String;Z)V
+	public static fun createDirectories (Laws/smithy/kotlin/runtime/util/PlatformProvider;Ljava/lang/String;ZLkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public static fun delete (Laws/smithy/kotlin/runtime/util/PlatformProvider;Ljava/lang/String;Z)V
 	public static fun exists (Laws/smithy/kotlin/runtime/util/PlatformProvider;Ljava/lang/String;)Z
+	public static fun fileSize (Laws/smithy/kotlin/runtime/util/PlatformProvider;Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public static fun list (Laws/smithy/kotlin/runtime/util/PlatformProvider;Ljava/lang/String;Z)Ljava/util/Collection;
+	public static fun listDirectory (Laws/smithy/kotlin/runtime/util/PlatformProvider;Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public static fun pathExists (Laws/smithy/kotlin/runtime/util/PlatformProvider;Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public static fun read (Laws/smithy/kotlin/runtime/util/PlatformProvider;Ljava/lang/String;JJZ)[B
+	public static fun readFile (Laws/smithy/kotlin/runtime/util/PlatformProvider;Ljava/lang/String;JJLkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public static fun readFile (Laws/smithy/kotlin/runtime/util/PlatformProvider;Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public static fun readOrNull (Laws/smithy/kotlin/runtime/util/PlatformProvider;Ljava/lang/String;JJZZ)[B
+	public static fun remove (Laws/smithy/kotlin/runtime/util/PlatformProvider;Ljava/lang/String;ZLkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public static fun rename (Laws/smithy/kotlin/runtime/util/PlatformProvider;Ljava/lang/String;Ljava/lang/String;ZLkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public static fun size (Laws/smithy/kotlin/runtime/util/PlatformProvider;Ljava/lang/String;Z)J
+	public static fun writeFile (Laws/smithy/kotlin/runtime/util/PlatformProvider;Ljava/lang/String;[BLaws/smithy/kotlin/runtime/util/WriteType;ZLjava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public static fun writeFile (Laws/smithy/kotlin/runtime/util/PlatformProvider;Ljava/lang/String;[BLkotlin/coroutines/Continuation;)Ljava/lang/Object;
 }
 
 public abstract interface class aws/smithy/kotlin/runtime/util/PropertyProvider {
@@ -2657,9 +2703,11 @@ public final class aws/smithy/kotlin/runtime/util/TestPlatformProvider : aws/smi
 	public synthetic fun <init> (Ljava/util/Map;Ljava/util/Map;Ljava/util/Map;Laws/smithy/kotlin/runtime/util/OperatingSystem;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public fun atomicMove (Ljava/lang/String;Ljava/lang/String;ZZ)V
 	public fun createDir (Ljava/lang/String;Z)V
+	public fun createDirectories (Ljava/lang/String;ZLkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun delete (Ljava/lang/String;Z)V
 	public fun exists (Ljava/lang/String;)Z
 	public fun fileExists (Ljava/lang/String;)Z
+	public fun fileSize (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun getAllEnvVars ()Ljava/util/Map;
 	public fun getAllProperties ()Ljava/util/Map;
 	public fun getFilePathSeparator ()Ljava/lang/String;
@@ -2672,12 +2720,19 @@ public final class aws/smithy/kotlin/runtime/util/TestPlatformProvider : aws/smi
 	public fun isNative ()Z
 	public fun isNode ()Z
 	public fun list (Ljava/lang/String;Z)Ljava/util/Collection;
+	public fun listDirectory (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun osInfo ()Laws/smithy/kotlin/runtime/util/OperatingSystem;
+	public fun pathExists (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun read (Ljava/lang/String;JJZ)[B
+	public fun readFile (Ljava/lang/String;JJLkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun readFile (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun readFileOrNull (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun readOrNull (Ljava/lang/String;JJZZ)[B
+	public fun remove (Ljava/lang/String;ZLkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun rename (Ljava/lang/String;Ljava/lang/String;ZLkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun size (Ljava/lang/String;Z)J
 	public fun write (Ljava/lang/String;[BLaws/smithy/kotlin/runtime/util/WriteType;ZLjava/lang/String;)V
+	public fun writeFile (Ljava/lang/String;[BLaws/smithy/kotlin/runtime/util/WriteType;ZLjava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun writeFile (Ljava/lang/String;[BLkotlin/coroutines/Continuation;)Ljava/lang/Object;
 }
 
