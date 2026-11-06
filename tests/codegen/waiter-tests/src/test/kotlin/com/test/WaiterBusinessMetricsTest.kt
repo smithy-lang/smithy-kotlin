@@ -7,14 +7,20 @@ package com.test
 import aws.smithy.kotlin.runtime.businessmetrics.BusinessMetric
 import aws.smithy.kotlin.runtime.businessmetrics.ScopedBusinessMetricsContext
 import aws.smithy.kotlin.runtime.businessmetrics.SmithyBusinessMetric
+import aws.smithy.kotlin.runtime.retries.Outcome
+import aws.smithy.kotlin.runtime.retries.RetryStrategy
+import aws.smithy.kotlin.runtime.retries.StandardRetryStrategy
+import aws.smithy.kotlin.runtime.retries.policy.RetryPolicy
 import com.test.model.EntityLists
 import com.test.model.GetStringEqualsRequest
 import com.test.model.GetStringEqualsResponse
 import com.test.waiters.waitUntilStringListAnyStringEquals
+import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.test.runTest
 import kotlin.coroutines.coroutineContext
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertNull
 
 class WaiterBusinessMetricsTest {
     private class RecordingWaitersTestClient(
@@ -42,6 +48,26 @@ class WaiterBusinessMetricsTest {
         client.waitUntilStringListAnyStringEquals(GetStringEqualsRequest { name = "test" })
 
         assertEquals(responses.size, client.observedMetrics.size)
+        client.observedMetrics.forEach { assertEquals(setOf(SmithyBusinessMetric.WAITER), it) }
+    }
+
+    @Test
+    fun testRetryStrategyCallsDoNotEmitBusinessMetric() = runTest {
+        val client = newClient()
+        val strategyObservedMetrics = mutableListOf<Set<BusinessMetric>?>()
+
+        // A custom strategy which makes its own call before delegating each attempt
+        val strategy = object : RetryStrategy by StandardRetryStrategy() {
+            override suspend fun <R> retry(policy: RetryPolicy<R>, block: suspend () -> R): Outcome<R> = StandardRetryStrategy().retry(policy) {
+                strategyObservedMetrics += currentCoroutineContext()[ScopedBusinessMetricsContext]?.metrics
+                block()
+            }
+        }
+
+        client.waitUntilStringListAnyStringEquals(GetStringEqualsRequest { name = "test" }, strategy)
+
+        assertEquals(responses.size, strategyObservedMetrics.size)
+        strategyObservedMetrics.forEach { assertNull(it) }
         client.observedMetrics.forEach { assertEquals(setOf(SmithyBusinessMetric.WAITER), it) }
     }
 

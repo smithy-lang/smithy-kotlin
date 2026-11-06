@@ -59,7 +59,7 @@ internal fun KotlinWriter.renderWaiter(wi: WaiterInfo) {
         write("")
         write("val policy = #T(request, acceptors)", RuntimeTypes.Core.Retries.Policy.AcceptorRetryPolicy)
         write(
-            "return #T(#T.WAITER) { strategy.retry(policy) { #L(request) } }",
+            "return strategy.retry(policy) { #T(#T.WAITER) { #L(request) } }",
             RuntimeTypes.Core.BusinessMetrics.withScopedBusinessMetrics,
             RuntimeTypes.Core.BusinessMetrics.SmithyBusinessMetric,
             wi.opMethodName,

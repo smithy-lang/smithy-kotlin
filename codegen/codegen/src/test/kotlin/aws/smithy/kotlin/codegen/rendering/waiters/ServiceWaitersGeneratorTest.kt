@@ -48,7 +48,7 @@ class ServiceWaitersGeneratorTest {
         """.trimIndent()
         val methodFooter = """
                 val policy = AcceptorRetryPolicy(request, acceptors)
-                return withScopedBusinessMetrics(SmithyBusinessMetric.WAITER) { strategy.retry(policy) { describeFooOptional(request) } }
+                return strategy.retry(policy) { withScopedBusinessMetrics(SmithyBusinessMetric.WAITER) { describeFooOptional(request) } }
             }
         """.trimIndent()
         generateService("simple-service-with-operation-waiter.smithy").shouldContain(methodHeader, methodFooter)
