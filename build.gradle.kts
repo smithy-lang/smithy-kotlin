@@ -83,7 +83,7 @@ allprojects {
 dokka {
     moduleName.set("Smithy Kotlin")
 
-    dokkaPublications.html {
+    dokkaPublications.configureEach {
         includes.from(
             rootProject.file("docs/dokka-presets/README.md"),
         )
