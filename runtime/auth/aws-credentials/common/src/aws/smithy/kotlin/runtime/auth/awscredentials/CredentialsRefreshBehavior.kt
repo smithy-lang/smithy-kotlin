@@ -31,12 +31,13 @@ public val CredentialsRefreshBehaviorKey: AttributeKey<CredentialsRefreshBehavio
 
 /**
  * Set to `true` by a provider whose credentials should be looked up again at the cache's default pace even though they
- * carry an expiration, as IMDS credentials were by the caching layer IMDS was used behind before this cache existed.
+ * carry an expiration, because its source rotates in new credentials well before the current ones expire.
  *
  * Such credentials are refreshed when they reach their advisory window or once that pace has elapsed, whichever comes
  * first. The early refresh is an advisory refresh: it never blocks callers that find it in progress, a failure keeps
- * the cached credentials, and it follows the refresh backoff. IMDS rotates in new credentials well before the current
- * ones expire, and the instance's role can change, so this keeps the cached credentials recent.
+ * the cached credentials, and it follows the refresh backoff. For sources such as IMDS and container endpoints, which
+ * rotate credentials long before they expire (and, for IMDS, whose instance role can change), this keeps the cached
+ * credentials recent.
  */
 @InternalApi
 public val PacedRefreshKey: AttributeKey<Boolean> = AttributeKey("aws.smithy.kotlin#PacedRefresh")
