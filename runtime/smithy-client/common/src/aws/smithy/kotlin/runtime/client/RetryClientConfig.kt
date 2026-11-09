@@ -5,6 +5,7 @@
 package aws.smithy.kotlin.runtime.client
 
 import aws.smithy.kotlin.runtime.InternalApi
+import aws.smithy.kotlin.runtime.retries.AdaptiveRetryStrategy
 import aws.smithy.kotlin.runtime.retries.RetryStrategy
 import aws.smithy.kotlin.runtime.retries.RetryStrategyConfigDsl
 import aws.smithy.kotlin.runtime.retries.StandardRetryStrategy
@@ -65,7 +66,11 @@ public class RetryStrategyClientConfigImpl private constructor(
         override var retryStrategy: RetryStrategy? by retryStrategyProperty::instance
 
         override fun retryStrategy(block: StandardRetryStrategy.Config.Builder.() -> Unit) {
-            retryStrategyProperty.dsl(StandardRetryStrategy, block)
+            // An already-set adaptive strategy stays adaptive when configured with this block
+            when (retryStrategyProperty.instance) {
+                is AdaptiveRetryStrategy -> retryStrategyProperty.dsl(AdaptiveRetryStrategy, block)
+                else -> retryStrategyProperty.dsl(StandardRetryStrategy, block)
+            }
         }
 
         override fun <B : RetryStrategy.Config.Builder, R : RetryStrategy> retryStrategy(

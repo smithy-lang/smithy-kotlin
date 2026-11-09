@@ -16,6 +16,13 @@ import kotlin.test.*
 
 class StandardRetryStrategyTest {
     @Test
+    fun testLongPollingBackoffEnabledByDefault() {
+        assertTrue(StandardRetryStrategy().config.enableLongPollingBackoff)
+        assertTrue(StandardRetryStrategy { }.config.enableLongPollingBackoff)
+        assertTrue(AdaptiveRetryStrategy().config.enableLongPollingBackoff)
+    }
+
+    @Test
     fun testInitialSuccess() = runTest {
         val bucket = RecordingTokenBucket()
         val delayer = RecordingDelayer()

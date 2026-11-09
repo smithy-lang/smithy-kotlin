@@ -289,9 +289,10 @@ public open class StandardRetryStrategy(override val config: Config = Config.def
             public override var maxAttempts: Int = DEFAULT_MAX_ATTEMPTS
 
             /**
-             * Whether long-polling operations should back off even when retry quota is exhausted.
+             * Whether long-polling operations should back off even when retry quota is exhausted. Defaults to `true`.
+             * This only affects operations marked as long-polling.
              */
-            public var enableLongPollingBackoff: Boolean = false
+            public var enableLongPollingBackoff: Boolean = true
 
             internal val tokenBucketProperty = DslBuilderProperty<RetryTokenBucket.Config.Builder, RetryTokenBucket>(
                 StandardRetryTokenBucket,

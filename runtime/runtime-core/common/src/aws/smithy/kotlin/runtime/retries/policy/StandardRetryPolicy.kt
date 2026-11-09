@@ -16,7 +16,9 @@ import kotlin.reflect.safeCast
  * A basic retry policy for Smithy clients that defines which error conditions are retryable and how. This policy will
  * evaluate the following exceptions as retryable:
  *
- * * Any [ServiceException] with an `sdkErrorMetadata.errorType` of:
+ * * Any [ServiceException] where `sdkErrorMetadata.isThrottling` is `true`, evaluated as
+ *   [RetryErrorType.Throttling] before its `errorType` is considered (see [throttlingOverridesErrorType])
+ * * Any retryable [ServiceException] with an `sdkErrorMetadata.errorType` of:
  *   * [ErrorType.Server] (such as internal service errors)
  *   * [ErrorType.Client] (such as an invalid request, a resource not found, access denied, etc.)
  * * Any [SdkBaseException] where `sdkErrorMetadata.isRetryable` is `true` (such as a client-side timeout,
@@ -28,6 +30,15 @@ public open class StandardRetryPolicy : RetryPolicy<Any?> {
     public companion object {
         public val Default: StandardRetryPolicy = StandardRetryPolicy()
     }
+
+    /**
+     * Whether a [ServiceException] whose `sdkErrorMetadata.isThrottling` is `true` is evaluated as
+     * [RetryErrorType.Throttling] regardless of its `errorType`. When `false`, a retryable [ServiceException] is
+     * evaluated by its `errorType` first, as [RetryErrorType.ServerSide] or [RetryErrorType.ClientSide]. Defaults to
+     * `true`.
+     */
+    protected open val throttlingOverridesErrorType: Boolean
+        get() = true
 
     private val evaluationStrategies = sequenceOf(
         EvaluationStrategy(::evaluateSpecificExceptions),
@@ -62,6 +73,7 @@ public open class StandardRetryPolicy : RetryPolicy<Any?> {
 
     private fun evaluateServiceException(ex: ServiceException): RetryDirective? = with(ex.sdkErrorMetadata) {
         when {
+            isThrottling && throttlingOverridesErrorType -> RetryDirective.RetryError(RetryErrorType.Throttling)
             isRetryable && errorType == ErrorType.Server -> RetryDirective.RetryError(RetryErrorType.ServerSide)
             isRetryable && errorType == ErrorType.Client -> RetryDirective.RetryError(RetryErrorType.ClientSide)
             else -> null

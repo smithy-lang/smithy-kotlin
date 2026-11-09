@@ -5,8 +5,8 @@
 
 package aws.smithy.kotlin.runtime.retries.delay
 
-import aws.smithy.kotlin.runtime.CoreSettings
 import aws.smithy.kotlin.runtime.InternalApi
+import aws.smithy.kotlin.runtime.PlannedRemoval
 import aws.smithy.kotlin.runtime.retries.RetryContext
 import aws.smithy.kotlin.runtime.retries.policy.RetryErrorType
 import aws.smithy.kotlin.runtime.util.DslFactory
@@ -134,18 +134,28 @@ public class ExponentialBackoffWithJitter(
         /**
          * A mutable builder for config for [ExponentialBackoffWithJitter]
          */
-        public class Builder(platform: PlatformEnvironProvider = PlatformProvider.System) : DelayProvider.Config.Builder {
-            private val useNewRetries = CoreSettings.resolveNewRetriesEnabled(platform)
+        public class Builder() : DelayProvider.Config.Builder {
+            /**
+             * @param platform Ignored. Defaults do not depend on the environment.
+             */
+            @Deprecated(
+                "The platform is ignored. This constructor will be removed in a future release.",
+                ReplaceWith("Builder()"),
+            )
+            @PlannedRemoval(1, 9)
+            public constructor(
+                @Suppress("UNUSED_PARAMETER") platform: PlatformEnvironProvider = PlatformProvider.System,
+            ) : this()
 
             /**
              * The base delay for non-throttling errors
              */
-            public var initialDelay: Duration = if (useNewRetries) 50.milliseconds else 10.milliseconds
+            public var initialDelay: Duration = 50.milliseconds
 
             /**
              * The scale factor by which to multiply the previous max delay
              * */
-            public var scaleFactor: Double = if (useNewRetries) 2.0 else 1.5
+            public var scaleFactor: Double = 2.0
 
             /**
              * The amount of random variability over the max delay (1.0 means full jitter, 0.0 means no jitter)

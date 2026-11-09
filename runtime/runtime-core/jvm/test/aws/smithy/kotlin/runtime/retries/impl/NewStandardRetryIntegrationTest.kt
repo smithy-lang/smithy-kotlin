@@ -13,7 +13,6 @@ import aws.smithy.kotlin.runtime.retries.getOrThrow
 import aws.smithy.kotlin.runtime.retries.policy.RetryDirective
 import aws.smithy.kotlin.runtime.retries.policy.RetryErrorType
 import aws.smithy.kotlin.runtime.retries.policy.RetryPolicy
-import aws.smithy.kotlin.runtime.util.TestPlatformProvider
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.currentCoroutineContext
@@ -27,15 +26,14 @@ import kotlin.time.Duration.Companion.milliseconds
 
 /**
  * Integration tests for the standard retry strategy behavior.
- * These tests configure the standard retry constants (retryCost=14, timeoutRetryCost=5)
- * and use [ExponentialBackoffWithJitter] (initialDelay=50ms, scaleFactor=2.0).
+ * These tests use the default standard retry constants (retryCost=14, timeoutRetryCost=5)
+ * and the default [ExponentialBackoffWithJitter] (initialDelay=50ms, scaleFactor=2.0).
  */
 class NewStandardRetryIntegrationTest {
-    private val platform = TestPlatformProvider.of(props = mapOf("smithy.newRetries2026" to "true"))
-    private val defaultDelayConfig = ExponentialBackoffWithJitter.Config(ExponentialBackoffWithJitter.Config.Builder(platform))
+    private val defaultDelayConfig = ExponentialBackoffWithJitter.Config.Default
 
     private fun sepTokenBucket(maxCapacity: Int? = null): StandardRetryTokenBucket {
-        val builder = StandardRetryTokenBucket.Config.Builder(platform)
+        val builder = StandardRetryTokenBucket.Config.Builder()
         maxCapacity?.let { builder.maxCapacity = it }
         return StandardRetryTokenBucket(StandardRetryTokenBucket.Config(builder))
     }
