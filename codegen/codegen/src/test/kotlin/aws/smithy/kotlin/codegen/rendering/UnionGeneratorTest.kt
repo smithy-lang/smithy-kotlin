@@ -275,19 +275,19 @@ class UnionGeneratorTest {
         val expectedClassDecl = """
             public sealed class MyUnion {
                 public data class Bar(val value: kotlin.Int) : test.model.MyUnion() {
-                    override fun toString(): kotlin.String = "MyUnion(*** Sensitive Data Redacted ***)"
+                    override fun toString(): kotlin.String = "Bar(*** Sensitive Data Redacted ***)"
                 }
             
                 public data class Baz(val value: test.model.MyStruct) : test.model.MyUnion() {
-                    override fun toString(): kotlin.String = "MyUnion(*** Sensitive Data Redacted ***)"
+                    override fun toString(): kotlin.String = "Baz(*** Sensitive Data Redacted ***)"
                 }
             
                 public data class Foo(val value: kotlin.String) : test.model.MyUnion() {
-                    override fun toString(): kotlin.String = "MyUnion(*** Sensitive Data Redacted ***)"
+                    override fun toString(): kotlin.String = "Foo(*** Sensitive Data Redacted ***)"
                 }
             
                 public object SdkUnknown : test.model.MyUnion() {
-                    override fun toString(): kotlin.String = "MyUnion(*** Sensitive Data Redacted ***)"
+                    override fun toString(): kotlin.String = "SdkUnknown(*** Sensitive Data Redacted ***)"
                 }
             
                 /**
