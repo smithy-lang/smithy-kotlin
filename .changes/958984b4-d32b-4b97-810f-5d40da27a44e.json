@@ -1,6 +1,6 @@
 {
     "id": "958984b4-d32b-4b97-810f-5d40da27a44e",
     "type": "bugfix",
-    "description": "Redact sensitive union variants in generated `toString()` and label redacted output with the variant name",
+    "description": "Redact sensitive union variants in generated `toString()`",
     "module": "codegen"
 }

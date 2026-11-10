@@ -54,14 +54,14 @@ class UnionGenerator(
                     renderEquals(model, listOf(it), variantName, this)
                 }
 
-                renderToString(variantName, it)
+                renderToString(it)
             }
             writer.write("")
         }
 
         // generate the unknown which will always be last
         writer.withBlock("public object SdkUnknown : #Q() {", "}", symbol) {
-            renderToString("SdkUnknown")
+            renderToString()
         }
 
         members.sortedBy { it.memberName }.forEach {
@@ -178,14 +178,21 @@ class UnionGenerator(
         }
     }
 
-    private fun renderToString(variantName: String, member: MemberShape? = null) {
-        if (shape.hasTrait<SensitiveTrait>() || member?.isSensitive(model) == true) {
-            writer.write(
-                """override fun toString(): #Q = "#L(#L)"""",
+    private fun renderToString(member: MemberShape? = null) {
+        when {
+            shape.hasTrait<SensitiveTrait>() -> writer.write(
+                """override fun toString(): #Q = "#T(#L)"""",
                 KotlinTypes.String,
-                variantName,
+                symbol,
                 REDACTED_VALUE,
             )
-        } // else just use regular data class toString implementation
+            member != null && member.isSensitive(model) -> writer.write(
+                """override fun toString(): #Q = "#L(#L)"""",
+                KotlinTypes.String,
+                member.unionVariantName(),
+                REDACTED_VALUE,
+            )
+            // else just use regular data class toString implementation
+        }
     }
 }
