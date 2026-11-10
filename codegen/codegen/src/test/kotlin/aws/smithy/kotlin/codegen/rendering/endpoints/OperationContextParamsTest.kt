@@ -13,9 +13,10 @@ import aws.smithy.kotlin.codegen.test.toSmithyModel
 import kotlin.test.Test
 
 class OperationContextParamsTest {
-    private fun codegen(paramType: String, jmesPath: String, input: String): String {
+    private fun codegen(paramType: String, jmesPath: String, input: String, idlVersion: String = "1.0"): String {
         val template =
             """
+            ${'$'}version: "$idlVersion"
             namespace com.test
             
             use smithy.rules#endpointRuleSet
@@ -152,13 +153,12 @@ class OperationContextParamsTest {
     }
 
     @Test
-    fun testKeysFunctionPathWithEnumKeyedMap() {
+    fun testKeysFunctionPathWithIdlV1EnumKeyedMap() {
         val input = """
             structure TestOperationRequest {
                 Object: EnumKeyedMap
             }
             
-            @sensitive
             @enum([
                 { value: "RED", name: "RED" },
                 { value: "BLUE", name: "BLUE" },
@@ -171,17 +171,35 @@ class OperationContextParamsTest {
             }
         """.trimIndent()
 
-        val path = "keys(Object)"
-        val pathResultType = "stringArray"
-
-        val expected = """
-            @Suppress("UNCHECKED_CAST")
-            val input = request.context[HttpOperationContext.OperationInput] as TestOperationRequest
-            val object = input.object
-            val keys = object?.keys?.map { it.value }?.toList()
-            builder.foo = keys
-        """.formatForTest("    ")
-
-        codegen(pathResultType, path, input).shouldContainOnlyOnceWithDiff(expected)
+        codegen("stringArray", "keys(Object)", input).shouldContainOnlyOnceWithDiff(expectedEnumKeys)
     }
+
+    @Test
+    fun testKeysFunctionPathWithIdlV2EnumKeyedMap() {
+        val input = """
+            structure TestOperationRequest {
+                Object: EnumKeyedMap
+            }
+            
+            enum Color {
+                RED
+                BLUE
+            }
+            
+            map EnumKeyedMap {
+                key: Color
+                value: String
+            }
+        """.trimIndent()
+
+        codegen("stringArray", "keys(Object)", input, idlVersion = "2.0").shouldContainOnlyOnceWithDiff(expectedEnumKeys)
+    }
+
+    private val expectedEnumKeys = """
+        @Suppress("UNCHECKED_CAST")
+        val input = request.context[HttpOperationContext.OperationInput] as TestOperationRequest
+        val object = input.object
+        val keys = object?.keys?.map { it.value }?.toList()
+        builder.foo = keys
+    """.formatForTest("    ")
 }

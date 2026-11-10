@@ -15,6 +15,7 @@ import java.net.URL
 import kotlin.test.Ignore
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
 /**
@@ -177,7 +178,7 @@ class SmithySdkTest {
     }
 
     @Test
-    fun `it redacts sensitive union variants in a list of unions`() {
+    fun `it redacts sensitive unions and enums at runtime`() {
         val model = """
             namespace com.test
 
@@ -208,11 +209,18 @@ class SmithySdkTest {
                 secret: SecretString,
                 secrets: SecretList,
                 plain: String,
-                inner: Inner
+                inner: Inner,
+                color: Color,
+                hidden: Hidden
             }
 
             union Inner {
                 secret: SecretString
+            }
+
+            @sensitive
+            union Hidden {
+                secret: String
             }
 
             list SecretList {
@@ -221,6 +229,12 @@ class SmithySdkTest {
 
             @sensitive
             string SecretString
+
+            @sensitive
+            enum Color {
+                RED
+                BLUE
+            }
         """.asSmithy()
 
         val testSource = """
@@ -229,14 +243,22 @@ class SmithySdkTest {
 
             import test.model.*
 
-            public fun render(): String = FooResponse {
-                items = listOf(
-                    Outer.Secret("hunter2"),
-                    Outer.Plain("visible"),
-                    Outer.Inner(Inner.Secret("hunter3")),
-                    Outer.Secrets(listOf("hunter4")),
-                )
-            }.toString()
+            public fun render(): String = listOf(
+                FooResponse {
+                    items = listOf(
+                        Outer.Secret("hunter2"),
+                        Outer.Plain("visible"),
+                        Outer.Inner(Inner.Secret("hunter3")),
+                        Outer.Secrets(listOf("hunter4")),
+                        Outer.Color(Color.Red),
+                        Outer.Hidden(Hidden.Secret("hunter5")),
+                    )
+                },
+                Color.Red,
+                Color.SdkUnknown("hunter6"),
+                Hidden.Secret("hunter7"),
+                Hidden.SdkUnknown,
+            ).joinToString("\n")
         """.trimIndent()
 
         val compileOutputStream = ByteArrayOutputStream()
@@ -249,12 +271,23 @@ class SmithySdkTest {
             .getMethod("render")
             .invoke(null) as String
 
-        val expected = "FooResponse(items=[" +
-            "Secret(*** Sensitive Data Redacted ***), " +
-            "Plain(value=visible), " +
-            "Inner(value=Secret(*** Sensitive Data Redacted ***)), " +
-            "Secrets(*** Sensitive Data Redacted ***)" +
-            "])"
+        assertFalse("hunter" in rendered, rendered)
+
+        val redacted = "*** Sensitive Data Redacted ***"
+        val expected = listOf(
+            "FooResponse(items=[" +
+                "Secret($redacted), " +
+                "Plain(value=visible), " +
+                "Inner(value=Secret($redacted)), " +
+                "Secrets($redacted), " +
+                "Color($redacted), " +
+                "Hidden($redacted)" +
+                "])",
+            "Color($redacted)",
+            "Color($redacted)",
+            "Hidden($redacted)",
+            "Hidden($redacted)",
+        ).joinToString("\n")
         assertEquals(expected, rendered)
     }
 

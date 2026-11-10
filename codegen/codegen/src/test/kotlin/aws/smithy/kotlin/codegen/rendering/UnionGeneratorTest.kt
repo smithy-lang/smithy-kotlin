@@ -256,6 +256,28 @@ class UnionGeneratorTest {
     }
 
     @Test
+    fun `it labels sensitive targets in a sensitive union with the union name`() {
+        val contents = generateUnion(
+            """
+                @sensitive
+                union MyUnion {
+                    secret: SecretString
+                }
+
+                @sensitive
+                string SecretString
+            """,
+        )
+
+        val expectedVariant = """
+            public data class Secret(val value: kotlin.String) : test.model.MyUnion() {
+                override fun toString(): kotlin.String = "MyUnion(*** Sensitive Data Redacted ***)"
+            }
+        """.formatForTest()
+        contents.shouldContainOnlyOnceWithDiff(expectedVariant)
+    }
+
+    @Test
     fun `it generates sensitive unions`() {
         val contents = generateUnion(
             """

@@ -108,7 +108,7 @@ class EnumGenerator(val shape: Shape, val symbol: Symbol, val writer: KotlinWrit
     // and idiomatic names
     private val generatedNames = mutableSetOf<String>()
 
-    // A variant's name reveals the value, so every variant of a sensitive enum prints the enum name instead
+    // A variant's name reveals the value, so every variant of a sensitive enum, and SdkUnknown, prints `<Enum>(<redacted>)`
     private val redactedString: String? = if (shape.hasTrait<SensitiveTrait>()) "${symbol.name}($REDACTED_VALUE)" else null
 
     fun render() {
