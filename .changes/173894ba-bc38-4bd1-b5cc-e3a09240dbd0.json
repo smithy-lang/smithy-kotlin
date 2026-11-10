@@ -1,0 +1,6 @@
+{
+    "id": "173894ba-bc38-4bd1-b5cc-e3a09240dbd0",
+    "type": "bugfix",
+    "description": "Update generated `toString()` of union variants to be consistent with structure members",
+    "module": "codegen"
+}

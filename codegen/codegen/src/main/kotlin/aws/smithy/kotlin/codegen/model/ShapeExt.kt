@@ -253,6 +253,20 @@ fun UnionShape.filterEventStreamErrors(model: Model): Collection<MemberShape> {
     }
 }
 
+internal const val SENSITIVE_DATA_REDACTED = "*** Sensitive Data Redacted ***"
+
+/**
+ * Test if a shape holds sensitive data: it has `@sensitive`, or is a list or map with sensitive contents. Members
+ * resolve to their target. Non-sensitive structures and unions return false because they redact their own members.
+ */
+internal fun Shape.isSensitive(model: Model): Boolean = when {
+    this is MemberShape -> model.expectShape(target).isSensitive(model)
+    hasTrait<SensitiveTrait>() -> true
+    this is ListShape -> member.isSensitive(model)
+    this is MapShape -> key.isSensitive(model) || value.isSensitive(model)
+    else -> false
+}
+
 /**
  * Test if a shape has all optional members (no member marked `@required`)
  */

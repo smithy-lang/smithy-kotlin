@@ -9,6 +9,7 @@ import aws.smithy.kotlin.codegen.core.KotlinWriter
 import aws.smithy.kotlin.codegen.model.expectShape
 import aws.smithy.kotlin.codegen.test.TestModelDefault
 import aws.smithy.kotlin.codegen.test.createSymbolProvider
+import aws.smithy.kotlin.codegen.test.formatForTest
 import aws.smithy.kotlin.codegen.test.prependNamespaceAndService
 import aws.smithy.kotlin.codegen.test.shouldContainOnlyOnceWithDiff
 import aws.smithy.kotlin.codegen.test.shouldContainWithDiff
@@ -322,6 +323,181 @@ class UnionGeneratorTest {
         """.trimIndent()
 
         contents.shouldContainWithDiff(expectedClassDecl)
+    }
+
+    @Test
+    fun `it redacts variants that target sensitive shapes`() {
+        val contents = generateUnion(
+            """
+                @sensitive string SecretString
+                @sensitive long SecretLong
+                @sensitive document SecretDocument
+                @sensitive structure SecretStruct { a: String }
+                @sensitive map SecretMap { key: String, value: String }
+                list SecretList { member: SecretString }
+                list NestedSecretList { member: SecretList }
+                map MapWithSecretKey { key: SecretString, value: String }
+                map MapWithSecretValue { key: String, value: SecretString }
+                structure StructWithSecret { name: String, password: SecretString }
+
+                union MyUnion {
+                    // redacted: the value is sensitive itself, or a collection holding sensitive data at any depth
+                    secret: SecretString
+                    secretLong: SecretLong
+                    secretDocument: SecretDocument
+                    secretStruct: SecretStruct
+                    secretMap: SecretMap
+                    secretList: SecretList
+                    nestedSecretList: NestedSecretList
+                    mapWithSecretKey: MapWithSecretKey
+                    mapWithSecretValue: MapWithSecretValue
+
+                    // kept: the structure redacts its own sensitive members, and a plain value is not secret
+                    structWithSecret: StructWithSecret
+                    plain: String
+                }
+            """,
+        )
+
+        val expectedVariants = """
+            public sealed class MyUnion {
+                public data class MapWithSecretKey(val value: kotlin.collections.Map<kotlin.String, kotlin.String>) : test.model.MyUnion() {
+                    override fun toString(): kotlin.String = "MapWithSecretKey(*** Sensitive Data Redacted ***)"
+                }
+
+                public data class MapWithSecretValue(val value: kotlin.collections.Map<kotlin.String, kotlin.String>) : test.model.MyUnion() {
+                    override fun toString(): kotlin.String = "MapWithSecretValue(*** Sensitive Data Redacted ***)"
+                }
+
+                public data class NestedSecretList(val value: kotlin.collections.List<kotlin.collections.List<kotlin.String>>) : test.model.MyUnion() {
+                    override fun toString(): kotlin.String = "NestedSecretList(*** Sensitive Data Redacted ***)"
+                }
+
+                public data class Plain(val value: kotlin.String) : test.model.MyUnion() {
+                }
+
+                public data class Secret(val value: kotlin.String) : test.model.MyUnion() {
+                    override fun toString(): kotlin.String = "Secret(*** Sensitive Data Redacted ***)"
+                }
+
+                public data class SecretDocument(val value: aws.smithy.kotlin.runtime.content.Document) : test.model.MyUnion() {
+                    override fun toString(): kotlin.String = "SecretDocument(*** Sensitive Data Redacted ***)"
+                }
+
+                public data class SecretList(val value: kotlin.collections.List<kotlin.String>) : test.model.MyUnion() {
+                    override fun toString(): kotlin.String = "SecretList(*** Sensitive Data Redacted ***)"
+                }
+
+                public data class SecretLong(val value: kotlin.Long) : test.model.MyUnion() {
+                    override fun toString(): kotlin.String = "SecretLong(*** Sensitive Data Redacted ***)"
+                }
+
+                public data class SecretMap(val value: kotlin.collections.Map<kotlin.String, kotlin.String>) : test.model.MyUnion() {
+                    override fun toString(): kotlin.String = "SecretMap(*** Sensitive Data Redacted ***)"
+                }
+
+                public data class SecretStruct(val value: test.model.SecretStruct) : test.model.MyUnion() {
+                    override fun toString(): kotlin.String = "SecretStruct(*** Sensitive Data Redacted ***)"
+                }
+
+                public data class StructWithSecret(val value: test.model.StructWithSecret) : test.model.MyUnion() {
+                }
+
+                public object SdkUnknown : test.model.MyUnion() {
+                }
+        """.trimIndent()
+
+        contents.shouldContainWithDiff(expectedVariants)
+    }
+
+    @Test
+    fun `it redacts sensitive blob variants and keeps content equality`() {
+        val contents = generateUnion(
+            """
+                @sensitive blob SecretBlob
+
+                union MyUnion {
+                    secret: SecretBlob
+                }
+            """,
+        )
+
+        val expectedVariant = """
+            public data class Secret(val value: kotlin.ByteArray) : test.model.MyUnion() {
+
+                override fun hashCode(): kotlin.Int {
+                    return value.contentHashCode()
+                }
+
+                override fun equals(other: kotlin.Any?): kotlin.Boolean {
+                    if (this === other) return true
+                    if (other == null || this::class != other::class) return false
+
+                    other as Secret
+
+                    if (!value.contentEquals(other.value)) return false
+
+                    return true
+                }
+                override fun toString(): kotlin.String = "Secret(*** Sensitive Data Redacted ***)"
+            }
+        """.formatForTest()
+
+        contents.shouldContainOnlyOnceWithDiff(expectedVariant)
+    }
+
+    @Test
+    fun `it redacts sensitive event stream variants`() {
+        val contents = generateUnion(
+            """
+                @sensitive structure SecretEvent { payload: String }
+                structure PlainEvent { payload: String }
+                @error("client") structure StreamError { message: String }
+
+                @streaming
+                union MyUnion {
+                    secret: SecretEvent
+                    plain: PlainEvent
+                    error: StreamError
+                }
+            """,
+        )
+
+        contents.shouldContainOnlyOnceWithDiff(
+            """
+                public data class Plain(val value: test.model.PlainEvent) : test.model.MyUnion() {
+                }
+
+                public data class Secret(val value: test.model.SecretEvent) : test.model.MyUnion() {
+                    override fun toString(): kotlin.String = "Secret(*** Sensitive Data Redacted ***)"
+                }
+
+                public object SdkUnknown : test.model.MyUnion() {
+                }
+            """.formatForTest(),
+        )
+    }
+
+    @Test
+    fun `it redacts sensitive unions as a whole even when a variant is sensitive`() {
+        val contents = generateUnion(
+            """
+                @sensitive string SecretString
+
+                @sensitive
+                union MyUnion {
+                    secret: SecretString
+                }
+            """,
+        )
+
+        contents.shouldContainOnlyOnceWithDiff(
+            """
+                public data class Secret(val value: kotlin.String) : test.model.MyUnion() {
+                    override fun toString(): kotlin.String = "MyUnion(*** Sensitive Data Redacted ***)"
+                }
+            """.formatForTest(),
+        )
     }
 
     private fun generateUnion(model: String): String {
