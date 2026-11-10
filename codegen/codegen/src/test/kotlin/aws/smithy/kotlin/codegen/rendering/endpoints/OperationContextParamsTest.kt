@@ -150,4 +150,38 @@ class OperationContextParamsTest {
 
         codegen(pathResultType, path, input).shouldContainOnlyOnceWithDiff(expected)
     }
+
+    @Test
+    fun testKeysFunctionPathWithEnumKeyedMap() {
+        val input = """
+            structure TestOperationRequest {
+                Object: EnumKeyedMap
+            }
+            
+            @sensitive
+            @enum([
+                { value: "RED", name: "RED" },
+                { value: "BLUE", name: "BLUE" },
+            ])
+            string Color
+            
+            map EnumKeyedMap {
+                key: Color
+                value: String
+            }
+        """.trimIndent()
+
+        val path = "keys(Object)"
+        val pathResultType = "stringArray"
+
+        val expected = """
+            @Suppress("UNCHECKED_CAST")
+            val input = request.context[HttpOperationContext.OperationInput] as TestOperationRequest
+            val object = input.object
+            val keys = object?.keys?.map { it.value }?.toList()
+            builder.foo = keys
+        """.formatForTest("    ")
+
+        codegen(pathResultType, path, input).shouldContainOnlyOnceWithDiff(expected)
+    }
 }

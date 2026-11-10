@@ -15,7 +15,6 @@ import java.net.URL
 import kotlin.test.Ignore
 import kotlin.test.Test
 import kotlin.test.assertEquals
-import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
 /**
@@ -207,6 +206,7 @@ class SmithySdkTest {
 
             union Outer {
                 secret: SecretString,
+                secrets: SecretList,
                 plain: String,
                 inner: Inner
             }
@@ -215,11 +215,16 @@ class SmithySdkTest {
                 secret: SecretString
             }
 
+            list SecretList {
+                member: SecretString
+            }
+
             @sensitive
             string SecretString
         """.asSmithy()
 
         val testSource = """
+            @file:JvmName("SensitiveRedaction")
             package sensitive.test
 
             import test.model.*
@@ -229,6 +234,7 @@ class SmithySdkTest {
                     Outer.Secret("hunter2"),
                     Outer.Plain("visible"),
                     Outer.Inner(Inner.Secret("hunter3")),
+                    Outer.Secrets(listOf("hunter4")),
                 )
             }.toString()
         """.trimIndent()
@@ -239,13 +245,17 @@ class SmithySdkTest {
         assertEquals(KotlinCompilation.ExitCode.OK, compilationResult.exitCode, compileOutputStream.toString())
 
         val rendered = compilationResult.classLoader
-            .loadClass("sensitive.test.TestKt")
+            .loadClass("sensitive.test.SensitiveRedaction")
             .getMethod("render")
             .invoke(null) as String
 
-        assertTrue("visible" in rendered, rendered)
-        assertFalse("hunter" in rendered, rendered)
-        assertTrue("Secret(*** Sensitive Data Redacted ***)" in rendered, rendered)
+        val expected = "FooResponse(items=[" +
+            "Secret(*** Sensitive Data Redacted ***), " +
+            "Plain(value=visible), " +
+            "Inner(value=Secret(*** Sensitive Data Redacted ***)), " +
+            "Secrets(*** Sensitive Data Redacted ***)" +
+            "])"
+        assertEquals(expected, rendered)
     }
 
     // https://github.com/smithy-lang/smithy-kotlin/issues/1125
