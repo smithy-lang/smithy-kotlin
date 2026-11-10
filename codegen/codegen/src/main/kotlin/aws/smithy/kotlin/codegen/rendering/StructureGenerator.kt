@@ -27,7 +27,7 @@ import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.shapes.*
 import software.amazon.smithy.model.traits.*
 
-private const val REDACTED_VALUE = "*** Sensitive Data Redacted ***"
+internal const val REDACTED_VALUE = "*** Sensitive Data Redacted ***"
 
 /**
  * Renders Smithy structure shapes
@@ -425,8 +425,13 @@ class StructureGenerator(
     }
 }
 
-private fun Shape.isSensitive(model: Model): Boolean = when {
-    this is MemberShape -> model.expectShape(target).isSensitive(model)
+/**
+ * Whether this shape holds sensitive data. A shape is sensitive when it has the `@sensitive` trait, when it is a
+ * member that has the trait or targets a sensitive shape, when it is a list of sensitive members, or when it is a map
+ * with a sensitive key or value. Structures and unions are sensitive only if they have the trait themselves.
+ */
+internal fun Shape.isSensitive(model: Model): Boolean = when {
+    this is MemberShape -> hasTrait<SensitiveTrait>() || model.expectShape(target).isSensitive(model)
     hasTrait<SensitiveTrait>() -> true
     this is ListShape -> member.isSensitive(model)
     this is MapShape -> key.isSensitive(model) || value.isSensitive(model)

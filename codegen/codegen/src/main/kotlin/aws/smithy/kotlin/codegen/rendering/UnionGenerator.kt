@@ -54,7 +54,7 @@ class UnionGenerator(
                     renderEquals(model, listOf(it), variantName, this)
                 }
 
-                renderToString()
+                renderToString(it)
             }
             writer.write("")
         }
@@ -178,13 +178,21 @@ class UnionGenerator(
         }
     }
 
-    private fun renderToString() {
-        if (shape.hasTrait<SensitiveTrait>()) {
-            writer.write(
-                """override fun toString(): #Q = "#T(*** Sensitive Data Redacted ***)"""",
+    private fun renderToString(member: MemberShape? = null) {
+        when {
+            shape.hasTrait<SensitiveTrait>() -> writer.write(
+                """override fun toString(): #Q = "#T(#L)"""",
                 KotlinTypes.String,
                 symbol,
+                REDACTED_VALUE,
             )
-        } // else just use regular data class toString implementation
+            member != null && member.isSensitive(model) -> writer.write(
+                """override fun toString(): #Q = "#L(#L)"""",
+                KotlinTypes.String,
+                member.unionVariantName(),
+                REDACTED_VALUE,
+            )
+            // else just use regular data class toString implementation
+        }
     }
 }

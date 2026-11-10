@@ -6,9 +6,12 @@ package aws.smithy.kotlin.codegen.rendering
 
 import aws.smithy.kotlin.codegen.KotlinCodegenPlugin
 import aws.smithy.kotlin.codegen.core.KotlinWriter
+import aws.smithy.kotlin.codegen.core.RenderingContext
 import aws.smithy.kotlin.codegen.model.expectShape
 import aws.smithy.kotlin.codegen.test.TestModelDefault
 import aws.smithy.kotlin.codegen.test.createSymbolProvider
+import aws.smithy.kotlin.codegen.test.defaultSettings
+import aws.smithy.kotlin.codegen.test.formatForTest
 import aws.smithy.kotlin.codegen.test.prependNamespaceAndService
 import aws.smithy.kotlin.codegen.test.shouldContainOnlyOnceWithDiff
 import aws.smithy.kotlin.codegen.test.shouldContainWithDiff
@@ -16,9 +19,15 @@ import aws.smithy.kotlin.codegen.test.toSmithyModel
 import aws.smithy.kotlin.codegen.trimEveryLine
 import io.kotest.matchers.string.shouldContainOnlyOnce
 import software.amazon.smithy.codegen.core.SymbolProvider
+import software.amazon.smithy.model.Model
+import software.amazon.smithy.model.shapes.MemberShape
+import software.amazon.smithy.model.shapes.StructureShape
 import software.amazon.smithy.model.shapes.UnionShape
+import software.amazon.smithy.model.traits.SensitiveTrait
 import kotlin.test.Test
 import kotlin.test.assertFailsWith
+import kotlin.test.assertFalse
+import kotlin.test.assertTrue
 
 class UnionGeneratorTest {
     @Test
@@ -322,6 +331,145 @@ class UnionGeneratorTest {
         """.trimIndent()
 
         contents.shouldContainWithDiff(expectedClassDecl)
+    }
+
+    @Test
+    fun `it redacts sensitive union variants`() {
+        val model = """
+            @sensitive
+            string SecretString
+
+            @sensitive
+            blob SecretBlob
+
+            list SecretList {
+                member: SecretString
+            }
+
+            @sensitive
+            map SecretMap {
+                key: String,
+                value: String
+            }
+
+            map SecretValueMap {
+                key: String,
+                value: SecretString
+            }
+
+            structure MyStruct {
+                plain: String,
+                hidden: SecretString
+            }
+
+            union MyUnion {
+                secret: SecretString,
+                secretBlob: SecretBlob,
+                secretList: SecretList,
+                secretMap: SecretMap,
+                secretValueMap: SecretValueMap,
+                plain: String,
+                myStruct: MyStruct
+            }
+
+            list UnionList {
+                member: MyUnion
+            }
+
+            structure Holder {
+                items: UnionList
+            }
+        """
+        val contents = generateUnion(model)
+
+        val expectedVariants = """
+            public sealed class MyUnion {
+                public data class MyStruct(val value: test.model.MyStruct) : test.model.MyUnion() {
+                }
+            
+                public data class Plain(val value: kotlin.String) : test.model.MyUnion() {
+                }
+            
+                public data class Secret(val value: kotlin.String) : test.model.MyUnion() {
+                    override fun toString(): kotlin.String = "Secret(*** Sensitive Data Redacted ***)"
+                }
+            
+                public data class SecretBlob(val value: kotlin.ByteArray) : test.model.MyUnion() {
+            
+                    override fun hashCode(): kotlin.Int {
+                        return value.contentHashCode()
+                    }
+            
+                    override fun equals(other: kotlin.Any?): kotlin.Boolean {
+                        if (this === other) return true
+                        if (other == null || this::class != other::class) return false
+            
+                        other as SecretBlob
+            
+                        if (!value.contentEquals(other.value)) return false
+            
+                        return true
+                    }
+                    override fun toString(): kotlin.String = "SecretBlob(*** Sensitive Data Redacted ***)"
+                }
+            
+                public data class SecretList(val value: kotlin.collections.List<kotlin.String>) : test.model.MyUnion() {
+                    override fun toString(): kotlin.String = "SecretList(*** Sensitive Data Redacted ***)"
+                }
+            
+                public data class SecretMap(val value: kotlin.collections.Map<kotlin.String, kotlin.String>) : test.model.MyUnion() {
+                    override fun toString(): kotlin.String = "SecretMap(*** Sensitive Data Redacted ***)"
+                }
+            
+                public data class SecretValueMap(val value: kotlin.collections.Map<kotlin.String, kotlin.String>) : test.model.MyUnion() {
+                    override fun toString(): kotlin.String = "SecretValueMap(*** Sensitive Data Redacted ***)"
+                }
+            
+                public object SdkUnknown : test.model.MyUnion() {
+                }
+        """.trimIndent()
+
+        contents.shouldContainWithDiff(expectedVariants)
+
+        // a structure variant delegates to the structure's own toString, which redacts its sensitive members
+        val structContents = generateStructure(model, "test#MyStruct")
+        structContents.shouldContainOnlyOnceWithDiff(
+            """
+                append("hidden=*** Sensitive Data Redacted ***,")
+                append("plain=${'$'}plain")
+            """.formatForTest(indent = "        "),
+        )
+
+        // a list of unions is not itself sensitive, so its elements' (redacting) toString is used
+        val holderContents = generateStructure(model, "test#Holder")
+        holderContents.shouldContainOnlyOnceWithDiff("append(\"items=${'$'}items\")")
+    }
+
+    @Test
+    fun `it treats a sensitive member trait as sensitive`() {
+        val model = Model.assembler().assemble().unwrap()
+        val sensitiveMember = MemberShape.builder()
+            .id("test#Foo\$bar")
+            .target("smithy.api#String")
+            .addTrait(SensitiveTrait())
+            .build()
+        val plainMember = MemberShape.builder()
+            .id("test#Foo\$bar")
+            .target("smithy.api#String")
+            .build()
+
+        assertTrue(sensitiveMember.isSensitive(model))
+        assertFalse(plainMember.isSensitive(model))
+    }
+
+    private fun generateStructure(model: String, shapeId: String): String {
+        val fullModel = model.prependNamespaceAndService(namespace = "test").toSmithyModel()
+        val provider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(fullModel, rootNamespace = "test")
+        val writer = KotlinWriter("test")
+        val struct = fullModel.expectShape<StructureShape>(shapeId)
+        val renderingCtx = RenderingContext(writer, struct, fullModel, provider, fullModel.defaultSettings())
+        StructureGenerator(renderingCtx).render()
+        return writer.toString()
     }
 
     private fun generateUnion(model: String): String {
