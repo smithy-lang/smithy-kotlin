@@ -199,6 +199,12 @@ class SmithySdkTest {
 
             structure FooResponse {
                 items: UnionList
+                single: Outer
+            }
+
+            structure StructWithSecret {
+                name: String
+                password: SecretString
             }
 
             list UnionList {
@@ -211,7 +217,8 @@ class SmithySdkTest {
                 plain: String,
                 inner: Inner,
                 color: Color,
-                hidden: Hidden
+                hidden: Hidden,
+                struct: StructWithSecret
             }
 
             union Inner {
@@ -252,7 +259,9 @@ class SmithySdkTest {
                         Outer.Secrets(listOf("hunter4")),
                         Outer.Color(Color.Red),
                         Outer.Hidden(Hidden.Secret("hunter5")),
+                        Outer.Struct(StructWithSecret { name = "alice"; password = "hunter8" }),
                     )
+                    single = Outer.Secret("hunter9")
                 },
                 Color.Red,
                 Color.SdkUnknown("hunter6"),
@@ -281,8 +290,10 @@ class SmithySdkTest {
                 "Inner(value=Secret($redacted)), " +
                 "Secrets($redacted), " +
                 "Color($redacted), " +
-                "Hidden($redacted)" +
-                "])",
+                "Hidden($redacted), " +
+                "Struct(value=StructWithSecret(name=alice,password=$redacted))" +
+                "]," +
+                "single=Secret($redacted))",
             "Color($redacted)",
             "Color($redacted)",
             "Hidden($redacted)",

@@ -256,6 +256,74 @@ class UnionGeneratorTest {
     }
 
     @Test
+    fun `it redacts variants that target other sensitive shape types`() {
+        val contents = generateUnion(
+            """
+                @sensitive long SecretLong
+                @sensitive document SecretDocument
+                @sensitive structure SecretStruct { a: String }
+                @sensitive string SecretString
+                list SecretList { member: SecretString }
+                list NestedSecretList { member: SecretList }
+
+                union MyUnion {
+                    secretLong: SecretLong
+                    secretDocument: SecretDocument
+                    secretStruct: SecretStruct
+                    nestedSecretList: NestedSecretList
+                }
+            """,
+        )
+
+        listOf(
+            "NestedSecretList(val value: kotlin.collections.List<kotlin.collections.List<kotlin.String>>)" to "NestedSecretList",
+            "SecretDocument(val value: aws.smithy.kotlin.runtime.content.Document)" to "SecretDocument",
+            "SecretLong(val value: kotlin.Long)" to "SecretLong",
+            "SecretStruct(val value: test.model.SecretStruct)" to "SecretStruct",
+        ).forEach { (decl, name) ->
+            contents.shouldContainOnlyOnceWithDiff(
+                """
+                    public data class $decl : test.model.MyUnion() {
+                        override fun toString(): kotlin.String = "$name(*** Sensitive Data Redacted ***)"
+                    }
+                """.formatForTest(),
+            )
+        }
+    }
+
+    @Test
+    fun `it redacts sensitive event stream variants`() {
+        val contents = generateUnion(
+            """
+                @sensitive structure SecretEvent { payload: String }
+                structure PlainEvent { payload: String }
+                @error("client") structure StreamError { message: String }
+
+                @streaming
+                union MyUnion {
+                    secret: SecretEvent
+                    plain: PlainEvent
+                    error: StreamError
+                }
+            """,
+        )
+
+        contents.shouldContainOnlyOnceWithDiff(
+            """
+                public data class Plain(val value: test.model.PlainEvent) : test.model.MyUnion() {
+                }
+
+                public data class Secret(val value: test.model.SecretEvent) : test.model.MyUnion() {
+                    override fun toString(): kotlin.String = "Secret(*** Sensitive Data Redacted ***)"
+                }
+
+                public object SdkUnknown : test.model.MyUnion() {
+                }
+            """.formatForTest(),
+        )
+    }
+
+    @Test
     fun `it labels sensitive targets in a sensitive union with the union name`() {
         val contents = generateUnion(
             """
