@@ -9,13 +9,16 @@ import aws.smithy.kotlin.codegen.core.KotlinWriter
 import aws.smithy.kotlin.codegen.model.expectShape
 import aws.smithy.kotlin.codegen.test.TestModelDefault
 import aws.smithy.kotlin.codegen.test.createSymbolProvider
+import aws.smithy.kotlin.codegen.test.formatForTest
 import aws.smithy.kotlin.codegen.test.prependNamespaceAndService
 import aws.smithy.kotlin.codegen.test.shouldContainOnlyOnceWithDiff
 import aws.smithy.kotlin.codegen.test.toSmithyModel
 import io.kotest.matchers.string.shouldContain
 import io.kotest.matchers.string.shouldContainOnlyOnce
 import software.amazon.smithy.codegen.core.CodegenException
+import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.shapes.IntEnumShape
+import software.amazon.smithy.model.shapes.ShapeId
 import software.amazon.smithy.model.shapes.ShapeType
 import software.amazon.smithy.model.shapes.StringShape
 import kotlin.test.Test
@@ -282,6 +285,93 @@ public sealed class Baz {
 }
 """
         contents.shouldContainOnlyOnceWithDiff(expectedEnumDecl)
+    }
+
+    @Test
+    fun `it redacts sensitive string enums`() {
+        val model = """
+            @sensitive
+            enum Baz {
+                FOO,
+                BAR,
+            }
+        """.prependNamespaceAndService(namespace = "test").toSmithyModel()
+
+        val contents = renderEnum(model)
+        val expectedVariants = """
+            public object Bar : test.model.Baz() {
+                override val value: kotlin.String = "BAR"
+                override fun toString(): kotlin.String = "Baz(*** Sensitive Data Redacted ***)"
+            }
+
+            public object Foo : test.model.Baz() {
+                override val value: kotlin.String = "FOO"
+                override fun toString(): kotlin.String = "Baz(*** Sensitive Data Redacted ***)"
+            }
+
+            public data class SdkUnknown(override val value: kotlin.String) : test.model.Baz() {
+                override fun toString(): kotlin.String = "Baz(*** Sensitive Data Redacted ***)"
+            }
+        """.formatForTest()
+        contents.shouldContainOnlyOnceWithDiff(expectedVariants)
+    }
+
+    @Test
+    fun `it redacts sensitive idl v1 string enums`() {
+        val model = """
+            @sensitive
+            @enum([
+                {
+                    value: "FOO",
+                    name: "FOO"
+                }
+            ])
+            string Baz
+        """.prependNamespaceAndService(version = "1.0", namespace = "test").toSmithyModel()
+
+        val contents = renderEnum(model)
+        val expectedVariants = """
+            public object Foo : test.model.Baz() {
+                override val value: kotlin.String = "FOO"
+                override fun toString(): kotlin.String = "Baz(*** Sensitive Data Redacted ***)"
+            }
+
+            public data class SdkUnknown(override val value: kotlin.String) : test.model.Baz() {
+                override fun toString(): kotlin.String = "Baz(*** Sensitive Data Redacted ***)"
+            }
+        """.formatForTest()
+        contents.shouldContainOnlyOnceWithDiff(expectedVariants)
+    }
+
+    @Test
+    fun `it redacts sensitive int enums`() {
+        val model = """
+            @sensitive
+            intEnum Baz {
+                T2_NANO = 2
+            }
+        """.prependNamespaceAndService(namespace = "test").toSmithyModel()
+
+        val contents = renderEnum(model)
+        val expectedVariants = """
+            public object T2Nano : test.model.Baz() {
+                override val value: kotlin.Int = 2
+                override fun toString(): kotlin.String = "Baz(*** Sensitive Data Redacted ***)"
+            }
+
+            public data class SdkUnknown(override val value: kotlin.Int) : test.model.Baz() {
+                override fun toString(): kotlin.String = "Baz(*** Sensitive Data Redacted ***)"
+            }
+        """.formatForTest()
+        contents.shouldContainOnlyOnceWithDiff(expectedVariants)
+    }
+
+    private fun renderEnum(model: Model): String {
+        val provider = KotlinCodegenPlugin.createSymbolProvider(model, rootNamespace = "test")
+        val shape = model.expectShape(ShapeId.from("test#Baz"))
+        val writer = KotlinWriter(TestModelDefault.NAMESPACE)
+        EnumGenerator(shape, provider.toSymbol(shape), writer).render()
+        return writer.toString()
     }
 
     @Test
