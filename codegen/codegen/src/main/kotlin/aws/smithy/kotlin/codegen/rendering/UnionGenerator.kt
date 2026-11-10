@@ -8,9 +8,11 @@ import aws.smithy.kotlin.codegen.core.KotlinWriter
 import aws.smithy.kotlin.codegen.core.unionVariantName
 import aws.smithy.kotlin.codegen.core.withBlock
 import aws.smithy.kotlin.codegen.lang.KotlinTypes
+import aws.smithy.kotlin.codegen.model.SENSITIVE_DATA_REDACTED
 import aws.smithy.kotlin.codegen.model.filterEventStreamErrors
 import aws.smithy.kotlin.codegen.model.hasTrait
 import aws.smithy.kotlin.codegen.model.isNullable
+import aws.smithy.kotlin.codegen.model.isSensitive
 import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.codegen.core.SymbolProvider
 import software.amazon.smithy.model.Model
@@ -61,7 +63,7 @@ class UnionGenerator(
 
         // generate the unknown which will always be last
         writer.withBlock("public object SdkUnknown : #Q() {", "}", symbol) {
-            renderToString()
+            renderToString(variant = null)
         }
 
         members.sortedBy { it.memberName }.forEach {
@@ -178,19 +180,17 @@ class UnionGenerator(
         }
     }
 
-    private fun renderToString(member: MemberShape? = null) {
+    private fun renderToString(variant: MemberShape?) {
         when {
             shape.hasTrait<SensitiveTrait>() -> writer.write(
-                """override fun toString(): #Q = "#T(#L)"""",
+                "override fun toString(): #Q = #S",
                 KotlinTypes.String,
-                symbol,
-                REDACTED_VALUE,
+                "${symbol.name}($SENSITIVE_DATA_REDACTED)",
             )
-            member != null && member.isSensitive(model) -> writer.write(
-                """override fun toString(): #Q = "#L(#L)"""",
+            variant != null && variant.isSensitive(model) -> writer.write(
+                "override fun toString(): #Q = #S",
                 KotlinTypes.String,
-                member.unionVariantName(),
-                REDACTED_VALUE,
+                "${variant.unionVariantName()}($SENSITIVE_DATA_REDACTED)",
             )
             // else just use regular data class toString implementation
         }

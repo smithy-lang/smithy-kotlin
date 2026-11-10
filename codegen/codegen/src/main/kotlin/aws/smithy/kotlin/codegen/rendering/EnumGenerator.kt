@@ -9,6 +9,7 @@ import aws.smithy.kotlin.codegen.core.enumVariantName
 import aws.smithy.kotlin.codegen.core.withBlock
 import aws.smithy.kotlin.codegen.lang.KotlinTypes
 import aws.smithy.kotlin.codegen.lang.isValidKotlinIdentifier
+import aws.smithy.kotlin.codegen.model.SENSITIVE_DATA_REDACTED
 import aws.smithy.kotlin.codegen.model.expectTrait
 import aws.smithy.kotlin.codegen.model.getTrait
 import aws.smithy.kotlin.codegen.model.hasTrait
@@ -109,7 +110,7 @@ class EnumGenerator(val shape: Shape, val symbol: Symbol, val writer: KotlinWrit
     private val generatedNames = mutableSetOf<String>()
 
     // A variant's name reveals the value, so every variant of a sensitive enum, and SdkUnknown, prints `<Enum>(<redacted>)`
-    private val redactedString: String? = if (shape.hasTrait<SensitiveTrait>()) "${symbol.name}($REDACTED_VALUE)" else null
+    private val redactedString: String? = if (shape.hasTrait<SensitiveTrait>()) "${symbol.name}($SENSITIVE_DATA_REDACTED)" else null
 
     fun render() {
         writer.renderDocumentation(shape)
