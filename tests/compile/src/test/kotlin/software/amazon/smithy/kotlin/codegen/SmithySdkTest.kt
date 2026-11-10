@@ -15,6 +15,7 @@ import java.net.URL
 import kotlin.test.Ignore
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
 /**
@@ -174,6 +175,77 @@ class SmithySdkTest {
         compileOutputStream.flush()
 
         assertEquals(KotlinCompilation.ExitCode.OK, compilationResult.exitCode, compileOutputStream.toString())
+    }
+
+    @Test
+    fun `it redacts sensitive union variants in a list of unions`() {
+        val model = """
+            namespace com.test
+
+            use aws.protocols#restJson1
+
+            @restJson1
+            service Example {
+                version: "1.0.0",
+                operations: [
+                    Foo,
+                ]
+            }
+
+            @http(method: "POST", uri: "/foo-no-input")
+            operation Foo {
+                output: FooResponse
+            }
+
+            structure FooResponse {
+                items: UnionList
+            }
+
+            list UnionList {
+                member: Outer
+            }
+
+            union Outer {
+                secret: SecretString,
+                plain: String,
+                inner: Inner
+            }
+
+            union Inner {
+                secret: SecretString
+            }
+
+            @sensitive
+            string SecretString
+        """.asSmithy()
+
+        val testSource = """
+            package sensitive.test
+
+            import test.model.*
+
+            public fun render(): String = FooResponse {
+                items = listOf(
+                    Outer.Secret("hunter2"),
+                    Outer.Plain("visible"),
+                    Outer.Inner(Inner.Secret("hunter3")),
+                )
+            }.toString()
+        """.trimIndent()
+
+        val compileOutputStream = ByteArrayOutputStream()
+        val compilationResult = compileSdkAndTest(model = model, testSource = testSource, outputSink = compileOutputStream, emitSourcesToTmp = Debug.emitSourcesToTemp)
+        compileOutputStream.flush()
+        assertEquals(KotlinCompilation.ExitCode.OK, compilationResult.exitCode, compileOutputStream.toString())
+
+        val rendered = compilationResult.classLoader
+            .loadClass("sensitive.test.TestKt")
+            .getMethod("render")
+            .invoke(null) as String
+
+        assertTrue("visible" in rendered, rendered)
+        assertFalse("hunter" in rendered, rendered)
+        assertTrue("Secret(*** Sensitive Data Redacted ***)" in rendered, rendered)
     }
 
     // https://github.com/smithy-lang/smithy-kotlin/issues/1125
