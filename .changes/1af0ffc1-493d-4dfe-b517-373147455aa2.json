@@ -1,6 +1,0 @@
-{
-    "id": "1af0ffc1-493d-4dfe-b517-373147455aa2",
-    "type": "bugfix",
-    "description": "Redact sensitive enum values in generated `toString()`. Use `value` to read the wire value.",
-    "module": "codegen"
-}

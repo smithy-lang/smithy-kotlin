@@ -1,6 +1,0 @@
-{
-    "id": "be0ce24b-1519-4609-8a9d-2f14bab57348",
-    "type": "bugfix",
-    "description": "Use enum wire values for JMESPath `keys()` on enum-keyed maps in waiters and endpoint parameters",
-    "module": "codegen"
-}
