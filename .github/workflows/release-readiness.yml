@@ -6,17 +6,26 @@ description: >
 on:
   pull_request:
     branches: [ main ]
+  merge_group:
+    types: [checks_requested]
 
 permissions:
   contents: read
 
 jobs:
   release-readiness:
-    if: ${{ !contains(github.event.pull_request.labels.*.name, 'ready-for-release') }}
+    if: ${{ github.event_name != 'merge_group' && !contains(github.event.pull_request.labels.*.name, 'ready-for-release') }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout sources
         uses: actions/checkout@v4
+
+      - name: Configure JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'corretto'
+          java-version: 17
+          cache: 'gradle'
 
       - name: Configure Gradle
         uses: aws/aws-kotlin-repo-tools/.github/actions/configure-gradle@main

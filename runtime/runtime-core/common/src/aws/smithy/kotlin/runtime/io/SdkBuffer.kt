@@ -37,6 +37,7 @@ public expect class SdkBuffer :
     override fun peek(): SdkBufferedSource
     override fun readLongLe(): Long
     override fun readByte(): Byte
+    override fun peekByte(): Byte
     override fun readByteArray(): ByteArray
     override fun request(byteCount: Long): Boolean
     override fun readAll(sink: SdkSink): Long

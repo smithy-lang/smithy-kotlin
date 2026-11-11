@@ -10,7 +10,6 @@ import aws.smithy.kotlin.runtime.hashing.hash
 import aws.smithy.kotlin.runtime.hashing.sha256
 import aws.smithy.kotlin.runtime.text.encoding.encodeToHex
 import aws.smithy.kotlin.runtime.time.Instant
-import aws.smithy.kotlin.runtime.time.TimestampFormat
 import aws.smithy.kotlin.runtime.time.epochMilliseconds
 
 /**
@@ -31,14 +30,14 @@ internal abstract class BaseSigV4SignatureCalculator(
 
     override fun stringToSign(canonicalRequest: String, config: AwsSigningConfig): String = buildString {
         appendLine(algorithm.signingName)
-        appendLine(config.signingDate.format(TimestampFormat.ISO_8601_CONDENSED))
+        appendLine(config.formattedSigningDate)
         appendLine(config.credentialScope)
         append(canonicalRequest.encodeToByteArray().hash(sha256Provider).encodeToHex())
     }
 
     override fun chunkStringToSign(chunkBody: ByteArray, prevSignature: ByteArray, config: AwsSigningConfig): String = buildString {
         appendLine("${algorithm.signingName}-PAYLOAD")
-        appendLine(config.signingDate.format(TimestampFormat.ISO_8601_CONDENSED))
+        appendLine(config.formattedSigningDate)
         appendLine(config.credentialScope)
         appendLine(prevSignature.decodeToString()) // Should already be a byte array of ASCII hex chars
 
@@ -53,7 +52,7 @@ internal abstract class BaseSigV4SignatureCalculator(
 
     override fun chunkTrailerStringToSign(trailingHeaders: ByteArray, prevSignature: ByteArray, config: AwsSigningConfig): String = buildString {
         appendLine("${algorithm.signingName}-TRAILER")
-        appendLine(config.signingDate.format(TimestampFormat.ISO_8601_CONDENSED))
+        appendLine(config.formattedSigningDate)
         appendLine(config.credentialScope)
         appendLine(prevSignature.decodeToString())
         append(trailingHeaders.hash(sha256Provider).encodeToHex())

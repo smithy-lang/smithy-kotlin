@@ -6,17 +6,24 @@
 package aws.smithy.kotlin.runtime.http.operation
 
 import aws.smithy.kotlin.runtime.InternalApi
+import aws.smithy.kotlin.runtime.businessmetrics.BusinessMetricsSource
+import aws.smithy.kotlin.runtime.businessmetrics.ScopedBusinessMetricsContext
+import aws.smithy.kotlin.runtime.businessmetrics.SmithyBusinessMetric
+import aws.smithy.kotlin.runtime.businessmetrics.emitBusinessMetric
 import aws.smithy.kotlin.runtime.client.SdkClientOption
 import aws.smithy.kotlin.runtime.collections.get
 import aws.smithy.kotlin.runtime.http.HttpHandler
 import aws.smithy.kotlin.runtime.http.complete
 import aws.smithy.kotlin.runtime.http.interceptors.HttpInterceptor
 import aws.smithy.kotlin.runtime.operation.ExecutionContext
+import aws.smithy.kotlin.runtime.telemetry.metrics.MeterProvider
+import aws.smithy.kotlin.runtime.telemetry.trace.TracerProvider
 import aws.smithy.kotlin.runtime.telemetry.trace.withSpan
-import aws.smithy.kotlin.runtime.util.Uuid
 import kotlinx.coroutines.cancelAndJoin
+import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.job
 import kotlin.reflect.KClass
+import kotlin.uuid.Uuid
 
 /**
  * A (Smithy) HTTP based operation.
@@ -109,8 +116,14 @@ public suspend fun <I, O, R> SdkHttpOperation<I, O>.execute(
     val handler = execution.decorate(httpHandler, this)
     val request = OperationRequest(context, input)
     val (span, telemetryCtx) = instrument()
+    emitScopedBusinessMetrics()
+    emitTelemetryBusinessMetrics()
+
+    // Clear scoped business metrics so they don't apply to operations invoked while executing this one
+    val operationCoroutineCtx = telemetryCtx + NoScopedBusinessMetrics
+
     try {
-        return withSpan(span, telemetryCtx) {
+        return withSpan(span, operationCoroutineCtx) {
             val output = handler.call(request)
             block(output)
         }
@@ -169,6 +182,32 @@ public class SdkHttpOperationBuilder<I, O>(
 @InternalApi
 public inline fun <I, O> SdkHttpOperationBuilder<I, O>.context(block: ExecutionContext.() -> Unit) {
     context.apply(block)
+}
+
+private val NoScopedBusinessMetrics = ScopedBusinessMetricsContext(emptySet())
+
+/**
+ * Emit the business metrics scoped to the calling coroutine, e.g. by a waiter or paginator
+ */
+private suspend fun <I, O> SdkHttpOperation<I, O>.emitScopedBusinessMetrics() {
+    currentCoroutineContext()[ScopedBusinessMetricsContext]?.metrics?.forEach(context::emitBusinessMetric)
+}
+
+/**
+ * Emit the business metrics implied by this operation's tracer and meter providers
+ */
+private fun <I, O> SdkHttpOperation<I, O>.emitTelemetryBusinessMetrics() {
+    val tracerProvider = telemetry.provider.tracerProvider
+    when {
+        tracerProvider is BusinessMetricsSource -> tracerProvider.businessMetrics.forEach(context::emitBusinessMetric)
+        tracerProvider !== TracerProvider.None -> context.emitBusinessMetric(SmithyBusinessMetric.OBSERVABILITY_TRACING)
+    }
+
+    val meterProvider = telemetry.provider.meterProvider
+    when {
+        meterProvider is BusinessMetricsSource -> meterProvider.businessMetrics.forEach(context::emitBusinessMetric)
+        meterProvider !== MeterProvider.None -> context.emitBusinessMetric(SmithyBusinessMetric.OBSERVABILITY_METRICS)
+    }
 }
 
 private suspend fun ExecutionContext.cleanup() {

@@ -4,6 +4,8 @@ name: CI w/ reduced CRT Kotlin
 
 on:
   pull_request:
+  merge_group:
+    types: [checks_requested]
   workflow_dispatch:
 
 permissions:
@@ -60,6 +62,13 @@ jobs:
         with:
           working-directory: './aws-crt-kotlin'
 
+      - name: Install test JDK
+        id: test-jdk
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'corretto'
+          java-version: ${{ matrix.java-version }}
+
       - name: Configure JDK
         uses: actions/setup-java@v3
         with:
@@ -92,7 +101,10 @@ jobs:
 
       - name: Build and Test Smithy Kotlin on JVM (with dependency on reduced CRT Kotlin)
         run: |
-          ./gradlew -Ptest.java.version=${{ matrix.java-version }} jvmTest --stacktrace
+          # Gradle doesn't search setup-java's tool cache for toolchains, so point it at the test JDK
+          ./gradlew \
+            -Porg.gradle.java.installations.paths=${{ steps.test-jdk.outputs.path }} \
+            -Ptest.java.version=${{ matrix.java-version }} jvmTest --stacktrace
 
       - name: Calculate duration
         id: end

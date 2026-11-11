@@ -61,5 +61,5 @@ dependencies {
     implementation(project(":runtime:observability:telemetry-api"))
     implementation(project(":runtime:observability:telemetry-defaults"))
 
-    testImplementation(libs.kotlin.test.junit5)
+    testImplementation(libs.kotlin.test)
 }

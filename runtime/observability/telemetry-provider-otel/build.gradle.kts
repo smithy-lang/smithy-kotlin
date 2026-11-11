@@ -21,6 +21,15 @@ kotlin {
                 api(libs.opentelemetry.kotlin.extension)
             }
         }
+
+        jvmTest {
+            dependencies {
+                implementation(libs.kotlinx.coroutines.test)
+                implementation(libs.opentelemetry.sdk.testing)
+                implementation(project(":runtime:protocol:http-client"))
+                implementation(project(":runtime:protocol:http-test"))
+            }
+        }
         all {
             languageSettings.optIn("aws.smithy.kotlin.runtime.InternalApi")
         }

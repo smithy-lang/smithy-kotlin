@@ -4,7 +4,6 @@
  */
 package aws.smithy.kotlin.runtime.auth.awssigning
 
-import aws.smithy.kotlin.runtime.ExperimentalApi
 import aws.smithy.kotlin.runtime.http.Headers
 import aws.smithy.kotlin.runtime.http.request.HttpRequest
 import aws.smithy.kotlin.runtime.telemetry.TelemetryProvider
@@ -33,7 +32,6 @@ private val AwsSigningAlgorithm.signatureCalculator
         AwsSigningAlgorithm.SIGV4_ASYMMETRIC -> SignatureCalculator.SigV4a
     }
 
-@OptIn(ExperimentalApi::class)
 internal class DefaultAwsSignerImpl(
     private val canonicalizer: Canonicalizer = Canonicalizer.Default,
     private val requestMutator: RequestMutator = RequestMutator.Default,

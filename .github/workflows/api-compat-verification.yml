@@ -6,6 +6,8 @@ on:
     branches:
       - main
       - '*-main'
+  merge_group:
+    types: [checks_requested]
 
 permissions:
   contents: read
@@ -16,7 +18,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Check for API compatibility
-        if: ${{ !contains(github.event.pull_request.labels.*.name, 'acknowledge-api-break') }}
+        if: ${{ github.event_name != 'merge_group' && !contains(github.event.pull_request.labels.*.name, 'acknowledge-api-break') }}
         run: |
           git fetch origin ${{ github.base_ref }} --depth 1 && \
           git diff remotes/origin/${{ github.base_ref }} --numstat "*.api" | awk '

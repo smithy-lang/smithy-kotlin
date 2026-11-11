@@ -20,10 +20,10 @@ import io.micrometer.core.instrument.DistributionSummary
 import io.micrometer.core.instrument.Gauge
 import io.micrometer.core.instrument.Tag
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry
-import org.junit.jupiter.api.AfterEach
-import org.junit.jupiter.api.Test
 import java.util.concurrent.atomic.AtomicLong
 import java.util.concurrent.atomic.AtomicReference
+import kotlin.test.AfterTest
+import kotlin.test.Test
 
 class MicrometerMeterProviderTest {
 
@@ -47,7 +47,7 @@ class MicrometerMeterProviderTest {
         Tag.of("scope", scope),
     )
 
-    @AfterEach
+    @AfterTest
     fun tearDown() {
         meterRegistry.clear()
     }

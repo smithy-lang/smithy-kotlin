@@ -16,9 +16,7 @@ dependencies {
     implementation(project(":runtime:observability:logging-slf4j2"))
     // In this test, we have a slf4j2x present in the classpath, but we declare a slf4j1x Logger interface.
     testImplementation(libs.slf4j.api)
-    testImplementation(libs.junit.jupiter)
     testImplementation(libs.kotlin.test)
-    testImplementation(libs.kotlin.test.junit5)
 }
 
 tasks.withType<KotlinCompile> {

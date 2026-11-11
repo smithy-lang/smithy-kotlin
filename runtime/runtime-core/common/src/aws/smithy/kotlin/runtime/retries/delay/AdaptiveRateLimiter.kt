@@ -46,20 +46,26 @@ public class AdaptiveRateLimiter internal constructor(
     private var capacity = 0.0
     private var lastTimeMark: TimeMark? = null
     internal var refillUnitsPerSecond = 0.0
-    private var maxCapacity = 0.0
+    internal var maxCapacity = 0.0
     private val mutex = Mutex()
 
-    override suspend fun acquire(cost: Int): Unit = mutex.withLock {
-        if (rateCalculator.throttlingEnabled) {
-            refillCapacity()
-            if (cost <= capacity) {
-                capacity -= cost
-            } else {
+    override suspend fun acquire(cost: Int) {
+        while (true) {
+            val delayDuration = mutex.withLock {
+                if (!rateCalculator.throttlingEnabled) return
+
+                refillCapacity()
+                if (cost <= capacity) {
+                    capacity -= cost
+                    return
+                }
+
                 val extraRequiredCapacity = cost - capacity
-                val delayDuration = (extraRequiredCapacity / refillUnitsPerSecond).seconds
-                delay(delayDuration)
-                capacity = 0.0
+                (extraRequiredCapacity / refillUnitsPerSecond).seconds
             }
+
+            // Sleep outside the lock so other coroutines can update token bucket state (SDK-KT-1114)
+            delay(delayDuration)
         }
     }
 

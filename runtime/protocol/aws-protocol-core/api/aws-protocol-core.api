@@ -35,6 +35,7 @@ public final class aws/smithy/kotlin/runtime/awsprotocol/AwsQueryCompatibleError
 public final class aws/smithy/kotlin/runtime/awsprotocol/ClockSkewInterceptor : aws/smithy/kotlin/runtime/client/Interceptor {
 	public static final field Companion Laws/smithy/kotlin/runtime/awsprotocol/ClockSkewInterceptor$Companion;
 	public fun <init> ()V
+	public fun <init> (Laws/smithy/kotlin/runtime/time/Clock;)V
 	public fun modifyBeforeAttemptCompletion-gIAlu-s (Laws/smithy/kotlin/runtime/client/ResponseInterceptorContext;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun modifyBeforeCompletion-gIAlu-s (Laws/smithy/kotlin/runtime/client/ResponseInterceptorContext;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun modifyBeforeDeserialization (Laws/smithy/kotlin/runtime/client/ProtocolResponseInterceptorContext;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;

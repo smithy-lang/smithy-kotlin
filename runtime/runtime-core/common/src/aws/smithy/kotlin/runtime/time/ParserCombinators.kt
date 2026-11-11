@@ -81,7 +81,7 @@ internal fun isDigit(chr: Char): Boolean = chr in '0'..'9'
 internal fun char(chr: Char): Parser<Char> = { str, pos ->
     precond(str, pos, 1)
     val c = str[pos]
-    if (c != chr) throw ParseException(str, "expected `$chr` found `$c`", pos)
+    if (c != chr) throw NoTraceParseException(str, "expected `$chr` found `$c`", pos)
     ParseResult(pos + 1, c)
 }
 
@@ -98,7 +98,7 @@ internal fun oneOf(chars: String): Parser<Char> = { str, pos ->
             break
         }
     }
-    result ?: throw ParseException(str, "expected one of `$chars` found $c", pos)
+    result ?: throw NoTraceParseException(str, "expected one of `$chars` found $c", pos)
 }
 
 /**
@@ -110,7 +110,7 @@ internal fun tag(match: String): Parser<String> = { str, pos ->
     for ((idx, chr) in match.withIndex()) {
         val i = pos + idx
         if (str[i] != chr) {
-            throw ParseException(str, "expected `$match` found `${str.substring(pos, pos + match.length)}`", pos)
+            throw NoTraceParseException(str, "expected `$match` found `${str.substring(pos, pos + match.length)}`", pos)
         }
     }
 
@@ -173,17 +173,17 @@ internal fun <T : Number> takeMNDigitsT(m: Int, n: Int, transform: (String, IntR
     try {
         val (pos1, range) = takeWhileMN(m, n, ::isDigit)(str, pos)
         if (range.isEmpty()) {
-            throw ParseException(str, "expected integer", pos)
+            throw NoTraceParseException(str, "expected integer", pos)
         }
 
         val res = transform(str, range)
         ParseResult(pos1, res)
     } catch (ex: TakeWhileMNException) {
         val msg = fmtTakeWhileErrorMsg(m, n, ex.expected, "found ${ex.matched}")
-        throw ParseException(str, msg, pos)
+        throw NoTraceParseException(str, msg, pos)
     } catch (ex: IncompleteException) {
         val msg = fmtTakeWhileErrorMsg(m, n, m, "${ex.needed}")
-        throw ParseException(str, msg, pos)
+        throw NoTraceParseException(str, msg, pos)
     }
 }
 
@@ -218,7 +218,7 @@ internal fun mnDigitsInRange(m: Int, n: Int, range: IntRange): Parser<Int> = { s
     precond(str, pos)
     val (pos0, result) = takeMNDigitsInt(m, n)(str, pos)
     if (!range.contains(result)) {
-        throw ParseException(str, "$result not in range $range", pos)
+        throw NoTraceParseException(str, "$result not in range $range", pos)
     }
 
     ParseResult(pos0, result)
@@ -239,7 +239,7 @@ internal fun fraction(m: Int, n: Int, denomDigits: Int): Parser<Int> = { str, po
 
     val (pos0, range) = takeWhileMN(m, n, ::isDigit)(str, pos)
     if (range.isEmpty()) {
-        throw ParseException(str, "expected integer", pos)
+        throw NoTraceParseException(str, "expected integer", pos)
     }
 
     var result = str.substring(range).toInt()

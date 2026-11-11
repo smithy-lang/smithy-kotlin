@@ -102,7 +102,7 @@ class PaginatorGeneratorTest {
                         val req = initialRequest.copy {
                             this.marker = cursor
                         }
-                        val result = this@listFunctionsPaginated.listFunctions(req)
+                        val result = withScopedBusinessMetrics(SmithyBusinessMetric.PAGINATOR) { this@listFunctionsPaginated.listFunctions(req) }
                         cursor = result.nextMarker
                         hasNextPage = cursor?.isNotEmpty() == true
                         emit(result)
@@ -213,7 +213,7 @@ class PaginatorGeneratorTest {
                         val req = initialRequest.copy {
                             this.marker = cursor
                         }
-                        val result = this@listFunctionsPaginated.listFunctions(req)
+                        val result = withScopedBusinessMetrics(SmithyBusinessMetric.PAGINATOR) { this@listFunctionsPaginated.listFunctions(req) }
                         cursor = result.nextMarker
                         hasNextPage = cursor?.isNotEmpty() == true
                         emit(result)
@@ -349,7 +349,7 @@ class PaginatorGeneratorTest {
                         val req = initialRequest.copy {
                             this.marker = cursor
                         }
-                        val result = this@listFlowsPaginated.listFlows(req)
+                        val result = withScopedBusinessMetrics(SmithyBusinessMetric.PAGINATOR) { this@listFlowsPaginated.listFlows(req) }
                         cursor = result.nextMarker
                         hasNextPage = cursor?.isNotEmpty() == true
                         emit(result)
@@ -474,7 +474,7 @@ class PaginatorGeneratorTest {
                         val req = initialRequest.copy {
                             this.marker = cursor
                         }
-                        val result = this@listFunctionsPaginated.listFunctions(req)
+                        val result = withScopedBusinessMetrics(SmithyBusinessMetric.PAGINATOR) { this@listFunctionsPaginated.listFunctions(req) }
                         cursor = result.nextMarker
                         hasNextPage = cursor?.isNotEmpty() == true
                         emit(result)
@@ -603,7 +603,7 @@ class PaginatorGeneratorTest {
                         val req = initialRequest.copy {
                             this.marker = cursor
                         }
-                        val result = this@listFunctionsPaginated.listFunctions(req)
+                        val result = withScopedBusinessMetrics(SmithyBusinessMetric.PAGINATOR) { this@listFunctionsPaginated.listFunctions(req) }
                         cursor = result.nextMarker
                         hasNextPage = result.isTruncated == true
                         emit(result)
@@ -692,7 +692,7 @@ class PaginatorGeneratorTest {
                         val req = initialRequest.copy {
                             this.marker = cursor
                         }
-                        val result = this@listFunctionsPaginated.listFunctions(req)
+                        val result = withScopedBusinessMetrics(SmithyBusinessMetric.PAGINATOR) { this@listFunctionsPaginated.listFunctions(req) }
                         cursor = result.nextMarker
                         hasNextPage = cursor != null && cursor != req.marker
                         emit(result)
@@ -862,7 +862,7 @@ class PaginatorGeneratorTest {
                         val req = initialRequest.copy {
                             this.marker = cursor
                         }
-                        val result = this@listFunctionsPaginated.listFunctions(req)
+                        val result = withScopedBusinessMetrics(SmithyBusinessMetric.PAGINATOR) { this@listFunctionsPaginated.listFunctions(req) }
                         cursor = result.nextMarker
                         hasNextPage = cursor?.isNotEmpty() == true
                         emit(result)
