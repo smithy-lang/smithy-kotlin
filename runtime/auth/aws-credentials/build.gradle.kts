@@ -22,6 +22,8 @@ kotlin {
         commonTest {
             dependencies {
                 api(libs.kotlinx.coroutines.test)
+                // For reading the credential refresh test vectors
+                implementation(libs.kotlinx.serialization.json)
             }
         }
 
