@@ -103,7 +103,88 @@ class HmacTest {
             hmacTest(bytes(131) { 0xaa }, payload, ::Sha256),
         )
     }
+
+    // RFC test data adapted from https://datatracker.ietf.org/doc/html/rfc2202 (test cases 1-7 for each hash)
+    @Test
+    fun testRfc2202Md5() {
+        val cases = listOf(
+            Triple(bytes(16) { 0x0b }, "Hi There".encodeToByteArray(), "9294727a3638bb1c13f48ef8158bfc9d"),
+            Triple("Jefe".encodeToByteArray(), "what do ya want for nothing?".encodeToByteArray(), "750c783e6ab0b503eaa86e310a5db738"),
+            Triple(bytes(16) { 0xaa }, bytes(50) { 0xdd }, "56be34521d144c88dbb8c733f0e8b3f6"),
+            Triple(bytes(25) { it + 1 }, bytes(50) { 0xcd }, "697eaf0aca3a3aea3a75164746ffaa79"),
+            Triple(bytes(16) { 0x0c }, "Test With Truncation".encodeToByteArray(), "56461ef2342edc00f9bab995690efd4c"),
+            Triple(bytes(80) { 0xaa }, RFC2202_LARGE_KEY.encodeToByteArray(), "6b1ab7fe4bd7bf8f0b62e6ce61b9d0cd"),
+            Triple(bytes(80) { 0xaa }, RFC2202_LARGE_KEY_AND_DATA.encodeToByteArray(), "6f630fad67cda0ee1fb1f562db3aa53e"),
+        )
+        cases.forEachIndexed { i, (key, data, expected) ->
+            assertEquals(expected, hmacTest(key, data, ::Md5), "RFC 2202 HMAC-MD5 case ${i + 1}")
+        }
+    }
+
+    @Test
+    fun testRfc2202Sha1() {
+        val cases = listOf(
+            Triple(bytes(20) { 0x0b }, "Hi There".encodeToByteArray(), "b617318655057264e28bc0b6fb378c8ef146be00"),
+            Triple("Jefe".encodeToByteArray(), "what do ya want for nothing?".encodeToByteArray(), "effcdf6ae5eb2fa2d27416d5f184df9c259a7c79"),
+            Triple(bytes(20) { 0xaa }, bytes(50) { 0xdd }, "125d7342b9ac11cd91a39af48aa17b4f63f175d3"),
+            Triple(bytes(25) { it + 1 }, bytes(50) { 0xcd }, "4c9007f4026250c6bc8414f9bf50c86c2d7235da"),
+            Triple(bytes(20) { 0x0c }, "Test With Truncation".encodeToByteArray(), "4c1a03424b55e07fe7f27be1d58bb9324a9a5a04"),
+            Triple(bytes(80) { 0xaa }, RFC2202_LARGE_KEY.encodeToByteArray(), "aa4ae5e15272d00e95705637ce8a3b55ed402112"),
+            Triple(bytes(80) { 0xaa }, RFC2202_LARGE_KEY_AND_DATA.encodeToByteArray(), "e8e99d0f45237d786d6bbaa7965c7808bbff1a91"),
+        )
+        cases.forEachIndexed { i, (key, data, expected) ->
+            assertEquals(expected, hmacTest(key, data, ::Sha1), "RFC 2202 HMAC-SHA1 case ${i + 1}")
+        }
+    }
+
+    // Boundary cases the RFCs don't cover: keys at and just past the 64-byte block size (the point where the key
+    // starts being hashed first), an empty key and an empty message. Expected values are from Python's hmac module.
+    @Test
+    fun testBoundaryCases() {
+        val pangram = PANGRAM.encodeToByteArray()
+        val cases = listOf<Triple<HashSupplier, String, List<String>>>(
+            Triple(
+                ::Md5,
+                "md5",
+                listOf(
+                    "3af3ae9b4276b5694b3c3e2911c7bf0f",
+                    "49df0426058f82bf4affb6e8a83e0f9a",
+                    "ad262969c53bc16032f160081c4a07a0",
+                    "63530468a04e386459855da0063b6596",
+                ),
+            ),
+            Triple(
+                ::Sha1,
+                "sha1",
+                listOf(
+                    "2cdb6f01c6cfaf55a26a1a80d0b0edce808c1333",
+                    "72b2d74c8b4ab3028edcee19e87e98360e43a7b0",
+                    "2ba7f707ad5f187c412de3106583c3111d668de8",
+                    "f42bb0eeb018ebbd4597ae7213711ec60760843f",
+                ),
+            ),
+            Triple(
+                ::Sha256,
+                "sha256",
+                listOf(
+                    "4903b1fc9f41bc1abe3ff7119c4e523b91288b11c03dab1e975816150df38144",
+                    "8e94e45cd66c660f34f8600065afcf80fe2ef70df6c16b95101753a6e1aab94a",
+                    "fb011e6154a19b9a4c767373c305275a5a69e8b68b0b4c9200c383dced19a416",
+                    "5d5d139563c95b5967b9bd9a8c9b233a9dedb45072794cd232dc1b74832607d0",
+                ),
+            ),
+        )
+        cases.forEach { (supplier, name, expected) ->
+            assertEquals(expected[0], hmacTest(bytes(64) { it }, pangram, supplier), "$name, 64-byte key")
+            assertEquals(expected[1], hmacTest(bytes(65) { it }, pangram, supplier), "$name, 65-byte key")
+            assertEquals(expected[2], hmacTest(ByteArray(0), pangram, supplier), "$name, empty key")
+            assertEquals(expected[3], hmacTest("key".encodeToByteArray(), ByteArray(0), supplier), "$name, empty message")
+        }
+    }
 }
+
+private const val RFC2202_LARGE_KEY = "Test Using Larger Than Block-Size Key - Hash Key First"
+private const val RFC2202_LARGE_KEY_AND_DATA = "Test Using Larger Than Block-Size Key and Larger Than One Block-Size Data"
 
 private fun bytes(length: Int, values: (Int) -> Int): ByteArray = ByteArray(length) { values(it).toByte() }
 
