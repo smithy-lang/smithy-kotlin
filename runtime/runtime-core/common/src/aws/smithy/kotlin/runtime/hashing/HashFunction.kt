@@ -8,6 +8,8 @@ import aws.smithy.kotlin.runtime.ClientException
 import aws.smithy.kotlin.runtime.InternalApi
 import aws.smithy.kotlin.runtime.businessmetrics.BusinessMetric
 import aws.smithy.kotlin.runtime.businessmetrics.SmithyBusinessMetric
+import aws.smithy.kotlin.runtime.hashing.pure.PureCrc32
+import aws.smithy.kotlin.runtime.hashing.pure.PureCrc32c
 import aws.smithy.kotlin.runtime.hashing.pure.PureMd5
 import aws.smithy.kotlin.runtime.hashing.pure.PureSha1
 import aws.smithy.kotlin.runtime.hashing.pure.PureSha256
@@ -90,7 +92,7 @@ public fun String.toHashFunctionOrThrow(): HashFunction = toHashFunction() ?: th
 public val HashFunction.isSupportedForFlexibleChecksums: Boolean
     get() = when (this) {
         is Crc32, is Crc32c, is Sha1, is Sha256 -> true
-        is PureSha1, is PureSha256 -> true
+        is PureCrc32, is PureCrc32c, is PureSha1, is PureSha256 -> true
         else -> false
     }
 
@@ -107,8 +109,8 @@ public fun String.resolveChecksumAlgorithmHeaderName(): String = this.toHashFunc
 public fun HashFunction.resolveChecksumAlgorithmHeaderName(): String {
     val prefix = "x-amz-checksum-"
     return when (this) {
-        is Crc32 -> prefix + "crc32"
-        is Crc32c -> prefix + "crc32c"
+        is Crc32, is PureCrc32 -> prefix + "crc32"
+        is Crc32c, is PureCrc32c -> prefix + "crc32c"
         is Sha1, is PureSha1 -> prefix + "sha1"
         is Sha256, is PureSha256 -> prefix + "sha256"
         is Md5, is PureMd5 -> "Content-MD5"
@@ -121,8 +123,8 @@ public fun HashFunction.resolveChecksumAlgorithmHeaderName(): String {
  */
 @InternalApi
 public fun HashFunction.toBusinessMetric(): BusinessMetric = when (this) {
-    is Crc32 -> SmithyBusinessMetric.FLEXIBLE_CHECKSUMS_REQ_CRC32
-    is Crc32c -> SmithyBusinessMetric.FLEXIBLE_CHECKSUMS_REQ_CRC32C
+    is Crc32, is PureCrc32 -> SmithyBusinessMetric.FLEXIBLE_CHECKSUMS_REQ_CRC32
+    is Crc32c, is PureCrc32c -> SmithyBusinessMetric.FLEXIBLE_CHECKSUMS_REQ_CRC32C
     is Sha1, is PureSha1 -> SmithyBusinessMetric.FLEXIBLE_CHECKSUMS_REQ_SHA1
     is Sha256, is PureSha256 -> SmithyBusinessMetric.FLEXIBLE_CHECKSUMS_REQ_SHA256
     else -> throw IllegalStateException("Checksum was calculated using an unsupported hash function: ${this::class.simpleName}")

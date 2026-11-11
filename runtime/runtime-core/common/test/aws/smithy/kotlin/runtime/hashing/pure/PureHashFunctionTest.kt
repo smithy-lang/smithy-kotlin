@@ -4,6 +4,7 @@
  */
 package aws.smithy.kotlin.runtime.hashing.pure
 
+import aws.smithy.kotlin.runtime.hashing.HashFunction
 import aws.smithy.kotlin.runtime.hashing.hmac
 import aws.smithy.kotlin.runtime.hashing.isSupportedForFlexibleChecksums
 import aws.smithy.kotlin.runtime.hashing.resolveChecksumAlgorithmHeaderName
@@ -18,7 +19,7 @@ import kotlin.test.assertFailsWith
 private val sizes = listOf(0, 1, 55, 56, 57, 63, 64, 65, 127, 128, 1000, 100_003)
 
 class PureHashFunctionTest {
-    private val algorithms = listOf("md5", "sha1", "sha256")
+    private val algorithms = listOf("crc32", "crc32c", "md5", "sha1", "sha256")
 
     @Test
     fun testMatchesRuntimeSingleUpdate() {
@@ -82,6 +83,39 @@ class PureHashFunctionTest {
     }
 
     @Test
+    fun testCrcChorbaCutoffsAndOffsets() {
+        // CRC32 switches from the table loop to Chorba above 72 bytes, and Chorba's main loop (320 bytes per pass) runs
+        // while more than 360 bytes remain, then a 72-byte loop and the table tail. 680 bytes take one main-loop pass,
+        // 681 two and 1100 three. Offsets 1-7 put the 8-byte reads off alignment.
+        val random = Random(4)
+        val input = random.nextBytes(1200)
+        val lengths = listOf(71, 72, 73, 104, 105, 360, 361, 392, 393, 424, 425, 600, 680, 681, 1100)
+        for (algorithm in listOf("crc32", "crc32c")) {
+            for (length in lengths) {
+                for (offset in 0..7) {
+                    val expected = bitwiseCrc(algorithm, input, offset, length)
+                    val pure = hashFunction(PURE, algorithm).apply { update(input, offset, length) }.digest()
+                    assertContentEquals(expected, pure, "$algorithm, offset=$offset, length=$length")
+                }
+            }
+        }
+    }
+
+    @Test
+    fun testCrcMatchesBitwiseReference() {
+        // runtime-core's CRC32C shares its table code with PureCrc32c, so also check both CRCs against a bit-at-a-time
+        // implementation
+        val random = Random(5)
+        for (algorithm in listOf("crc32", "crc32c")) {
+            for (size in sizes) {
+                val input = random.nextBytes(size)
+                val pure = hashFunction(PURE, algorithm).apply { update(input) }.digest()
+                assertContentEquals(bitwiseCrc(algorithm, input, 0, size), pure, "$algorithm, size=$size")
+            }
+        }
+    }
+
+    @Test
     fun testRejectsInvalidRanges() {
         val input = ByteArray(10)
         val invalid = listOf(
@@ -114,12 +148,27 @@ class PureHashFunctionTest {
 
     @Test
     fun testFlexibleChecksumSupportMatchesRuntime() {
-        for (algorithm in algorithms) {
+        for (algorithm in algorithms + "md5") {
             val runtime = hashFunction(RUNTIME, algorithm)
             val pure = hashFunction(PURE, algorithm)
             assertEquals(runtime.isSupportedForFlexibleChecksums, pure.isSupportedForFlexibleChecksums, algorithm)
             assertEquals(runtime.resolveChecksumAlgorithmHeaderName(), pure.resolveChecksumAlgorithmHeaderName(), algorithm)
             if (runtime.isSupportedForFlexibleChecksums) assertEquals(runtime.toBusinessMetric(), pure.toBusinessMetric(), algorithm)
         }
+        assertEquals(0xcbf43926U, pureCrc32().apply { update("123456789".encodeToByteArray()) }.digestValue())
     }
+}
+
+private val CRC_POLYNOMIALS = mapOf("crc32" to 0xEDB88320.toInt(), "crc32c" to 0x82F63B78.toInt())
+
+/** Reflected CRC, one bit at a time, as big-endian digest bytes like [HashFunction.digest] */
+private fun bitwiseCrc(algorithm: String, input: ByteArray, offset: Int, length: Int): ByteArray {
+    val polynomial = CRC_POLYNOMIALS.getValue(algorithm)
+    var crc = -1
+    for (i in offset until offset + length) {
+        crc = crc xor (input[i].toInt() and 0xff)
+        repeat(8) { crc = if (crc and 1 != 0) (crc ushr 1) xor polynomial else crc ushr 1 }
+    }
+    val value = crc.inv()
+    return byteArrayOf((value ushr 24).toByte(), (value ushr 16).toByte(), (value ushr 8).toByte(), value.toByte())
 }
