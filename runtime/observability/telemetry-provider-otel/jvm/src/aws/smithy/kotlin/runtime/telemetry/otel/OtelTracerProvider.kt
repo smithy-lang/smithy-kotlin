@@ -5,6 +5,9 @@
 
 package aws.smithy.kotlin.runtime.telemetry.otel
 
+import aws.smithy.kotlin.runtime.businessmetrics.BusinessMetric
+import aws.smithy.kotlin.runtime.businessmetrics.BusinessMetricsSource
+import aws.smithy.kotlin.runtime.businessmetrics.SmithyBusinessMetric
 import aws.smithy.kotlin.runtime.collections.AttributeKey
 import aws.smithy.kotlin.runtime.collections.Attributes
 import aws.smithy.kotlin.runtime.telemetry.context.Context
@@ -17,8 +20,16 @@ import io.opentelemetry.api.trace.SpanContext as OtelSpanContext
 import io.opentelemetry.api.trace.SpanKind as OtelSpanKind
 import io.opentelemetry.api.trace.StatusCode as OtelStatus
 import io.opentelemetry.api.trace.Tracer as OtelTracer
+import io.opentelemetry.api.trace.TracerProvider as OtelApiTracerProvider
 
-internal class OtelTracerProvider(private val otel: OpenTelemetry) : TracerProvider {
+internal class OtelTracerProvider(private val otel: OpenTelemetry) :
+    TracerProvider,
+    BusinessMetricsSource {
+    override val businessMetrics: Set<BusinessMetric> = when {
+        otel.tracerProvider === OtelApiTracerProvider.noop() -> emptySet()
+        else -> setOf(SmithyBusinessMetric.OBSERVABILITY_TRACING, SmithyBusinessMetric.OBSERVABILITY_OTEL_TRACING)
+    }
+
     override fun getOrCreateTracer(scope: String): Tracer = OtelTracerImpl(otel.getTracer(scope))
 }
 
