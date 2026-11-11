@@ -46,6 +46,20 @@ use smithy.waiters#waitable
             }
         ]
     },
+    KeysFunctionEnumKeyedMapStringEquals: {
+        acceptors: [
+            {
+                state: "success",
+                matcher: {
+                    output: {
+                        path: "keys(maps.enumKeys)",
+                        expected: "one",
+                        comparator: "anyStringEquals"
+                    }
+                }
+            }
+        ]
+    },
 )
 @readonly
 @http(method: "GET", uri: "/keys/{name}", code: 200)
