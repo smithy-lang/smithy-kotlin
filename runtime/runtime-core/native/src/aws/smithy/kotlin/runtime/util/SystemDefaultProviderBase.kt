@@ -6,7 +6,9 @@ package aws.smithy.kotlin.runtime.util
 
 import aws.smithy.kotlin.runtime.PlannedRemoval
 import aws.smithy.kotlin.runtime.io.IOException
+import aws.smithy.kotlin.runtime.io.internal.SdkDispatchers
 import kotlinx.cinterop.*
+import kotlinx.coroutines.withContext
 import kotlinx.io.files.Path
 import kotlinx.io.files.SystemFileSystem
 import platform.posix.*
@@ -15,18 +17,27 @@ import platform.posix.*
 public abstract class SystemDefaultProviderBase : PlatformProvider {
     override fun getenv(key: String): String? = platform.posix.getenv(key)?.toKString()
 
+    // Catches Exception rather than IOException because kotlinx-io and okio throw their own IOException types on Native
     @OptIn(PlannedRemoval::class)
-    @Deprecated("Use readOrNull() instead", replaceWith = ReplaceWith("readOrNull(path, readAll = true)"))
-    override suspend fun readFileOrNull(path: String): ByteArray? = readOrNull(path, readAll = true, mustExist = false)
+    @Suppress("DEPRECATION")
+    override suspend fun readFileOrNull(path: String): ByteArray? = withContext(SdkDispatchers.IO) {
+        try {
+            readOrNull(path, readAll = true, mustExist = false)
+        } catch (_: Exception) {
+            null
+        }
+    }
 
     @OptIn(PlannedRemoval::class)
-    @Deprecated("Use write() instead", replaceWith = ReplaceWith("write(path, data, WriteType.OVERWRITE)"))
-    override suspend fun writeFile(path: String, data: ByteArray): Unit = write(path, data, WriteType.OVERWRITE)
-
-    @OptIn(PlannedRemoval::class)
-    @Deprecated("Use exists() instead", replaceWith = ReplaceWith("exists(path)"))
+    @Deprecated("Use pathExists() instead", replaceWith = ReplaceWith("pathExists(path)"))
+    @Suppress("DEPRECATION")
     override fun fileExists(path: String): Boolean = exists(path)
 
+    @OptIn(PlannedRemoval::class)
+    @Deprecated(
+        "Blocks the calling thread. Use writeFile() instead",
+        replaceWith = ReplaceWith("writeFile(path, data, writeType, mustExist, permissions)"),
+    )
     override fun write(path: String, data: ByteArray, writeType: WriteType, mustExist: Boolean, permissions: String?) {
         val exists = SystemFileSystem.exists(Path(path))
         if (mustExist && !exists) throw IOException("$path does not exist and mustExist is set to true")
