@@ -136,6 +136,7 @@ public final class aws/smithy/kotlin/codegen/aws/protocols/RestXmlSerializerGene
 public abstract class aws/smithy/kotlin/codegen/aws/protocols/core/AbstractQueryFormUrlSerializerGenerator : aws/smithy/kotlin/codegen/rendering/serde/StructuredDataSerializerGenerator {
 	public fun <init> (Laws/smithy/kotlin/codegen/rendering/protocol/ProtocolGenerator;Lsoftware/amazon/smithy/model/traits/TimestampFormatTrait$Format;)V
 	public abstract fun descriptorGenerator (Laws/smithy/kotlin/codegen/rendering/protocol/ProtocolGenerator$GenerationContext;Lsoftware/amazon/smithy/model/shapes/Shape;Ljava/util/List;Laws/smithy/kotlin/codegen/core/KotlinWriter;)Laws/smithy/kotlin/codegen/rendering/serde/FormUrlSerdeDescriptorGenerator;
+	public fun descriptorGenerator (Laws/smithy/kotlin/codegen/rendering/protocol/ProtocolGenerator$GenerationContext;Lsoftware/amazon/smithy/model/shapes/Shape;Ljava/util/List;Laws/smithy/kotlin/codegen/core/KotlinWriter;Z)Laws/smithy/kotlin/codegen/rendering/serde/FormUrlSerdeDescriptorGenerator;
 	public fun operationSerializer (Laws/smithy/kotlin/codegen/rendering/protocol/ProtocolGenerator$GenerationContext;Lsoftware/amazon/smithy/model/shapes/OperationShape;Ljava/util/List;)Lsoftware/amazon/smithy/codegen/core/Symbol;
 	public fun payloadSerializer (Laws/smithy/kotlin/codegen/rendering/protocol/ProtocolGenerator$GenerationContext;Lsoftware/amazon/smithy/model/shapes/Shape;Ljava/util/Collection;)Lsoftware/amazon/smithy/codegen/core/Symbol;
 	public fun renderSerializerBody (Laws/smithy/kotlin/codegen/rendering/protocol/ProtocolGenerator$GenerationContext;Lsoftware/amazon/smithy/model/shapes/Shape;Ljava/util/List;Laws/smithy/kotlin/codegen/core/KotlinWriter;)V
@@ -162,6 +163,7 @@ public abstract class aws/smithy/kotlin/codegen/aws/protocols/core/QueryHttpBind
 public abstract class aws/smithy/kotlin/codegen/aws/protocols/formurl/QuerySerdeFormUrlDescriptorGenerator : aws/smithy/kotlin/codegen/rendering/serde/FormUrlSerdeDescriptorGenerator {
 	public fun <init> (Laws/smithy/kotlin/codegen/core/RenderingContext;Ljava/util/List;)V
 	public synthetic fun <init> (Laws/smithy/kotlin/codegen/core/RenderingContext;Ljava/util/List;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun <init> (Laws/smithy/kotlin/codegen/core/RenderingContext;Ljava/util/List;Z)V
 	protected fun getObjectDescriptorTraits ()Ljava/util/List;
 }
 

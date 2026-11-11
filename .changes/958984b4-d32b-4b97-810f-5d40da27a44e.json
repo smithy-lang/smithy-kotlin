@@ -1,0 +1,6 @@
+{
+    "id": "958984b4-d32b-4b97-810f-5d40da27a44e",
+    "type": "bugfix",
+    "description": "Redact sensitive enum values and union variants that target sensitive shapes in generated `toString()`, and use enum wire values for JMESPath `keys()` on enum-keyed maps",
+    "module": "codegen"
+}

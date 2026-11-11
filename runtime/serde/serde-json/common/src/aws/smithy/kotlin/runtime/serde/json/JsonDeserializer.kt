@@ -199,6 +199,12 @@ private class JsonFieldIterator(
     Deserializer by deserializer,
     PrimitiveDeserializer by deserializer {
 
+    private val fieldIndex = descriptor.fieldIndex
+
+    // In-order cursor: fields are almost always sent in schema order, so the field following the last
+    // match is the most likely next hit.
+    private var expectedFieldIndex = 0
+
     override fun findNextFieldIndex(): Int? {
         while (true) {
             val candidate = when (reader.peek()) {
@@ -215,13 +221,16 @@ private class JsonFieldIterator(
                 else -> {
                     val token = reader.nextTokenOf<JsonToken.Name>()
                     val propertyName = token.value
-                    val field = descriptor.fields.find { it.serialName == propertyName }
 
                     if (IgnoreKey(propertyName) in descriptor.traits) {
                         reader.skipNext() // the value of the ignored key
                         continue
                     } else {
-                        field?.index ?: Deserializer.FieldIterator.UNKNOWN_FIELD
+                        fieldIndex.lookup(propertyName, expectedFieldIndex).also {
+                            if (it != Deserializer.FieldIterator.UNKNOWN_FIELD) {
+                                expectedFieldIndex = it + 1
+                            }
+                        }
                     }
                 }
             }

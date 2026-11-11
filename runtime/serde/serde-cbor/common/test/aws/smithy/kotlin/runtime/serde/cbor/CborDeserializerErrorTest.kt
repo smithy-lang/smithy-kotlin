@@ -8,9 +8,9 @@ import aws.smithy.kotlin.runtime.io.SdkBuffer
 import aws.smithy.kotlin.runtime.serde.DeserializationException
 import aws.smithy.kotlin.runtime.serde.SdkFieldDescriptor
 import aws.smithy.kotlin.runtime.serde.SerialKind
-import aws.smithy.kotlin.runtime.serde.cbor.encoding.Tag
 import aws.smithy.kotlin.runtime.serde.deserializeList
 import aws.smithy.kotlin.runtime.serde.deserializeMap
+import aws.smithy.kotlin.runtime.time.TimestampFormat
 import kotlin.test.Test
 import kotlin.test.assertFails
 import kotlin.test.assertFailsWith
@@ -95,7 +95,7 @@ class CborDeserializerErrorTest {
         val buffer = SdkBuffer().apply { write(payload) }
 
         assertFails {
-            Tag.decode(buffer)
+            CborPrimitiveDeserializer(buffer).deserializeInstant(TimestampFormat.EPOCH_SECONDS)
         }
     }
 
@@ -106,7 +106,7 @@ class CborDeserializerErrorTest {
         val buffer = SdkBuffer().apply { write(payload) }
 
         assertFails {
-            Tag.decode(buffer)
+            CborPrimitiveDeserializer(buffer).deserializeInstant(TimestampFormat.EPOCH_SECONDS)
         }
     }
 
@@ -287,7 +287,7 @@ class CborDeserializerErrorTest {
         val buffer = SdkBuffer().apply { write(payload) }
 
         assertFails {
-            Tag.decode(buffer)
+            CborPrimitiveDeserializer(buffer).deserializeInstant(TimestampFormat.EPOCH_SECONDS)
         }
     }
 
@@ -352,7 +352,7 @@ class CborDeserializerErrorTest {
         val buffer = SdkBuffer().apply { write(payload) }
 
         assertFails {
-            Tag.decode(buffer)
+            CborPrimitiveDeserializer(buffer).deserializeInstant(TimestampFormat.EPOCH_SECONDS)
         }
     }
 
@@ -447,7 +447,7 @@ class CborDeserializerErrorTest {
         val buffer = SdkBuffer().apply { write(payload) }
 
         assertFails {
-            Tag.decode(buffer)
+            CborPrimitiveDeserializer(buffer).deserializeInstant(TimestampFormat.EPOCH_SECONDS)
         }
     }
 
@@ -754,7 +754,7 @@ class CborDeserializerErrorTest {
         val buffer = SdkBuffer().apply { write(payload) }
 
         assertFails {
-            Tag.decode(buffer)
+            CborPrimitiveDeserializer(buffer).deserializeInstant(TimestampFormat.EPOCH_SECONDS)
         }
     }
 
@@ -765,7 +765,7 @@ class CborDeserializerErrorTest {
         val buffer = SdkBuffer().apply { write(payload) }
 
         assertFails {
-            Tag.decode(buffer)
+            CborPrimitiveDeserializer(buffer).deserializeInstant(TimestampFormat.EPOCH_SECONDS)
         }
     }
 

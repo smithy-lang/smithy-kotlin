@@ -131,7 +131,10 @@ public class XmlMapKeyNamespace(uri: String, prefix: String? = null) :
  * See https://awslabs.github.io/smithy/1.0/spec/core/xml-traits.html?highlight=xmlname#xmlname-trait
  */
 @InternalApi
-public data class XmlSerialName(public val name: String) : FieldTrait
+public data class XmlSerialName(public val name: String) : FieldTrait {
+    override val serialName: String
+        get() = name
+}
 
 /**
  * Specifies an alternate name that can be used to match an XML node.

@@ -102,12 +102,26 @@ abstract class AbstractQueryFormUrlSerializerGenerator(
         writer: KotlinWriter,
     ): FormUrlSerdeDescriptorGenerator
 
+    /**
+     * @param isOperationInputBody Whether [shape] is being serialized as the body of its operation's request
+     * (see [aws.smithy.kotlin.codegen.aws.protocols.formurl.QuerySerdeFormUrlDescriptorGenerator]). The default
+     * implementation ignores it and delegates to the overload without it.
+     */
+    open fun descriptorGenerator(
+        ctx: ProtocolGenerator.GenerationContext,
+        shape: Shape,
+        members: List<MemberShape>,
+        writer: KotlinWriter,
+        isOperationInputBody: Boolean,
+    ): FormUrlSerdeDescriptorGenerator = descriptorGenerator(ctx, shape, members, writer)
+
     override fun operationSerializer(ctx: ProtocolGenerator.GenerationContext, op: OperationShape, members: List<MemberShape>): Symbol {
         val input = op.input.get().let { ctx.model.expectShape(it) }
         val symbol = ctx.symbolProvider.toSymbol(input)
 
         return op.bodySerializer(ctx.settings) { writer ->
             addNestedDocumentSerializers(ctx, op, writer)
+            descriptorGenerator(ctx, input, members, writer, isOperationInputBody = true).render()
             val fnName = op.bodySerializerName()
             writer.openBlock("private fun #L(context: #T, input: #T): ByteArray {", fnName, RuntimeTypes.Core.ExecutionContext, symbol)
                 .call {
@@ -151,6 +165,7 @@ abstract class AbstractQueryFormUrlSerializerGenerator(
     ): Symbol {
         val symbol = ctx.symbolProvider.toSymbol(shape)
         return shape.documentSerializer(ctx.settings, symbol, members) { writer ->
+            descriptorGenerator(ctx, shape, members.toList(), writer, isOperationInputBody = false).render()
             writer.openBlock("internal fun #identifier.name:L(serializer: #T, input: #T) {", RuntimeTypes.Serde.Serializer, symbol)
                 .call {
                     renderSerializerBody(ctx, shape, members.toList(), writer)
@@ -165,8 +180,6 @@ abstract class AbstractQueryFormUrlSerializerGenerator(
         members: List<MemberShape>,
         writer: KotlinWriter,
     ) {
-        // render the serde descriptors
-        descriptorGenerator(ctx, shape, members, writer).render()
         when (shape) {
             is UnionShape -> SerializeUnionGenerator(ctx, shape, members, writer, defaultTimestampFormat).render()
             else -> SerializeStructGenerator(ctx, members, writer, defaultTimestampFormat).render()
