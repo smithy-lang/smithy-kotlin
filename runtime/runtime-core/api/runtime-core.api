@@ -108,6 +108,10 @@ public abstract interface class aws/smithy/kotlin/runtime/businessmetrics/Busine
 	public abstract fun getIdentifier ()Ljava/lang/String;
 }
 
+public abstract interface class aws/smithy/kotlin/runtime/businessmetrics/BusinessMetricsSource {
+	public abstract fun getBusinessMetrics ()Ljava/util/Set;
+}
+
 public final class aws/smithy/kotlin/runtime/businessmetrics/BusinessMetricsUtilsKt {
 	public static final fun containsBusinessMetric (Laws/smithy/kotlin/runtime/operation/ExecutionContext;Laws/smithy/kotlin/runtime/businessmetrics/BusinessMetric;)Z
 	public static final fun emitBusinessMetric (Laws/smithy/kotlin/runtime/collections/MutableAttributes;Laws/smithy/kotlin/runtime/businessmetrics/BusinessMetric;)V
@@ -116,6 +120,17 @@ public final class aws/smithy/kotlin/runtime/businessmetrics/BusinessMetricsUtil
 	public static final fun getBusinessMetrics ()Laws/smithy/kotlin/runtime/collections/AttributeKey;
 	public static final fun getServiceEndpointOverride ()Laws/smithy/kotlin/runtime/collections/AttributeKey;
 	public static final fun removeBusinessMetric (Laws/smithy/kotlin/runtime/operation/ExecutionContext;Laws/smithy/kotlin/runtime/businessmetrics/BusinessMetric;)V
+	public static final fun withScopedBusinessMetrics ([Laws/smithy/kotlin/runtime/businessmetrics/BusinessMetric;Lkotlin/jvm/functions/Function1;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+}
+
+public final class aws/smithy/kotlin/runtime/businessmetrics/ScopedBusinessMetricsContext : kotlin/coroutines/AbstractCoroutineContextElement {
+	public static final field Key Laws/smithy/kotlin/runtime/businessmetrics/ScopedBusinessMetricsContext$Key;
+	public fun <init> (Ljava/util/Set;)V
+	public final fun getMetrics ()Ljava/util/Set;
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class aws/smithy/kotlin/runtime/businessmetrics/ScopedBusinessMetricsContext$Key : kotlin/coroutines/CoroutineContext$Key {
 }
 
 public final class aws/smithy/kotlin/runtime/businessmetrics/SmithyBusinessMetric : java/lang/Enum, aws/smithy/kotlin/runtime/businessmetrics/BusinessMetric {
@@ -133,6 +148,10 @@ public final class aws/smithy/kotlin/runtime/businessmetrics/SmithyBusinessMetri
 	public static final field FLEXIBLE_CHECKSUMS_RES_WHEN_REQUIRED Laws/smithy/kotlin/runtime/businessmetrics/SmithyBusinessMetric;
 	public static final field FLEXIBLE_CHECKSUMS_RES_WHEN_SUPPORTED Laws/smithy/kotlin/runtime/businessmetrics/SmithyBusinessMetric;
 	public static final field GZIP_REQUEST_COMPRESSION Laws/smithy/kotlin/runtime/businessmetrics/SmithyBusinessMetric;
+	public static final field OBSERVABILITY_METRICS Laws/smithy/kotlin/runtime/businessmetrics/SmithyBusinessMetric;
+	public static final field OBSERVABILITY_OTEL_METRICS Laws/smithy/kotlin/runtime/businessmetrics/SmithyBusinessMetric;
+	public static final field OBSERVABILITY_OTEL_TRACING Laws/smithy/kotlin/runtime/businessmetrics/SmithyBusinessMetric;
+	public static final field OBSERVABILITY_TRACING Laws/smithy/kotlin/runtime/businessmetrics/SmithyBusinessMetric;
 	public static final field PAGINATOR Laws/smithy/kotlin/runtime/businessmetrics/SmithyBusinessMetric;
 	public static final field PROTOCOL_RPC_V2_CBOR Laws/smithy/kotlin/runtime/businessmetrics/SmithyBusinessMetric;
 	public static final field RESOLVED_ACCOUNT_ID Laws/smithy/kotlin/runtime/businessmetrics/SmithyBusinessMetric;
