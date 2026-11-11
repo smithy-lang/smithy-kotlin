@@ -410,6 +410,40 @@ class StructureGeneratorTest {
     }
 
     @Test
+    fun `it redacts sensitive unions and leaves variant redaction to other unions in toString`() {
+        val contents = generateStructure(
+            """
+                @sensitive string SecretString
+
+                @sensitive
+                union SecretUnion { a: String }
+
+                // not sensitive itself, so its variants redact themselves
+                union MixedUnion {
+                    secret: SecretString
+                    plain: String
+                }
+
+                structure MyStruct {
+                    secretUnion: SecretUnion
+                    mixedUnion: MixedUnion
+                }
+            """,
+        )
+
+        val expected = """
+            override fun toString(): kotlin.String = buildString {
+                append("MyStruct(")
+                append("mixedUnion=${'$'}mixedUnion,")
+                append("secretUnion=*** Sensitive Data Redacted ***")
+                append(")")
+            }
+        """.formatForTest()
+
+        contents.shouldContainOnlyOnceWithDiff(expected)
+    }
+
+    @Test
     fun `it handles required query params in initializers`() {
         val model = """
             @http(method: "POST", uri: "/foo")
