@@ -8,9 +8,11 @@ import aws.smithy.kotlin.codegen.core.KotlinWriter
 import aws.smithy.kotlin.codegen.core.unionVariantName
 import aws.smithy.kotlin.codegen.core.withBlock
 import aws.smithy.kotlin.codegen.lang.KotlinTypes
+import aws.smithy.kotlin.codegen.model.SENSITIVE_DATA_REDACTED
 import aws.smithy.kotlin.codegen.model.filterEventStreamErrors
 import aws.smithy.kotlin.codegen.model.hasTrait
 import aws.smithy.kotlin.codegen.model.isNullable
+import aws.smithy.kotlin.codegen.model.isSensitive
 import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.codegen.core.SymbolProvider
 import software.amazon.smithy.model.Model
@@ -54,14 +56,14 @@ class UnionGenerator(
                     renderEquals(model, listOf(it), variantName, this)
                 }
 
-                renderToString()
+                renderToString(it)
             }
             writer.write("")
         }
 
         // generate the unknown which will always be last
         writer.withBlock("public object SdkUnknown : #Q() {", "}", symbol) {
-            renderToString()
+            renderToString(variant = null)
         }
 
         members.sortedBy { it.memberName }.forEach {
@@ -178,13 +180,19 @@ class UnionGenerator(
         }
     }
 
-    private fun renderToString() {
-        if (shape.hasTrait<SensitiveTrait>()) {
-            writer.write(
-                """override fun toString(): #Q = "#T(*** Sensitive Data Redacted ***)"""",
+    private fun renderToString(variant: MemberShape?) {
+        when {
+            shape.hasTrait<SensitiveTrait>() -> writer.write(
+                "override fun toString(): #Q = #S",
                 KotlinTypes.String,
-                symbol,
+                "${symbol.name}($SENSITIVE_DATA_REDACTED)",
             )
-        } // else just use regular data class toString implementation
+            variant != null && variant.isSensitive(model) -> writer.write(
+                "override fun toString(): #Q = #S",
+                KotlinTypes.String,
+                "${variant.unionVariantName()}($SENSITIVE_DATA_REDACTED)",
+            )
+            // else just use regular data class toString implementation
+        }
     }
 }

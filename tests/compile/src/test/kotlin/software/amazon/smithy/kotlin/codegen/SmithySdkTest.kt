@@ -15,6 +15,7 @@ import java.net.URL
 import kotlin.test.Ignore
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
 /**
@@ -174,6 +175,131 @@ class SmithySdkTest {
         compileOutputStream.flush()
 
         assertEquals(KotlinCompilation.ExitCode.OK, compilationResult.exitCode, compileOutputStream.toString())
+    }
+
+    @Test
+    fun `it redacts sensitive unions and enums at runtime`() {
+        val model = """
+            namespace com.test
+
+            use aws.protocols#restJson1
+
+            @restJson1
+            service Example {
+                version: "1.0.0",
+                operations: [
+                    Foo,
+                ]
+            }
+
+            @http(method: "POST", uri: "/foo-no-input")
+            operation Foo {
+                output: FooResponse
+            }
+
+            structure FooResponse {
+                items: UnionList
+                single: Outer
+            }
+
+            structure StructWithSecret {
+                name: String
+                password: SecretString
+            }
+
+            list UnionList {
+                member: Outer
+            }
+
+            union Outer {
+                secret: SecretString,
+                secrets: SecretList,
+                plain: String,
+                inner: Inner,
+                color: Color,
+                hidden: Hidden,
+                struct: StructWithSecret
+            }
+
+            union Inner {
+                secret: SecretString
+            }
+
+            @sensitive
+            union Hidden {
+                secret: String
+            }
+
+            list SecretList {
+                member: SecretString
+            }
+
+            @sensitive
+            string SecretString
+
+            @sensitive
+            enum Color {
+                RED
+                BLUE
+            }
+        """.asSmithy()
+
+        val testSource = """
+            @file:JvmName("SensitiveRedaction")
+            package sensitive.test
+
+            import test.model.*
+
+            public fun render(): String = listOf(
+                FooResponse {
+                    items = listOf(
+                        Outer.Secret("hunter2"),
+                        Outer.Plain("visible"),
+                        Outer.Inner(Inner.Secret("hunter3")),
+                        Outer.Secrets(listOf("hunter4")),
+                        Outer.Color(Color.Red),
+                        Outer.Hidden(Hidden.Secret("hunter5")),
+                        Outer.Struct(StructWithSecret { name = "alice"; password = "hunter8" }),
+                    )
+                    single = Outer.Secret("hunter9")
+                },
+                Color.Red,
+                Color.SdkUnknown("hunter6"),
+                Hidden.Secret("hunter7"),
+                Hidden.SdkUnknown,
+            ).joinToString("\n")
+        """.trimIndent()
+
+        val compileOutputStream = ByteArrayOutputStream()
+        val compilationResult = compileSdkAndTest(model = model, testSource = testSource, outputSink = compileOutputStream, emitSourcesToTmp = Debug.emitSourcesToTemp)
+        compileOutputStream.flush()
+        assertEquals(KotlinCompilation.ExitCode.OK, compilationResult.exitCode, compileOutputStream.toString())
+
+        val rendered = compilationResult.classLoader
+            .loadClass("sensitive.test.SensitiveRedaction")
+            .getMethod("render")
+            .invoke(null) as String
+
+        assertFalse("hunter" in rendered, rendered)
+
+        val redacted = "*** Sensitive Data Redacted ***"
+        val expected = listOf(
+            "FooResponse(items=[" +
+                "Secret($redacted), " +
+                "Plain(value=visible), " +
+                "Inner(value=Secret($redacted)), " +
+                "Secrets($redacted), " +
+                "Color($redacted), " +
+                "Hidden($redacted), " +
+                "Struct(value=StructWithSecret(name=alice,password=$redacted))" +
+                "]," +
+                "single=Secret($redacted))",
+            "Color($redacted)",
+            "Color($redacted)",
+            "Hidden($redacted)",
+            "Hidden($redacted)",
+        ).joinToString("\n")
+        assertEquals(expected, rendered)
     }
 
     // https://github.com/smithy-lang/smithy-kotlin/issues/1125
