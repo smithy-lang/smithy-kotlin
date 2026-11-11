@@ -28,7 +28,7 @@ dependencies {
 tasks.test {
     useJUnitPlatform()
 
-    listOf("html", "gfm").forEach { format ->
+    listOf("html", "markdown").forEach { format ->
         val publicationTask = "dokkaGeneratePublication${format.replaceFirstChar(Char::titlecase)}"
         val outputDir = tasks.named<DokkaGeneratePublicationTask>(publicationTask).flatMap { it.outputDirectory }
 

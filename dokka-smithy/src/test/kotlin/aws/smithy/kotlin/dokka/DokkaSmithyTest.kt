@@ -37,8 +37,8 @@ class DokkaSmithyTest {
     }
 
     @Test
-    fun testGfmPublication() {
-        val testFile = File(outputDir("gfm"), "dokka-smithy/aws.smithy.kotlin.dokka/-smithy-dokka-plugin/index.md")
+    fun testMarkdownPublication() {
+        val testFile = File(outputDir("markdown"), "dokka-smithy/aws.smithy.kotlin.dokka/-smithy-dokka-plugin/index.md")
 
         assertTrue(
             testFile.exists(),
