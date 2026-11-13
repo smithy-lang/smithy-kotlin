@@ -55,4 +55,5 @@ configurations.matching { it.name.startsWith("dokka") }.configureEach {
 
 dependencies {
     dokkaPlugin(project(":dokka-smithy"))
+    dokkaHtmlPlugin(libs.aws.kotlin.repo.tools.dokka.lazy.load)
 }
