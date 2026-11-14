@@ -31,6 +31,7 @@ val enabledProtocols = listOf(
     ProtocolTest("aws-restxml-xmlns", "aws.protocoltests.restxml.xmlns#RestXmlWithNamespace"),
     ProtocolTest("aws-query", "aws.protocoltests.query#AwsQuery"),
     ProtocolTest("smithy-rpcv2-cbor", "smithy.protocoltests.rpcv2Cbor#RpcV2Protocol"),
+    ProtocolTest("smithy-rpcv2-cbor-corpus", "smithy.protocoltests.corpus#RpcV2CborCorpusTests"),
 
     // Custom hand written tests
     ProtocolTest("error-correction-json", "aws.protocoltests.errorcorrection#RequiredValueJson"),
@@ -43,6 +44,11 @@ smithyBuild {
             imports = listOf(file("model").absolutePath)
 
             transforms = listOf(
+                """
+                {
+                  "name": "flattenAndRemoveMixins"
+                }
+                """,
                 """
                 {
                   "name": "includeServices",

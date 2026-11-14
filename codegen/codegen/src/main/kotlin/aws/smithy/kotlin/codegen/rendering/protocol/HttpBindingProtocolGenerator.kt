@@ -296,6 +296,21 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                 // See: https://github.com/smithy-lang/smithy/pull/2972
                 "RestJsonDeserializesDenseSetMapAndSkipsNull",
                 "RpcV2CborDeserializesDenseSetMapAndSkipsNull",
+
+                // Event stream unions don't expose modeled error members as variants, so clients cannot send
+                // modeled error events
+                "ClientErrorInput",
+                "DuplexClientErrorInput",
+
+                // Clients correct missing required output members to defaults (error correction) rather than fail
+                "MissingRequiredInitialResponseOutput",
+                "DuplexMissingRequiredInitialResponseOutput",
+
+                // Request event streams are always SigV4-signed, which fails for services without SigV4 auth
+                "RpcV2CborEventStreamDuplex",
+                "RpcV2CborEventStreamInitialRequest",
+                "RpcV2CborEventStreamRequestMultipleEvents",
+                "RpcV2CborEventStreamRequestSendMessage",
             ),
         )
 

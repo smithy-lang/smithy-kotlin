@@ -1,0 +1,5 @@
+{
+    "id": "d262b9c6-04a5-49ec-adde-e75a5f9b83ee",
+    "type": "misc",
+    "description": "Generate protocol tests from Smithy's `eventStreamTests` trait and upgrade Smithy to 1.75.0"
+}

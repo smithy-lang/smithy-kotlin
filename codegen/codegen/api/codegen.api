@@ -2331,6 +2331,7 @@ public final class aws/smithy/kotlin/codegen/rendering/protocol/HttpProtocolClie
 public final class aws/smithy/kotlin/codegen/rendering/protocol/HttpProtocolTestGenerator {
 	public fun <init> (Laws/smithy/kotlin/codegen/rendering/protocol/ProtocolGenerator$GenerationContext;Laws/smithy/kotlin/codegen/rendering/protocol/HttpProtocolUnitTestRequestGenerator$Builder;Laws/smithy/kotlin/codegen/rendering/protocol/HttpProtocolUnitTestResponseGenerator$Builder;Laws/smithy/kotlin/codegen/rendering/protocol/HttpProtocolUnitTestErrorGenerator$Builder;Laws/smithy/kotlin/codegen/rendering/protocol/TestMemberDelta;)V
 	public synthetic fun <init> (Laws/smithy/kotlin/codegen/rendering/protocol/ProtocolGenerator$GenerationContext;Laws/smithy/kotlin/codegen/rendering/protocol/HttpProtocolUnitTestRequestGenerator$Builder;Laws/smithy/kotlin/codegen/rendering/protocol/HttpProtocolUnitTestResponseGenerator$Builder;Laws/smithy/kotlin/codegen/rendering/protocol/HttpProtocolUnitTestErrorGenerator$Builder;Laws/smithy/kotlin/codegen/rendering/protocol/TestMemberDelta;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun <init> (Laws/smithy/kotlin/codegen/rendering/protocol/ProtocolGenerator$GenerationContext;Laws/smithy/kotlin/codegen/rendering/protocol/HttpProtocolUnitTestRequestGenerator$Builder;Laws/smithy/kotlin/codegen/rendering/protocol/HttpProtocolUnitTestResponseGenerator$Builder;Laws/smithy/kotlin/codegen/rendering/protocol/HttpProtocolUnitTestErrorGenerator$Builder;Laws/smithy/kotlin/codegen/rendering/protocol/TestMemberDelta;Laws/smithy/kotlin/codegen/rendering/protocol/HttpProtocolUnitTestEventStreamGenerator$Builder;)V
 	public final fun generateProtocolTests ()V
 }
 
@@ -2347,6 +2348,47 @@ public class aws/smithy/kotlin/codegen/rendering/protocol/HttpProtocolUnitTestEr
 	public final fun error (Lsoftware/amazon/smithy/model/shapes/Shape;)Laws/smithy/kotlin/codegen/rendering/protocol/HttpProtocolUnitTestErrorGenerator$Builder;
 	public final fun getError ()Lsoftware/amazon/smithy/model/shapes/Shape;
 	public final fun setError (Lsoftware/amazon/smithy/model/shapes/Shape;)V
+}
+
+public class aws/smithy/kotlin/codegen/rendering/protocol/HttpProtocolUnitTestEventStreamGenerator {
+	protected fun <init> (Laws/smithy/kotlin/codegen/rendering/protocol/HttpProtocolUnitTestEventStreamGenerator$Builder;)V
+	protected fun defaultInitialResponse (Lsoftware/amazon/smithy/protocoltests/traits/eventstream/EventStreamTestCase;)Lsoftware/amazon/smithy/model/node/ObjectNode;
+	protected final fun getCtx ()Laws/smithy/kotlin/codegen/rendering/protocol/ProtocolGenerator$GenerationContext;
+	protected final fun getModel ()Lsoftware/amazon/smithy/model/Model;
+	protected final fun getOperation ()Lsoftware/amazon/smithy/model/shapes/OperationShape;
+	protected final fun getServiceShape ()Lsoftware/amazon/smithy/model/shapes/ServiceShape;
+	protected final fun getSymbolProvider ()Lsoftware/amazon/smithy/codegen/core/SymbolProvider;
+	protected final fun getTestCases ()Ljava/util/List;
+	protected final fun getWriter ()Laws/smithy/kotlin/codegen/core/KotlinWriter;
+	public fun renderConfigureServiceClient (Lsoftware/amazon/smithy/protocoltests/traits/eventstream/EventStreamTestCase;)V
+	protected fun renderTestBody (Lsoftware/amazon/smithy/protocoltests/traits/eventstream/EventStreamTestCase;)V
+	public final fun renderTestClass (Ljava/lang/String;)V
+}
+
+public class aws/smithy/kotlin/codegen/rendering/protocol/HttpProtocolUnitTestEventStreamGenerator$Builder {
+	public fun <init> ()V
+	public fun build ()Laws/smithy/kotlin/codegen/rendering/protocol/HttpProtocolUnitTestEventStreamGenerator;
+	public final fun ctx (Laws/smithy/kotlin/codegen/rendering/protocol/ProtocolGenerator$GenerationContext;)Laws/smithy/kotlin/codegen/rendering/protocol/HttpProtocolUnitTestEventStreamGenerator$Builder;
+	public final fun getCtx ()Laws/smithy/kotlin/codegen/rendering/protocol/ProtocolGenerator$GenerationContext;
+	public final fun getModel ()Lsoftware/amazon/smithy/model/Model;
+	public final fun getOperation ()Lsoftware/amazon/smithy/model/shapes/OperationShape;
+	public final fun getService ()Lsoftware/amazon/smithy/model/shapes/ServiceShape;
+	public final fun getSymbolProvider ()Lsoftware/amazon/smithy/codegen/core/SymbolProvider;
+	public final fun getTestCases ()Ljava/util/List;
+	public final fun getWriter ()Laws/smithy/kotlin/codegen/core/KotlinWriter;
+	public final fun model (Lsoftware/amazon/smithy/model/Model;)Laws/smithy/kotlin/codegen/rendering/protocol/HttpProtocolUnitTestEventStreamGenerator$Builder;
+	public final fun operation (Lsoftware/amazon/smithy/model/shapes/OperationShape;)Laws/smithy/kotlin/codegen/rendering/protocol/HttpProtocolUnitTestEventStreamGenerator$Builder;
+	public final fun service (Lsoftware/amazon/smithy/model/shapes/ServiceShape;)Laws/smithy/kotlin/codegen/rendering/protocol/HttpProtocolUnitTestEventStreamGenerator$Builder;
+	public final fun setCtx (Laws/smithy/kotlin/codegen/rendering/protocol/ProtocolGenerator$GenerationContext;)V
+	public final fun setModel (Lsoftware/amazon/smithy/model/Model;)V
+	public final fun setOperation (Lsoftware/amazon/smithy/model/shapes/OperationShape;)V
+	public final fun setService (Lsoftware/amazon/smithy/model/shapes/ServiceShape;)V
+	public final fun setSymbolProvider (Lsoftware/amazon/smithy/codegen/core/SymbolProvider;)V
+	public final fun setTestCases (Ljava/util/List;)V
+	public final fun setWriter (Laws/smithy/kotlin/codegen/core/KotlinWriter;)V
+	public final fun symbolProvider (Lsoftware/amazon/smithy/codegen/core/SymbolProvider;)Laws/smithy/kotlin/codegen/rendering/protocol/HttpProtocolUnitTestEventStreamGenerator$Builder;
+	public final fun testCases (Ljava/util/List;)Laws/smithy/kotlin/codegen/rendering/protocol/HttpProtocolUnitTestEventStreamGenerator$Builder;
+	public final fun writer (Laws/smithy/kotlin/codegen/core/KotlinWriter;)Laws/smithy/kotlin/codegen/rendering/protocol/HttpProtocolUnitTestEventStreamGenerator$Builder;
 }
 
 public abstract class aws/smithy/kotlin/codegen/rendering/protocol/HttpProtocolUnitTestGenerator {
