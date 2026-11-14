@@ -13,6 +13,7 @@ import aws.smithy.kotlin.runtime.auth.awssigning.internal.setAwsChunkedHeaders
 import aws.smithy.kotlin.runtime.auth.awssigning.internal.useAwsChunkedEncoding
 import aws.smithy.kotlin.runtime.client.LogMode
 import aws.smithy.kotlin.runtime.client.SdkClientOption
+import aws.smithy.kotlin.runtime.collections.MutableAttributes
 import aws.smithy.kotlin.runtime.collections.get
 import aws.smithy.kotlin.runtime.http.HttpBody
 import aws.smithy.kotlin.runtime.http.operation.HttpOperationContext
@@ -187,6 +188,10 @@ public class AwsHttpSigner(private val config: Config) : HttpSigner {
         if (signingConfig.useAwsChunkedEncoding) {
             request.setAwsChunkedHeaders()
         }
+
+        // Publish the signer so that event stream messages are signed by the same implementation as the request.
+        // The context is the operation's (mutable) execution context.
+        (attributes as? MutableAttributes)?.set(AwsSigningAttributes.Signer, checkNotNull(config.signer))
 
         val signingResult = checkNotNull(config.signer).sign(request.build(), signingConfig)
         val signedRequest = signingResult.output

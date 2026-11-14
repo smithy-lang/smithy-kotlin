@@ -1,0 +1,5 @@
+{
+    "id": "5c1e7a42-9b3d-4f60-8a1e-2d7c4b9e6f13",
+    "type": "bugfix",
+    "description": "Sign event stream messages with the auth scheme's signer, and send them unsigned for operations without SigV4 auth"
+}

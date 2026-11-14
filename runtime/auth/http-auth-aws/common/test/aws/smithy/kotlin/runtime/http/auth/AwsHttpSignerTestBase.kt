@@ -33,7 +33,7 @@ import kotlinx.coroutines.test.TestResult
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
-
+import kotlin.test.assertSame
 class DefaultAwsHttpSignerTest : AwsHttpSignerTestBase(DefaultAwsSigner)
 
 /**
@@ -106,6 +106,13 @@ public abstract class AwsHttpSignerTestBase(
         val signed = getSignedRequest(op)
         assertEquals(expectedDate, signed.headers["X-Amz-Date"])
         assertEquals(expectedSig, signed.headers["Authorization"])
+    }
+
+    @Test
+    public fun testPublishesSignerForEventStreamSigning(): TestResult = runTest {
+        val op = buildOperation()
+        getSignedRequest(op)
+        assertSame(signer, op.context[AwsSigningAttributes.Signer])
     }
 
     @Test

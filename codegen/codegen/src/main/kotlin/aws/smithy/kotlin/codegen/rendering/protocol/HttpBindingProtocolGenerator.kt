@@ -306,11 +306,10 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                 "MissingRequiredInitialResponseOutput",
                 "DuplexMissingRequiredInitialResponseOutput",
 
-                // Request event streams are always SigV4-signed, which fails for services without SigV4 auth
-                "RpcV2CborEventStreamDuplex",
-                "RpcV2CborEventStreamInitialRequest",
-                "RpcV2CborEventStreamRequestMultipleEvents",
+                // These expect an initial-request event for operations that model no initial request, which the
+                // streaming spec forbids clients from sending (as the test documentation acknowledges)
                 "RpcV2CborEventStreamRequestSendMessage",
+                "RpcV2CborEventStreamRequestMultipleEvents",
             ),
         )
 

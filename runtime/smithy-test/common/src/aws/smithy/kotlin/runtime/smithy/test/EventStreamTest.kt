@@ -19,6 +19,7 @@ import aws.smithy.kotlin.runtime.http.response.HttpResponse
 import aws.smithy.kotlin.runtime.httptest.TestEngine
 import aws.smithy.kotlin.runtime.io.SdkBuffer
 import aws.smithy.kotlin.runtime.io.SdkByteReadChannel
+import aws.smithy.kotlin.runtime.text.encoding.decodeBase64Bytes
 import aws.smithy.kotlin.runtime.time.Instant
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.test.TestResult
@@ -168,10 +169,14 @@ private fun assertEventMessage(idx: Int, expected: ExpectedEventMessage, actual:
     }
 
     val expectedBody = expected.body ?: return
-    if (expected.bodyMediaType?.isJsonMediaType == true) {
-        assertJsonStringsEqual(expectedBody, actual.payload.decodeToString())
-    } else {
-        assertContentEquals(expectedBody.encodeToByteArray(), actual.payload, "event[$idx]: payload not equal")
+    when {
+        expected.bodyMediaType?.isJsonMediaType == true ->
+            assertJsonStringsEqual(expectedBody, actual.payload.decodeToString())
+        // CBOR test bodies are base64-encoded
+        expected.bodyMediaType == "application/cbor" ->
+            assertCborEqual(expectedBody.decodeBase64Bytes(), actual.payload, "event[$idx]: CBOR payload not equal")
+        else ->
+            assertContentEquals(expectedBody.encodeToByteArray(), actual.payload, "event[$idx]: payload not equal")
     }
 }
 
