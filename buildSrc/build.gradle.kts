@@ -8,11 +8,6 @@ plugins {
 }
 
 repositories {
-    mavenLocal {
-        content {
-            includeGroupByRegex("""aws\.sdk\.kotlin.*""")
-        }
-    }
     mavenCentral()
     gradlePluginPortal()
     maven {
