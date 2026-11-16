@@ -11,7 +11,7 @@ import aws.smithy.kotlin.runtime.http.DeferredHeaders
 import aws.smithy.kotlin.runtime.io.SdkBuffer
 import aws.smithy.kotlin.runtime.io.SdkSource
 import aws.smithy.kotlin.runtime.io.buffer
-import kotlinx.coroutines.runBlocking
+import aws.smithy.kotlin.runtime.io.internal.runBlockingBridge
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
 
@@ -48,7 +48,7 @@ public class AwsChunkedSource(
     override fun read(sink: SdkBuffer, limit: Long): Long {
         require(limit >= 0L) { "Invalid limit ($limit) must be >= 0L" }
         // COROUTINE SAFETY: runBlocking is allowed here because SdkSource is a synchronous blocking interface
-        val isChunkValid = runBlocking(coroutineContext) {
+        val isChunkValid = runBlockingBridge(coroutineContext) {
             chunkReader.ensureValidChunk()
         }
         if (!isChunkValid) return -1L
