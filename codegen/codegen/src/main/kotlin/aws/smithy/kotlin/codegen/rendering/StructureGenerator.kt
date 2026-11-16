@@ -27,8 +27,6 @@ import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.shapes.*
 import software.amazon.smithy.model.traits.*
 
-private const val REDACTED_VALUE = "*** Sensitive Data Redacted ***"
-
 /**
  * Renders Smithy structure shapes
  */
@@ -125,12 +123,12 @@ class StructureGenerator(
             write("append(\"#T(\")", symbol)
 
             when {
-                shape.isSensitive(model) -> write("append(#S)", REDACTED_VALUE)
+                shape.isSensitive(model) -> write("append(#S)", SENSITIVE_DATA_REDACTED)
                 else -> {
                     sortedMembers.forEachIndexed { index, memberShape ->
                         val (memberName, _) = memberNameSymbolIndex[memberShape]!!
                         val isSensitive = memberShape.isSensitive(model)
-                        val value = if (isSensitive) REDACTED_VALUE else "\$$memberName"
+                        val value = if (isSensitive) SENSITIVE_DATA_REDACTED else "\$$memberName"
                         val separator = if (index < sortedMembers.size - 1) "," else ""
 
                         write("append(\"#L=#L#L\")", memberShape.defaultName(), value, separator)
@@ -423,12 +421,4 @@ class StructureGenerator(
 
         if (hasConflictWithBaseClass) throw CodegenException("`sdkErrorMetadata` conflicts with property of same name inherited from SdkBaseException. Apply a rename customization/projection to fix.")
     }
-}
-
-private fun Shape.isSensitive(model: Model): Boolean = when {
-    this is MemberShape -> model.expectShape(target).isSensitive(model)
-    hasTrait<SensitiveTrait>() -> true
-    this is ListShape -> member.isSensitive(model)
-    this is MapShape -> key.isSensitive(model) || value.isSensitive(model)
-    else -> false
 }
