@@ -6,13 +6,15 @@ package aws.smithy.kotlin.runtime.util
 
 import kotlinx.cinterop.*
 import kotlinx.coroutines.test.runTest
+import kotlinx.io.files.Path
+import kotlinx.io.files.SystemTemporaryDirectory
 import platform.posix.*
 import kotlin.test.*
 
 @OptIn(ExperimentalForeignApi::class)
 class WritePermissionsNativeTest {
 
-    private fun tempPath(): String = "/tmp/testWritePerms-${Uuid.random()}.bin"
+    private fun tempPath(): String = Path(SystemTemporaryDirectory, "testWritePerms-${Uuid.random()}.bin").toString()
 
     @OptIn(UnsafeNumber::class)
     private fun filePermissions(path: String): Int = memScoped {
