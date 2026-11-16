@@ -658,6 +658,7 @@ public final class aws/smithy/kotlin/codegen/core/RuntimeTypes$Core$BusinessMetr
 	public final fun getEmitBusinessMetric ()Lsoftware/amazon/smithy/codegen/core/Symbol;
 	public final fun getServiceEndpointOverride ()Lsoftware/amazon/smithy/codegen/core/Symbol;
 	public final fun getSmithyBusinessMetric ()Lsoftware/amazon/smithy/codegen/core/Symbol;
+	public final fun getWithScopedBusinessMetrics ()Lsoftware/amazon/smithy/codegen/core/Symbol;
 }
 
 public final class aws/smithy/kotlin/codegen/core/RuntimeTypes$Core$Collections : aws/smithy/kotlin/codegen/core/RuntimeTypePackage {
