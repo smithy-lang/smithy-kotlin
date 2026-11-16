@@ -9,6 +9,7 @@ import aws.smithy.kotlin.runtime.awsprotocol.eventstream.HeaderValue
 import aws.smithy.kotlin.runtime.awsprotocol.eventstream.Message
 import aws.smithy.kotlin.runtime.awsprotocol.eventstream.decodeFrames
 import aws.smithy.kotlin.runtime.http.Headers
+import aws.smithy.kotlin.runtime.http.HeadersBuilder
 import aws.smithy.kotlin.runtime.http.HttpBody
 import aws.smithy.kotlin.runtime.http.HttpCall
 import aws.smithy.kotlin.runtime.http.HttpStatusCode
@@ -39,6 +40,9 @@ private const val CHUNK_SIGNATURE_HEADER = ":chunk-signature"
  * envelopes), and responds with the configured initial response and response events. Request assertions run after
  * the [EventStreamTestBuilder.operation] block completes.
  *
+ * The request stream must complete without waiting on response events because the request body is read in full
+ * before the response is returned.
+ *
  * # Example
  * ```
  * fun fooTest() = eventStreamTest {
@@ -64,12 +68,19 @@ public fun eventStreamTest(block: EventStreamTestBuilder.() -> Unit): TestResult
     val mockEngine = TestEngine { _, request ->
         // Consuming the body drives the event stream serializer, so serialization failures surface from the
         // operation call
+        val contentLength = request.body.contentLength
         val body = request.body.readAll()
         actualRequestBody = body
+
+        // engines derive Content-Length from the body, serializers do not set it
+        val actualHeaders = HeadersBuilder().apply {
+            appendAll(request.headers)
+            if (contentLength != null && contentLength > 0) set("Content-Length", contentLength.toString())
+        }.build()
         actualRequest = HttpRequest(
             method = request.method,
             url = request.url,
-            headers = request.headers,
+            headers = actualHeaders,
             body = body?.let { HttpBody.fromBytes(it) } ?: HttpBody.Empty,
         )
 
@@ -83,7 +94,8 @@ public fun eventStreamTest(block: EventStreamTestBuilder.() -> Unit): TestResult
             testBuilder.responseEvents.forEach(buffer::write)
             HttpBody.fromBytes(buffer.readByteArray())
         } else {
-            initialResponse.body?.let { HttpBody.fromBytes(it.encodeToByteArray()) } ?: HttpBody.Empty
+            // a present but empty body is an event stream with no events, as opposed to no response body
+            HttpBody.fromBytes(initialResponse.body?.encodeToByteArray() ?: ByteArray(0))
         }
 
         val resp = HttpResponse(initialResponse.statusCode, headers, responseBody)
@@ -95,12 +107,12 @@ public fun eventStreamTest(block: EventStreamTestBuilder.() -> Unit): TestResult
 
     testBuilder.expectedInitialRequest?.let { expected ->
         val actual = assertNotNull(actualRequest, "expected an initial request but none was sent")
-        assertInitialRequest(expected.build(), actual)
+        assertRequest(expected.build(), actual)
     }
 
     if (testBuilder.expectedRequestEvents.isNotEmpty()) {
         val body = assertNotNull(actualRequestBody, "expected request events but no request body was sent")
-        val actualEvents = decodeRequestEvents(body)
+        val actualEvents = decodeRequestEvents(body, testBuilder.expectSigned)
         assertEquals(
             testBuilder.expectedRequestEvents.size,
             actualEvents.size,
@@ -113,48 +125,48 @@ public fun eventStreamTest(block: EventStreamTestBuilder.() -> Unit): TestResult
 }
 
 /**
- * Decode request event stream frames, unwrapping SigV4 signing envelopes and dropping the empty end frame.
+ * Decode request event stream frames.
+ *
+ * When [expectSigned] is true every frame must be a SigV4 signing envelope wrapping exactly one message, followed by
+ * a single empty signed end frame as the last frame. When false no frame may carry a signature. When null, signed
+ * and unsigned frames are both accepted and the empty end frame is dropped wherever it appears.
  */
-private suspend fun decodeRequestEvents(body: ByteArray): List<Message> = decodeFrames(SdkByteReadChannel(body)).toList().mapNotNull { frame ->
-    when {
-        frame.headers.none { it.name == CHUNK_SIGNATURE_HEADER } -> frame
+private suspend fun decodeRequestEvents(body: ByteArray, expectSigned: Boolean?): List<Message> {
+    val frames = decodeFrames(SdkByteReadChannel(body)).toList()
+    val isEnvelope = { frame: Message -> frame.headers.any { it.name == CHUNK_SIGNATURE_HEADER } }
 
-        // the signed end frame has an empty payload
-        frame.payload.isEmpty() -> null
-
-        else -> Message.decode(SdkBuffer().apply { write(frame.payload) })
+    when (expectSigned) {
+        true -> {
+            frames.forEachIndexed { idx, frame ->
+                assertTrue(isEnvelope(frame), "frame[$idx]: expected a signed frame but `$CHUNK_SIGNATURE_HEADER` is missing")
+            }
+            assertTrue(frames.isNotEmpty() && frames.last().payload.isEmpty(), "expected the last frame to be the empty signed end frame")
+            assertEquals(1, frames.count { it.payload.isEmpty() }, "expected exactly one empty signed end frame")
+        }
+        false -> frames.forEachIndexed { idx, frame ->
+            assertFalse(isEnvelope(frame), "frame[$idx]: expected an unsigned frame but found `$CHUNK_SIGNATURE_HEADER`")
+        }
+        null -> Unit
     }
-}
 
-private suspend fun assertInitialRequest(expected: ExpectedHttpRequest, actual: HttpRequest) {
-    assertEquals(expected.method, actual.method, "expected method: `${expected.method}`; got: `${actual.method}`")
-    assertEquals(expected.uri, actual.url.path.toString(), "expected path: `${expected.uri}`; got: `${actual.url.path}`")
+    return frames.mapNotNull { frame ->
+        when {
+            !isEnvelope(frame) -> frame
 
-    val actualParams = actual.url.parameters.encodedParameters
-    expected.queryParams.forEach { (key, value) ->
-        val actualValues = actualParams[key]
-        assertNotNull(actualValues, "expected query parameter `$key`; no values found")
-        assertTrue(value in actualValues, "query parameter `$key` does not contain expected value `$value`")
+            // the signed end frame has an empty payload
+            frame.payload.isEmpty() -> null
+
+            else -> {
+                val inner = SdkBuffer().apply { write(frame.payload) }
+                Message.decode(inner).also { assertTrue(inner.exhausted(), "signed frame has trailing bytes after the wrapped message") }
+            }
+        }
     }
-    expected.forbiddenQueryParams.forEach { assertFalse(it in actualParams, "forbidden query parameter found: `$it`") }
-    expected.requiredQueryParams.forEach { assertTrue(it in actualParams, "expected required query parameter not found: `$it`") }
-
-    expected.headers.forEach { (name, value) ->
-        val values = actual.headers.getAll(name)?.joinToString(separator = ", ")
-        assertNotNull(values, "expected header `$name` has no actual values")
-        assertEquals(value, values, "expected header name value pair not equal: `$name:$value`; found: `$name:$values`")
-    }
-    expected.forbiddenHeaders.forEach { assertFalse(actual.headers.contains(it), "forbidden header found: `$it`") }
-    expected.requiredHeaders.forEach { assertTrue(actual.headers.contains(it), "expected required header not found: `$it`") }
-
-    val expectedBody = expected.body?.let {
-        assertNotNull(expected.bodyAssert, "body assertion function is required if an expected body is defined")
-        HttpBody.fromBytes(it.encodeToByteArray())
-    }
-    expected.bodyAssert?.invoke(expectedBody, actual.body)
 }
 
 private fun assertEventMessage(idx: Int, expected: ExpectedEventMessage, actual: Message) {
+    val actualHeaderNames = actual.headers.map { it.name }
+    assertEquals(actualHeaderNames.distinct(), actualHeaderNames, "event[$idx]: duplicate header names: $actualHeaderNames")
     val actualHeaders = actual.headers.associate { it.name to it.value }
 
     expected.headers.forEach { (name, value) ->
@@ -172,8 +184,8 @@ private fun assertEventMessage(idx: Int, expected: ExpectedEventMessage, actual:
     when {
         expected.bodyMediaType?.isJsonMediaType == true ->
             assertJsonStringsEqual(expectedBody, actual.payload.decodeToString())
-        // CBOR test bodies are base64-encoded
-        expected.bodyMediaType == "application/cbor" ->
+        // binary test bodies are base64-encoded
+        expected.bodyMediaType?.isBinaryMediaType == true ->
             assertCborEqual(expectedBody.decodeBase64Bytes(), actual.payload, "event[$idx]: CBOR payload not equal")
         else ->
             assertContentEquals(expectedBody.encodeToByteArray(), actual.payload, "event[$idx]: payload not equal")
@@ -181,22 +193,22 @@ private fun assertEventMessage(idx: Int, expected: ExpectedEventMessage, actual:
 }
 
 private val String.isJsonMediaType: Boolean
-    get() = this == "application/json" || endsWith("+json")
+    get() = lowercase().let { it == "application/json" || it.endsWith("+json") }
 
 /**
  * An event stream message the client is expected to send
  */
-public data class ExpectedEventMessage(
+internal data class ExpectedEventMessage(
     // header names AND values that must appear
-    public val headers: Map<String, HeaderValue> = mapOf(),
+    val headers: Map<String, HeaderValue> = mapOf(),
     // header names that must not appear
-    public val forbiddenHeaders: List<String> = listOf(),
+    val forbiddenHeaders: List<String> = listOf(),
     // header names that must appear but no assertion on values
-    public val requiredHeaders: List<String> = listOf(),
+    val requiredHeaders: List<String> = listOf(),
     // if no body is defined no assertions are made about it
-    public val body: String? = null,
+    val body: String? = null,
     // used to pick the body comparison (e.g. JSON vs exact bytes)
-    public val bodyMediaType: String? = null,
+    val bodyMediaType: String? = null,
 )
 
 public class ExpectedEventMessageBuilder {
@@ -206,7 +218,7 @@ public class ExpectedEventMessageBuilder {
     public var body: String? = null
     public var bodyMediaType: String? = null
 
-    public fun build(): ExpectedEventMessage = ExpectedEventMessage(headers, forbiddenHeaders, requiredHeaders, body, bodyMediaType)
+    internal fun build(): ExpectedEventMessage = ExpectedEventMessage(headers, forbiddenHeaders, requiredHeaders, body, bodyMediaType)
 }
 
 /**
@@ -230,6 +242,7 @@ public class EventStreamTestBuilder {
     internal var runOperation: suspend (mockEngine: HttpClientEngine) -> Unit = {}
     internal var expectedInitialRequest: ExpectedHttpRequestBuilder? = null
     internal val expectedRequestEvents = mutableListOf<ExpectedEventMessage>()
+    internal var expectSigned: Boolean? = null
     internal val initialResponse = InitialHttpResponseBuilder()
     internal val responseEvents = mutableListOf<ByteArray>()
 
@@ -245,6 +258,14 @@ public class EventStreamTestBuilder {
      */
     public fun expectedRequestEvent(block: ExpectedEventMessageBuilder.() -> Unit) {
         expectedRequestEvents.add(ExpectedEventMessageBuilder().apply(block).build())
+    }
+
+    /**
+     * Require the request events to be SigV4 signed ([signed] true) or unsigned ([signed] false). Without this call
+     * both are accepted.
+     */
+    public fun expectSignedRequestEvents(signed: Boolean) {
+        expectSigned = signed
     }
 
     /**

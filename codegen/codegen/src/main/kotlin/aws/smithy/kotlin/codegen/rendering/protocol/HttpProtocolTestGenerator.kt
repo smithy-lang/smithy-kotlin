@@ -45,6 +45,9 @@ class HttpProtocolTestGenerator(
 ) {
     private var eventStreamTestBuilder = HttpProtocolUnitTestEventStreamGenerator.Builder()
 
+    /**
+     * Construct a generator that renders event stream protocol tests with a customized [eventStreamTestBuilder].
+     */
     constructor(
         ctx: ProtocolGenerator.GenerationContext,
         requestTestBuilder: HttpProtocolUnitTestRequestGenerator.Builder,
@@ -55,6 +58,7 @@ class HttpProtocolTestGenerator(
     ) : this(ctx, requestTestBuilder, responseTestBuilder, errorTestBuilder, testDelta) {
         this.eventStreamTestBuilder = eventStreamTestBuilder
     }
+
     private val benchmarkGeneratorFactory: SerdeBenchmarkGeneratorFactory? =
         ctx.integrations.filterIsInstance<SerdeBenchmarkGeneratorFactory>().firstOrNull()
     private val logger = Logger.getLogger(javaClass.name)

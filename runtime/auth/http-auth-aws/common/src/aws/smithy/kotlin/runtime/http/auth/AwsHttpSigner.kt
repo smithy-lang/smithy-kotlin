@@ -189,11 +189,15 @@ public class AwsHttpSigner(private val config: Config) : HttpSigner {
             request.setAwsChunkedHeaders()
         }
 
-        // Publish the signer so that event stream messages are signed by the same implementation as the request.
-        // The context is the operation's (mutable) execution context.
-        (attributes as? MutableAttributes)?.set(AwsSigningAttributes.Signer, checkNotNull(config.signer))
+        val signer = checkNotNull(config.signer)
 
-        val signingResult = checkNotNull(config.signer).sign(request.build(), signingConfig)
+        // Event stream requests carry a RequestSignature deferred. Their messages are signed later, from the
+        // operation's execution context, so publish this signer for that to use.
+        if (attributes.contains(AwsSigningAttributes.RequestSignature)) {
+            (attributes as MutableAttributes)[AwsSigningAttributes.Signer] = signer
+        }
+
+        val signingResult = signer.sign(request.build(), signingConfig)
         val signedRequest = signingResult.output
 
         // Add the signature to the request context
@@ -203,7 +207,7 @@ public class AwsHttpSigner(private val config: Config) : HttpSigner {
 
         if (signingConfig.useAwsChunkedEncoding) {
             request.setAwsChunkedBody(
-                checkNotNull(config.signer),
+                signer,
                 signingConfig,
                 signingResult.signature,
                 request.trailingHeaders.build(),

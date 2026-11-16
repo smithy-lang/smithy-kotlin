@@ -217,13 +217,13 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
      */
     open fun getErrorCode(ctx: ProtocolGenerator.GenerationContext, errShapeId: ShapeId): String = errShapeId.name
 
-    // FIXME - probably make abstract and let individual protocols throw if they don't support event stream bindings
-
     /**
-     * Whether event stream request serializers send an `initial-request` event for RPC-bound protocols even when the
-     * operation input has no members besides the event stream.
+     * Whether event stream request serializers send an `initial-request` message for RPC-bound protocols even when
+     * the operation input has no members besides the event stream.
      */
-    protected open val alwaysSendEventStreamInitialRequest: Boolean = false
+    protected open val alwaysSendInitialRequestMessage: Boolean = false
+
+    // FIXME - probably make abstract and let individual protocols throw if they don't support event stream bindings
 
     /**
      * ```
@@ -236,7 +236,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
     open fun eventStreamRequestHandler(ctx: ProtocolGenerator.GenerationContext, op: OperationShape): Symbol {
         val resolver = getProtocolHttpBindingResolver(ctx.model, ctx.service)
         val contentType = resolver.determineRequestContentType(op) ?: error("event streams must set a content-type")
-        val eventStreamSerializerGenerator = EventStreamSerializerGenerator(structuredDataSerializer(ctx), contentType, alwaysSendEventStreamInitialRequest)
+        val eventStreamSerializerGenerator = EventStreamSerializerGenerator(structuredDataSerializer(ctx), contentType, alwaysSendInitialRequestMessage)
         return eventStreamSerializerGenerator.requestHandler(ctx, op)
     }
 

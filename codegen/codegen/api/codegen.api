@@ -897,11 +897,13 @@ public final class aws/smithy/kotlin/codegen/core/RuntimeTypes$KotlinxCoroutines
 
 public final class aws/smithy/kotlin/codegen/core/RuntimeTypes$KotlinxCoroutines$Flow {
 	public static final field INSTANCE Laws/smithy/kotlin/codegen/core/RuntimeTypes$KotlinxCoroutines$Flow;
+	public final fun getEmptyFlow ()Lsoftware/amazon/smithy/codegen/core/Symbol;
 	public final fun getFlow ()Lsoftware/amazon/smithy/codegen/core/Symbol;
 	public final fun getFlowOf ()Lsoftware/amazon/smithy/codegen/core/Symbol;
 	public final fun getMap ()Lsoftware/amazon/smithy/codegen/core/Symbol;
 	public final fun getMerge ()Lsoftware/amazon/smithy/codegen/core/Symbol;
 	public final fun getSingle ()Lsoftware/amazon/smithy/codegen/core/Symbol;
+	public final fun getSingleOrNull ()Lsoftware/amazon/smithy/codegen/core/Symbol;
 	public final fun getTake ()Lsoftware/amazon/smithy/codegen/core/Symbol;
 }
 
@@ -2222,7 +2224,7 @@ public abstract class aws/smithy/kotlin/codegen/rendering/protocol/HttpBindingPr
 	public fun eventStreamResponseHandler (Laws/smithy/kotlin/codegen/rendering/protocol/ProtocolGenerator$GenerationContext;Lsoftware/amazon/smithy/model/shapes/OperationShape;)Lsoftware/amazon/smithy/codegen/core/Symbol;
 	public fun generateProtocolClient (Laws/smithy/kotlin/codegen/rendering/protocol/ProtocolGenerator$GenerationContext;)V
 	public fun generateProtocolUnitTests (Laws/smithy/kotlin/codegen/rendering/protocol/ProtocolGenerator$GenerationContext;)V
-	protected fun getAlwaysSendEventStreamInitialRequest ()Z
+	protected fun getAlwaysSendInitialRequestMessage ()Z
 	public fun getApplicationProtocol ()Laws/smithy/kotlin/codegen/rendering/protocol/ApplicationProtocol;
 	protected fun getDefaultHttpMiddleware (Laws/smithy/kotlin/codegen/rendering/protocol/ProtocolGenerator$GenerationContext;)Ljava/util/List;
 	public abstract fun getDefaultTimestampFormat ()Lsoftware/amazon/smithy/model/traits/TimestampFormatTrait$Format;

@@ -17,10 +17,12 @@ import aws.smithy.kotlin.runtime.http.request.url
 import aws.smithy.kotlin.runtime.io.SdkBuffer
 import aws.smithy.kotlin.runtime.io.SdkByteReadChannel
 import aws.smithy.kotlin.runtime.operation.ExecutionContext
+import aws.smithy.kotlin.runtime.text.encoding.encodeBase64
 import kotlinx.coroutines.flow.toList
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
+import kotlin.test.assertNotNull
 
 class EventStreamTestBuilderTest {
     private fun Message.encodeToByteArray(): ByteArray = SdkBuffer().also { encode(it) }.readByteArray()
@@ -129,6 +131,187 @@ class EventStreamTestBuilderTest {
             val call = mockEngine.roundTrip(ExecutionContext(), requestWithBody(ByteArray(0)))
             assertEquals(HttpStatusCode.InternalServerError, call.response.status)
             assertEquals("service unavailable", call.response.body.readAll()?.decodeToString())
+        }
+    }
+
+    // runs the harness against a request body and asserts the harness itself rejects the expectations
+    private fun assertRejects(
+        requestBody: ByteArray,
+        expectations: EventStreamTestBuilder.() -> Unit,
+    ) {
+        assertFailsWith<AssertionError> {
+            eventStreamTest {
+                expectations()
+                operation { mockEngine ->
+                    mockEngine.roundTrip(ExecutionContext(), requestWithBody(requestBody))
+                }
+            }
+        }
+    }
+
+    private val signedFooStream get() = signed(fooEvent.encodeToByteArray()) + signed(ByteArray(0))
+
+    @Test
+    fun itRejectsFewerRequestEventsThanExpected() = assertRejects(ByteArray(0)) {
+        expectedRequestEvent { headers = mapOf(":event-type" to HeaderValue.String("foo")) }
+    }
+
+    @Test
+    fun itRejectsMoreRequestEventsThanExpected() = assertRejects(fooEvent.encodeToByteArray() + fooEvent.encodeToByteArray()) {
+        expectedRequestEvent { headers = mapOf(":event-type" to HeaderValue.String("foo")) }
+    }
+
+    @Test
+    fun itRejectsRequestEventsInTheWrongOrder() {
+        val barEvent = buildMessage { addHeader(":event-type", HeaderValue.String("bar")) }
+        assertRejects(fooEvent.encodeToByteArray() + barEvent.encodeToByteArray()) {
+            expectedRequestEvent { headers = mapOf(":event-type" to HeaderValue.String("bar")) }
+            expectedRequestEvent { headers = mapOf(":event-type" to HeaderValue.String("foo")) }
+        }
+    }
+
+    @Test
+    fun itRejectsForbiddenAndMissingRequiredHeaders() {
+        assertRejects(fooEvent.encodeToByteArray()) {
+            expectedRequestEvent { forbiddenHeaders = listOf(":event-type") }
+        }
+        assertRejects(fooEvent.encodeToByteArray()) {
+            expectedRequestEvent { requiredHeaders = listOf("x-missing") }
+        }
+    }
+
+    @Test
+    fun itRejectsBodyMismatches() {
+        assertRejects(fooEvent.encodeToByteArray()) {
+            expectedRequestEvent {
+                body = """{"bar":"qux"}"""
+                bodyMediaType = "application/json"
+            }
+        }
+        assertRejects(fooEvent.encodeToByteArray()) {
+            expectedRequestEvent { body = "not the payload" }
+        }
+        assertRejects(
+            buildMessage { payload = byteArrayOf(0xa1.toByte(), 0x61, 0x61, 0x01) }.encodeToByteArray(),
+        ) {
+            expectedRequestEvent {
+                // {"a": 2}
+                body = byteArrayOf(0xa1.toByte(), 0x61, 0x61, 0x02).encodeBase64().decodeToString()
+                bodyMediaType = "application/cbor"
+            }
+        }
+    }
+
+    @Test
+    fun itAcceptsEquivalentCborBodies() = eventStreamTest {
+        expectedRequestEvent {
+            // {"a": 1} definite length
+            body = byteArrayOf(0xa1.toByte(), 0x61, 0x61, 0x01).encodeBase64().decodeToString()
+            bodyMediaType = "application/cbor"
+        }
+        operation { mockEngine ->
+            // {"a": 1} indefinite length
+            val event = buildMessage { payload = byteArrayOf(0xbf.toByte(), 0x61, 0x61, 0x01, 0xff.toByte()) }
+            mockEngine.roundTrip(ExecutionContext(), requestWithBody(event.encodeToByteArray()))
+        }
+    }
+
+    @Test
+    fun itRejectsInitialRequestMismatches() {
+        assertRejects(ByteArray(0)) {
+            expectedInitialRequest { uri = "/other" }
+        }
+        assertRejects(ByteArray(0)) {
+            expectedInitialRequest {
+                uri = "/foo"
+                headers = mapOf("x-foo" to "other")
+            }
+        }
+        assertRejects(ByteArray(0)) {
+            expectedInitialRequest {
+                uri = "/foo"
+                forbiddenHeaders = listOf("x-foo")
+            }
+        }
+    }
+
+    @Test
+    fun itRejectsDuplicateEventHeaders() {
+        val duplicated = buildMessage {
+            addHeader(":event-type", HeaderValue.String("foo"))
+            addHeader(":event-type", HeaderValue.String("foo"))
+        }
+        assertRejects(duplicated.encodeToByteArray()) {
+            expectedRequestEvent { headers = mapOf(":event-type" to HeaderValue.String("foo")) }
+        }
+    }
+
+    @Test
+    fun itAcceptsSignedEventsWhenSignedIsExpected() = eventStreamTest {
+        expectSignedRequestEvents(true)
+        expectedRequestEvent { headers = mapOf(":event-type" to HeaderValue.String("foo")) }
+        operation { mockEngine -> mockEngine.roundTrip(ExecutionContext(), requestWithBody(signedFooStream)) }
+    }
+
+    @Test
+    fun itAcceptsUnsignedEventsWhenUnsignedIsExpected() = eventStreamTest {
+        expectSignedRequestEvents(false)
+        expectedRequestEvent { headers = mapOf(":event-type" to HeaderValue.String("foo")) }
+        operation { mockEngine -> mockEngine.roundTrip(ExecutionContext(), requestWithBody(fooEvent.encodeToByteArray())) }
+    }
+
+    @Test
+    fun itRejectsUnsignedEventsWhenSignedIsExpected() = assertRejects(fooEvent.encodeToByteArray()) {
+        expectSignedRequestEvents(true)
+        expectedRequestEvent { headers = mapOf(":event-type" to HeaderValue.String("foo")) }
+    }
+
+    @Test
+    fun itRejectsSignedEventsWhenUnsignedIsExpected() = assertRejects(signedFooStream) {
+        expectSignedRequestEvents(false)
+        expectedRequestEvent { headers = mapOf(":event-type" to HeaderValue.String("foo")) }
+    }
+
+    @Test
+    fun itRejectsSignedStreamsWithoutAnEndFrame() = assertRejects(signed(fooEvent.encodeToByteArray())) {
+        expectSignedRequestEvents(true)
+        expectedRequestEvent { headers = mapOf(":event-type" to HeaderValue.String("foo")) }
+    }
+
+    @Test
+    fun itRejectsSignedStreamsWithAnEarlyEndFrame() = assertRejects(signed(ByteArray(0)) + signed(fooEvent.encodeToByteArray())) {
+        expectSignedRequestEvents(true)
+        expectedRequestEvent { headers = mapOf(":event-type" to HeaderValue.String("foo")) }
+    }
+
+    @Test
+    fun itRejectsSignedFramesWithTrailingBytesInTheEnvelope() {
+        val envelope = signed(fooEvent.encodeToByteArray() + byteArrayOf(1, 2, 3)) + signed(ByteArray(0))
+        assertRejects(envelope) {
+            expectSignedRequestEvents(true)
+            expectedRequestEvent { headers = mapOf(":event-type" to HeaderValue.String("foo")) }
+        }
+    }
+
+    @Test
+    fun itSendsAnEmptyEventStreamWhenNoResponseEventsAreConfigured() = eventStreamTest {
+        operation { mockEngine ->
+            val call = mockEngine.roundTrip(ExecutionContext(), requestWithBody(ByteArray(0)))
+            val body = assertNotNull(call.response.body.readAll(), "expected a present response body")
+            assertEquals(0, body.size)
+            assertEquals(0, decodeFrames(SdkByteReadChannel(body)).toList().size)
+        }
+    }
+
+    @Test
+    fun itPrefersResponseEventsOverTheInitialResponseBody() = eventStreamTest {
+        initialResponse { body = "ignored" }
+        responseEvent(fooEvent.encodeToByteArray())
+
+        operation { mockEngine ->
+            val call = mockEngine.roundTrip(ExecutionContext(), requestWithBody(ByteArray(0)))
+            val messages = decodeFrames(SdkByteReadChannel(call.response.body.readAll()!!)).toList()
+            assertEquals(listOf(fooEvent), messages)
         }
     }
 }

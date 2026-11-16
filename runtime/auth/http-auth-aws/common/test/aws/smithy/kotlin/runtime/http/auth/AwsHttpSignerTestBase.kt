@@ -29,10 +29,12 @@ import aws.smithy.kotlin.runtime.net.Scheme
 import aws.smithy.kotlin.runtime.operation.ExecutionContext
 import aws.smithy.kotlin.runtime.text.encoding.encodeToHex
 import aws.smithy.kotlin.runtime.time.Instant
+import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.test.TestResult
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertNull
 import kotlin.test.assertSame
 class DefaultAwsHttpSignerTest : AwsHttpSignerTestBase(DefaultAwsSigner)
 
@@ -53,6 +55,7 @@ public abstract class AwsHttpSignerTestBase(
         payloadSigningEnabled: Boolean? = null,
         scheme: Scheme = Scheme.HTTP,
         signedBodyHeader: AwsSignedBodyHeader = AwsSignedBodyHeader.NONE,
+        eventStream: Boolean = false,
     ): SdkHttpOperation<Unit, HttpResponse> {
         val operation: SdkHttpOperation<Unit, HttpResponse> = SdkHttpOperation.build {
             serializeWith = when (streaming) {
@@ -68,6 +71,8 @@ public abstract class AwsHttpSignerTestBase(
                 set(AwsSigningAttributes.SigningService, "demo")
                 set(AwsSigningAttributes.EnableAwsChunked, true)
                 payloadSigningEnabled?.let { set(AwsSigningAttributes.PayloadSigningEnabled, it) }
+                // event stream serializers set this so the signer can seed message signatures
+                if (eventStream) set(AwsSigningAttributes.RequestSignature, CompletableDeferred())
             }
         }
 
@@ -110,9 +115,33 @@ public abstract class AwsHttpSignerTestBase(
 
     @Test
     public fun testPublishesSignerForEventStreamSigning(): TestResult = runTest {
-        val op = buildOperation()
+        val op = buildOperation(eventStream = true)
         getSignedRequest(op)
         assertSame(signer, op.context[AwsSigningAttributes.Signer])
+    }
+
+    @Test
+    public fun testOverridesDefaultSignerForEventStreamSigning(): TestResult = runTest {
+        val op = buildOperation(eventStream = true)
+        op.context[AwsSigningAttributes.Signer] = DefaultAwsSigner
+        getSignedRequest(op)
+        assertSame(signer, op.context[AwsSigningAttributes.Signer])
+    }
+
+    @Test
+    public fun testLeavesSignerAloneForNonEventStreamRequests(): TestResult = runTest {
+        val op = buildOperation()
+        val callerSigner = object : AwsSigner by signer {}
+        op.context[AwsSigningAttributes.Signer] = callerSigner
+        getSignedRequest(op)
+        assertSame(callerSigner, op.context[AwsSigningAttributes.Signer])
+    }
+
+    @Test
+    public fun testDoesNotPublishSignerForNonEventStreamRequests(): TestResult = runTest {
+        val op = buildOperation()
+        getSignedRequest(op)
+        assertNull(op.context.getOrNull(AwsSigningAttributes.Signer))
     }
 
     @Test

@@ -7,9 +7,13 @@ package aws.smithy.kotlin.runtime.smithy.test
 import kotlin.math.pow
 import kotlin.test.assertEquals
 
+private const val MAX_DEPTH = 512
+
 /**
  * Assert CBOR documents for semantic equality: map key order, definite vs indefinite lengths, and float widths that
  * preserve the value are ignored, while major types and tags are compared.
+ *
+ * Malformed input fails with an [IllegalStateException]; a semantic mismatch fails with an [AssertionError].
  */
 internal fun assertCborEqual(expected: ByteArray, actual: ByteArray, message: String) {
     val expectedValue = CborReader(expected).readDocument()
@@ -26,16 +30,21 @@ internal sealed interface CborValue {
     data class Map(val entries: kotlin.collections.Map<CborValue, CborValue>) : CborValue
     data class Tagged(val tag: ULong, val value: CborValue) : CborValue
     data class Bool(val value: Boolean) : CborValue
-    data class Float(val value: Double) : CborValue
+
+    // compared by bit pattern: NaNs are all equal and -0.0 differs from 0.0, on every platform
+    data class Float(val bits: Long) : CborValue
     data object Null : CborValue
     data object Undefined : CborValue
     data class Simple(val value: Int) : CborValue
 }
 
+private fun floatOf(value: Double) = CborValue.Float(if (value.isNaN()) Double.NaN.toRawBits() else value.toRawBits())
+
 private object Break
 
 private class CborReader(private val bytes: ByteArray) {
     private var pos = 0
+    private var depth = 0
 
     fun readDocument(): CborValue {
         val value = readValue()
@@ -45,12 +54,12 @@ private class CborReader(private val bytes: ByteArray) {
     }
 
     private fun readByte(): Int {
-        check(pos < bytes.size) { "unexpected end of CBOR input" }
+        check(pos < bytes.size) { "unexpected end of CBOR input at offset $pos" }
         return bytes[pos++].toInt() and 0xff
     }
 
     private fun readBytes(count: Int): ByteArray {
-        check(pos + count <= bytes.size) { "unexpected end of CBOR input" }
+        check(count <= bytes.size - pos) { "unexpected end of CBOR input at offset $pos" }
         return bytes.copyOfRange(pos, pos + count).also { pos += count }
     }
 
@@ -68,50 +77,82 @@ private class CborReader(private val bytes: ByteArray) {
         26 -> readUInt(4)
         27 -> readUInt(8)
         31 -> null
-        else -> error("invalid CBOR additional info $minor")
+        else -> error("reserved CBOR additional info $minor at offset ${pos - 1}")
+    }
+
+    private fun readDefiniteArgument(minor: Int, major: Int): ULong = readArgument(minor) ?: error("indefinite length is not allowed for major type $major at offset ${pos - 1}")
+
+    // a length or count that exceeds the remaining input is malformed, and must not be truncated to an Int
+    private fun checkedCount(count: ULong, minBytesPerItem: Int): Int {
+        check(count <= ((bytes.size - pos) / minBytesPerItem).toULong()) { "CBOR length $count exceeds the remaining input at offset $pos" }
+        return count.toInt()
     }
 
     private fun readValue(): Any {
-        val initial = readByte()
-        val major = initial shr 5
-        val minor = initial and 0x1f
+        check(depth < MAX_DEPTH) { "CBOR nesting exceeds $MAX_DEPTH at offset $pos" }
+        depth++
+        try {
+            val initial = readByte()
+            val major = initial shr 5
+            val minor = initial and 0x1f
 
-        return when (major) {
-            0 -> CborValue.Integer(checkNotNull(readArgument(minor)).toString())
-            1 -> CborValue.Integer(negativeToString(checkNotNull(readArgument(minor))))
-            2 -> CborValue.Bytes(readString(major, minor).toList())
-            3 -> CborValue.Text(readString(major, minor).decodeToString())
-            4 -> CborValue.Array(readItems(minor))
-            5 -> {
-                val items = readItems(minor, pairs = true)
-                CborValue.Map(items.chunked(2).associate { (key, value) -> key to value })
+            return when (major) {
+                0 -> CborValue.Integer(readDefiniteArgument(minor, major).toString())
+                1 -> CborValue.Integer(negativeToString(readDefiniteArgument(minor, major)))
+                2 -> CborValue.Bytes(readString(major, minor).toList())
+                3 -> CborValue.Text(decodeUtf8(readString(major, minor)))
+                4 -> CborValue.Array(readItems(minor, itemsPerEntry = 1))
+                5 -> {
+                    val items = readItems(minor, itemsPerEntry = 2)
+                    val entries = items.chunked(2).associate { (key, value) -> key to value }
+                    check(entries.size == items.size / 2) { "duplicate CBOR map key before offset $pos" }
+                    CborValue.Map(entries)
+                }
+                6 -> CborValue.Tagged(readDefiniteArgument(minor, major), readItem())
+                7 -> readSimpleOrFloat(minor)
+                else -> error("unreachable CBOR major type $major")
             }
-            6 -> CborValue.Tagged(checkNotNull(readArgument(minor)), readValue() as CborValue)
-            7 -> readSimpleOrFloat(minor)
-            else -> error("unreachable CBOR major type $major")
+        } finally {
+            depth--
         }
     }
 
+    private fun decodeUtf8(bytes: ByteArray): String = try {
+        bytes.decodeToString(throwOnInvalidSequence = true)
+    } catch (e: Exception) {
+        error("invalid UTF-8 in CBOR text string before offset $pos")
+    }
+
+    private fun readItem(): CborValue {
+        val value = readValue()
+        check(value is CborValue) { "unexpected CBOR break at offset ${pos - 1}" }
+        return value
+    }
+
     // the value is -1 - argument; argument + 1 overflows only for ULong.MAX_VALUE, i.e. -2^64
-    private fun negativeToString(argument: ULong): String = if (argument == ULong.MAX_VALUE) "-18446744073709551616" else "-${argument + 1uL}"
+    private fun negativeToString(argument: ULong): String {
+        if (argument == ULong.MAX_VALUE) return "-18446744073709551616"
+        return "-${argument + 1uL}"
+    }
 
     private fun readString(major: Int, minor: Int): ByteArray {
         val length = readArgument(minor) ?: return buildList {
             while (true) {
                 val chunkInitial = readByte()
                 if (chunkInitial == 0xff) break
-                check(chunkInitial shr 5 == major) { "indefinite-length string chunk has wrong major type" }
+                check(chunkInitial shr 5 == major) { "indefinite-length string chunk has the wrong major type at offset ${pos - 1}" }
+                check(chunkInitial and 0x1f != 31) { "indefinite-length string chunks must be definite at offset ${pos - 1}" }
                 addAll(readString(major, chunkInitial and 0x1f).toList())
             }
         }.toByteArray()
-        return readBytes(length.toInt())
+        return readBytes(checkedCount(length, 1))
     }
 
-    private fun readItems(minor: Int, pairs: Boolean = false): List<CborValue> {
+    private fun readItems(minor: Int, itemsPerEntry: Int): List<CborValue> {
         val count = readArgument(minor)
         if (count != null) {
-            val total = if (pairs) count.toInt() * 2 else count.toInt()
-            return List(total) { readValue() as CborValue }
+            val total = checkedCount(count, minBytesPerItem = itemsPerEntry) * itemsPerEntry
+            return buildList(total) { repeat(total) { add(readItem()) } }
         }
         return buildList {
             while (true) {
@@ -119,21 +160,22 @@ private class CborReader(private val bytes: ByteArray) {
                 if (item === Break) break
                 add(item as CborValue)
             }
-            check(!pairs || size % 2 == 0) { "indefinite-length map has a key without a value" }
+            check(size % itemsPerEntry == 0) { "indefinite-length map has a key without a value before offset $pos" }
         }
     }
 
     private fun readSimpleOrFloat(minor: Int): Any = when (minor) {
+        in 0..19 -> CborValue.Simple(minor)
         20 -> CborValue.Bool(false)
         21 -> CborValue.Bool(true)
         22 -> CborValue.Null
         23 -> CborValue.Undefined
-        24 -> CborValue.Simple(readByte())
-        25 -> CborValue.Float(halfToDouble(readUInt(2).toInt()))
-        26 -> CborValue.Float(Float.fromBits(readUInt(4).toInt()).toDouble())
-        27 -> CborValue.Float(Double.fromBits(readUInt(8).toLong()))
+        24 -> readByte().also { check(it >= 32) { "simple value $it must use the one byte form at offset ${pos - 1}" } }.let(CborValue::Simple)
+        25 -> floatOf(halfToDouble(readUInt(2).toInt()))
+        26 -> floatOf(Float.fromBits(readUInt(4).toInt()).toDouble())
+        27 -> floatOf(Double.fromBits(readUInt(8).toLong()))
         31 -> Break
-        else -> CborValue.Simple(minor)
+        else -> error("reserved CBOR additional info $minor at offset ${pos - 1}")
     }
 
     private fun halfToDouble(bits: Int): Double {

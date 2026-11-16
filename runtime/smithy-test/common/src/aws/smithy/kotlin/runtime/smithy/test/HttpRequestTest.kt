@@ -92,7 +92,7 @@ public fun httpRequestTest(block: HttpRequestTestBuilder.() -> Unit): TestResult
     assertRequest(testBuilder.expected.build(), actual)
 }
 
-private suspend fun assertRequest(expected: ExpectedHttpRequest, actual: HttpRequest) {
+internal suspend fun assertRequest(expected: ExpectedHttpRequest, actual: HttpRequest) {
     // run the assertions
     assertEquals(expected.method, actual.method, "expected method: `${expected.method}`; got: `${actual.method}`")
     assertEquals(expected.uri, actual.url.path.toString(), "expected path: `${expected.uri}`; got: `${actual.url.path}`")

@@ -43,7 +43,7 @@ class RpcV2Cbor : HttpBindingProtocolGenerator() {
     // between text-based and binary-based protocols
     override val defaultTimestampFormat = TimestampFormatTrait.Format.UNKNOWN
 
-    override val alwaysSendEventStreamInitialRequest: Boolean = true
+    override val alwaysSendInitialRequestMessage: Boolean = true
 
     override fun getProtocolHttpBindingResolver(model: Model, serviceShape: ServiceShape): HttpBindingResolver = RpcV2CborHttpBindingResolver(model, serviceShape)
 

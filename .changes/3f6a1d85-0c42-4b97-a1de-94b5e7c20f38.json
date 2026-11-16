@@ -1,0 +1,5 @@
+{
+    "id": "3f6a1d85-0c42-4b97-a1de-94b5e7c20f38",
+    "type": "bugfix",
+    "description": "Clients no longer fail when the response event stream of an RPC protocol operation contains no messages"
+}

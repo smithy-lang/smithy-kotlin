@@ -13,6 +13,7 @@ import aws.smithy.kotlin.codegen.core.withBlock
 import aws.smithy.kotlin.codegen.model.expectShape
 import aws.smithy.kotlin.codegen.model.findStreamingMember
 import aws.smithy.kotlin.codegen.model.hasTrait
+import aws.smithy.kotlin.codegen.protocols.eventstream.signsEventStreamMessages
 import aws.smithy.kotlin.codegen.rendering.ShapeValueGenerator
 import aws.smithy.kotlin.codegen.rendering.endpoints.EndpointProviderGenerator
 import software.amazon.smithy.codegen.core.SymbolProvider
@@ -23,8 +24,10 @@ import software.amazon.smithy.model.shapes.BlobShape
 import software.amazon.smithy.model.shapes.MemberShape
 import software.amazon.smithy.model.shapes.OperationShape
 import software.amazon.smithy.model.shapes.ServiceShape
+import software.amazon.smithy.model.shapes.ShapeId
 import software.amazon.smithy.model.shapes.StructureShape
 import software.amazon.smithy.model.shapes.UnionShape
+import software.amazon.smithy.model.traits.ErrorTrait
 import software.amazon.smithy.protocol.traits.Rpcv2CborTrait
 import software.amazon.smithy.protocoltests.traits.HttpRequestTestCase
 import software.amazon.smithy.protocoltests.traits.eventstream.Event
@@ -84,9 +87,12 @@ open class HttpProtocolUnitTestEventStreamGenerator protected constructor(builde
         val requestEvents = test.events.filter { it.type == EventType.REQUEST }
         val responseEvents = test.events.filter { it.type == EventType.RESPONSE }
 
-        // a request-side failure (e.g. a serialization error) leaves nothing meaningful to assert about the request
-        if (test.expectation.isSuccess) {
-            test.initialRequest.ifPresent { renderExpectedInitialRequest(test, it) }
+        // a request-side failure (e.g. a serialization error) leaves nothing meaningful to assert about the request,
+        // whereas a failure that comes from the response still sends the request as usual
+        val isRequestSideFailure = !test.expectation.isSuccess && responseEvents.isEmpty() && !test.initialResponse.isPresent
+        if (!isRequestSideFailure) {
+            test.initialRequest.ifPresent { renderExpectedInitialRequest(test, it, skipBody = requestEvents.isNotEmpty()) }
+            if (requestEvents.isNotEmpty()) writer.write("expectSignedRequestEvents(#L)", model.signsEventStreamMessages(serviceShape, operation))
             requestEvents.forEach(::renderExpectedRequestEvent)
         }
 
@@ -97,7 +103,8 @@ open class HttpProtocolUnitTestEventStreamGenerator protected constructor(builde
         renderOperationBlock(test, requestEvents, responseEvents)
     }
 
-    private fun renderExpectedInitialRequest(test: EventStreamTestCase, node: ObjectNode) {
+    // when the test lists request events the HTTP body is the event stream, which is asserted event by event
+    private fun renderExpectedInitialRequest(test: EventStreamTestCase, node: ObjectNode, skipBody: Boolean) {
         val request = HttpRequestTestCase.fromNode(node.withTestIdentity(test))
         writer.addImport(KotlinDependency.HTTP.namespace, "HttpMethod")
         writer.withBlock("expectedInitialRequest {", "}") {
@@ -109,14 +116,16 @@ open class HttpProtocolUnitTestEventStreamGenerator protected constructor(builde
             renderStringPairs("headers", request.headers.toList(), mapStyle = true)
             renderStringList("forbiddenHeaders", request.forbidHeaders)
             renderStringList("requiredHeaders", request.requireHeaders)
-            request.body.ifPresent { body ->
-                val mediaType = request.bodyMediaType.orElse("")
-                if (mediaType.isNotEmpty()) write("bodyMediaType = #S", mediaType)
-                if (body.isBlank()) {
-                    write("bodyAssert = ::assertEmptyBody")
-                } else {
-                    write("body = #S", body)
-                    write("bodyAssert = #L", if (mediaType.isJsonMediaType) "::assertJsonBodiesEqual" else "::assertBytesEqual")
+            if (!skipBody) {
+                request.body.ifPresent { body ->
+                    val mediaType = request.bodyMediaType.orElse("")
+                    if (mediaType.isNotEmpty()) write("bodyMediaType = #S", mediaType)
+                    if (body.isBlank()) {
+                        write("bodyAssert = ::assertEmptyBody")
+                    } else {
+                        write("body = #S", body)
+                        write("bodyAssert = #L", if (mediaType.isJsonMediaType) "::assertJsonBodiesEqual" else "::assertBytesEqual")
+                    }
                 }
             }
         }
@@ -176,8 +185,7 @@ open class HttpProtocolUnitTestEventStreamGenerator protected constructor(builde
         writer.withBlock("responseEvent {", "}") {
             renderHeaderValues(event.headers)
             event.body.ifPresent { body ->
-                // binary bodies (e.g. CBOR) are base64-encoded in the test case
-                if (event.bodyMediaType.orElse("").isBinaryMediaType) {
+                if (event.bodyMediaType.orElse("").isBase64EncodedBody) {
                     write("body = #S.#T()", body, RuntimeTypes.Core.Text.Encoding.decodeBase64Bytes)
                 } else {
                     write("body = #S.encodeToByteArray()", body)
@@ -202,15 +210,7 @@ open class HttpProtocolUnitTestEventStreamGenerator protected constructor(builde
             if (failure == null) {
                 renderServiceCall(test, inputParamName, responseEvents)
             } else {
-                val errorSymbol = failure.errorId.map { symbolProvider.toSymbol(model.expectShape(it)) }.orElse(null)
-                val assertion = if (errorSymbol != null) {
-                    writer.format("assertFailsWith<#T>", errorSymbol)
-                } else {
-                    "assertFails"
-                }
-                withBlock("#L {", "}", assertion) {
-                    renderServiceCall(test, inputParamName, responseEvents)
-                }
+                renderFailingServiceCall(inputParamName, failure.errorId.orElse(null), responseEvents)
             }
         }
     }
@@ -240,47 +240,114 @@ open class HttpProtocolUnitTestEventStreamGenerator protected constructor(builde
     private fun renderServiceCall(test: EventStreamTestCase, inputParamName: String, responseEvents: List<Event>) {
         val opName = operation.defaultName()
         val streamMember = outputStreamMember
+        val initialResponseParams = test.initialResponseParams.orElse(null)
 
         if (streamMember == null) {
-            writer.write("service.#L(#L)", opName, inputParamName)
+            if (initialResponseParams == null) {
+                writer.write("service.#L(#L)", opName, inputParamName)
+            } else {
+                writer.write("val actualResult = service.#L(#L)", opName, inputParamName)
+                renderInitialResponseAssertions(null, initialResponseParams)
+            }
             return
         }
 
         writer.withBlock("service.#L(#L) { actualResult ->", "}", opName, inputParamName) {
-            // consume the stream even when no events are expected so that deserialization failures surface
             writer.addImport("kotlinx.coroutines.flow", "toList")
-            if (test.expectation.isSuccess) {
-                write("val actualEvents = actualResult.#L?.toList().orEmpty()", streamMember.defaultName())
-                renderEventAssertions(streamMember, responseEvents)
-                test.initialResponseParams.ifPresent { renderInitialResponseAssertions(streamMember, it) }
-            } else {
-                write("actualResult.#L?.toList()", streamMember.defaultName())
+            write("val actualEvents = assertNotNull(actualResult.#L, #S).toList()", streamMember.defaultName(), "expected an event stream in the response")
+            renderEventAssertions(streamMember, responseEvents.mapNotNull { it.params.orElse(null) }, "actualEvents", "expectedEvents")
+            initialResponseParams?.let { renderInitialResponseAssertions(streamMember, it) }
+        }
+    }
+
+    /**
+     * Render a call that must fail. Events delivered before the failure are compared, and so is the failure itself
+     * when the response carries it as a modeled error event.
+     */
+    private fun renderFailingServiceCall(inputParamName: String, errorId: ShapeId?, responseEvents: List<Event>) {
+        val opName = operation.defaultName()
+        val streamMember = outputStreamMember
+        val errorSymbol = errorId?.let { symbolProvider.toSymbol(model.expectShape(it)) }
+
+        val collectsResponse = streamMember != null && responseEvents.isNotEmpty()
+        val unionShape = streamMember?.let { model.expectShape<UnionShape>(it.target) }
+
+        // the stream fails at its last event, so the events before it are delivered and the last one never is
+        val deliveredEvents = mutableListOf<ObjectNode>()
+        var errorEvent: Pair<StructureShape, Node>? = null
+        if (collectsResponse && unionShape != null) {
+            for (params in responseEvents.mapNotNull { event -> event.params.orElse(null).takeIf { event !== responseEvents.last() } }) {
+                deliveredEvents.add(params)
+            }
+
+            responseEvents.last().params.orElse(null)?.let { params ->
+                val (memberName, memberValue) = params.members.entries.single().let { it.key.value to it.value }
+                val target = model.expectShape(unionShape.getMember(memberName).get().target)
+                if (target.hasTrait<ErrorTrait>()) errorEvent = target as StructureShape to memberValue
+            }
+        }
+
+        if (collectsResponse && unionShape != null) {
+            writer.write("val deliveredEvents = mutableListOf<#T>()", symbolProvider.toSymbol(unionShape))
+        }
+
+        val assertion = if (errorSymbol != null) writer.format("assertFailsWith<#T>", errorSymbol) else "assertFails"
+        writer.withBlock("val failure = #L {", "}", assertion) {
+            when {
+                streamMember == null -> write("service.#L(#L)", opName, inputParamName)
+
+                collectsResponse -> withBlock("service.#L(#L) { actualResult ->", "}", opName, inputParamName) {
+                    write("actualResult.#L?.collect { deliveredEvents.add(it) }", streamMember.defaultName())
+                }
+
+                // consume the stream even when no events are expected so that deserialization failures surface
+                else -> withBlock("service.#L(#L) { actualResult ->", "}", opName, inputParamName) {
+                    writer.addImport("kotlinx.coroutines.flow", "toList")
+                    write("actualResult.#L?.toList()", streamMember.defaultName())
+                }
+            }
+        }
+
+        // a bare `assertFails` also catches the failures of the test's own assertions
+        if (errorSymbol == null) {
+            writer.write("assertFalse(failure is AssertionError, #S)", "expected the client to reject the stream, not an assertion failure")
+        }
+
+        if (collectsResponse) {
+            renderEventAssertions(streamMember, deliveredEvents, "deliveredEvents", "expectedDeliveredEvents")
+        }
+
+        errorEvent?.let { (errorShape, errorParams) ->
+            // only an error that is the expected one is comparable with the thrown exception
+            if (errorId == errorShape.id) {
+                writer.writeInline("assertEquals(")
+                ShapeValueGenerator(model, symbolProvider, explicitReceiver = true).instantiateShapeInline(writer, errorShape, errorParams)
+                writer.write(", failure)")
             }
         }
     }
 
-    private fun renderEventAssertions(streamMember: MemberShape, responseEvents: List<Event>) {
+    private fun renderEventAssertions(streamMember: MemberShape, modeledEvents: List<ObjectNode>, actualName: String, expectedName: String) {
         val unionShape = model.expectShape<UnionShape>(streamMember.target)
         val unionSymbol = symbolProvider.toSymbol(unionShape)
         val generator = ShapeValueGenerator(model, symbolProvider, explicitReceiver = true)
 
         // unmodeled events are not surfaced as typed values, so only modeled events are compared
-        val modeledEvents = responseEvents.mapNotNull { it.params.orElse(null) }
         if (modeledEvents.isEmpty()) {
-            writer.write("assertEquals(emptyList(), actualEvents)")
+            writer.write("assertEquals(emptyList(), #L)", actualName)
             return
         }
 
-        writer.withBlock("val expectedEvents = listOf<#T>(", ")", unionSymbol) {
+        writer.withBlock("val #L = listOf<#T>(", ")", expectedName, unionSymbol) {
             modeledEvents.forEachIndexed { idx, params ->
                 generator.instantiateShapeInline(writer, unionShape, params)
                 writer.write(if (idx < modeledEvents.size - 1) "," else "")
             }
         }
-        writer.write("assertEquals(expectedEvents, actualEvents)")
+        writer.write("assertEquals(#L, #L)", expectedName, actualName)
     }
 
-    private fun renderInitialResponseAssertions(streamMember: MemberShape, params: ObjectNode) {
+    private fun renderInitialResponseAssertions(streamMember: MemberShape?, params: ObjectNode) {
         val shape = outputShape ?: return
         writer.writeInline("val expectedResult = ")
         ShapeValueGenerator(model, symbolProvider, explicitReceiver = true).instantiateShapeInline(writer, shape, params)
@@ -378,7 +445,8 @@ open class HttpProtocolUnitTestEventStreamGenerator protected constructor(builde
     private val String.isJsonMediaType: Boolean
         get() = lowercase().let { it == "application/json" || it.endsWith("+json") }
 
-    private val String.isBinaryMediaType: Boolean
+    // binary event bodies are base64 encoded in the test case
+    private val String.isBase64EncodedBody: Boolean
         get() = lowercase() == "application/cbor"
 
     open class Builder {

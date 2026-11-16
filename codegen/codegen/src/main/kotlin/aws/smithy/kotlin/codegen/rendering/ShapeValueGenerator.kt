@@ -267,7 +267,7 @@ class ShapeValueGenerator(
 
                 ShapeType.DOCUMENT -> writer.writeInline("#T(#S)", RuntimeTypes.Core.Content.Document, node.value)
 
-                // e.g. event stream tests express timestamps as ISO 8601 date-time strings
+                // string timestamps are ISO 8601 date-times
                 ShapeType.TIMESTAMP -> writer.writeInline("#T.fromIso8601(#S)", RuntimeTypes.Core.Instant, node.value)
 
                 else -> writer.writeInline("#S", node.value)
