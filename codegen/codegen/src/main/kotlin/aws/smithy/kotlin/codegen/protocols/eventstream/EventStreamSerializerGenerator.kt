@@ -38,11 +38,15 @@ import software.amazon.smithy.model.traits.StreamingTrait
  *
  * @param sdg the structured data serializer generator
  * @param payloadContentType the content-type to use when sending structured data (e.g. `application/json`)
+ * @param alwaysSendInitialRequest whether an `initial-request` event is sent for RPC-bound protocols even when the
+ * operation input has no members besides the event stream
  */
 class EventStreamSerializerGenerator(
     private val sdg: StructuredDataSerializerGenerator,
     private val payloadContentType: String,
+    private val alwaysSendInitialRequest: Boolean,
 ) {
+    constructor(sdg: StructuredDataSerializerGenerator, payloadContentType: String) : this(sdg, payloadContentType, false)
 
     /**
      * Return the function responsible for serializing an operation output that targets an event stream
@@ -98,7 +102,7 @@ class EventStreamSerializerGenerator(
 
         writer.write("")
         val initialRequestMembers = input.initialRequestMembers(ctx)
-        if (ctx.protocol.isRpcBoundProtocol && initialRequestMembers.isNotEmpty()) {
+        if (ctx.protocol.isRpcBoundProtocol && (initialRequestMembers.isNotEmpty() || alwaysSendInitialRequest)) {
             val serializerFn = sdg.payloadSerializer(ctx, input, initialRequestMembers)
 
             writer.withBlock("val initialRequest = buildMessage {", "}") {

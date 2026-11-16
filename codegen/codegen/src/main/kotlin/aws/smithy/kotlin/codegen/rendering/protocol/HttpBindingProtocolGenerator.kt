@@ -220,6 +220,12 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
     // FIXME - probably make abstract and let individual protocols throw if they don't support event stream bindings
 
     /**
+     * Whether event stream request serializers send an `initial-request` event for RPC-bound protocols even when the
+     * operation input has no members besides the event stream.
+     */
+    protected open val alwaysSendEventStreamInitialRequest: Boolean = false
+
+    /**
      * ```
      * private suspend fun serializeOperationFooEventStream(input: Foo): HttpBody
      * ```
@@ -230,7 +236,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
     open fun eventStreamRequestHandler(ctx: ProtocolGenerator.GenerationContext, op: OperationShape): Symbol {
         val resolver = getProtocolHttpBindingResolver(ctx.model, ctx.service)
         val contentType = resolver.determineRequestContentType(op) ?: error("event streams must set a content-type")
-        val eventStreamSerializerGenerator = EventStreamSerializerGenerator(structuredDataSerializer(ctx), contentType)
+        val eventStreamSerializerGenerator = EventStreamSerializerGenerator(structuredDataSerializer(ctx), contentType, alwaysSendEventStreamInitialRequest)
         return eventStreamSerializerGenerator.requestHandler(ctx, op)
     }
 
@@ -305,11 +311,6 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                 // Clients correct missing required output members to defaults (error correction) rather than fail
                 "MissingRequiredInitialResponseOutput",
                 "DuplexMissingRequiredInitialResponseOutput",
-
-                // These expect an initial-request event for operations that model no initial request, which the
-                // streaming spec forbids clients from sending (as the test documentation acknowledges)
-                "RpcV2CborEventStreamRequestSendMessage",
-                "RpcV2CborEventStreamRequestMultipleEvents",
             ),
         )
 

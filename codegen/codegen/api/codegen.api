@@ -1633,6 +1633,7 @@ public final class aws/smithy/kotlin/codegen/protocols/eventstream/EventStreamPa
 
 public final class aws/smithy/kotlin/codegen/protocols/eventstream/EventStreamSerializerGenerator {
 	public fun <init> (Laws/smithy/kotlin/codegen/rendering/serde/StructuredDataSerializerGenerator;Ljava/lang/String;)V
+	public fun <init> (Laws/smithy/kotlin/codegen/rendering/serde/StructuredDataSerializerGenerator;Ljava/lang/String;Z)V
 	public final fun requestHandler (Laws/smithy/kotlin/codegen/rendering/protocol/ProtocolGenerator$GenerationContext;Lsoftware/amazon/smithy/model/shapes/OperationShape;)Lsoftware/amazon/smithy/codegen/core/Symbol;
 }
 
@@ -2221,6 +2222,7 @@ public abstract class aws/smithy/kotlin/codegen/rendering/protocol/HttpBindingPr
 	public fun eventStreamResponseHandler (Laws/smithy/kotlin/codegen/rendering/protocol/ProtocolGenerator$GenerationContext;Lsoftware/amazon/smithy/model/shapes/OperationShape;)Lsoftware/amazon/smithy/codegen/core/Symbol;
 	public fun generateProtocolClient (Laws/smithy/kotlin/codegen/rendering/protocol/ProtocolGenerator$GenerationContext;)V
 	public fun generateProtocolUnitTests (Laws/smithy/kotlin/codegen/rendering/protocol/ProtocolGenerator$GenerationContext;)V
+	protected fun getAlwaysSendEventStreamInitialRequest ()Z
 	public fun getApplicationProtocol ()Laws/smithy/kotlin/codegen/rendering/protocol/ApplicationProtocol;
 	protected fun getDefaultHttpMiddleware (Laws/smithy/kotlin/codegen/rendering/protocol/ProtocolGenerator$GenerationContext;)Ljava/util/List;
 	public abstract fun getDefaultTimestampFormat ()Lsoftware/amazon/smithy/model/traits/TimestampFormatTrait$Format;
