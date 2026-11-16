@@ -1,6 +1,0 @@
-{
-    "id": "d262b9c6-04a5-49ec-adde-e75a5f9b83ee",
-    "type": "feature",
-    "description": "Generate protocol tests from Smithy's `eventStreamTests` trait",
-    "module": "codegen"
-}
