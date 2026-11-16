@@ -7,7 +7,7 @@ package aws.smithy.kotlin.runtime.smithy.test
 import kotlin.math.pow
 import kotlin.test.assertEquals
 
-private const val MAX_DEPTH = 512
+private const val MAX_DEPTH = 64
 
 /**
  * Assert CBOR documents for semantic equality: map key order, definite vs indefinite lengths, and float widths that

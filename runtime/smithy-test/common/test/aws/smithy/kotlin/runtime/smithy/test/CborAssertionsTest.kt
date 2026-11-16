@@ -132,7 +132,9 @@ class CborAssertionsTest {
 
     @Test
     fun testExcessiveNestingIsMalformed() {
-        assertMalformed("81".repeat(600) + "00")
+        // 63 nested arrays around a leaf is the deepest accepted document
+        assertEqual("81".repeat(63) + "00", "81".repeat(63) + "00")
+        assertMalformed("81".repeat(65) + "00")
     }
 
     @Test
