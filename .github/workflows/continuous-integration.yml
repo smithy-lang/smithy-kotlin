@@ -337,6 +337,73 @@ jobs:
           name: test-reports-${{ matrix.os }}
           path: '**/build/reports'
 
+  wasmjs:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Set start timestamp
+        id: start
+        run: printf 'timestamp=%(%s)T\n' >> "$GITHUB_OUTPUT"
+      - name: Checkout sources
+        uses: actions/checkout@v4
+        with:
+          path: 'smithy-kotlin'
+
+      - name: Setup build
+        uses: ./smithy-kotlin/.github/actions/setup-build
+
+      - name: Configure JDK
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'corretto'
+          java-version: 17
+          cache: 'gradle'
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.CI_AWS_ROLE_ARN }}
+          aws-region: us-west-2
+      - name: Setup kat
+        uses: aws/aws-kotlin-repo-tools/.github/actions/setup-kat@main
+      - name: Configure Gradle
+        uses: aws/aws-kotlin-repo-tools/.github/actions/configure-gradle@main
+        with:
+          working-directory: 'smithy-kotlin'
+
+      - name: Compile for wasmJs
+        working-directory: ./smithy-kotlin
+        shell: bash
+        run: |
+          # wasmJs is opt-in and compile-only for now: many wasmJs actuals are still TODO() stubs.
+          # FIXME: crt-util depends on aws-crt-kotlin, which has no wasmJs artifact. Remove these -x flags once crt-util
+          # no longer gets a wasmJs target.
+          ./gradlew \
+            -Paws.kotlin.native=false \
+            -Paws.kotlin.wasm=true \
+            compileKotlinWasmJs \
+            compileTestKotlinWasmJs \
+            -x :runtime:crt-util:compileKotlinWasmJs \
+            -x :runtime:crt-util:compileTestKotlinWasmJs
+
+      - name: Calculate duration
+        id: end
+        if: always()
+        run: |
+          printf -v now '%(%s)T'
+          duration=$(( now - ${{ steps.start.outputs.timestamp }} ))
+          echo "duration=$duration" >> "$GITHUB_OUTPUT"
+      - name: Emit metrics
+        if: always() # run this step even if previous steps failed or the job is canceled
+        uses: aws/aws-kotlin-repo-tools/.github/actions/emit-metrics@main
+        with:
+          namespace: CI Metrics
+          dimensions: |
+            Product=smithy-kotlin
+            JobName=${{ github.job }}
+            Branch=${{ github.base_ref || github.ref_name }}
+          metrics: |
+            WorkflowSucceeded:${{ job.status == 'success' && '1' || '0' }}:Count
+            WorkflowDuration:${{ steps.end.outputs.duration }}:Seconds
+
   protocol-tests:
     runs-on: ubuntu-latest
     steps:
