@@ -14,12 +14,7 @@ import kotlinx.io.files.FileNotFoundException
 import kotlinx.io.files.Path
 import kotlinx.io.files.SystemFileSystem
 import kotlinx.io.files.SystemPathSeparator
-import okio.Path.Companion.toPath
-import okio.SYSTEM
-import okio.buffer
-import okio.use
 import kotlin.jvm.JvmName
-import okio.FileSystem as OkioFileSystem
 
 /**
  * Abstraction over filesystem
@@ -295,16 +290,7 @@ public interface Filesystem {
         if (!exists(path)) {
             throw FileNotFoundException("$path does not exist")
         }
-
-        val path = path.toPath()
-        return OkioFileSystem.SYSTEM.source(path).buffer().use {
-            if (readAll) {
-                it.readByteArray()
-            } else {
-                it.skip(offset)
-                it.readByteArray(amount)
-            }
-        }
+        return readFileBytes(path, amount, offset, readAll)
     }
 
     /**
@@ -331,16 +317,7 @@ public interface Filesystem {
                 return null
             }
         }
-
-        val path = path.toPath()
-        return OkioFileSystem.SYSTEM.source(path).buffer().use {
-            if (readAll) {
-                it.readByteArray()
-            } else {
-                it.skip(offset)
-                it.readByteArray(amount)
-            }
-        }
+        return readFileBytes(path, amount, offset, readAll)
     }
 
     /**
@@ -523,3 +500,5 @@ public class MapFilesystem(
     @InternalApi
     public fun getFilePermissions(path: String): String = memFs.getValue(path).permissions ?: ""
 }
+
+internal expect fun readFileBytes(path: String, amount: Long, offset: Long, readAll: Boolean): ByteArray
