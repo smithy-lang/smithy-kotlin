@@ -6,6 +6,8 @@
 package aws.smithy.kotlin.runtime.util
 
 import aws.smithy.kotlin.runtime.InternalApi
+import aws.smithy.kotlin.runtime.PlannedRemoval
+import kotlin.jvm.JvmName
 
 /**
  * An implementation of [PlatformProvider] meant for testing
@@ -15,23 +17,42 @@ import aws.smithy.kotlin.runtime.InternalApi
  * @param os Operating system info to emulate
  */
 @InternalApi
-public class TestPlatformProvider(
+public class TestPlatformProvider
+private constructor(
     env: Map<String, String> = emptyMap(),
     private val props: Map<String, String> = emptyMap(),
-    private val fs: Map<String, String> = emptyMap(),
+    public val fs: Filesystem = MapFilesystem(),
     private val os: OperatingSystem = OperatingSystem(OsFamily.Linux, "test"),
 ) : PlatformProvider,
-    Filesystem by Filesystem.fromMap(fs.mapValues { it.value.encodeToByteArray() }) {
+    Filesystem by fs {
 
-    public companion object;
+    @Deprecated("Use TestPlatformProvider.of() instead", replaceWith = ReplaceWith("TestPlatformProvider.of()"))
+    @PlannedRemoval(major = 1, minor = 8)
+    public constructor() : this(emptyMap(), emptyMap(), MapFilesystem(filePathSeparator = "/"), OperatingSystem(OsFamily.Linux, "test"))
+
+    @Deprecated("Use TestPlatformProvider.of() instead", replaceWith = ReplaceWith("TestPlatformProvider.of(env, props, fs.mapValues { (_, v) -> TestFile(v) }, os)"))
+    @PlannedRemoval(major = 1, minor = 8)
+    public constructor(
+        env: Map<String, String> = emptyMap(),
+        props: Map<String, String> = emptyMap(),
+        fs: Map<String, String> = emptyMap(),
+        os: OperatingSystem = OperatingSystem(OsFamily.Linux, "test"),
+    ) : this(env, props, MapFilesystem(TestFile.transformMap(fs).toMutableMap(), separatorFor(os)), os)
+
+    @InternalApi
+    public companion object {
+        public fun of(
+            env: Map<String, String> = emptyMap(),
+            props: Map<String, String> = emptyMap(),
+            fs: Map<String, TestFile> = emptyMap(),
+            os: OperatingSystem = OperatingSystem(OsFamily.Linux, "test"),
+        ): TestPlatformProvider = TestPlatformProvider(env, props, MapFilesystem(fs.toMutableMap(), separatorFor(os)), os)
+    }
 
     // ensure HOME directory is set for path normalization. this is mostly for AWS config loader behavior
     private val env = if (env.containsKey("HOME")) env else env.toMutableMap().apply { put("HOME", "/users/test") }
     override val filePathSeparator: String
-        get() = when (os.family) {
-            OsFamily.Windows -> "\\"
-            else -> "/"
-        }
+        get() = separatorFor(os)
 
     override val isJvm: Boolean = true
     override val isAndroid: Boolean = false
@@ -43,4 +64,27 @@ public class TestPlatformProvider(
     override fun getProperty(key: String): String? = props[key]
     override fun getAllEnvVars(): Map<String, String> = env
     override fun getenv(key: String): String? = env[key]
+}
+
+private fun separatorFor(os: OperatingSystem): String = when (os.family) {
+    OsFamily.Windows -> "\\"
+    else -> "/"
+}
+
+@InternalApi
+public class TestFile(public val contents: ByteArray, public val permissions: String? = null) {
+    @InternalApi
+    public companion object {
+        @JvmName("transformMapStringByteArray")
+        public fun transformMap(
+            pathsToContents: Map<String, ByteArray>,
+        ): Map<String, TestFile> = pathsToContents.mapValues { (_, contents) -> TestFile(contents) }
+
+        @JvmName("transformMapStringString")
+        public fun transformMap(
+            pathsToContents: Map<String, String>,
+        ): Map<String, TestFile> = pathsToContents.mapValues { (_, contents) -> TestFile(contents) }
+    }
+
+    public constructor(contents: String, permissions: String? = null) : this(contents.encodeToByteArray(), permissions)
 }

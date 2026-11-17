@@ -60,6 +60,7 @@ class HttpProtocolClientGeneratorTest {
         val expected = """
     init {
         managedResources.addIfManaged(config.httpClient)
+        managedResources.addIfManaged(config.telemetryProvider)
     }
 """
         commonTestContents.shouldContainOnlyOnceWithDiff(expected)

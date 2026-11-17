@@ -5,6 +5,9 @@
 
 package aws.smithy.kotlin.runtime.telemetry.otel
 
+import aws.smithy.kotlin.runtime.businessmetrics.BusinessMetric
+import aws.smithy.kotlin.runtime.businessmetrics.BusinessMetricsSource
+import aws.smithy.kotlin.runtime.businessmetrics.SmithyBusinessMetric
 import aws.smithy.kotlin.runtime.collections.Attributes
 import aws.smithy.kotlin.runtime.telemetry.context.Context
 import aws.smithy.kotlin.runtime.telemetry.metrics.*
@@ -16,8 +19,16 @@ import io.opentelemetry.api.metrics.LongCounter as OtelLongCounter
 import io.opentelemetry.api.metrics.LongHistogram as OtelLongHistogram
 import io.opentelemetry.api.metrics.LongUpDownCounter as OtelLongUpDownCounter
 import io.opentelemetry.api.metrics.Meter as OpenTelemetryMeter
+import io.opentelemetry.api.metrics.MeterProvider as OtelApiMeterProvider
 
-internal class OtelMeterProvider(private val otel: OpenTelemetry) : MeterProvider {
+internal class OtelMeterProvider(private val otel: OpenTelemetry) :
+    MeterProvider,
+    BusinessMetricsSource {
+    override val businessMetrics: Set<BusinessMetric> = when {
+        otel.meterProvider === OtelApiMeterProvider.noop() -> emptySet()
+        else -> setOf(SmithyBusinessMetric.OBSERVABILITY_METRICS, SmithyBusinessMetric.OBSERVABILITY_OTEL_METRICS)
+    }
+
     override fun getOrCreateMeter(scope: String): Meter {
         val meter = otel.getMeter(scope)
         return OtelMeter(meter)

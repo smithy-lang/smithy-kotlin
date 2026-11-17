@@ -13,6 +13,13 @@ plugins {
     `kotlin-dsl`
 }
 
+// The `kotlin-dsl` plugin passes `-Xuse-fir-lt=false`, which Kotlin 2.4.20+ warns is deprecated
+tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>().configureEach {
+    compilerOptions {
+        allWarningsAsErrors = false
+    }
+}
+
 dependencies {
     implementation(libs.smithy.model)
     implementation(libs.smithy.gradle.base.plugin)

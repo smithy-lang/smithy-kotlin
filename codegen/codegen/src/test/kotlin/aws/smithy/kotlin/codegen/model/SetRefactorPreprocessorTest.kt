@@ -6,12 +6,12 @@ package aws.smithy.kotlin.codegen.model
 
 import aws.smithy.kotlin.codegen.KotlinSettings
 import aws.smithy.kotlin.codegen.test.toSmithyModel
-import org.junit.jupiter.api.Assertions.assertFalse
-import org.junit.jupiter.api.Test
 import software.amazon.smithy.model.shapes.CollectionShape
 import software.amazon.smithy.model.shapes.ListShape
 import software.amazon.smithy.model.shapes.ShapeId
 import software.amazon.smithy.model.traits.UniqueItemsTrait
+import kotlin.test.Test
+import kotlin.test.assertFalse
 import kotlin.test.assertIs
 import kotlin.test.assertTrue
 

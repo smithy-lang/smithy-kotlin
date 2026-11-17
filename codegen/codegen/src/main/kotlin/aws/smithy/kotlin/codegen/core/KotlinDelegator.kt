@@ -10,6 +10,7 @@ import aws.smithy.kotlin.codegen.utils.namespaceToPath
 import software.amazon.smithy.build.FileManifest
 import software.amazon.smithy.codegen.core.*
 import software.amazon.smithy.model.shapes.Shape
+import software.amazon.smithy.model.shapes.ShapeId
 import java.nio.file.Paths
 
 const val DEFAULT_SOURCE_SET_ROOT = "./src/main/kotlin/"
@@ -24,6 +25,10 @@ class KotlinDelegator(
     private val integrations: List<KotlinIntegration> = listOf(),
 ) {
     private val writers: MutableMap<String, KotlinWriter> = mutableMapOf()
+
+    // Tracks which shape each symbol written via useShapeWriter was generated for, to catch distinct shapes that
+    // would otherwise render duplicate declarations of the same type.
+    private val shapeIdsBySymbol: MutableMap<String, ShapeId> = mutableMapOf()
 
     // Tracks dependencies for source not provided by codegen that may reside in the service source tree.
     val runtimeDependencies: MutableList<SymbolDependency> = mutableListOf()
@@ -86,6 +91,10 @@ class KotlinDelegator(
         block: (KotlinWriter) -> Unit,
     ) {
         val symbol = ctx.symbolProvider.toSymbol(shape)
+        val previousShapeId = shapeIdsBySymbol.putIfAbsent(symbol.fullName, shape.id)
+        if (previousShapeId != null && previousShapeId != shape.id) {
+            throw CodegenException("${shape.id} and $previousShapeId both generate ${symbol.fullName}")
+        }
         useSymbolWriter(symbol, block)
     }
 

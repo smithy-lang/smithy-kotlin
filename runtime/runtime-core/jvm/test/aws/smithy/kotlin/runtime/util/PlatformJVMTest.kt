@@ -48,7 +48,7 @@ class PlatformJVMTest {
     }
 
     @Test
-    fun testFileExists() = runTest {
-        assertTrue(PlatformProvider.System.fileExists(tempFile.absolutePathString()))
+    fun testPathExists() = runTest {
+        assertTrue(PlatformProvider.System.pathExists(tempFile.absolutePathString()))
     }
 }

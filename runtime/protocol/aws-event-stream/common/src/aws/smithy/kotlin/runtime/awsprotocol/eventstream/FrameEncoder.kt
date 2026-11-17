@@ -31,18 +31,6 @@ public fun Flow<Message>.encode(): Flow<SdkBuffer> = map {
 
 /**
  * Transform a stream of encoded messages into an [HttpBody].
- * @param scope parent scope to launch a coroutine in that consumes the flow and populates a [SdkByteReadChannel]
- */
-@Deprecated(
-    "This overload takes a `CoroutineScope` argument which is now ignored. This overload will be removed in minor version 1.7.",
-    ReplaceWith("asEventStreamHttpBody()"),
-)
-@PlannedRemoval(major = 1, minor = 7)
-@InternalApi
-public suspend fun Flow<SdkBuffer>.asEventStreamHttpBody(scope: CoroutineScope): HttpBody = asEventStreamHttpBody()
-
-/**
- * Transform a stream of encoded messages into an [HttpBody].
  */
 @InternalApi
 public suspend fun Flow<SdkBuffer>.asEventStreamHttpBody(): HttpBody {

@@ -42,6 +42,11 @@ public object SdkClientOption {
      * Whether endpoint discovery is enabled or not. Default is true
      */
     public val EndpointDiscoveryEnabled: AttributeKey<Boolean> = AttributeKey("aws.smithy.kotlin#EndpointDiscoveryEnabled")
+
+    /**
+     * Set of HTTP header names whose values will be redacted from debug logging
+     */
+    public val LogRedactedHeaders: AttributeKey<Set<String>> = AttributeKey("aws.smithy.kotlin#LogRedactedHeaders")
 }
 
 /**
@@ -67,3 +72,9 @@ public val ExecutionContext.operationName: String?
  */
 public val ExecutionContext.serviceName: String?
     get() = getOrNull(SdkClientOption.ServiceName)
+
+/**
+ * Get the set of headers to redact from logging. If not set, returns an empty set.
+ */
+public val ExecutionContext.logRedactedHeaders: Set<String>
+    get() = getOrNull(SdkClientOption.LogRedactedHeaders) ?: emptySet()

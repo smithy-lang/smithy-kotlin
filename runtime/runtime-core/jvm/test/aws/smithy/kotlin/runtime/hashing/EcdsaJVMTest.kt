@@ -4,14 +4,12 @@
  */
 package aws.smithy.kotlin.runtime.hashing
 
-import org.junit.jupiter.api.Assertions.assertFalse
-import org.junit.jupiter.api.Assertions.assertTrue
-import org.junit.jupiter.api.condition.EnabledForJreRange
-import org.junit.jupiter.api.condition.JRE
 import java.security.*
 import java.security.interfaces.*
 import java.security.spec.*
 import kotlin.test.Test
+import kotlin.test.assertFalse
+import kotlin.test.assertTrue
 
 class EcdsaJVMTest {
     // Helper function to generate valid test key
@@ -101,10 +99,11 @@ class EcdsaJVMTest {
         assertTrue(verifier.verify(signature))
     }
 
+    // SHA256withECDSAinP1363Format algorithm was introduced in Java 9, skip on Java 8
     @Test
-    // SHA256withECDSAinP1363Format algorithm was introduced in Java 11, skip on Java 8
-    @EnabledForJreRange(min = JRE.JAVA_11)
     fun testVerifyRawSignature() {
+        val verifier = runCatching { Signature.getInstance("SHA256withECDSAinP1363Format") }.getOrElse { return }
+
         val keyGen = KeyPairGenerator.getInstance("EC")
         keyGen.initialize(ECGenParameterSpec("secp256r1"))
         val keyPair = keyGen.generateKeyPair()
@@ -114,7 +113,6 @@ class EcdsaJVMTest {
         val message = "Hello, World!".toByteArray()
         val signature = ecdsaSecp256r1Rs(privateKey, message)
 
-        val verifier = Signature.getInstance("SHA256withECDSAinP1363Format")
         verifier.initVerify(publicKey)
         verifier.update(message)
 

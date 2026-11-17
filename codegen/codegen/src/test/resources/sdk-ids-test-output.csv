@@ -123,8 +123,6 @@ EMR,Emr
 EntityResolution,EntityResolution
 EventBridge,EventBridge
 Evidently,Evidently
-finspace data,FinspaceData
-finspace,Finspace
 Firehose,Firehose
 fis,Fis
 FMS,Fms
@@ -325,7 +323,6 @@ synthetics,Synthetics
 Textract,Textract
 Timestream Query,TimestreamQuery
 Timestream Write,TimestreamWrite
-tnb,Tnb
 Transcribe Streaming,TranscribeStreaming
 Transcribe,Transcribe
 Transfer,Transfer

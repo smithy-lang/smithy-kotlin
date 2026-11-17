@@ -7,7 +7,6 @@ package aws.smithy.kotlin.runtime.http.engine.okhttp
 
 import aws.smithy.kotlin.runtime.http.HttpErrorCode
 import aws.smithy.kotlin.runtime.http.HttpException
-import org.junit.jupiter.api.Assertions.assertTrue
 import java.io.EOFException
 import java.io.IOException
 import java.net.ConnectException
@@ -16,6 +15,7 @@ import javax.net.ssl.SSLHandshakeException
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
+import kotlin.test.assertTrue
 
 class OkHttpExceptionTest {
     data class ExceptionTest(

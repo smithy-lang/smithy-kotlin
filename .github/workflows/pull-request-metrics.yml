@@ -1,6 +1,9 @@
 name: Pull request metrics
+
 on:
   pull_request:
+  merge_group:
+    types: [checks_requested]
 
 jobs:
   artifact-size-metrics:
@@ -8,6 +11,13 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+
+      - name: Configure JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'corretto'
+          java-version: 17
+          cache: 'gradle'
 
       - name: Configure Gradle
         uses: aws/aws-kotlin-repo-tools/.github/actions/configure-gradle@main

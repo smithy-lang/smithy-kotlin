@@ -2,10 +2,14 @@
  * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
  * SPDX-License-Identifier: Apache-2.0
  */
+import org.gradle.accessors.dm.LibrariesForLibs
 
 plugins {
     id("org.jetbrains.dokka")
 }
+
+// https://github.com/gradle/gradle/issues/15383
+val libs = rootProject.the<LibrariesForLibs>()
 
 dokka {
     val sdkVersion: String by project
@@ -33,6 +37,23 @@ dokka {
     }
 }
 
+val jacksonVersion = libs.jackson.bom.get().version!!
+
+configurations.matching { it.name.startsWith("dokka") }.configureEach {
+    resolutionStrategy.eachDependency {
+        if (requested.group.startsWith("com.fasterxml.jackson")) {
+            if (requested.name == "jackson-annotations") {
+                // jackson-annotations dropped patch version from 2.20 onwards
+                // https://github.com/FasterXML/jackson-annotations/issues/294
+                useVersion(jacksonVersion.substringBeforeLast('.'))
+            } else {
+                useVersion(jacksonVersion)
+            }
+        }
+    }
+}
+
 dependencies {
     dokkaPlugin(project(":dokka-smithy"))
+    dokkaHtmlPlugin(libs.aws.kotlin.repo.tools.dokka.lazy.load)
 }

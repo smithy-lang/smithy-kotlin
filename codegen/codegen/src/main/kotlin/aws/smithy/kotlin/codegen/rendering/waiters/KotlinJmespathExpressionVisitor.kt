@@ -9,11 +9,8 @@ import aws.smithy.kotlin.codegen.core.CodegenContext
 import aws.smithy.kotlin.codegen.core.KotlinWriter
 import aws.smithy.kotlin.codegen.core.RuntimeTypes
 import aws.smithy.kotlin.codegen.core.withBlock
-import aws.smithy.kotlin.codegen.model.hasTrait
 import aws.smithy.kotlin.codegen.model.isEnum
 import aws.smithy.kotlin.codegen.model.targetOrSelf
-import aws.smithy.kotlin.codegen.model.traits.OperationInput
-import aws.smithy.kotlin.codegen.model.traits.OperationOutput
 import aws.smithy.kotlin.codegen.utils.doubleQuote
 import aws.smithy.kotlin.codegen.utils.dq
 import aws.smithy.kotlin.codegen.utils.getOrNull
@@ -534,15 +531,17 @@ class KotlinJmespathExpressionVisitor(
     Smithy spec: https://smithy.io/2.0/additional-specs/rules-engine/parameters.html#smithy-rules-operationcontextparams-trait
     JMESPath spec: https://jmespath.org/specification.html#keys
      */
-    private fun VisitedExpression.getKeys(): String = if (shape?.targetOrSelf(ctx.model)?.type == ShapeType.MAP) {
-        "$identifier?.keys?.map { it.toString() }?.toList()"
-    } else {
-        shape
-            ?.targetOrSelf(ctx.model)
-            ?.allMembers
-            ?.keys
-            ?.joinToString(", ", "listOf(", ")") { it.doubleQuote() }
-            ?: "listOf<String>()"
+    private fun VisitedExpression.getKeys(): String = when (val target = shape?.targetOrSelf(ctx.model)) {
+        is MapShape -> {
+            val keyString = if (ctx.model.expectShape(target.key.target).isEnum) "it.value" else "it.toString()"
+            "$identifier?.keys?.map { $keyString }?.toList()"
+        }
+        else ->
+            target
+                ?.allMembers
+                ?.keys
+                ?.joinToString(", ", "listOf(", ")") { it.doubleQuote() }
+                ?: "listOf<String>()"
     }
 
     private fun VisitedExpression.getValues(): String {
@@ -597,9 +596,11 @@ class KotlinJmespathExpressionVisitor(
         return VisitedExpression(result)
     }
 
+    // Every member is nullable except the `input`/`output` members of the synthetic wrapper built for inputOutput
+    // acceptors, which hold the operation's own (always present) input and output. Members elsewhere that target an
+    // operation input/output shape are ordinary, nullable members.
     private val Shape.isNullable: Boolean
-        get() = this is MemberShape &&
-            ctx.model.expectShape(target).let { !it.hasTrait<OperationInput>() && !it.hasTrait<OperationOutput>() }
+        get() = this is MemberShape && id.namespace != SYNTHETIC_INPUT_OUTPUT_NAMESPACE
 
     private val Shape.targetMemberOrSelf: Shape
         get() = when (val target = targetOrSelf(ctx.model)) {

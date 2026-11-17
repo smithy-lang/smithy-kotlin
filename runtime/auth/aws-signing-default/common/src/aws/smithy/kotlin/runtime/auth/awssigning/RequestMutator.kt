@@ -5,7 +5,6 @@
 package aws.smithy.kotlin.runtime.auth.awssigning
 
 import aws.smithy.kotlin.runtime.http.request.HttpRequest
-import aws.smithy.kotlin.runtime.time.TimestampFormat
 
 /**
  * An object that can mutate requests to include signing attributes.
@@ -61,12 +60,9 @@ internal class DefaultRequestMutator : RequestMutator {
  * Formats a credential scope consisting of a signing date, region (SigV4 only), service, and a signature type
  */
 internal val AwsSigningConfig.credentialScope: String
-    get() {
-        val signingDate = signingDate.format(TimestampFormat.ISO_8601_CONDENSED_DATE)
-        return when (algorithm) {
-            AwsSigningAlgorithm.SIGV4 -> "$signingDate/$region/$service/aws4_request"
-            AwsSigningAlgorithm.SIGV4_ASYMMETRIC -> "$signingDate/$service/aws4_request"
-        }
+    get() = when (algorithm) {
+        AwsSigningAlgorithm.SIGV4 -> "$formattedSigningDateOnly/$region/$service/aws4_request"
+        AwsSigningAlgorithm.SIGV4_ASYMMETRIC -> "$formattedSigningDateOnly/$service/aws4_request"
     }
 
 /**
