@@ -66,6 +66,15 @@ public open class ErrorMetadata {
          * Set if an error represents a throttling condition
          */
         public val ThrottlingError: AttributeKey<Boolean> = AttributeKey("aws.smithy.kotlin#ThrottlingError")
+
+        /**
+         * Set if the error will not succeed on retry without external action - for example an expired SSO session,
+         * a revoked role, or a disabled region.
+         *
+         * A refresh cache raises these immediately instead of applying static stability or the refresh backoff. The
+         * provider that recognizes the condition sets it, because nothing further up has the service knowledge to.
+         */
+        public val NonRecoverable: AttributeKey<Boolean> = AttributeKey("aws.smithy.kotlin#NonRecoverable")
     }
 
     public val isRetryable: Boolean
@@ -73,6 +82,9 @@ public open class ErrorMetadata {
 
     public val isThrottling: Boolean
         get() = attributes.getOrNull(ThrottlingError) ?: false
+
+    public val isNonRecoverable: Boolean
+        get() = attributes.getOrNull(NonRecoverable) ?: false
 
     public val clientContext: List<ClientErrorContext>
         get() = attributes.getOrNull(ClientContext).orEmpty()
