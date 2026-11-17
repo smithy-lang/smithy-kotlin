@@ -12,6 +12,7 @@ import aws.smithy.kotlin.runtime.httptest.TestWithLocalServer
 import aws.smithy.kotlin.runtime.io.SdkBuffer
 import aws.smithy.kotlin.runtime.io.SdkByteChannel
 import aws.smithy.kotlin.runtime.io.SdkByteReadChannel
+import aws.smithy.kotlin.runtime.io.source
 import aws.smithy.kotlin.runtime.io.use
 import aws.smithy.kotlin.runtime.net.Host
 import aws.smithy.kotlin.runtime.net.Scheme
@@ -27,6 +28,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withTimeout
 import kotlin.test.Test
+import kotlin.test.assertContains
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 import kotlin.test.assertTrue
@@ -34,20 +36,24 @@ import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.seconds
 
 private val READ_TIMEOUT = 1.seconds
+private val WRITE_TIMEOUT = 1.seconds
 
-// long enough that a test only passes if the engine enforces READ_TIMEOUT
+// long enough that a test only passes if the engine enforces its timeouts
 private val SERVER_STALL = 30.seconds
 
-// bounds each test so a missing read timeout fails it instead of hanging the build
+// bounds each test so a missing timeout fails it instead of hanging the build
 private val TEST_TIMEOUT = 10.seconds
+
+// far more than the OS socket buffers hold, so the upload stalls when the server stops reading
+private const val LARGE_UPLOAD_SIZE = 64 * 1024 * 1024
 
 private const val CHUNK = "0123456789abcdef"
 private const val CHUNK_COUNT = 4
 
-// shorter than READ_TIMEOUT per gap, longer than READ_TIMEOUT in total
+// shorter than either timeout per gap, longer than either in total
 private val CHUNK_GAP = 400.milliseconds
 
-class ReadTimeoutTest : TestWithLocalServer() {
+class SocketTimeoutTest : TestWithLocalServer() {
     override val server = embeddedServer(CIO, serverPort) {
         routing {
             get("/no-response") {
@@ -74,6 +80,11 @@ class ReadTimeoutTest : TestWithLocalServer() {
                 }
             }
 
+            post("/no-read") {
+                delay(SERVER_STALL)
+                call.respondText("too late")
+            }
+
             post("/echo") {
                 val body = call.receiveText()
                 call.respondText(body)
@@ -95,6 +106,7 @@ class ReadTimeoutTest : TestWithLocalServer() {
         CrtHttpEngine {
             connectTimeout = 1.seconds
             socketReadTimeout = READ_TIMEOUT
+            socketWriteTimeout = WRITE_TIMEOUT
         }.use { engine ->
             withTimeout(TEST_TIMEOUT) {
                 block(SdkHttpClient(engine))
@@ -102,7 +114,7 @@ class ReadTimeoutTest : TestWithLocalServer() {
         }
     }
 
-    private fun assertReadTimeout(ex: HttpException) {
+    private fun assertSocketTimeout(ex: HttpException) {
         assertEquals(HttpErrorCode.SOCKET_TIMEOUT, ex.errorCode)
         assertTrue(ex.sdkErrorMetadata.isRetryable)
     }
@@ -114,7 +126,7 @@ class ReadTimeoutTest : TestWithLocalServer() {
         val ex = assertFailsWith<HttpException> {
             client.call(request("/no-response")).complete()
         }
-        assertReadTimeout(ex)
+        assertSocketTimeout(ex)
     }
 
     @Test
@@ -125,7 +137,7 @@ class ReadTimeoutTest : TestWithLocalServer() {
             val ex = assertFailsWith<HttpException> {
                 call.response.body.readAll()
             }
-            assertReadTimeout(ex)
+            assertSocketTimeout(ex)
         } finally {
             call.complete()
         }
@@ -142,8 +154,8 @@ class ReadTimeoutTest : TestWithLocalServer() {
     }
 
     @Test
-    fun testSlowRequestBodyDoesNotCountTowardReadTimeout() = testWithEngine { client ->
-        // the upload takes longer than the read timeout, so the timer must not start until it's fully sent
+    fun testSlowRequestBodyDoesNotTimeOut() = testWithEngine { client ->
+        // the upload takes longer than either timeout in total, but the socket can always be written to
         val payload = CHUNK.repeat(CHUNK_COUNT)
         val bodyChan = SdkByteChannel()
         val req = request("/echo", HttpMethod.POST).apply {
@@ -170,5 +182,30 @@ class ReadTimeoutTest : TestWithLocalServer() {
             call.complete()
             writer.join()
         }
+    }
+
+    @Test
+    fun testStalledRequestBodyTimesOut() = testWithEngine { client ->
+        val req = request("/no-read", HttpMethod.POST).apply {
+            body = HttpBody.fromBytes(ByteArray(LARGE_UPLOAD_SIZE))
+        }
+        val ex = assertFailsWith<HttpException> {
+            client.call(req).complete()
+        }
+        assertSocketTimeout(ex)
+        assertContains(ex.message!!, "socket write timed out")
+    }
+
+    @Test
+    fun testStalledChunkedRequestBodyTimesOut() = testWithEngine { client ->
+        val req = request("/no-read", HttpMethod.POST).apply {
+            headers.append("Transfer-Encoding", "chunked")
+            body = ByteArray(LARGE_UPLOAD_SIZE).source().toHttpBody()
+        }
+        val ex = assertFailsWith<HttpException> {
+            client.call(req).complete()
+        }
+        assertSocketTimeout(ex)
+        assertContains(ex.message!!, "socket write timed out")
     }
 }

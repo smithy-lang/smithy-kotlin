@@ -1,0 +1,5 @@
+{
+    "id": "b323f9d7-f7fa-4f77-bf97-1f0581cbf300",
+    "type": "bugfix",
+    "description": "Enforce `socketWriteTimeout` in `CrtHttpEngine`. A request whose body can't be sent for longer than the timeout now fails with a retryable `HttpException` (`SOCKET_TIMEOUT`) instead of waiting forever"
+}

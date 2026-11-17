@@ -21,7 +21,6 @@ import aws.smithy.kotlin.runtime.telemetry.logging.logger
 import kotlinx.atomicfu.locks.reentrantLock
 import kotlinx.atomicfu.locks.withLock
 import kotlinx.coroutines.DelicateCoroutinesApi
-import kotlinx.coroutines.Job
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.selects.select
 import kotlinx.coroutines.withTimeoutOrNull
@@ -34,6 +33,8 @@ import kotlin.time.Duration
  * @param conn The HTTP connection used to make the request. Will be closed when the response handler completes
  * @param readTimeout The maximum time to wait for response headers or for the next chunk of response body data. When
  * it elapses the connection is shut down and the wait fails with [HttpErrorCode.SOCKET_TIMEOUT].
+ * @param writeTimeout The maximum time CRT may go without being able to send more of the request body. When it
+ * elapses the connection is shut down and the wait for the response fails with [HttpErrorCode.SOCKET_TIMEOUT].
  */
 @OptIn(DelicateCoroutinesApi::class)
 internal class SdkStreamResponseHandler(
@@ -41,6 +42,7 @@ internal class SdkStreamResponseHandler(
     private val callContext: CoroutineContext,
     private val windowSizeBytes: Int,
     private val readTimeout: Duration = Duration.INFINITE,
+    private val writeTimeout: Duration = Duration.INFINITE,
 ) : HttpStreamResponseHandler {
     // TODO - need to cancel the stream when the body is closed from the caller side early.
     // There is no great way to do that currently without either (1) closing the connection or (2) throwing an
@@ -109,7 +111,7 @@ internal class SdkStreamResponseHandler(
         // Reads from [bodyChan] drive CRT window replenishment: as the downstream consumer drains bytes we hand the
         // same number of bytes back to the flow-control window.
         val ch = WindowManagedReadChannel(bodyChan, readTimeout, ::onDataConsumed) {
-            failOnReadTimeout("waiting for response body data")
+            failOnTimeout("socket read timed out after $readTimeout waiting for response body data")
         }
         bodyConsumable = true
         return object : HttpBody.ChannelContent() {
@@ -263,36 +265,49 @@ internal class SdkStreamResponseHandler(
     }
 
     /**
-     * Wait for the response headers. The [readTimeout] only starts once [requestSent] completes, so time spent
-     * sending a slow request body doesn't count against it. A `null` [requestSent] means the request is already sent.
+     * Wait for the response headers. While [sendProgress] shows the request body is still being sent, the
+     * [writeTimeout] applies. The [readTimeout] only starts once the body is sent, so a slow upload doesn't count
+     * against it. A `null` [sendProgress] means the request is already sent.
      */
-    internal suspend fun waitForResponse(requestSent: Job? = null): HttpResponse {
-        if (requestSent != null && !requestSent.isCompleted) {
-            // the server may respond (or the stream may fail) before the request body is fully sent
-            val early = select<HttpResponse?> {
-                responseReady.onReceiveCatching { it.getOrThrow() }
-                requestSent.onJoin { null }
+    internal suspend fun waitForResponse(sendProgress: RequestSendProgress? = null): HttpResponse {
+        if (sendProgress != null) {
+            while (!sendProgress.sent.isCompleted) {
+                val remaining = writeTimeout - sendProgress.idleTime
+                if (remaining <= Duration.ZERO) throw failOnWriteTimeout()
+
+                // the server may respond (or the stream may fail) before the request body is fully sent
+                val early = withTimeoutOrNull(remaining) {
+                    select<HttpResponse?> {
+                        responseReady.onReceiveCatching { it.getOrThrow() }
+                        sendProgress.sent.onJoin { null }
+                    }
+                }
+                if (early != null) return early
             }
-            if (early != null) return early
         }
 
         return withTimeoutOrNull(readTimeout) { responseReady.receive() }
-            ?: throw failOnReadTimeout("waiting for response headers")
+            ?: throw failOnTimeout("socket read timed out after $readTimeout waiting for response headers")
     }
 
     /**
-     * Shut down the connection after a read timeout and fail any body reader. Returns the exception to throw.
+     * Shut down the connection after the request body stopped being sent for [writeTimeout]. Returns the exception
+     * to throw.
      */
-    private fun failOnReadTimeout(waitingFor: String): HttpException {
-        val ex = HttpException(
-            "socket read timed out after $readTimeout $waitingFor",
-            errorCode = HttpErrorCode.SOCKET_TIMEOUT,
-            retryable = true,
-        )
-        logger.debug { "read timeout $waitingFor, shutting down connection ${conn.id}" }
+    internal fun failOnWriteTimeout(): HttpException = failOnTimeout(
+        "socket write timed out after $writeTimeout sending the request body",
+    )
+
+    /**
+     * Shut down the connection after a timeout and fail any waiter or body reader. Returns the exception to throw.
+     */
+    private fun failOnTimeout(message: String): HttpException {
+        val ex = HttpException(message, errorCode = HttpErrorCode.SOCKET_TIMEOUT, retryable = true)
+        logger.debug { "$message; shutting down connection ${conn.id}" }
         lock.withLock {
             if (!streamCompleted) shutdownConnection()
         }
+        responseReady.close(ex)
         bodyChan.close(ex)
         return ex
     }
