@@ -309,6 +309,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                 "DuplexClientErrorInput",
 
                 // Clients correct missing required output members to defaults (error correction) rather than fail
+                // Internal ref: P565422136
                 "MissingRequiredInitialResponseOutput",
                 "DuplexMissingRequiredInitialResponseOutput",
             ),
