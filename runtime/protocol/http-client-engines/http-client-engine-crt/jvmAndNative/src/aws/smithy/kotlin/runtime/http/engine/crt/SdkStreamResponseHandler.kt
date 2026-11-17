@@ -9,6 +9,8 @@ import aws.sdk.kotlin.crt.http.*
 import aws.sdk.kotlin.crt.io.Buffer
 import aws.smithy.kotlin.runtime.http.HeadersBuilder
 import aws.smithy.kotlin.runtime.http.HttpBody
+import aws.smithy.kotlin.runtime.http.HttpErrorCode
+import aws.smithy.kotlin.runtime.http.HttpException
 import aws.smithy.kotlin.runtime.http.HttpStatusCode
 import aws.smithy.kotlin.runtime.http.isInformational
 import aws.smithy.kotlin.runtime.http.response.HttpResponse
@@ -19,19 +21,26 @@ import aws.smithy.kotlin.runtime.telemetry.logging.logger
 import kotlinx.atomicfu.locks.reentrantLock
 import kotlinx.atomicfu.locks.withLock
 import kotlinx.coroutines.DelicateCoroutinesApi
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.selects.select
+import kotlinx.coroutines.withTimeoutOrNull
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.cancellation.CancellationException
+import kotlin.time.Duration
 
 /**
  * Implements the CRT stream response interface which proxies the response from the CRT to the SDK
  * @param conn The HTTP connection used to make the request. Will be closed when the response handler completes
+ * @param readTimeout The maximum time to wait for response headers or for the next chunk of response body data. When
+ * it elapses the connection is shut down and the wait fails with [HttpErrorCode.SOCKET_TIMEOUT].
  */
 @OptIn(DelicateCoroutinesApi::class)
 internal class SdkStreamResponseHandler(
     private val conn: HttpClientConnection,
     private val callContext: CoroutineContext,
     private val windowSizeBytes: Int,
+    private val readTimeout: Duration = Duration.INFINITE,
 ) : HttpStreamResponseHandler {
     // TODO - need to cancel the stream when the body is closed from the caller side early.
     // There is no great way to do that currently without either (1) closing the connection or (2) throwing an
@@ -99,7 +108,9 @@ internal class SdkStreamResponseHandler(
     private fun createHttpResponseBody(contentLength: Long?): HttpBody {
         // Reads from [bodyChan] drive CRT window replenishment: as the downstream consumer drains bytes we hand the
         // same number of bytes back to the flow-control window.
-        val ch = WindowManagedReadChannel(bodyChan, ::onDataConsumed)
+        val ch = WindowManagedReadChannel(bodyChan, readTimeout, ::onDataConsumed) {
+            failOnReadTimeout("waiting for response body data")
+        }
         bodyConsumable = true
         return object : HttpBody.ChannelContent() {
             override val contentLength: Long? = contentLength
@@ -251,7 +262,47 @@ internal class SdkStreamResponseHandler(
         stream.close()
     }
 
-    internal suspend fun waitForResponse(): HttpResponse = responseReady.receive()
+    /**
+     * Wait for the response headers. The [readTimeout] only starts once [requestSent] completes, so time spent
+     * sending a slow request body doesn't count against it. A `null` [requestSent] means the request is already sent.
+     */
+    internal suspend fun waitForResponse(requestSent: Job? = null): HttpResponse {
+        if (requestSent != null && !requestSent.isCompleted) {
+            // the server may respond (or the stream may fail) before the request body is fully sent
+            val early = select<HttpResponse?> {
+                responseReady.onReceiveCatching { it.getOrThrow() }
+                requestSent.onJoin { null }
+            }
+            if (early != null) return early
+        }
+
+        return withTimeoutOrNull(readTimeout) { responseReady.receive() }
+            ?: throw failOnReadTimeout("waiting for response headers")
+    }
+
+    /**
+     * Shut down the connection after a read timeout and fail any body reader. Returns the exception to throw.
+     */
+    private fun failOnReadTimeout(waitingFor: String): HttpException {
+        val ex = HttpException(
+            "socket read timed out after $readTimeout $waitingFor",
+            errorCode = HttpErrorCode.SOCKET_TIMEOUT,
+            retryable = true,
+        )
+        logger.debug { "read timeout $waitingFor, shutting down connection ${conn.id}" }
+        lock.withLock {
+            if (!streamCompleted) shutdownConnection()
+        }
+        bodyChan.close(ex)
+        return ex
+    }
+
+    // must hold [lock]
+    private fun shutdownConnection() {
+        if (cancelled) return
+        conn.shutdown()
+        cancelled = true
+    }
 
     /**
      * Invoked only after the consumer is finished with the response and it is safe to cleanup resources
@@ -268,8 +319,7 @@ internal class SdkStreamResponseHandler(
 
             if (forceClose) {
                 logger.debug { "stream did not complete before job, forcing connection shutdown! handler=$this; conn=$conn; conn.id=${conn.id}; stream=$crtStream" }
-                conn.shutdown()
-                cancelled = true
+                shutdownConnection()
                 // wake any consumer suspended reading the body; onResponseComplete may never fire once we've
                 // force-shutdown the connection. close is idempotent so this is a no-op if already closed.
                 bodyChan.close(CancellationException("response stream did not complete before the call was finished"))
@@ -287,15 +337,24 @@ internal class SdkStreamResponseHandler(
  * Every successful [read] hands the number of bytes read back to [onConsumed], which increments the CRT stream
  * window. This ties backpressure to actual downstream consumption: CRT will not deliver more data until the
  * consumer has drained (and thereby acknowledged) previously delivered bytes.
+ *
+ * A read that has to wait for CRT to deliver more data fails with the exception from [onReadTimeout] if nothing
+ * arrives within [readTimeout].
  */
 private class WindowManagedReadChannel(
     private val delegate: SdkByteChannel,
+    private val readTimeout: Duration,
     private val onConsumed: (Int) -> Unit,
+    private val onReadTimeout: () -> Throwable,
 ) : SdkByteReadChannel by delegate {
     override suspend fun read(sink: SdkBuffer, limit: Long): Long {
         // ORDERING: free buffer space (delegate.read) before returning window credit (onConsumed). Crediting first
         // would let CRT deliver into a still-full buffer, breaking the "channel capacity == window" guarantee.
-        val rc = delegate.read(sink, limit)
+        val rc = if (delegate.availableForRead > 0 || delegate.isClosedForRead) {
+            delegate.read(sink, limit)
+        } else {
+            withTimeoutOrNull(readTimeout) { delegate.read(sink, limit) } ?: throw onReadTimeout()
+        }
         if (rc > 0) onConsumed(rc.toInt())
         return rc
     }

@@ -5,7 +5,9 @@
 
 package aws.smithy.kotlin.runtime.http.engine.crt
 
+import aws.sdk.kotlin.crt.http.HttpRequestBodyStream
 import aws.sdk.kotlin.crt.http.HttpVersion
+import aws.sdk.kotlin.crt.io.MutableBuffer
 import aws.smithy.kotlin.runtime.http.HttpCall
 import aws.smithy.kotlin.runtime.http.config.EngineFactory
 import aws.smithy.kotlin.runtime.http.engine.HttpClientEngine
@@ -16,6 +18,8 @@ import aws.smithy.kotlin.runtime.io.internal.SdkDispatchers
 import aws.smithy.kotlin.runtime.operation.ExecutionContext
 import aws.smithy.kotlin.runtime.telemetry.logging.logger
 import aws.smithy.kotlin.runtime.time.Instant
+import kotlinx.coroutines.CompletableJob
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.job
 import kotlinx.coroutines.sync.Semaphore
 import kotlinx.coroutines.sync.withPermit
@@ -38,9 +42,6 @@ public class CrtHttpEngine(public override val config: CrtHttpEngineConfig) : Ht
 
     // FIXME - re-enable when SLF4j default is available
     // init {
-    //     if (config.socketReadTimeout != CrtHttpEngineConfig.Default.socketReadTimeout) {
-    //         logger.warn { "CrtHttpEngine does not support socketReadTimeout(${config.socketReadTimeout}); ignoring" }
-    //     }
     //     if (config.socketWriteTimeout != CrtHttpEngineConfig.Default.socketWriteTimeout) {
     //         logger.warn { "CrtHttpEngine does not support socketWriteTimeout(${config.socketWriteTimeout}); ignoring" }
     //     }
@@ -64,7 +65,12 @@ public class CrtHttpEngine(public override val config: CrtHttpEngineConfig) : Ht
         val conn = connectionManager.acquire(request)
         logger.trace { "Acquired connection ${conn.id} (${conn.version})" }
 
-        val respHandler = SdkStreamResponseHandler(conn, callContext, config.initialWindowSizeBytes)
+        val respHandler = SdkStreamResponseHandler(
+            conn,
+            callContext,
+            config.initialWindowSizeBytes,
+            config.socketReadTimeout,
+        )
         callContext.job.invokeOnCompletion {
             logger.trace { "completing handler; cause=$it" }
             // ensures the stream is driven to completion regardless of what the downstream consumer does
@@ -73,11 +79,23 @@ public class CrtHttpEngine(public override val config: CrtHttpEngineConfig) : Ht
 
         val reqTime = Instant.now()
 
+        // completes once CRT has taken the whole request body; the read timeout only applies after that
+        val requestSent = Job()
+
         val stream = mapCrtException {
             val engineRequest = if (conn.version == HttpVersion.HTTP_2) {
                 request.toHttp2Request(callContext)
             } else {
                 request.toCrtRequest(callContext)
+            }.let { crtRequest ->
+                val body = crtRequest.body
+                if (body == null || request.body.contentLength == 0L) {
+                    // a chunked body has no body stream; it's fully sent below before waiting for the response
+                    requestSent.complete()
+                    crtRequest
+                } else {
+                    crtRequest.copy(body = SendCompletionBodyStream(body, requestSent))
+                }
             }
             conn.makeRequest(engineRequest, respHandler).also { stream ->
                 stream.activate()
@@ -94,7 +112,7 @@ public class CrtHttpEngine(public override val config: CrtHttpEngineConfig) : Ht
             }
         }
 
-        val resp = respHandler.waitForResponse()
+        val resp = respHandler.waitForResponse(requestSent)
 
         return HttpCall(request, resp, reqTime, Instant.now(), callContext)
     }
@@ -104,4 +122,18 @@ public class CrtHttpEngine(public override val config: CrtHttpEngineConfig) : Ht
         // SAFETY: shutdown is only invoked once AND only after all requests have completed and no more are coming
         connectionManager.close()
     }
+}
+
+/**
+ * Completes [sent] once [delegate] reports that the whole request body has been written.
+ */
+private class SendCompletionBodyStream(
+    private val delegate: HttpRequestBodyStream,
+    private val sent: CompletableJob,
+) : HttpRequestBodyStream {
+    override fun sendRequestBody(buffer: MutableBuffer): Boolean = delegate.sendRequestBody(buffer).also { done ->
+        if (done) sent.complete()
+    }
+
+    override fun resetPosition(): Boolean = delegate.resetPosition()
 }

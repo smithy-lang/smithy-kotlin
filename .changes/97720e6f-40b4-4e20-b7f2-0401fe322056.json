@@ -1,0 +1,5 @@
+{
+    "id": "97720e6f-40b4-4e20-b7f2-0401fe322056",
+    "type": "bugfix",
+    "description": "Enforce `socketReadTimeout` in `CrtHttpEngine`. A request whose response headers or body data stall for longer than the timeout now fails with a retryable `HttpException` (`SOCKET_TIMEOUT`) instead of waiting forever"
+}
