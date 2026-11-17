@@ -38,13 +38,6 @@ public class CrtHttpEngine(public override val config: CrtHttpEngineConfig) : Ht
 
     // FIXME - re-enable when SLF4j default is available
     // init {
-    //     if (config.socketReadTimeout != CrtHttpEngineConfig.Default.socketReadTimeout) {
-    //         logger.warn { "CrtHttpEngine does not support socketReadTimeout(${config.socketReadTimeout}); ignoring" }
-    //     }
-    //     if (config.socketWriteTimeout != CrtHttpEngineConfig.Default.socketWriteTimeout) {
-    //         logger.warn { "CrtHttpEngine does not support socketWriteTimeout(${config.socketWriteTimeout}); ignoring" }
-    //     }
-    //
     //     if (config.hostResolver !== HostResolver.Default) {
     //         // FIXME - there is no way to currently plugin a JVM based host resolver to CRT. (see V804672153)
     //         logger.warn { "CrtHttpEngine does not support custom HostResolver implementations; ignoring" }
@@ -64,7 +57,13 @@ public class CrtHttpEngine(public override val config: CrtHttpEngineConfig) : Ht
         val conn = connectionManager.acquire(request)
         logger.trace { "Acquired connection ${conn.id} (${conn.version})" }
 
-        val respHandler = SdkStreamResponseHandler(conn, callContext, config.initialWindowSizeBytes)
+        val respHandler = SdkStreamResponseHandler(
+            conn,
+            callContext,
+            config.initialWindowSizeBytes,
+            config.socketReadTimeout,
+            config.socketWriteTimeout,
+        )
         callContext.job.invokeOnCompletion {
             logger.trace { "completing handler; cause=$it" }
             // ensures the stream is driven to completion regardless of what the downstream consumer does
@@ -73,11 +72,22 @@ public class CrtHttpEngine(public override val config: CrtHttpEngineConfig) : Ht
 
         val reqTime = Instant.now()
 
+        val sendProgress = RequestSendProgress()
+
         val stream = mapCrtException {
             val engineRequest = if (conn.version == HttpVersion.HTTP_2) {
                 request.toHttp2Request(callContext)
             } else {
                 request.toCrtRequest(callContext)
+            }.let { crtRequest ->
+                val body = crtRequest.body
+                if (body == null || request.body.contentLength == 0L) {
+                    // a chunked body has no body stream; it's fully sent below before waiting for the response
+                    sendProgress.sent.complete()
+                    crtRequest
+                } else {
+                    crtRequest.copy(body = ProgressTrackingBodyStream(body, sendProgress))
+                }
             }
             conn.makeRequest(engineRequest, respHandler).also { stream ->
                 stream.activate()
@@ -90,11 +100,11 @@ public class CrtHttpEngine(public override val config: CrtHttpEngineConfig) : Ht
 
         if (conn.version != HttpVersion.HTTP_2 && request.isChunked) {
             withContext(SdkDispatchers.IO) {
-                stream.sendChunkedBody(request.body)
+                stream.sendChunkedBody(request.body, config.socketWriteTimeout, respHandler::failOnWriteTimeout)
             }
         }
 
-        val resp = respHandler.waitForResponse()
+        val resp = respHandler.waitForResponse(sendProgress)
 
         return HttpCall(request, resp, reqTime, Instant.now(), callContext)
     }

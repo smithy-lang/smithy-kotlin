@@ -18,13 +18,19 @@ import aws.smithy.kotlin.runtime.io.readAll
 import aws.smithy.kotlin.runtime.io.readToBuffer
 import io.kotest.matchers.string.shouldContain
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.test.currentTime
 import kotlinx.coroutines.test.runTest
+import kotlinx.coroutines.test.testTimeSource
 import kotlinx.coroutines.withTimeout
 import kotlinx.coroutines.yield
 import kotlin.coroutines.EmptyCoroutineContext
 import kotlin.test.*
+import kotlin.time.Duration.Companion.seconds
 
+@OptIn(ExperimentalCoroutinesApi::class)
 class SdkStreamResponseHandlerTest {
     private class MockHttpStream(private val statusCode: Int) : HttpStream {
         var closed: Boolean = false
@@ -57,11 +63,14 @@ class SdkStreamResponseHandlerTest {
         override val id: String = "<mock connection>"
         override val version: HttpVersion = HttpVersion.HTTP_1_1
         var isClosed: Boolean = false
+        var shutdownCount: Int = 0
         override fun close() {
             isClosed = true
         }
         override fun makeRequest(httpReq: HttpRequest, handler: HttpStreamResponseHandler): HttpStream = throw UnsupportedOperationException("not implemented for test")
-        override fun shutdown() { }
+        override fun shutdown() {
+            shutdownCount++
+        }
     }
 
     private val mockConn = MockHttpClientConnection()
@@ -427,5 +436,141 @@ class SdkStreamResponseHandlerTest {
         assertFailsWith<IllegalArgumentException> {
             SdkStreamResponseHandler(mockConn, EmptyCoroutineContext, -1)
         }
+    }
+
+    @Test
+    fun testWaitForResponseTimesOutWithoutHeaders() = runTest {
+        val handler = SdkStreamResponseHandler(mockConn, coroutineContext, DEFAULT_WINDOW_SIZE_BYTES, 5.seconds)
+
+        val ex = assertFailsWith<HttpException> {
+            handler.waitForResponse()
+        }
+        assertEquals(HttpErrorCode.SOCKET_TIMEOUT, ex.errorCode)
+        assertTrue(ex.sdkErrorMetadata.isRetryable)
+        assertEquals(5.seconds.inWholeMilliseconds, currentTime)
+        assertEquals(1, mockConn.shutdownCount)
+
+        // cleanup after the call fails must not shut the connection down again
+        handler.complete()
+        assertEquals(1, mockConn.shutdownCount)
+        assertTrue(mockConn.isClosed)
+    }
+
+    @Test
+    fun testReadTimeoutStartsOnceRequestIsSent() = runTest {
+        val handler = SdkStreamResponseHandler(mockConn, coroutineContext, DEFAULT_WINDOW_SIZE_BYTES, 5.seconds)
+        val sendProgress = RequestSendProgress(testTimeSource)
+        launch {
+            // a slow upload, much longer than the read timeout
+            delay(60.seconds)
+            sendProgress.sent.complete()
+        }
+
+        assertFailsWith<HttpException> {
+            handler.waitForResponse(sendProgress)
+        }
+        assertEquals(65.seconds.inWholeMilliseconds, currentTime)
+    }
+
+    @Test
+    fun testResponseBeforeRequestIsSent() = runTest {
+        val handler = SdkStreamResponseHandler(mockConn, coroutineContext, DEFAULT_WINDOW_SIZE_BYTES, 5.seconds)
+        val stream = MockHttpStream(413)
+        launch {
+            delay(60.seconds)
+            handler.onResponseHeaders(stream, 413, HttpHeaderBlock.MAIN.blockType, listOf())
+            handler.onResponseHeadersDone(stream, HttpHeaderBlock.MAIN.blockType)
+        }
+
+        // the server can answer before the request body is fully sent; that must not wait for (or time out on) it
+        val resp = handler.waitForResponse(RequestSendProgress(testTimeSource))
+        assertEquals(HttpStatusCode.PayloadTooLarge, resp.status)
+        assertEquals(0, mockConn.shutdownCount)
+    }
+
+    @Test
+    fun testStalledBodyReadTimesOut() = runTest {
+        val handler = SdkStreamResponseHandler(mockConn, coroutineContext, DEFAULT_WINDOW_SIZE_BYTES, 5.seconds)
+        val stream = MockHttpStream(200)
+        val headers = listOf(HttpHeader("Content-Length", "1024"))
+        handler.onResponseHeaders(stream, 200, HttpHeaderBlock.MAIN.blockType, headers)
+        handler.onResponseHeadersDone(stream, HttpHeaderBlock.MAIN.blockType)
+
+        launch {
+            // each gap is shorter than the read timeout, then the server stalls
+            repeat(3) {
+                delay(4.seconds)
+                handler.onResponseBody(stream, byteArrayBuffer("chunk".encodeToByteArray()))
+            }
+        }
+
+        val resp = handler.waitForResponse()
+        val respChan = (resp.body as HttpBody.ChannelContent).readFrom()
+        val sink = SdkBuffer()
+        val ex = assertFailsWith<HttpException> {
+            while (true) respChan.read(sink, 1024)
+        }
+        assertEquals("chunk".repeat(3), sink.readUtf8())
+        assertEquals(HttpErrorCode.SOCKET_TIMEOUT, ex.errorCode)
+        assertEquals(17.seconds.inWholeMilliseconds, currentTime)
+        assertEquals(1, mockConn.shutdownCount)
+
+        // later reads see the same failure
+        assertFailsWith<HttpException> { respChan.read(sink, 1024) }
+    }
+
+    @Test
+    fun testStalledUploadTimesOut() = runTest {
+        val handler = SdkStreamResponseHandler(
+            mockConn,
+            coroutineContext,
+            DEFAULT_WINDOW_SIZE_BYTES,
+            writeTimeout = 5.seconds,
+        )
+        val sendProgress = RequestSendProgress(testTimeSource)
+        launch {
+            // CRT asks for body data twice, then the socket stops accepting writes
+            repeat(2) {
+                delay(2.seconds)
+                sendProgress.markActivity()
+            }
+        }
+
+        val ex = assertFailsWith<HttpException> {
+            handler.waitForResponse(sendProgress)
+        }
+        assertEquals(HttpErrorCode.SOCKET_TIMEOUT, ex.errorCode)
+        assertTrue(ex.sdkErrorMetadata.isRetryable)
+        ex.message.shouldContain("write")
+        assertEquals(9.seconds.inWholeMilliseconds, currentTime)
+        assertEquals(1, mockConn.shutdownCount)
+    }
+
+    @Test
+    fun testSteadyUploadDoesNotTimeOut() = runTest {
+        val handler = SdkStreamResponseHandler(
+            mockConn,
+            coroutineContext,
+            DEFAULT_WINDOW_SIZE_BYTES,
+            writeTimeout = 5.seconds,
+        )
+        val stream = MockHttpStream(200)
+        val sendProgress = RequestSendProgress(testTimeSource)
+        launch {
+            // each gap is shorter than the write timeout, the whole upload much longer
+            repeat(15) {
+                delay(4.seconds)
+                sendProgress.markActivity()
+            }
+            sendProgress.sent.complete()
+            delay(1.seconds)
+            handler.onResponseHeaders(stream, 200, HttpHeaderBlock.MAIN.blockType, listOf())
+            handler.onResponseHeadersDone(stream, HttpHeaderBlock.MAIN.blockType)
+        }
+
+        val resp = handler.waitForResponse(sendProgress)
+        assertEquals(HttpStatusCode.OK, resp.status)
+        assertEquals(61.seconds.inWholeMilliseconds, currentTime)
+        assertEquals(0, mockConn.shutdownCount)
     }
 }
