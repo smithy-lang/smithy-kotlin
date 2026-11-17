@@ -28,7 +28,7 @@ private constructor(
 
     @Deprecated("Use TestPlatformProvider.of() instead", replaceWith = ReplaceWith("TestPlatformProvider.of()"))
     @PlannedRemoval(major = 1, minor = 8)
-    public constructor() : this(emptyMap(), emptyMap(), MapFilesystem(), OperatingSystem(OsFamily.Linux, "test"))
+    public constructor() : this(emptyMap(), emptyMap(), MapFilesystem(filePathSeparator = "/"), OperatingSystem(OsFamily.Linux, "test"))
 
     @Deprecated("Use TestPlatformProvider.of() instead", replaceWith = ReplaceWith("TestPlatformProvider.of(env, props, fs.mapValues { (_, v) -> TestFile(v) }, os)"))
     @PlannedRemoval(major = 1, minor = 8)
@@ -37,7 +37,7 @@ private constructor(
         props: Map<String, String> = emptyMap(),
         fs: Map<String, String> = emptyMap(),
         os: OperatingSystem = OperatingSystem(OsFamily.Linux, "test"),
-    ) : this(env, props, MapFilesystem(TestFile.transformMap(fs).toMutableMap()), os)
+    ) : this(env, props, MapFilesystem(TestFile.transformMap(fs).toMutableMap(), separatorFor(os)), os)
 
     @InternalApi
     public companion object {
@@ -46,16 +46,13 @@ private constructor(
             props: Map<String, String> = emptyMap(),
             fs: Map<String, TestFile> = emptyMap(),
             os: OperatingSystem = OperatingSystem(OsFamily.Linux, "test"),
-        ): TestPlatformProvider = TestPlatformProvider(env, props, MapFilesystem(fs.toMutableMap()), os)
+        ): TestPlatformProvider = TestPlatformProvider(env, props, MapFilesystem(fs.toMutableMap(), separatorFor(os)), os)
     }
 
     // ensure HOME directory is set for path normalization. this is mostly for AWS config loader behavior
     private val env = if (env.containsKey("HOME")) env else env.toMutableMap().apply { put("HOME", "/users/test") }
     override val filePathSeparator: String
-        get() = when (os.family) {
-            OsFamily.Windows -> "\\"
-            else -> "/"
-        }
+        get() = separatorFor(os)
 
     override val isJvm: Boolean = true
     override val isAndroid: Boolean = false
@@ -67,6 +64,11 @@ private constructor(
     override fun getProperty(key: String): String? = props[key]
     override fun getAllEnvVars(): Map<String, String> = env
     override fun getenv(key: String): String? = env[key]
+}
+
+private fun separatorFor(os: OperatingSystem): String = when (os.family) {
+    OsFamily.Windows -> "\\"
+    else -> "/"
 }
 
 @InternalApi

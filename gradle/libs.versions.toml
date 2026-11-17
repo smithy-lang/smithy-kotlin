@@ -3,7 +3,7 @@ kotlin-version = "2.4.21"
 dokka-version = "2.2.0"
 jackson-bom-version = "2.22.4"
 
-aws-kotlin-repo-tools-version = "0.6.5"
+aws-kotlin-repo-tools-version = "0.6.7"
 
 # libs
 coroutines-version = "1.11.0"
@@ -40,6 +40,7 @@ jsoup-version = "1.23.2"
 [libraries]
 jackson-bom = { module = "com.fasterxml.jackson:jackson-bom", version.ref = "jackson-bom-version" }
 aws-kotlin-repo-tools-build-support = { module="aws.sdk.kotlin.gradle:build-support", version.ref = "aws-kotlin-repo-tools-version" }
+aws-kotlin-repo-tools-dokka-lazy-load = { module = "aws.sdk.kotlin.gradle:dokka-lazy-load", version.ref = "aws-kotlin-repo-tools-version" }
 
 kotlin-gradle-plugin = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "kotlin-version" }
 kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotlin-version" }
