@@ -86,4 +86,29 @@ class HeaderTest {
             header.encode(buf)
         }.message.shouldContain("Header name length should be in the range [1, 255], got 256")
     }
+
+    // The header-name length limit (255) is measured in UTF-8 bytes, not characters. A multibyte name
+    // whose character count is within range but whose byte length exceeds 255 must be rejected.
+    @Test
+    fun testEncodeMultibyteHeaderNameByteLengthOverLimit() {
+        // "é" is 2 UTF-8 bytes; 128 chars -> 256 bytes (one over the 255-byte limit).
+        val name = "\u00e9".repeat(128)
+        assertEquals(256, name.encodeToByteArray().size)
+        val header = Header(name, HeaderValue.Bool(true))
+        assertFailsWith<IllegalStateException> {
+            header.encode(SdkBuffer())
+        }.message.shouldContain("Header name length should be in the range [1, 255], got 256")
+    }
+
+    @Test
+    fun testEncodeMultibyteHeaderNameByteLengthAtLimit() {
+        // 127 "é" (2 bytes each) + 1 ASCII "a" -> 255 bytes exactly.
+        val name = "\u00e9".repeat(127) + "a"
+        assertEquals(255, name.encodeToByteArray().size)
+        val header = Header(name, HeaderValue.Bool(true))
+        val buf = SdkBuffer()
+        header.encode(buf)
+        val decoded = Header.decode(buf)
+        assertEquals(header, decoded)
+    }
 }

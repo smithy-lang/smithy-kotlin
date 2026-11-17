@@ -24,7 +24,7 @@ import io.ktor.server.netty.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import io.ktor.utils.io.core.remaining
-import io.ktor.utils.io.readRemaining
+import io.ktor.utils.io.readBuffer
 import kotlinx.benchmark.Blackhole
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
@@ -78,7 +78,7 @@ open class HttpEngineBenchmarks {
                 call.respondBytes(largeData)
             }
             post("/upload") {
-                val packet = call.request.receiveChannel().readRemaining()
+                val packet = call.request.receiveChannel().readBuffer()
                 call.respondText("read ${packet.remaining} bytes")
                 packet.close()
             }

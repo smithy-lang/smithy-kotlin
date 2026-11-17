@@ -9,6 +9,7 @@ import aws.smithy.kotlin.codegen.core.CodegenContext
 import aws.smithy.kotlin.codegen.core.ExternalTypes
 import aws.smithy.kotlin.codegen.core.KotlinDelegator
 import aws.smithy.kotlin.codegen.core.KotlinWriter
+import aws.smithy.kotlin.codegen.core.RuntimeTypes
 import aws.smithy.kotlin.codegen.core.defaultName
 import aws.smithy.kotlin.codegen.core.withBlock
 import aws.smithy.kotlin.codegen.integration.KotlinIntegration
@@ -156,8 +157,10 @@ class PaginatorGenerator : KotlinIntegration {
                             write("this.$markerLiteral = cursor")
                         }
                         write(
-                            "val result = this@#1LPaginated.#1L(req)",
+                            "val result = #2T(#3T.PAGINATOR) { this@#1LPaginated.#1L(req) }",
                             operationShape.defaultName(),
+                            RuntimeTypes.Core.BusinessMetrics.withScopedBusinessMetrics,
+                            RuntimeTypes.Core.BusinessMetrics.SmithyBusinessMetric,
                         )
                         write("cursor = result.$nextMarkerLiteral")
 

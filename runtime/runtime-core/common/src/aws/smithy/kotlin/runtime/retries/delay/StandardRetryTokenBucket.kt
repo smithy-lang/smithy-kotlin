@@ -184,6 +184,7 @@ public class StandardRetryTokenBucket internal constructor(
         @InternalApi
         override fun toBuilderApplicator(): RetryTokenBucket.Config.Builder.() -> Unit = {
             if (this is Builder) {
+                useNewRetries = this@Config.useNewRetries
                 useCircuitBreakerMode = this@Config.useCircuitBreakerMode
                 initialTryCost = this@Config.initialTryCost
                 initialTrySuccessIncrement = this@Config.initialTrySuccessIncrement
@@ -198,7 +199,7 @@ public class StandardRetryTokenBucket internal constructor(
          * A mutable builder for a [Config]
          */
         public class Builder(platform: PlatformEnvironProvider = PlatformProvider.System) : RetryTokenBucket.Config.Builder {
-            internal val useNewRetries = CoreSettings.resolveNewRetriesEnabled(platform)
+            public var useNewRetries: Boolean = CoreSettings.resolveNewRetriesEnabled(platform)
 
             /**
              * When `true`, indicates that attempts to acquire tokens or schedule retries should fail if all capacity

@@ -14,7 +14,23 @@ import aws.smithy.kotlin.runtime.InternalApi
  * in a tag called "boo", pass an instance of XmlList to the FieldDescriptor of `XmlList(elementName="boo")`.
  */
 @InternalApi
-public interface FieldTrait
+public interface FieldTrait {
+    /**
+     * The name a field carrying this trait is encoded into on the wire, or null if this trait doesn't name
+     * the field. Traits that do carry a name (e.g. `JsonSerialName`) override this so that resolving a
+     * field's wire name stays format-agnostic.
+     */
+    public val serialName: String?
+        get() = null
+}
+
+/**
+ * The name this field is encoded into on the wire, from whichever of its traits carries one.
+ */
+internal val SdkFieldDescriptor.serialName: String
+    get() = requireNotNull(traits.firstNotNullOfOrNull { it.serialName }) {
+        "Expected to find a trait carrying a serial name in $this but none was present."
+    }
 
 /**
  * Denotes that a Map or List may contain null values

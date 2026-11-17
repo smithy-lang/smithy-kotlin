@@ -16,6 +16,11 @@ import software.amazon.smithy.model.shapes.StructureShape
 import software.amazon.smithy.waiters.*
 
 /**
+ * Namespace of the synthetic shape wrapping an operation's input and output for inputOutput acceptors.
+ */
+internal const val SYNTHETIC_INPUT_OUTPUT_NAMESPACE = "software.amazon.smithy.kotlin.codegen.rendering.waiters.synthetic"
+
+/**
  * Renders an individual acceptor for a waiter.
  */
 private fun KotlinWriter.renderAcceptor(wi: WaiterInfo, acceptor: Acceptor) {
@@ -101,7 +106,7 @@ private fun KotlinWriter.renderPathAcceptor(wi: WaiterInfo, directive: String, i
 }
 
 private fun buildSyntheticInputOutputShape(opName: String, input: ShapeId, output: ShapeId): StructureShape = StructureShape.Builder()
-    .id("software.amazon.smithy.kotlin.codegen.rendering.waiters.synthetic#${opName}RequestResponse")
+    .id("$SYNTHETIC_INPUT_OUTPUT_NAMESPACE#${opName}RequestResponse")
     .addMember("input", input)
     .addMember("output", output)
     .build()
