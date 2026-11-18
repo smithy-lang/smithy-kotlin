@@ -32,6 +32,12 @@ kotlin {
         nativeMain {
             dependencies {
                 api(libs.crt.kotlin)
+            }
+        }
+
+        // nativeAndWebMain only exists when Kotlin/Native or wasmJs targets are enabled
+        matching { it.name == "nativeAndWebMain" }.configureEach {
+            dependencies {
                 implementation(libs.kotlin.multiplatform.bignum)
             }
         }
