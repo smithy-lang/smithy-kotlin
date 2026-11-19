@@ -1,5 +1,11 @@
 # Changelog
 
+## [1.7.17] - 11/17/2026
+
+### Fixes
+* (**codegen**) Redact sensitive enum values and union variants that target sensitive shapes in generated `toString()`, and use enum wire values for JMESPath `keys()` on enum-keyed maps
+* [#1743](https://github.com/smithy-lang/smithy-kotlin/issues/1743) Restore dispatching of file IO to `Dispatchers.IO`. `readFileOrNull` and `writeFile` are no longer deprecated, and `readFileOrNull` again returns null on any IO error rather than throwing. Add suspending `Filesystem` APIs and deprecate the blocking ones
+
 ## [1.7.16] - 11/10/2026
 
 ## [1.7.15] - 11/09/2026
