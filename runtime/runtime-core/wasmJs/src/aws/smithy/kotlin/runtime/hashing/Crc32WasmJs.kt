@@ -1,0 +1,14 @@
+/*
+ * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
+ * SPDX-License-Identifier: Apache-2.0
+ */
+package aws.smithy.kotlin.runtime.hashing
+
+import aws.smithy.kotlin.runtime.InternalApi
+
+@InternalApi
+public actual class Crc32 actual constructor() : Crc32Base() {
+    actual override fun digestValue(): UInt = TODO("Not yet implemented on wasmJs: hashing")
+    actual override fun update(input: ByteArray, offset: Int, length: Int): Unit = TODO("Not yet implemented on wasmJs: hashing")
+    actual override fun reset(): Unit = TODO("Not yet implemented on wasmJs: hashing")
+}

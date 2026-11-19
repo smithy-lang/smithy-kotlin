@@ -6,6 +6,7 @@ package aws.smithy.kotlin.runtime.telemetry.metrics.aggregation
 
 import aws.smithy.kotlin.runtime.InternalApi
 import aws.smithy.kotlin.runtime.io.Closeable
+import aws.smithy.kotlin.runtime.io.internal.runBlockingBridge
 import aws.smithy.kotlin.runtime.telemetry.TelemetryProvider
 import aws.smithy.kotlin.runtime.telemetry.context.ContextManager
 import aws.smithy.kotlin.runtime.telemetry.logging.Logger
@@ -14,7 +15,6 @@ import aws.smithy.kotlin.runtime.telemetry.logging.getLogger
 import aws.smithy.kotlin.runtime.telemetry.metrics.MeterProvider
 import aws.smithy.kotlin.runtime.telemetry.trace.TracerProvider
 import aws.smithy.kotlin.runtime.util.PlatformProvider
-import kotlinx.coroutines.runBlocking
 
 /**
  * A [TelemetryProvider] that aggregates metrics in process and exports them periodically.
@@ -85,7 +85,7 @@ public class AggregatingTelemetryProvider private constructor(
      * last interval is lost. The blocking window is one export.
      */
     override fun close() {
-        runBlocking { reader.close() }
+        runBlockingBridge { reader.close() }
     }
 
     public companion object {

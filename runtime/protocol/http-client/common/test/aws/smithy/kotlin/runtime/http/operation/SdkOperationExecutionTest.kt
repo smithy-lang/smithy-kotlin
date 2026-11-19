@@ -29,7 +29,7 @@ import kotlin.time.Duration.Companion.milliseconds
 
 class SdkOperationExecutionTest {
     @Test
-    fun testAttemptTimeoutWithLongCall(): Unit = runTest {
+    fun testAttemptTimeoutWithLongCall() = runTest {
         val serialized = HttpRequestBuilder()
         val op = newTestOperation<Unit, Unit>(serialized, Unit).apply {
             context[HttpOperationContext.AttemptTimeout] = 200.milliseconds
@@ -44,7 +44,7 @@ class SdkOperationExecutionTest {
     }
 
     @Test
-    fun testAttemptTimeoutWithShortCall(): Unit = runTest {
+    fun testAttemptTimeoutWithShortCall() = runTest {
         val serialized = HttpRequestBuilder()
         val op = newTestOperation<Unit, Unit>(serialized, Unit).apply {
             context[HttpOperationContext.AttemptTimeout] = 300.milliseconds
@@ -59,7 +59,7 @@ class SdkOperationExecutionTest {
     }
 
     @Test
-    fun testCallTimeoutWithLongCall(): Unit = runTest {
+    fun testCallTimeoutWithLongCall() = runTest {
         val serialized = HttpRequestBuilder()
         val op = newTestOperation<Unit, Unit>(serialized, Unit).apply {
             context[HttpOperationContext.CallTimeout] = 200.milliseconds
@@ -73,7 +73,7 @@ class SdkOperationExecutionTest {
     }
 
     @Test
-    fun testCallTimeoutWithShortCall(): Unit = runTest {
+    fun testCallTimeoutWithShortCall() = runTest {
         val serialized = HttpRequestBuilder()
         val op = newTestOperation<Unit, Unit>(serialized, Unit).apply {
             context[HttpOperationContext.CallTimeout] = 300.milliseconds
