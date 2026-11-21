@@ -103,6 +103,15 @@ class EnvironmentProxySelectorTest {
 
         // even though http.noProxyHosts is configured to go ProxyConfig.Direct, nonProxyHosts is present and should be prioritized
         TestCase(expectedProxyConfig, props = mapOf("http.nonProxyHosts" to "", "http.noProxyHosts" to "example.com|.amazon.com") + httpsProxyProps),
+
+        // IPv6 literals in no_proxy / http.nonProxyHosts
+        TestCase(expectedProxyConfig, env = httpsProxyEnv + mapOf("no_proxy" to "localhost,127.0.0.1,::1")),
+        TestCase(ProxyConfig.Direct, "https://[::1]", env = httpsProxyEnv + mapOf("no_proxy" to "localhost,127.0.0.1,::1")),
+        TestCase(ProxyConfig.Direct, "https://[2001:db8::1]", env = httpsProxyEnv + mapOf("no_proxy" to "[2001:db8::1]")),
+        TestCase(ProxyConfig.Direct, "https://[2001:db8::1]:8443", env = httpsProxyEnv + mapOf("no_proxy" to "[2001:db8::1]:8443")),
+        TestCase(expectedProxyConfig, "https://[2001:db8::1]", env = httpsProxyEnv + mapOf("no_proxy" to "[2001:db8::1]:8443")),
+        TestCase(expectedProxyConfig, props = mapOf("http.nonProxyHosts" to "localhost|127.*|[::1]") + httpsProxyProps),
+        TestCase(ProxyConfig.Direct, "https://[::1]", props = mapOf("http.nonProxyHosts" to "localhost|127.*|[::1]") + httpsProxyProps),
     )
 
     @Test

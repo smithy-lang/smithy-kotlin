@@ -1,0 +1,8 @@
+{
+    "id": "4534cf6c-8c40-47c8-8f45-58ffc13f4f9b",
+    "type": "bugfix",
+    "description": "Fix `NumberFormatException` from the environment proxy selector when `no_proxy` or `http.nonProxyHosts` contains an IPv6 address",
+    "issues": [
+        "smithy-lang/smithy-kotlin#1864"
+    ]
+}
