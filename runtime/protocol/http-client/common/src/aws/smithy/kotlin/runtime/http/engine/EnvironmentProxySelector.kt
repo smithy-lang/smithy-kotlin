@@ -120,6 +120,22 @@ internal data class NonProxyHost(val hostMatch: String, val port: Int? = null) {
 }
 
 private fun parseNonProxyHost(raw: String): NonProxyHost {
+    // bracketed IPv6 literal with an optional port, e.g. `[::1]` or `[2001:db8::1]:8443`
+    if (raw.startsWith('[')) {
+        val end = raw.indexOf(']')
+        if (end < 0) error("invalid non proxy host: $raw")
+        val host = raw.substring(1, end)
+        val rest = raw.substring(end + 1)
+        return when {
+            rest.isEmpty() -> NonProxyHost(host)
+            rest.startsWith(':') -> NonProxyHost(host, rest.substring(1).toInt())
+            else -> error("invalid non proxy host: $raw")
+        }
+    }
+
+    // bare IPv6 literal, e.g. `::1`; it has more than one ':' and cannot carry a port
+    if (raw.count { it == ':' } > 1) return NonProxyHost(raw)
+
     val pair = raw.split(':', limit = 2)
     return when (pair.size) {
         1 -> NonProxyHost(pair[0])
