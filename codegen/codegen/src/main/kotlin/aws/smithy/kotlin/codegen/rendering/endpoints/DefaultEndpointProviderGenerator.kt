@@ -129,6 +129,7 @@ class DefaultEndpointProviderGenerator(
             paramsSymbol,
             RuntimeTypes.SmithyClient.Endpoints.Endpoint,
         ) {
+            endpointCustomizations.forEach { it.renderPreResolve(ctx, rules, writer) }
             rules.rules.forEach(::renderRule)
             write("")
             write("throw #T(\"endpoint rules were exhausted without a match\")", RuntimeTypes.SmithyClient.Endpoints.EndpointProviderException)

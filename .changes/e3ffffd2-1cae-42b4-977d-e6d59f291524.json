@@ -1,0 +1,5 @@
+{
+    "id": "e3ffffd2-1cae-42b4-977d-e6d59f291524",
+    "type": "bugfix",
+    "description": "Reject URLs containing a query in the endpoint rules `parseURL` function, as required by the rules engine specification. A query in a client's `endpointUrl` is still passed to the endpoint provider"
+}

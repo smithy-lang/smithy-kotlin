@@ -69,4 +69,11 @@ class FunctionsTest {
         ),
         parseUrl("http://[::5949]:4001/path"),
     )
+
+    @Test
+    fun testParseUrlRejectsQuery() {
+        assertNull(parseUrl("https://example.com?foo=bar"))
+        assertNull(parseUrl("https://example.com/path?foo=bar"))
+        assertNull(parseUrl("https://example.com?"))
+    }
 }

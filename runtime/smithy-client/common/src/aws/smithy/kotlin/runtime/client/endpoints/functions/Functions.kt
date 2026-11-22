@@ -6,6 +6,7 @@
 package aws.smithy.kotlin.runtime.client.endpoints.functions
 
 import aws.smithy.kotlin.runtime.InternalApi
+import aws.smithy.kotlin.runtime.client.endpoints.hasQuery
 import aws.smithy.kotlin.runtime.net.Host
 import aws.smithy.kotlin.runtime.net.isValidHostname
 import aws.smithy.kotlin.runtime.net.toUrlString
@@ -38,6 +39,9 @@ public fun parseUrl(value: String?): Url? = value?.let {
     } catch (e: Exception) {
         return null
     }
+
+    // The rules engine spec requires rejecting any URL that contains a query portion
+    if (sdkUrl.hasQuery) return null
 
     val authority = buildString {
         append(sdkUrl.host.toUrlString())
