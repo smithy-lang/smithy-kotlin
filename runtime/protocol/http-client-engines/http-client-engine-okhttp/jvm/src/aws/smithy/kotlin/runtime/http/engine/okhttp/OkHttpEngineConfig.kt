@@ -15,6 +15,7 @@ import javax.net.ssl.HostnameVerifier
 import javax.net.ssl.KeyManager
 import javax.net.ssl.X509TrustManager
 import kotlin.time.Duration
+import kotlin.time.Duration.Companion.seconds
 
 /**
  * The configuration parameters for an OkHttp HTTP client engine.
@@ -101,6 +102,14 @@ public class OkHttpEngineConfig private constructor(builder: Builder) : HttpClie
     public val hostnameVerifier: HostnameVerifier? = builder.hostnameVerifier
 
     /**
+     * How often to send an HTTP/2 PING frame on each connection to check its health. If a PING isn't acknowledged
+     * within this interval, the connection is closed so that a connection whose peer has silently gone away is replaced
+     * instead of being reused. Calls in flight on that connection fail with an `IOException`. Has no effect on HTTP/1.1
+     * connections. Set to [Duration.ZERO] to disable. The default value is 5 seconds.
+     */
+    public val pingInterval: Duration = builder.pingInterval
+
+    /**
      * Whether to retry when a connectivity problem is encountered. When enabled, this client silently recovers from the
      * following problems:
      * * Unreachable IP addresses. If the URL's host has multiple IP addresses, failure to reach any individual IP
@@ -128,6 +137,7 @@ public class OkHttpEngineConfig private constructor(builder: Builder) : HttpClie
             cipherSuites = this@OkHttpEngineConfig.cipherSuites
             certificatePinner = this@OkHttpEngineConfig.certificatePinner
             hostnameVerifier = this@OkHttpEngineConfig.hostnameVerifier
+            pingInterval = this@OkHttpEngineConfig.pingInterval
         }
     }
 
@@ -201,6 +211,14 @@ public class OkHttpEngineConfig private constructor(builder: Builder) : HttpClie
          * Use this to implement custom hostname verification logic.
          */
         public var hostnameVerifier: HostnameVerifier? = null
+
+        /**
+         * How often to send an HTTP/2 PING frame on each connection to check its health. If a PING isn't acknowledged
+         * within this interval, the connection is closed so that a connection whose peer has silently gone away is
+         * replaced instead of being reused. Calls in flight on that connection fail with an `IOException`. Has no
+         * effect on HTTP/1.1 connections. Set to [Duration.ZERO] to disable. The default value is 5 seconds.
+         */
+        public var pingInterval: Duration = 5.seconds
 
         override var telemetryProvider: TelemetryProvider = TelemetryProvider.Global
 
