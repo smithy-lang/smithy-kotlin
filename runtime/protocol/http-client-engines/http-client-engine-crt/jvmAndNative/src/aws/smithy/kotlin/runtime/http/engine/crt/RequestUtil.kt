@@ -22,8 +22,13 @@ import aws.smithy.kotlin.runtime.http.request.HttpRequest
 import aws.smithy.kotlin.runtime.io.SdkBuffer
 import aws.smithy.kotlin.runtime.io.buffer
 import aws.smithy.kotlin.runtime.io.readToByteArray
+import kotlinx.atomicfu.atomic
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.job
+import kotlinx.coroutines.launch
 import kotlin.coroutines.CoroutineContext
+import kotlin.time.Duration
 import aws.sdk.kotlin.crt.http.HttpRequest as HttpRequestCrt
 
 private const val CONTENT_LENGTH_HEADER: String = "Content-Length"
@@ -118,8 +123,15 @@ internal val HttpRequest.isChunked: Boolean get() = (this.body is HttpBody.Sourc
 /**
  * Send a chunked body using the CRT writeChunk bindings.
  * @param body an HTTP body that has a chunked content encoding. Must be [HttpBody.SourceContent] or [HttpBody.ChannelContent]
+ * @param writeTimeout the maximum time to wait for CRT to send each chunk
+ * @param onWriteTimeout invoked when a chunk isn't sent within [writeTimeout]. It must shut down the connection, so
+ * the pending write ends, and return the exception to throw.
  */
-internal suspend fun HttpStream.sendChunkedBody(body: HttpBody) {
+internal suspend fun HttpStream.sendChunkedBody(
+    body: HttpBody,
+    writeTimeout: Duration = Duration.INFINITE,
+    onWriteTimeout: () -> Throwable = { error("unreachable with an infinite write timeout") },
+) {
     when (body) {
         is HttpBody.SourceContent -> {
             val source = body.readFrom()
@@ -127,7 +139,7 @@ internal suspend fun HttpStream.sendChunkedBody(body: HttpBody) {
 
             while (!bufferedSource.exhausted()) {
                 bufferedSource.request(CHUNK_BUFFER_SIZE)
-                writeChunk(bufferedSource.buffer.readByteArray(), isFinalChunk = bufferedSource.exhausted())
+                writeChunk(bufferedSource.buffer.readByteArray(), bufferedSource.exhausted(), writeTimeout, onWriteTimeout)
             }
         }
         is HttpBody.ChannelContent -> {
@@ -139,11 +151,48 @@ internal suspend fun HttpStream.sendChunkedBody(body: HttpBody) {
                 if (bytesRead == -1L) break
 
                 val chunk = buffer.readToByteArray()
-                writeChunk(chunk, isFinalChunk = chan.isClosedForRead)
+                writeChunk(chunk, chan.isClosedForRead, writeTimeout, onWriteTimeout)
             }
         }
         else -> error("sendChunkedBody should not be called for non-chunked body types")
     }
+}
+
+/**
+ * [HttpStream.writeChunk] can't be cancelled, so on timeout [onTimeout] shuts down the connection to end the write.
+ */
+private suspend fun HttpStream.writeChunk(
+    chunk: ByteArray,
+    isFinalChunk: Boolean,
+    timeout: Duration,
+    onTimeout: () -> Throwable,
+) {
+    if (timeout.isInfinite()) return writeChunk(chunk, isFinalChunk)
+
+    coroutineScope {
+        val timedOut = TimeoutResult()
+        val timer = launch {
+            delay(timeout)
+            timedOut.cause = onTimeout()
+        }
+        try {
+            writeChunk(chunk, isFinalChunk)
+        } catch (ex: Throwable) {
+            throw timedOut.cause ?: ex
+        } finally {
+            timer.cancel()
+        }
+        timedOut.cause?.let { throw it }
+    }
+}
+
+private class TimeoutResult {
+    private val _cause = atomic<Throwable?>(null)
+    var cause: Throwable?
+        get() = _cause.value
+        set(value) {
+            _cause.value = value
+        }
 }
 
 internal fun crtException(errorCode: Int, errorName: String? = CRT.errorName(errorCode), cause: Throwable? = null) = HttpException(
