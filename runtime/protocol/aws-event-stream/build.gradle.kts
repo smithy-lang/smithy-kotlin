@@ -29,6 +29,12 @@ kotlin {
             }
         }
 
+        jvmAndNativeTest {
+            dependencies {
+                implementation(project(":runtime:auth:aws-signing-crt"))
+            }
+        }
+
         all {
             languageSettings.optIn("aws.smithy.kotlin.runtime.InternalApi")
         }

@@ -217,6 +217,12 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
      */
     open fun getErrorCode(ctx: ProtocolGenerator.GenerationContext, errShapeId: ShapeId): String = errShapeId.name
 
+    /**
+     * Whether event stream request serializers send an `initial-request` message for RPC-bound protocols even when
+     * the operation input has no members besides the event stream.
+     */
+    protected open val alwaysSendInitialRequestMessage: Boolean = false
+
     // FIXME - probably make abstract and let individual protocols throw if they don't support event stream bindings
 
     /**
@@ -230,7 +236,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
     open fun eventStreamRequestHandler(ctx: ProtocolGenerator.GenerationContext, op: OperationShape): Symbol {
         val resolver = getProtocolHttpBindingResolver(ctx.model, ctx.service)
         val contentType = resolver.determineRequestContentType(op) ?: error("event streams must set a content-type")
-        val eventStreamSerializerGenerator = EventStreamSerializerGenerator(structuredDataSerializer(ctx), contentType)
+        val eventStreamSerializerGenerator = EventStreamSerializerGenerator(structuredDataSerializer(ctx), contentType, alwaysSendInitialRequestMessage)
         return eventStreamSerializerGenerator.requestHandler(ctx, op)
     }
 
@@ -296,6 +302,16 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                 // See: https://github.com/smithy-lang/smithy/pull/2972
                 "RestJsonDeserializesDenseSetMapAndSkipsNull",
                 "RpcV2CborDeserializesDenseSetMapAndSkipsNull",
+
+                // Event stream unions don't expose modeled error members as variants, so clients cannot send
+                // modeled error events
+                "ClientErrorInput",
+                "DuplexClientErrorInput",
+
+                // Clients correct missing required output members to defaults (error correction) rather than fail
+                // Internal ref: P565422136
+                "MissingRequiredInitialResponseOutput",
+                "DuplexMissingRequiredInitialResponseOutput",
             ),
         )
 

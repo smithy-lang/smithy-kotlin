@@ -7,6 +7,7 @@ permissions: { }
 jobs:
   add-regression-label:
     runs-on: ubuntu-latest
+    if: github.repository == 'smithy-lang/smithy-kotlin'
     permissions:
       issues: write
     steps:

@@ -30,11 +30,24 @@ class SystemPlatformProviderTest {
 
         val expected = "Hello, File!".encodeToByteArray()
 
-        ps.write(path, expected, WriteType.OVERWRITE)
-        assertTrue(ps.exists(path))
+        ps.writeFile(path, expected, WriteType.OVERWRITE)
+        assertTrue(ps.pathExists(path))
 
-        val actual = ps.readOrNull(path, readAll = true)
+        val actual = ps.readFileOrNull(path)
         assertContentEquals(expected, actual)
+    }
+
+    @Test
+    fun testReadFileOrNullReturnsNullOnIoError() = runTest {
+        // Reading a directory as a file is an IO error on every platform
+        val ps = PlatformProvider.System
+        val dir = tempPath()
+        ps.createDirectories(dir)
+        try {
+            assertNull(ps.readFileOrNull(dir))
+        } finally {
+            ps.remove(dir)
+        }
     }
 
     @Test
@@ -75,197 +88,203 @@ class SystemPlatformProviderTest {
     }
 
     @Test
-    fun testWriteOverwrite() {
+    fun testWriteOverwrite() = runTest {
         val ps = PlatformProvider.System
         val path = tempPath()
 
-        ps.write(path, "hello".encodeToByteArray(), WriteType.OVERWRITE)
-        ps.write(path, "world".encodeToByteArray(), WriteType.OVERWRITE)
+        ps.writeFile(path, "hello".encodeToByteArray(), WriteType.OVERWRITE)
+        ps.writeFile(path, "world".encodeToByteArray(), WriteType.OVERWRITE)
 
-        assertContentEquals("world".encodeToByteArray(), ps.read(path, readAll = true))
+        assertContentEquals("world".encodeToByteArray(), ps.readFile(path))
     }
 
     @Test
-    fun testWriteAppend() {
+    fun testWriteAppend() = runTest {
         val ps = PlatformProvider.System
         val path = tempPath()
 
-        ps.write(path, "hello".encodeToByteArray(), WriteType.APPEND)
-        ps.write(path, "world".encodeToByteArray(), WriteType.APPEND)
+        ps.writeFile(path, "hello".encodeToByteArray(), WriteType.APPEND)
+        ps.writeFile(path, "world".encodeToByteArray(), WriteType.APPEND)
 
-        assertContentEquals("helloworld".encodeToByteArray(), ps.read(path, readAll = true))
+        assertContentEquals("helloworld".encodeToByteArray(), ps.readFile(path))
     }
 
     @Test
-    fun testWriteOffset() {
+    fun testWriteOffset() = runTest {
         val ps = PlatformProvider.System
         val path = tempPath()
 
-        ps.write(path, "hello".encodeToByteArray(), WriteType.OVERWRITE)
-        ps.write(path, "XY".encodeToByteArray(), WriteType.OFFSET(1))
+        ps.writeFile(path, "hello".encodeToByteArray(), WriteType.OVERWRITE)
+        ps.writeFile(path, "XY".encodeToByteArray(), WriteType.OFFSET(1))
 
-        assertContentEquals("hXYlo".encodeToByteArray(), ps.read(path, readAll = true))
+        assertContentEquals("hXYlo".encodeToByteArray(), ps.readFile(path))
     }
 
     @Test
-    fun testWriteOffsetNewFile() {
+    fun testWriteOffsetNewFile() = runTest {
         val ps = PlatformProvider.System
         val path = tempPath()
 
-        ps.write(path, "abc".encodeToByteArray(), WriteType.OFFSET(2))
+        ps.writeFile(path, "abc".encodeToByteArray(), WriteType.OFFSET(2))
 
-        assertContentEquals("\u0000\u0000abc".encodeToByteArray(), ps.read(path, readAll = true))
+        assertContentEquals("\u0000\u0000abc".encodeToByteArray(), ps.readFile(path))
     }
 
     @Test
-    fun testWriteMustExistThrows() {
+    fun testWriteMustExistThrows() = runTest {
         val ps = PlatformProvider.System
         val path = tempPath()
 
         assertFails {
-            ps.write(path, "data".encodeToByteArray(), WriteType.OVERWRITE, mustExist = true)
+            ps.writeFile(path, "data".encodeToByteArray(), WriteType.OVERWRITE, mustExist = true)
         }
     }
 
     @Test
-    fun testWriteMustExistSucceeds() {
+    fun testWriteMustExistSucceeds() = runTest {
         val ps = PlatformProvider.System
         val path = tempPath()
 
-        ps.write(path, "initial".encodeToByteArray(), WriteType.OVERWRITE)
-        ps.write(path, "updated".encodeToByteArray(), WriteType.OVERWRITE, mustExist = true)
+        ps.writeFile(path, "initial".encodeToByteArray(), WriteType.OVERWRITE)
+        ps.writeFile(path, "updated".encodeToByteArray(), WriteType.OVERWRITE, mustExist = true)
 
-        assertContentEquals("updated".encodeToByteArray(), ps.read(path, readAll = true))
+        assertContentEquals("updated".encodeToByteArray(), ps.readFile(path))
     }
 
     @Test
-    fun testReadAll() {
+    fun testReadAll() = runTest {
         val ps = PlatformProvider.System
         val path = tempPath()
 
-        ps.write(path, "hello".encodeToByteArray(), WriteType.OVERWRITE)
+        ps.writeFile(path, "hello".encodeToByteArray(), WriteType.OVERWRITE)
 
-        assertContentEquals("hello".encodeToByteArray(), ps.read(path, readAll = true))
+        assertContentEquals("hello".encodeToByteArray(), ps.readFile(path))
     }
 
     @Test
-    fun testReadAmountAndOffset() {
+    fun testReadAmountAndOffset() = runTest {
         val ps = PlatformProvider.System
         val path = tempPath()
 
-        ps.write(path, "hello world".encodeToByteArray(), WriteType.OVERWRITE)
+        ps.writeFile(path, "hello world".encodeToByteArray(), WriteType.OVERWRITE)
 
-        assertContentEquals("world".encodeToByteArray(), ps.read(path, amount = 5, offset = 6))
+        assertContentEquals("world".encodeToByteArray(), ps.readFile(path, offset = 6, length = 5))
     }
 
     @Test
-    fun testReadMustExistThrows() {
+    fun testReadMustExistThrows() = runTest {
         val ps = PlatformProvider.System
-        assertFails { ps.read(tempPath(), readAll = true) }
+        assertFails { ps.readFile(tempPath()) }
     }
 
     @Test
-    fun testSize() {
-        val ps = PlatformProvider.System
-        val path = tempPath()
-
-        ps.write(path, "hello".encodeToByteArray(), WriteType.OVERWRITE)
-
-        assertEquals(5L, ps.size(path))
-    }
-
-    @Test
-    fun testSizeMustExistThrows() {
-        val ps = PlatformProvider.System
-        assertFails { ps.size(tempPath()) }
-    }
-
-    @Test
-    fun testDelete() {
+    fun testFileSize() = runTest {
         val ps = PlatformProvider.System
         val path = tempPath()
 
-        ps.write(path, "data".encodeToByteArray(), WriteType.OVERWRITE)
-        assertTrue(ps.exists(path))
+        ps.writeFile(path, "hello".encodeToByteArray(), WriteType.OVERWRITE)
 
-        ps.delete(path)
-        assertFalse(ps.exists(path))
+        assertEquals(5L, ps.fileSize(path))
     }
 
     @Test
-    fun testDeleteMustExistThrows() {
+    fun testFileSizeMissingThrows() = runTest {
         val ps = PlatformProvider.System
-        assertFails { ps.delete(tempPath()) }
+        assertFails { ps.fileSize(tempPath()) }
     }
 
     @Test
-    fun testDeleteMustExistFalse() {
+    fun testPathExistsMissing() = runTest {
         val ps = PlatformProvider.System
-        ps.delete(tempPath(), mustExist = false) // should not throw
+        assertFalse(ps.pathExists(tempPath()))
     }
 
     @Test
-    fun testAtomicMove() {
+    fun testRemove() = runTest {
+        val ps = PlatformProvider.System
+        val path = tempPath()
+
+        ps.writeFile(path, "data".encodeToByteArray(), WriteType.OVERWRITE)
+        assertTrue(ps.pathExists(path))
+
+        ps.remove(path)
+        assertFalse(ps.pathExists(path))
+    }
+
+    @Test
+    fun testRemoveMustExistThrows() = runTest {
+        val ps = PlatformProvider.System
+        assertFails { ps.remove(tempPath()) }
+    }
+
+    @Test
+    fun testRemoveMustExistFalse() = runTest {
+        val ps = PlatformProvider.System
+        ps.remove(tempPath(), mustExist = false) // should not throw
+    }
+
+    @Test
+    fun testRename() = runTest {
         val ps = PlatformProvider.System
         val src = tempPath()
         val dst = tempPath()
 
-        ps.write(src, "data".encodeToByteArray(), WriteType.OVERWRITE)
-        ps.atomicMove(src, dst)
+        ps.writeFile(src, "data".encodeToByteArray(), WriteType.OVERWRITE)
+        ps.rename(src, dst)
 
-        assertFalse(ps.exists(src))
-        assertContentEquals("data".encodeToByteArray(), ps.read(dst, readAll = true))
+        assertFalse(ps.pathExists(src))
+        assertContentEquals("data".encodeToByteArray(), ps.readFile(dst))
     }
 
     @Test
-    fun testAtomicMoveMustExistThrows() {
+    fun testRenameMustExistThrows() = runTest {
         val ps = PlatformProvider.System
-        assertFails { ps.atomicMove(tempPath(), tempPath()) }
+        assertFails { ps.rename(tempPath(), tempPath()) }
     }
 
     @Test
-    fun testAtomicMoveOverwriteFalseThrows() {
-        val ps = PlatformProvider.System
-        val src = tempPath()
-        val dst = tempPath()
-
-        ps.write(src, "a".encodeToByteArray(), WriteType.OVERWRITE)
-        ps.write(dst, "b".encodeToByteArray(), WriteType.OVERWRITE)
-
-        assertFails { ps.atomicMove(src, dst, overwrite = false) }
-    }
-
-    @Test
-    fun testAtomicMoveOverwriteTrue() {
+    fun testRenameOverwriteFalseThrows() = runTest {
         val ps = PlatformProvider.System
         val src = tempPath()
         val dst = tempPath()
 
-        ps.write(src, "new".encodeToByteArray(), WriteType.OVERWRITE)
-        ps.write(dst, "old".encodeToByteArray(), WriteType.OVERWRITE)
+        ps.writeFile(src, "a".encodeToByteArray(), WriteType.OVERWRITE)
+        ps.writeFile(dst, "b".encodeToByteArray(), WriteType.OVERWRITE)
 
-        ps.atomicMove(src, dst, overwrite = true)
-
-        assertFalse(ps.exists(src))
-        assertContentEquals("new".encodeToByteArray(), ps.read(dst, readAll = true))
+        assertFails { ps.rename(src, dst, overwrite = false) }
     }
 
     @Test
-    fun testCreateDirAndList() {
+    fun testRenameOverwriteTrue() = runTest {
+        val ps = PlatformProvider.System
+        val src = tempPath()
+        val dst = tempPath()
+
+        ps.writeFile(src, "new".encodeToByteArray(), WriteType.OVERWRITE)
+        ps.writeFile(dst, "old".encodeToByteArray(), WriteType.OVERWRITE)
+
+        ps.rename(src, dst, overwrite = true)
+
+        assertFalse(ps.pathExists(src))
+        assertContentEquals("new".encodeToByteArray(), ps.readFile(dst))
+    }
+
+    @Test
+    fun testCreateDirectoriesAndList() = runTest {
         val ps = PlatformProvider.System
         val dir = tempPath()
 
-        ps.createDir(dir)
-        ps.write("$dir/a.txt", "a".encodeToByteArray(), WriteType.OVERWRITE)
-        ps.write("$dir/b.txt", "b".encodeToByteArray(), WriteType.OVERWRITE)
+        ps.createDirectories(dir)
+        ps.writeFile("$dir/a.txt", "a".encodeToByteArray(), WriteType.OVERWRITE)
+        ps.writeFile("$dir/b.txt", "b".encodeToByteArray(), WriteType.OVERWRITE)
 
-        val entries = ps.list(dir)
+        val entries = ps.listDirectory(dir)
         assertEquals(setOf("a.txt", "b.txt"), entries.toSet())
     }
 
     @Test
-    fun testListMustExistThrows() {
+    fun testListMustExistThrows() = runTest {
         val ps = PlatformProvider.System
-        assertFails { ps.list(tempPath()) }
+        assertFails { ps.listDirectory(tempPath()) }
     }
 }

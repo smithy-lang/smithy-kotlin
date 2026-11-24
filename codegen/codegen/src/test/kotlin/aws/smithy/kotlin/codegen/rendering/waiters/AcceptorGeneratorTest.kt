@@ -14,6 +14,7 @@ import aws.smithy.kotlin.codegen.loadModelFromResource
 import aws.smithy.kotlin.codegen.rendering.protocol.ProtocolGenerator
 import aws.smithy.kotlin.codegen.test.TestModelDefault
 import aws.smithy.kotlin.codegen.test.createSymbolProvider
+import aws.smithy.kotlin.codegen.test.toSmithyModel
 import io.kotest.matchers.string.shouldContainOnlyOnce
 import software.amazon.smithy.codegen.core.SymbolProvider
 import software.amazon.smithy.model.Model
@@ -89,8 +90,68 @@ class AcceptorGeneratorTest {
         generated.shouldContainOnlyOnce(expected)
     }
 
-    private fun generateService(modelResourceName: String): String {
-        val model = loadModelFromResource(modelResourceName)
+    @Test
+    fun testNestedOperationOutputMemberIsNullable() {
+        // GetSummaryResponse.foo targets another operation's output (normalized to the same synthetic shape). Unlike
+        // the input/output of an inputOutput acceptor, that member is an ordinary nullable member.
+        val model = """
+            namespace com.test
+
+            use smithy.waiters#waitable
+
+            service Test {
+                version: "1.0.0",
+                operations: [GetFoo, GetSummary]
+            }
+
+            operation GetFoo {
+                output: GetFooResponse
+            }
+
+            @waitable(
+                FooReady: {
+                    acceptors: [
+                        {
+                            state: "success",
+                            matcher: {
+                                output: {
+                                    path: "foo.status",
+                                    expected: "ready",
+                                    comparator: "stringEquals"
+                                }
+                            }
+                        }
+                    ]
+                }
+            )
+            operation GetSummary {
+                output: GetSummaryResponse
+            }
+
+            structure GetFooResponse {
+                status: String
+            }
+
+            structure GetSummaryResponse {
+                foo: GetFooResponse
+            }
+        """.toSmithyModel()
+
+        val expected = """
+            val $acceptorListName = listOf<Acceptor<GetSummaryRequest, GetSummaryResponse>>(
+                OutputAcceptor(RetryDirective.TerminateAndSucceed) {
+                    val foo = it.foo
+                    val status = foo?.status
+                    status == "ready"
+                },
+            )
+        """.trimIndent()
+        generateService(model).shouldContainOnlyOnce(expected)
+    }
+
+    private fun generateService(modelResourceName: String): String = generateService(loadModelFromResource(modelResourceName))
+
+    private fun generateService(model: Model): String {
         val provider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(model)
         val service = model.getShape(ShapeId.from(TestModelDefault.SERVICE_SHAPE_ID)).get().asServiceShape().get()
         val settings = KotlinSettings(service.id, KotlinSettings.PackageSettings(TestModelDefault.NAMESPACE, TestModelDefault.MODEL_VERSION), sdkId = service.id.name)

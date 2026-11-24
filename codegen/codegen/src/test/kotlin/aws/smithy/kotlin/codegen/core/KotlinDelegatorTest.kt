@@ -10,15 +10,20 @@ import aws.smithy.kotlin.codegen.loadModelFromResource
 import aws.smithy.kotlin.codegen.model.buildSymbol
 import aws.smithy.kotlin.codegen.model.expectShape
 import aws.smithy.kotlin.codegen.test.TestModelDefault
+import aws.smithy.kotlin.codegen.test.defaultSettings
 import aws.smithy.kotlin.codegen.test.shouldContainOnlyOnceWithDiff
 import aws.smithy.kotlin.codegen.test.shouldContainWithDiff
+import aws.smithy.kotlin.codegen.test.toSmithyModel
 import io.kotest.matchers.string.shouldContain
 import io.kotest.matchers.string.shouldNotContain
 import software.amazon.smithy.build.MockManifest
 import software.amazon.smithy.build.PluginContext
+import software.amazon.smithy.codegen.core.CodegenException
+import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.node.Node
 import software.amazon.smithy.model.shapes.StructureShape
 import kotlin.test.Test
+import kotlin.test.assertFailsWith
 import kotlin.test.assertTrue
 
 class KotlinDelegatorTest {
@@ -133,5 +138,47 @@ class KotlinDelegatorTest {
 
         generatedSymbolContents.shouldContainOnlyOnceWithDiff("hello from generated dep!")
         generatedSymbolContents.shouldContainOnlyOnceWithDiff("we generated a Foo")
+    }
+
+    private fun collidingShapesDelegator(): Pair<KotlinDelegator, Model> {
+        // `foo_bar` and `FooBar` are distinct smithy names but both generate `FooBar`
+        val model = """
+            namespace com.test
+            service Example {
+                version: "1.0.0",
+                operations: [GetFoo]
+            }
+            operation GetFoo {
+                output: GetFooOutput
+            }
+            structure GetFooOutput {
+                a: foo_bar,
+                b: FooBar
+            }
+            structure foo_bar {}
+            structure FooBar {}
+        """.toSmithyModel()
+        val settings = model.defaultSettings()
+        val ctx = GenerationContext(model, KotlinSymbolProvider(model, settings), settings, protocolGenerator = null)
+        return KotlinDelegator(ctx, MockManifest()) to model
+    }
+
+    @Test
+    fun itFailsWhenDistinctShapesGenerateTheSameSymbol() {
+        val (delegator, model) = collidingShapesDelegator()
+        delegator.useShapeWriter(model.expectShape<StructureShape>("com.test#foo_bar")) { it.write("first") }
+
+        val ex = assertFailsWith<CodegenException> {
+            delegator.useShapeWriter(model.expectShape<StructureShape>("com.test#FooBar")) { it.write("second") }
+        }
+        ex.message!!.shouldContain("com.test#FooBar and com.test#foo_bar both generate com.test.model.FooBar")
+    }
+
+    @Test
+    fun itAllowsTheSameShapeWriterToBeReused() {
+        val (delegator, model) = collidingShapesDelegator()
+        val shape = model.expectShape<StructureShape>("com.test#FooBar")
+        delegator.useShapeWriter(shape) { it.write("first") }
+        delegator.useShapeWriter(shape) { it.write("second") }
     }
 }

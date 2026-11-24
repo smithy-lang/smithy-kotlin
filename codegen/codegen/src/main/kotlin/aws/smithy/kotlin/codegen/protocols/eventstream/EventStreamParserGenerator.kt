@@ -226,16 +226,20 @@ class EventStreamParserGenerator(
         // A custom function which only deserializes the initial response members
         val initialResponseDeserializeFn = sdg.payloadDeserializer(ctx, outputShape, outputShape.initialResponseMembers)
 
+        // a stream with no messages has no initial-response, which is allowed when its members are optional
         writer.write(
             "val firstMessage = frames.#T(1).#T()",
             RuntimeTypes.KotlinxCoroutines.Flow.take,
-            RuntimeTypes.KotlinxCoroutines.Flow.single,
+            RuntimeTypes.KotlinxCoroutines.Flow.singleOrNull,
         )
-        writer.write("val firstMessageType = firstMessage.type()")
-        writer.openBlock(
-            "val events = if (firstMessageType is #T.Event && firstMessageType.shapeType == \"initial-response\") {",
-            RuntimeTypes.AwsEventStream.MessageType,
-        )
+        writer.openBlock("val events = if (firstMessage == null) {")
+            .write("#T()", RuntimeTypes.KotlinxCoroutines.Flow.emptyFlow)
+            .closeAndOpenBlock("} else {")
+            .write("val firstMessageType = firstMessage.type()")
+            .openBlock(
+                "if (firstMessageType is #T.Event && firstMessageType.shapeType == \"initial-response\") {",
+                RuntimeTypes.AwsEventStream.MessageType,
+            )
         // Deserialize into `initialResponse`, then apply it to the actual response builder
         writer.write("val initialResponse = #T(firstMessage.payload)", initialResponseDeserializeFn)
         writer.withBlock("builder.apply {", "}") {
@@ -250,6 +254,7 @@ class EventStreamParserGenerator(
                 RuntimeTypes.Core.Utils.mergeSequential,
                 RuntimeTypes.KotlinxCoroutines.Flow.flowOf,
             )
+            .closeBlock("}")
             .closeBlock("}")
     }
 

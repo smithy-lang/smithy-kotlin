@@ -31,7 +31,11 @@ public class HttpChecksumRequiredInterceptor : CachingChecksumInterceptor() {
         val checksumAlgorithmName = context.defaultChecksumAlgorithmName!!
         val checksumAlgorithm = checksumAlgorithmName.toHashFunctionOrThrow()
 
-        return if (context.protocolRequest.body.isEligibleForAwsChunkedStreaming) {
+        // Only flexible checksum algorithms have an `x-amz-checksum-*` trailer; `Content-MD5` must be sent as a header
+        val useAwsChunked = context.protocolRequest.body.isEligibleForAwsChunkedStreaming &&
+            checksumAlgorithm.isSupportedForFlexibleChecksums
+
+        return if (useAwsChunked) {
             coroutineContext.logger<HttpChecksumRequiredInterceptor>().debug {
                 "Calculating checksum during transmission using: ${checksumAlgorithm::class.simpleName}"
             }
