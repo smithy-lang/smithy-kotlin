@@ -4,7 +4,6 @@
  */
 package aws.smithy.kotlin.runtime.http.interceptors
 
-import aws.smithy.kotlin.runtime.ExperimentalApi
 import aws.smithy.kotlin.runtime.client.ProtocolRequestInterceptorContext
 import aws.smithy.kotlin.runtime.client.ProtocolResponseInterceptorContext
 import aws.smithy.kotlin.runtime.client.RequestInterceptorContext
@@ -17,6 +16,7 @@ import aws.smithy.kotlin.runtime.http.engine.EngineAttributes
 import aws.smithy.kotlin.runtime.http.operation.OperationMetrics
 import aws.smithy.kotlin.runtime.http.request.HttpRequest
 import aws.smithy.kotlin.runtime.http.response.HttpResponse
+import aws.smithy.kotlin.runtime.telemetry.context.Context
 import aws.smithy.kotlin.runtime.telemetry.metrics.recordPayloadSize
 import aws.smithy.kotlin.runtime.telemetry.metrics.recordSeconds
 import kotlin.time.TimeMark
@@ -30,7 +30,6 @@ import kotlin.time.TimeSource
  * @param operation the name of the operation
  * @param timeSource the time source to use for measuring elapsed time
  */
-@OptIn(ExperimentalApi::class)
 internal class OperationTelemetryInterceptor(
     private val metrics: OperationMetrics,
     private val service: String,
@@ -49,13 +48,14 @@ internal class OperationTelemetryInterceptor(
         "rpc.method" to operation
     }
 
+    private val currentCtx: Context
+        get() = metrics.provider.contextManager.current()
+
     override fun readBeforeExecution(context: RequestInterceptorContext<Any>) {
         callStart = timeSource.markNow()
     }
 
     override fun readAfterExecution(context: ResponseInterceptorContext<Any, Any, HttpRequest?, HttpResponse?>) {
-        val currentCtx = metrics.provider.contextManager.current()
-
         callStart?.elapsedNow()?.let { callDuration ->
             metrics.rpcCallDuration.recordSeconds(callDuration, perRpcAttributes, currentCtx)
         }
@@ -79,18 +79,18 @@ internal class OperationTelemetryInterceptor(
 
     override fun readAfterSerialization(context: ProtocolRequestInterceptorContext<Any, HttpRequest>) {
         val serializeDuration = serializeStart?.elapsedNow() ?: return
-        metrics.serializationDuration.recordSeconds(serializeDuration, perRpcAttributes, metrics.provider.contextManager.current())
+        metrics.serializationDuration.recordSeconds(serializeDuration, perRpcAttributes, currentCtx)
     }
 
     override fun readAfterAttempt(context: ResponseInterceptorContext<Any, Any, HttpRequest, HttpResponse?>) {
-        metrics.rpcAttempts.add(1L, perRpcAttributes, metrics.provider.contextManager.current())
+        metrics.rpcAttempts.add(1L, perRpcAttributes, currentCtx)
         attempts++
 
         val attemptDuration = attemptStart?.elapsedNow() ?: return
-        metrics.rpcAttemptDuration.recordSeconds(attemptDuration, perRpcAttributes, metrics.provider.contextManager.current())
+        metrics.rpcAttemptDuration.recordSeconds(attemptDuration, perRpcAttributes, currentCtx)
 
         context.executionContext.takeOrNull(EngineAttributes.TimeToFirstByte)?.let { ttfb ->
-            metrics.rpcAttemptOverheadDuration.recordSeconds(attemptDuration - ttfb, perRpcAttributes)
+            metrics.rpcAttemptOverheadDuration.recordSeconds(attemptDuration - ttfb, perRpcAttributes, currentCtx)
         }
     }
 
@@ -100,7 +100,7 @@ internal class OperationTelemetryInterceptor(
 
     override fun readAfterDeserialization(context: ResponseInterceptorContext<Any, Any, HttpRequest, HttpResponse>) {
         val deserializeDuration = deserializeStart?.elapsedNow() ?: return
-        metrics.deserializationDuration.recordSeconds(deserializeDuration, perRpcAttributes, metrics.provider.contextManager.current())
+        metrics.deserializationDuration.recordSeconds(deserializeDuration, perRpcAttributes, currentCtx)
     }
 
     override fun readBeforeAttempt(context: ProtocolRequestInterceptorContext<Any, HttpRequest>) {
@@ -108,10 +108,10 @@ internal class OperationTelemetryInterceptor(
     }
 
     override fun readBeforeTransmit(context: ProtocolRequestInterceptorContext<Any, HttpRequest>) {
-        metrics.requestPayloadSize.recordPayloadSize(context.protocolRequest.body.contentLength)
+        metrics.requestPayloadSize.recordPayloadSize(context.protocolRequest.body.contentLength, perRpcAttributes, currentCtx)
     }
 
     override fun readAfterTransmit(context: ProtocolResponseInterceptorContext<Any, HttpRequest, HttpResponse>) {
-        metrics.responsePayloadSize.recordPayloadSize(context.protocolResponse.body.contentLength)
+        metrics.responsePayloadSize.recordPayloadSize(context.protocolResponse.body.contentLength, perRpcAttributes, currentCtx)
     }
 }

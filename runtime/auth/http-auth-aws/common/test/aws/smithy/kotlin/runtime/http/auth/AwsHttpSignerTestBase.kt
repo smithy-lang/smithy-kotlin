@@ -6,12 +6,14 @@ package aws.smithy.kotlin.runtime.http.auth
 
 import aws.smithy.kotlin.runtime.auth.awscredentials.Credentials
 import aws.smithy.kotlin.runtime.auth.awscredentials.CredentialsProvider
+import aws.smithy.kotlin.runtime.auth.awssigning.AwsSignedBodyHeader
 import aws.smithy.kotlin.runtime.auth.awssigning.AwsSigner
 import aws.smithy.kotlin.runtime.auth.awssigning.AwsSigningAttributes
 import aws.smithy.kotlin.runtime.auth.awssigning.DefaultAwsSigner
 import aws.smithy.kotlin.runtime.auth.awssigning.internal.AWS_CHUNKED_THRESHOLD
 import aws.smithy.kotlin.runtime.collections.Attributes
 import aws.smithy.kotlin.runtime.collections.get
+import aws.smithy.kotlin.runtime.hashing.sha256
 import aws.smithy.kotlin.runtime.http.HttpBody
 import aws.smithy.kotlin.runtime.http.HttpMethod
 import aws.smithy.kotlin.runtime.http.SdkHttpClient
@@ -25,12 +27,15 @@ import aws.smithy.kotlin.runtime.io.SdkByteReadChannel
 import aws.smithy.kotlin.runtime.net.Host
 import aws.smithy.kotlin.runtime.net.Scheme
 import aws.smithy.kotlin.runtime.operation.ExecutionContext
+import aws.smithy.kotlin.runtime.text.encoding.encodeToHex
 import aws.smithy.kotlin.runtime.time.Instant
+import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.test.TestResult
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
-
+import kotlin.test.assertNull
+import kotlin.test.assertSame
 class DefaultAwsHttpSignerTest : AwsHttpSignerTestBase(DefaultAwsSigner)
 
 /**
@@ -47,11 +52,15 @@ public abstract class AwsHttpSignerTestBase(
         streaming: Boolean = false,
         replayable: Boolean = true,
         unsigned: Boolean = false,
+        payloadSigningEnabled: Boolean? = null,
+        scheme: Scheme = Scheme.HTTP,
+        signedBodyHeader: AwsSignedBodyHeader = AwsSignedBodyHeader.NONE,
+        eventStream: Boolean = false,
     ): SdkHttpOperation<Unit, HttpResponse> {
         val operation: SdkHttpOperation<Unit, HttpResponse> = SdkHttpOperation.build {
             serializeWith = when (streaming) {
-                true -> StreamingSerializer(requestBody, replayable)
-                false -> NonStreamingSerializer(requestBody)
+                true -> StreamingSerializer(requestBody, replayable, scheme)
+                false -> NonStreamingSerializer(requestBody, scheme)
             }
             deserializeWith = HttpDeserializer.Identity
             operationName = "testSigningOperation"
@@ -61,6 +70,9 @@ public abstract class AwsHttpSignerTestBase(
                 set(AwsSigningAttributes.SigningDate, Instant.fromIso8601("2020-10-16T19:56:00Z"))
                 set(AwsSigningAttributes.SigningService, "demo")
                 set(AwsSigningAttributes.EnableAwsChunked, true)
+                payloadSigningEnabled?.let { set(AwsSigningAttributes.PayloadSigningEnabled, it) }
+                // event stream serializers set this so the signer can seed message signatures
+                if (eventStream) set(AwsSigningAttributes.RequestSignature, CompletableDeferred())
             }
         }
 
@@ -72,6 +84,7 @@ public abstract class AwsHttpSignerTestBase(
             signer = this@AwsHttpSignerTestBase.signer
             service = "demo"
             isUnsignedPayload = unsigned
+            this.signedBodyHeader = signedBodyHeader
         }
 
         operation.execution.auth = OperationAuthConfig.from(idp.asIdentityProviderConfig(), SigV4AuthScheme(signerConfig))
@@ -101,6 +114,37 @@ public abstract class AwsHttpSignerTestBase(
     }
 
     @Test
+    public fun testPublishesSignerForEventStreamSigning(): TestResult = runTest {
+        val op = buildOperation(eventStream = true)
+        getSignedRequest(op)
+        assertSame(signer, op.context[AwsSigningAttributes.Signer])
+    }
+
+    @Test
+    public fun testOverridesDefaultSignerForEventStreamSigning(): TestResult = runTest {
+        val op = buildOperation(eventStream = true)
+        op.context[AwsSigningAttributes.Signer] = DefaultAwsSigner
+        getSignedRequest(op)
+        assertSame(signer, op.context[AwsSigningAttributes.Signer])
+    }
+
+    @Test
+    public fun testLeavesSignerAloneForNonEventStreamRequests(): TestResult = runTest {
+        val op = buildOperation()
+        val callerSigner = object : AwsSigner by signer {}
+        op.context[AwsSigningAttributes.Signer] = callerSigner
+        getSignedRequest(op)
+        assertSame(callerSigner, op.context[AwsSigningAttributes.Signer])
+    }
+
+    @Test
+    public fun testDoesNotPublishSignerForNonEventStreamRequests(): TestResult = runTest {
+        val op = buildOperation()
+        getSignedRequest(op)
+        assertNull(op.context.getOrNull(AwsSigningAttributes.Signer))
+    }
+
+    @Test
     public fun testUnsignedRequest(): TestResult = runTest {
         val op = buildOperation(unsigned = true)
         val expectedDate = "20201016T195600Z"
@@ -111,6 +155,56 @@ public abstract class AwsHttpSignerTestBase(
         val signed = getSignedRequest(op)
         assertEquals(expectedDate, signed.headers["X-Amz-Date"])
         assertEquals(expectedSig, signed.headers["Authorization"])
+    }
+
+    @Test
+    public fun testPayloadSigningDisabledOverHttps(): TestResult = runTest {
+        // disabling payload signing over HTTPS should result in an unsigned payload. Emit the
+        // x-amz-content-sha256 header so we can directly assert the body hash is UNSIGNED-PAYLOAD.
+        val requestBody = "{\"TableName\": \"foo\"}"
+        val op = buildOperation(
+            requestBody = requestBody,
+            payloadSigningEnabled = false,
+            scheme = Scheme.HTTPS,
+            signedBodyHeader = AwsSignedBodyHeader.X_AMZ_CONTENT_SHA256,
+        )
+
+        val signed = getSignedRequest(op)
+        assertEquals("UNSIGNED-PAYLOAD", signed.headers["X-Amz-Content-Sha256"])
+    }
+
+    @Test
+    public fun testPayloadSigningDisabledOverHttp(): TestResult = runTest {
+        // disabling payload signing only takes effect over HTTPS, so over HTTP the payload is still signed:
+        // the x-amz-content-sha256 header should carry the actual SHA-256 of the body, not UNSIGNED-PAYLOAD.
+        val requestBody = "{\"TableName\": \"foo\"}"
+        val op = buildOperation(
+            requestBody = requestBody,
+            payloadSigningEnabled = false,
+            scheme = Scheme.HTTP,
+            signedBodyHeader = AwsSignedBodyHeader.X_AMZ_CONTENT_SHA256,
+        )
+
+        val signed = getSignedRequest(op)
+        val expectedHash = requestBody.encodeToByteArray().sha256().encodeToHex()
+        assertEquals(expectedHash, signed.headers["X-Amz-Content-Sha256"])
+    }
+
+    @Test
+    public fun testPayloadSigningEnabledOverHttps(): TestResult = runTest {
+        // explicitly enabling payload signing over HTTPS should sign the payload as usual:
+        // the x-amz-content-sha256 header should carry the actual SHA-256 of the body.
+        val requestBody = "{\"TableName\": \"foo\"}"
+        val op = buildOperation(
+            requestBody = requestBody,
+            payloadSigningEnabled = true,
+            scheme = Scheme.HTTPS,
+            signedBodyHeader = AwsSignedBodyHeader.X_AMZ_CONTENT_SHA256,
+        )
+
+        val signed = getSignedRequest(op)
+        val expectedHash = requestBody.encodeToByteArray().sha256().encodeToHex()
+        assertEquals(expectedHash, signed.headers["X-Amz-Content-Sha256"])
     }
 
     @Test
@@ -167,10 +261,13 @@ public abstract class AwsHttpSignerTestBase(
     }
 }
 
-private class NonStreamingSerializer(private val requestBody: String) : HttpSerializer.NonStreaming<Unit> {
+private class NonStreamingSerializer(
+    private val requestBody: String,
+    private val scheme: Scheme = Scheme.HTTP,
+) : HttpSerializer.NonStreaming<Unit> {
     override fun serialize(context: ExecutionContext, input: Unit) = HttpRequestBuilder().apply {
         method = HttpMethod.POST
-        url.scheme = Scheme.HTTP
+        url.scheme = scheme
         url.host = Host.Domain("demo.us-east-1.amazonaws.com")
         url.path.encoded = "/"
         body = HttpBody.fromBytes(requestBody.encodeToByteArray())
@@ -183,10 +280,11 @@ private class NonStreamingSerializer(private val requestBody: String) : HttpSeri
 private class StreamingSerializer(
     private val requestBody: String,
     private val replayable: Boolean,
+    private val scheme: Scheme = Scheme.HTTP,
 ) : HttpSerializer.Streaming<Unit> {
     override suspend fun serialize(context: ExecutionContext, input: Unit) = HttpRequestBuilder().apply {
         method = HttpMethod.POST
-        url.scheme = Scheme.HTTP
+        url.scheme = scheme
         url.host = Host.Domain("demo.us-east-1.amazonaws.com")
         url.path.encoded = "/"
         body = object : HttpBody.ChannelContent() {

@@ -23,6 +23,7 @@ object RuntimeTypes {
         val StatusCode = symbol("HttpStatusCode")
         val toSdkByteReadChannel = symbol("toSdkByteReadChannel")
         val Headers = symbol("Headers")
+        val HeadersBuilder = symbol("HeadersBuilder")
 
         object Util : RuntimeTypePackage(KotlinDependency.HTTP, "util") {
             val encodeLabel = symbol("encodeLabel")
@@ -76,6 +77,7 @@ object RuntimeTypes {
 
         object Engine : RuntimeTypePackage(KotlinDependency.HTTP_CLIENT, "engine") {
             val HttpClientEngine = symbol("HttpClientEngine")
+            val callContext = symbol("callContext")
             val manage = symbol("manage", "engine.internal", isExtension = true)
         }
 
@@ -88,6 +90,7 @@ object RuntimeTypes {
             val FlexibleChecksumsResponseInterceptor = symbol("FlexibleChecksumsResponseInterceptor")
             val ResponseLengthValidationInterceptor = symbol("ResponseLengthValidationInterceptor")
             val RequestCompressionInterceptor = symbol("RequestCompressionInterceptor")
+            val RequiresLengthInterceptor = symbol("RequiresLengthInterceptor")
             val SmokeTestsInterceptor = symbol("SmokeTestsInterceptor")
             val SmokeTestsFailureException = symbol("SmokeTestsFailureException")
             val SmokeTestsSuccessException = symbol("SmokeTestsSuccessException")
@@ -96,6 +99,10 @@ object RuntimeTypes {
 
     object HttpTest : RuntimeTypePackage(KotlinDependency.HTTP_TEST) {
         val TestEngine = symbol("TestEngine")
+    }
+
+    object SmithyTest : RuntimeTypePackage(KotlinDependency.SMITHY_TEST) {
+        val encodeAsByteArray = symbol("encodeAsByteArray")
     }
 
     object Core : RuntimeTypePackage(KotlinDependency.CORE) {
@@ -114,6 +121,7 @@ object RuntimeTypes {
             val ServiceEndpointOverride = symbol("ServiceEndpointOverride")
             val emitBusinessMetric = symbol("emitBusinessMetric")
             val SmithyBusinessMetric = symbol("SmithyBusinessMetric")
+            val withScopedBusinessMetrics = symbol("withScopedBusinessMetrics")
         }
 
         object SmokeTests : RuntimeTypePackage(KotlinDependency.CORE, "smoketests") {
@@ -231,6 +239,7 @@ object RuntimeTypes {
         val IdempotencyTokenProvider = symbol("IdempotencyTokenProvider")
         val IdempotencyTokenConfig = symbol("IdempotencyTokenConfig")
         val IdempotencyTokenProviderExt = symbol("idempotencyTokenProvider")
+        val LogRedactionConfig = symbol("LogRedactionConfig")
 
         object Config : RuntimeTypePackage(KotlinDependency.SMITHY_CLIENT, "config") {
             val RequestCompressionConfig = symbol("RequestCompressionConfig")
@@ -432,10 +441,12 @@ object RuntimeTypes {
             // NOTE: smithy-kotlin core has an API dependency on this already
             val Flow = "kotlinx.coroutines.flow.Flow".toSymbol()
             val flowOf = "kotlinx.coroutines.flow.flowOf".toSymbol()
+            val emptyFlow = "kotlinx.coroutines.flow.emptyFlow".toSymbol()
             val merge = "kotlinx.coroutines.flow.merge".toSymbol()
             val map = "kotlinx.coroutines.flow.map".toSymbol()
             val take = "kotlinx.coroutines.flow.take".toSymbol()
             val single = "kotlinx.coroutines.flow.single".toSymbol()
+            val singleOrNull = "kotlinx.coroutines.flow.singleOrNull".toSymbol()
         }
     }
 

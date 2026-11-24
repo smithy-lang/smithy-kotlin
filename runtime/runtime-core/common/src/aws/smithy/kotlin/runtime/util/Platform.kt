@@ -6,6 +6,7 @@
 package aws.smithy.kotlin.runtime.util
 
 import aws.smithy.kotlin.runtime.InternalApi
+import aws.smithy.kotlin.runtime.PlannedRemoval
 
 public interface PlatformEnvironProvider :
     EnvironmentProvider,
@@ -36,13 +37,30 @@ public interface PlatformProvider :
 internal expect object SystemDefaultProvider : PlatformProvider {
     override fun osInfo(): OperatingSystem
     override val filePathSeparator: String
+
+    @OptIn(PlannedRemoval::class)
+    @Deprecated("Use pathExists() instead", replaceWith = ReplaceWith("pathExists(path)"))
     override fun fileExists(path: String): Boolean
+
+    @OptIn(PlannedRemoval::class)
+    @Deprecated(
+        "Blocks the calling thread. Use writeFile() instead",
+        replaceWith = ReplaceWith("writeFile(path, data, writeType, mustExist, permissions)"),
+    )
+    override fun write(
+        path: String,
+        data: ByteArray,
+        writeType: WriteType,
+        mustExist: Boolean,
+        permissions: String?,
+    )
     override fun getAllEnvVars(): Map<String, String>
     override fun getAllProperties(): Map<String, String>
     override fun getProperty(key: String): String?
     override fun getenv(key: String): String?
+
     override suspend fun readFileOrNull(path: String): ByteArray?
-    override suspend fun writeFile(path: String, data: ByteArray)
+
     override val isJvm: Boolean
     override val isAndroid: Boolean
     override val isBrowser: Boolean

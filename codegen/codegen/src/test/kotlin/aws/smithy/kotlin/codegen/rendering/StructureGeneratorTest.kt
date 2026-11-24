@@ -20,13 +20,14 @@ import aws.smithy.kotlin.codegen.test.shouldContainOnlyOnceWithDiff
 import aws.smithy.kotlin.codegen.test.shouldContainWithDiff
 import aws.smithy.kotlin.codegen.test.toSmithyModel
 import aws.smithy.kotlin.codegen.trimEveryLine
-import org.junit.jupiter.api.TestInstance
+import aws.smithy.kotlin.runtime.testing.TestInstance
+import aws.smithy.kotlin.runtime.testing.TestLifecycle
 import software.amazon.smithy.codegen.core.SymbolProvider
 import software.amazon.smithy.model.shapes.StructureShape
 import kotlin.test.Test
 import kotlin.test.assertTrue
 
-@TestInstance(TestInstance.Lifecycle.PER_CLASS)
+@TestInstance(TestLifecycle.PER_CLASS)
 class StructureGeneratorTest {
     // Structure generation is rather involved, instead of one giant substr search to see that everything is right we
     // look for parts of the whole as individual tests
@@ -406,6 +407,40 @@ class StructureGeneratorTest {
             }
         """.formatForTest()
         generated2.shouldContainOnlyOnceWithDiff(expected2)
+    }
+
+    @Test
+    fun `it redacts sensitive unions and leaves variant redaction to other unions in toString`() {
+        val contents = generateStructure(
+            """
+                @sensitive string SecretString
+
+                @sensitive
+                union SecretUnion { a: String }
+
+                // not sensitive itself, so its variants redact themselves
+                union MixedUnion {
+                    secret: SecretString
+                    plain: String
+                }
+
+                structure MyStruct {
+                    secretUnion: SecretUnion
+                    mixedUnion: MixedUnion
+                }
+            """,
+        )
+
+        val expected = """
+            override fun toString(): kotlin.String = buildString {
+                append("MyStruct(")
+                append("mixedUnion=${'$'}mixedUnion,")
+                append("secretUnion=*** Sensitive Data Redacted ***")
+                append(")")
+            }
+        """.formatForTest()
+
+        contents.shouldContainOnlyOnceWithDiff(expected)
     }
 
     @Test

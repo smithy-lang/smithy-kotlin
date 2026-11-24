@@ -23,6 +23,16 @@ private const val DEFAULT_TIMEOUT_RETRY_COST = 3
 
 class StandardRetryTokenBucketTest {
     @Test
+    fun testDefaults() {
+        val config = StandardRetryTokenBucket.Config(StandardRetryTokenBucket.Config.Builder())
+        assertEquals(500, config.maxCapacity)
+        assertEquals(5, config.retryCost)
+        assertEquals(10, config.timeoutRetryCost)
+        assertEquals(1, config.initialTrySuccessIncrement)
+        assertEquals(0, config.initialTryCost)
+    }
+
+    @Test
     fun testWaitForCapacity() = runTest {
         // A bucket that only allows one initial try per second
         val bucket = tokenBucket(initialTryCost = 10)
@@ -59,6 +69,7 @@ class StandardRetryTokenBucketTest {
 
     @Test
     fun testRetryCapacityAdjustments() = runTest {
+        // Only Throttling gets the timeout/throttling cost; everything else pays retryCost
         mapOf(
             RetryErrorType.Throttling to DEFAULT_TIMEOUT_RETRY_COST,
             RetryErrorType.Transient to DEFAULT_TIMEOUT_RETRY_COST,
@@ -66,6 +77,25 @@ class StandardRetryTokenBucketTest {
             RetryErrorType.ServerSide to DEFAULT_RETRY_COST,
         ).forEach { (errorType, cost) ->
             val bucket = tokenBucket()
+
+            assertEquals(10, bucket.capacity)
+            val initialToken = assertTime(0.seconds) { bucket.acquireToken() }
+            assertEquals(10, bucket.capacity)
+            assertTime(0.seconds) { initialToken.scheduleRetry(errorType) }
+            assertEquals(10 - cost, bucket.capacity)
+        }
+    }
+
+    @Test
+    fun testRetryCapacityAdjustmentsWithNewRetries() = runTest {
+        // With new retries enabled, transient errors pay retryCost (not the timeout/throttling cost)
+        mapOf(
+            RetryErrorType.Throttling to DEFAULT_TIMEOUT_RETRY_COST,
+            RetryErrorType.Transient to DEFAULT_RETRY_COST,
+            RetryErrorType.ClientSide to DEFAULT_RETRY_COST,
+            RetryErrorType.ServerSide to DEFAULT_RETRY_COST,
+        ).forEach { (errorType, cost) ->
+            val bucket = tokenBucket(useNewRetries = true)
 
             assertEquals(10, bucket.capacity)
             val initialToken = assertTime(0.seconds) { bucket.acquireToken() }
@@ -115,6 +145,7 @@ private fun TestScope.tokenBucket(
     refillUnitsPerSecond: Int = 10,
     retryCost: Int = DEFAULT_RETRY_COST,
     timeoutRetryCost: Int = DEFAULT_TIMEOUT_RETRY_COST,
+    useNewRetries: Boolean = false,
     timeSource: TimeSource = testTimeSource,
 ): StandardRetryTokenBucket {
     val config = StandardRetryTokenBucket.Config {
@@ -125,6 +156,7 @@ private fun TestScope.tokenBucket(
         this.refillUnitsPerSecond = refillUnitsPerSecond
         this.retryCost = retryCost
         this.timeoutRetryCost = timeoutRetryCost
+        this.useNewRetries = useNewRetries
     }
     return StandardRetryTokenBucket(config, timeSource)
 }

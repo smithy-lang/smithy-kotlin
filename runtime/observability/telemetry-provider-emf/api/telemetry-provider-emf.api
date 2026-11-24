@@ -1,0 +1,59 @@
+public final class aws/smithy/kotlin/runtime/telemetry/emf/CloudWatchUnit : java/lang/Enum {
+	public static final field BITS Laws/smithy/kotlin/runtime/telemetry/emf/CloudWatchUnit;
+	public static final field BITS_PER_SECOND Laws/smithy/kotlin/runtime/telemetry/emf/CloudWatchUnit;
+	public static final field BYTES Laws/smithy/kotlin/runtime/telemetry/emf/CloudWatchUnit;
+	public static final field BYTES_PER_SECOND Laws/smithy/kotlin/runtime/telemetry/emf/CloudWatchUnit;
+	public static final field COUNT Laws/smithy/kotlin/runtime/telemetry/emf/CloudWatchUnit;
+	public static final field COUNT_PER_SECOND Laws/smithy/kotlin/runtime/telemetry/emf/CloudWatchUnit;
+	public static final field GIGABITS Laws/smithy/kotlin/runtime/telemetry/emf/CloudWatchUnit;
+	public static final field GIGABITS_PER_SECOND Laws/smithy/kotlin/runtime/telemetry/emf/CloudWatchUnit;
+	public static final field GIGABYTES Laws/smithy/kotlin/runtime/telemetry/emf/CloudWatchUnit;
+	public static final field GIGABYTES_PER_SECOND Laws/smithy/kotlin/runtime/telemetry/emf/CloudWatchUnit;
+	public static final field KILOBITS Laws/smithy/kotlin/runtime/telemetry/emf/CloudWatchUnit;
+	public static final field KILOBITS_PER_SECOND Laws/smithy/kotlin/runtime/telemetry/emf/CloudWatchUnit;
+	public static final field KILOBYTES Laws/smithy/kotlin/runtime/telemetry/emf/CloudWatchUnit;
+	public static final field KILOBYTES_PER_SECOND Laws/smithy/kotlin/runtime/telemetry/emf/CloudWatchUnit;
+	public static final field MEGABITS Laws/smithy/kotlin/runtime/telemetry/emf/CloudWatchUnit;
+	public static final field MEGABITS_PER_SECOND Laws/smithy/kotlin/runtime/telemetry/emf/CloudWatchUnit;
+	public static final field MEGABYTES Laws/smithy/kotlin/runtime/telemetry/emf/CloudWatchUnit;
+	public static final field MEGABYTES_PER_SECOND Laws/smithy/kotlin/runtime/telemetry/emf/CloudWatchUnit;
+	public static final field MICROSECONDS Laws/smithy/kotlin/runtime/telemetry/emf/CloudWatchUnit;
+	public static final field MILLISECONDS Laws/smithy/kotlin/runtime/telemetry/emf/CloudWatchUnit;
+	public static final field NONE Laws/smithy/kotlin/runtime/telemetry/emf/CloudWatchUnit;
+	public static final field PERCENT Laws/smithy/kotlin/runtime/telemetry/emf/CloudWatchUnit;
+	public static final field SECONDS Laws/smithy/kotlin/runtime/telemetry/emf/CloudWatchUnit;
+	public static final field TERABITS Laws/smithy/kotlin/runtime/telemetry/emf/CloudWatchUnit;
+	public static final field TERABITS_PER_SECOND Laws/smithy/kotlin/runtime/telemetry/emf/CloudWatchUnit;
+	public static final field TERABYTES Laws/smithy/kotlin/runtime/telemetry/emf/CloudWatchUnit;
+	public static final field TERABYTES_PER_SECOND Laws/smithy/kotlin/runtime/telemetry/emf/CloudWatchUnit;
+	public static fun getEntries ()Lkotlin/enums/EnumEntries;
+	public final fun getValue ()Ljava/lang/String;
+	public static fun valueOf (Ljava/lang/String;)Laws/smithy/kotlin/runtime/telemetry/emf/CloudWatchUnit;
+	public static fun values ()[Laws/smithy/kotlin/runtime/telemetry/emf/CloudWatchUnit;
+}
+
+public final class aws/smithy/kotlin/runtime/telemetry/emf/EmfTelemetryProvider : aws/smithy/kotlin/runtime/telemetry/TelemetryProvider {
+	public static final field Companion Laws/smithy/kotlin/runtime/telemetry/emf/EmfTelemetryProvider$Companion;
+	public synthetic fun <init> (Laws/smithy/kotlin/runtime/telemetry/emf/EmfTelemetryProvider$Builder;Lkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun getContextManager ()Laws/smithy/kotlin/runtime/telemetry/context/ContextManager;
+	public fun getLoggerProvider ()Laws/smithy/kotlin/runtime/telemetry/logging/LoggerProvider;
+	public fun getMeterProvider ()Laws/smithy/kotlin/runtime/telemetry/metrics/MeterProvider;
+	public fun getTracerProvider ()Laws/smithy/kotlin/runtime/telemetry/trace/TracerProvider;
+}
+
+public final class aws/smithy/kotlin/runtime/telemetry/emf/EmfTelemetryProvider$Builder {
+	public fun <init> ()V
+	public final fun build ()Laws/smithy/kotlin/runtime/telemetry/emf/EmfTelemetryProvider;
+	public final fun getLogGroupName ()Ljava/lang/String;
+	public final fun getLoggerProvider ()Laws/smithy/kotlin/runtime/telemetry/logging/LoggerProvider;
+	public final fun getNamespace ()Ljava/lang/String;
+	public final fun setLogGroupName (Ljava/lang/String;)V
+	public final fun setLoggerProvider (Laws/smithy/kotlin/runtime/telemetry/logging/LoggerProvider;)V
+	public final fun setNamespace (Ljava/lang/String;)V
+}
+
+public final class aws/smithy/kotlin/runtime/telemetry/emf/EmfTelemetryProvider$Companion {
+	public final fun invoke (Lkotlin/jvm/functions/Function1;)Laws/smithy/kotlin/runtime/telemetry/emf/EmfTelemetryProvider;
+	public static synthetic fun invoke$default (Laws/smithy/kotlin/runtime/telemetry/emf/EmfTelemetryProvider$Companion;Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)Laws/smithy/kotlin/runtime/telemetry/emf/EmfTelemetryProvider;
+}
+

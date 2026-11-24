@@ -57,6 +57,29 @@ public class PeriodicSweepCache<K, V>(
     }
 
     /**
+     * Non-suspend variant of [get] that attempts to acquire the lock without suspending. If the lock is already held,
+     * returns `null` immediately rather than waiting.
+     * @param key The key for which to look up a value.
+     * @param valueLookup A non-suspending function which returns the read-through value associated with a given key.
+     * @return The cached or computed value, or `null` if the lock could not be acquired.
+     */
+    public fun tryGet(key: K, valueLookup: (K) -> ExpiringValue<V>): V? {
+        if (!mutex.tryLock()) return null
+        try {
+            if (clock.now() > nextSweep) sweep()
+
+            val current = map[key]
+            return if (current == null || current.isExpired) {
+                valueLookup(key).also { map[key] = it }.value
+            } else {
+                current.value
+            }
+        } finally {
+            mutex.unlock()
+        }
+    }
+
+    /**
      * Invalidates the value (if any) for the given key, removing it from the cache regardless of its expiry.
      * @param key The key for which to invalidate a value.
      */

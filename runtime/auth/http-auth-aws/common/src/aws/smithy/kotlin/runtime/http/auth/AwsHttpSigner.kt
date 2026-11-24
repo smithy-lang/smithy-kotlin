@@ -13,11 +13,13 @@ import aws.smithy.kotlin.runtime.auth.awssigning.internal.setAwsChunkedHeaders
 import aws.smithy.kotlin.runtime.auth.awssigning.internal.useAwsChunkedEncoding
 import aws.smithy.kotlin.runtime.client.LogMode
 import aws.smithy.kotlin.runtime.client.SdkClientOption
+import aws.smithy.kotlin.runtime.collections.MutableAttributes
 import aws.smithy.kotlin.runtime.collections.get
 import aws.smithy.kotlin.runtime.http.HttpBody
 import aws.smithy.kotlin.runtime.http.operation.HttpOperationContext
 import aws.smithy.kotlin.runtime.http.request.HttpRequest
 import aws.smithy.kotlin.runtime.http.request.HttpRequestBuilder
+import aws.smithy.kotlin.runtime.net.Scheme
 import aws.smithy.kotlin.runtime.time.Instant
 import kotlin.coroutines.coroutineContext
 import kotlin.time.Duration
@@ -129,6 +131,7 @@ public class AwsHttpSigner(private val config: Config) : HttpSigner {
         val contextOmitSessionToken = attributes.getOrNull(AwsSigningAttributes.OmitSessionToken)
 
         val enableAwsChunked = attributes.getOrNull(AwsSigningAttributes.EnableAwsChunked) ?: false
+        val payloadSigningEnabled = attributes.getOrNull(AwsSigningAttributes.PayloadSigningEnabled) ?: true
 
         // operation signing config is baseConfig + operation specific config/overrides
         val signingConfig = AwsSigningConfig {
@@ -159,20 +162,24 @@ public class AwsHttpSigner(private val config: Config) : HttpSigner {
             signedBodyHeader = contextSignedBodyHeader ?: config.signedBodyHeader
             logRequest = attributes.getOrNull(SdkClientOption.LogMode)?.isEnabled(LogMode.LogRequest) == true
 
-            // SDKs are supposed to default to signed payload _always_ when possible (and when `unsignedPayload` trait
-            // isn't present). The only exception is when the customer explicitly disables signed payloads (via Config.isUnsignedPayload).
+            // SDKs are supposed to default to signed payload _always_ when possible, unless:
+            //   - the `unsignedPayload` trait is present
+            //   - the customer explicitly disables signed payloads (via Config.isUnsignedPayload)
+            //   - payload signing is disabled at the client level (PayloadSigningEnabled = false) over HTTPS
+            val effectiveUnsignedPayload = config.isUnsignedPayload ||
+                (!payloadSigningEnabled && request.url.scheme == Scheme.HTTPS)
 
             hashSpecification = when {
                 contextHashSpecification != null -> contextHashSpecification
                 body is HttpBody.Empty -> HashSpecification.EmptyBody
                 body.isEligibleForAwsChunkedStreaming && enableAwsChunked -> {
                     if (request.headers.contains("x-amz-trailer")) {
-                        if (config.isUnsignedPayload) HashSpecification.StreamingUnsignedPayloadWithTrailers else HashSpecification.StreamingAws4HmacSha256PayloadWithTrailers
+                        if (effectiveUnsignedPayload) HashSpecification.StreamingUnsignedPayloadWithTrailers else HashSpecification.StreamingAws4HmacSha256PayloadWithTrailers
                     } else {
                         HashSpecification.StreamingAws4HmacSha256Payload
                     }
                 }
-                config.isUnsignedPayload -> HashSpecification.UnsignedPayload
+                effectiveUnsignedPayload -> HashSpecification.UnsignedPayload
                 // use the payload to compute the hash
                 else -> HashSpecification.CalculateFromPayload
             }
@@ -182,7 +189,15 @@ public class AwsHttpSigner(private val config: Config) : HttpSigner {
             request.setAwsChunkedHeaders()
         }
 
-        val signingResult = checkNotNull(config.signer).sign(request.build(), signingConfig)
+        val signer = checkNotNull(config.signer)
+
+        // Event stream requests carry a RequestSignature deferred. Their messages are signed later, from the
+        // operation's execution context, so publish this signer for that to use.
+        if (attributes.contains(AwsSigningAttributes.RequestSignature)) {
+            (attributes as MutableAttributes)[AwsSigningAttributes.Signer] = signer
+        }
+
+        val signingResult = signer.sign(request.build(), signingConfig)
         val signedRequest = signingResult.output
 
         // Add the signature to the request context
@@ -192,7 +207,7 @@ public class AwsHttpSigner(private val config: Config) : HttpSigner {
 
         if (signingConfig.useAwsChunkedEncoding) {
             request.setAwsChunkedBody(
-                checkNotNull(config.signer),
+                signer,
                 signingConfig,
                 signingResult.signature,
                 request.trailingHeaders.build(),

@@ -14,6 +14,9 @@ kotlin {
                 api(project(":runtime:protocol:http-client"))
                 implementation(project(":runtime:protocol:http-test"))
 
+                // exposes HeaderValue for event stream test expectations
+                api(project(":runtime:protocol:aws-event-stream"))
+
                 implementation(project(":runtime:serde:serde-xml"))
                 implementation(project(":runtime:serde:serde-cbor"))
 
@@ -27,7 +30,7 @@ kotlin {
 
         jvmMain {
             dependencies {
-                implementation(libs.kotlin.test)
+                implementation(libs.kotlin.test.junit5)
             }
         }
 

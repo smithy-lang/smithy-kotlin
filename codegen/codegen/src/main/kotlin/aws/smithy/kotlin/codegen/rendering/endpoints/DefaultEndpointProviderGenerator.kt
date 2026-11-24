@@ -19,6 +19,8 @@ import software.amazon.smithy.codegen.core.CodegenException
 import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.model.SourceLocation
 import software.amazon.smithy.rulesengine.language.EndpointRuleSet
+import software.amazon.smithy.rulesengine.language.evaluation.type.BooleanType
+import software.amazon.smithy.rulesengine.language.evaluation.type.OptionalType
 import software.amazon.smithy.rulesengine.language.syntax.Identifier
 import software.amazon.smithy.rulesengine.language.syntax.ToExpression
 import software.amazon.smithy.rulesengine.language.syntax.expressions.*
@@ -156,9 +158,7 @@ class DefaultEndpointProviderGenerator(
                 writer.openBlock("if (")
                 expressions.forEachIndexed { index, it ->
                     renderExpression(it.function)
-                    if (!it.function.isBooleanFunction()) { // these are meant to be evaluated on "truthiness" (i.e. is the result non-null)
-                        writeInline(" != null")
-                    }
+                    it.function.renderTruthinessCheck(writer)
                     write(if (index == expressions.lastIndex) "" else " &&")
                 }
                 writer.closeAndOpenBlock(") {")
@@ -418,16 +418,23 @@ private fun isSet(expression: Expression) = IsSet
     .getDefinition()
     .createFunction(FunctionNode.ofExpressions(IsSet.ID, ToExpression { expression }))
 
-private fun Expression.isBooleanFunction(): Boolean {
-    if (this !is LibraryFunction) {
-        return true
+/**
+ * Returns true if this expression generates nullable Kotlin code regardless of Smithy type.
+ */
+private fun Expression.generatesNullableKotlin(): Boolean = this is GetAttr
+
+private fun Expression.renderTruthinessCheck(writer: KotlinWriter) {
+    val exprType = runCatching { type() }.getOrNull()
+    val isNullable = exprType is OptionalType || generatesNullableKotlin()
+    val isBooleanInner = when {
+        exprType is OptionalType -> exprType.inner() is BooleanType
+        else -> exprType is BooleanType
     }
 
-    return name !in setOf(
-        "parseUrl",
-        "substring",
-        "uriEncode",
-        "aws.parseArn",
-        "aws.partition",
-    )
+    when {
+        isNullable && isBooleanInner -> writer.writeInline(" == true")
+        isNullable -> writer.writeInline(" != null")
+        // Non-nullable boolean — use as-is
+        else -> Unit
+    }
 }
