@@ -9,8 +9,10 @@ import aws.smithy.kotlin.codegen.core.enumVariantName
 import aws.smithy.kotlin.codegen.core.withBlock
 import aws.smithy.kotlin.codegen.lang.KotlinTypes
 import aws.smithy.kotlin.codegen.lang.isValidKotlinIdentifier
+import aws.smithy.kotlin.codegen.model.SENSITIVE_DATA_REDACTED
 import aws.smithy.kotlin.codegen.model.expectTrait
 import aws.smithy.kotlin.codegen.model.getTrait
+import aws.smithy.kotlin.codegen.model.hasTrait
 import aws.smithy.kotlin.codegen.model.isStringEnumShape
 import aws.smithy.kotlin.codegen.utils.doubleQuote
 import aws.smithy.kotlin.codegen.utils.getOrNull
@@ -19,6 +21,7 @@ import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.model.shapes.IntEnumShape
 import software.amazon.smithy.model.shapes.Shape
 import software.amazon.smithy.model.traits.DocumentationTrait
+import software.amazon.smithy.model.traits.SensitiveTrait
 import java.util.logging.Logger
 
 /**
@@ -106,6 +109,9 @@ class EnumGenerator(val shape: Shape, val symbol: Symbol, val writer: KotlinWrit
     // and idiomatic names
     private val generatedNames = mutableSetOf<String>()
 
+    // A variant's name reveals the value, so every variant of a sensitive enum, and SdkUnknown, prints `<Enum>(<redacted>)`
+    private val redactedString: String? = if (shape.hasTrait<SensitiveTrait>()) "${symbol.name}($SENSITIVE_DATA_REDACTED)" else null
+
     fun render() {
         writer.renderDocumentation(shape)
         writer.renderAnnotations(shape)
@@ -133,7 +139,7 @@ class EnumGenerator(val shape: Shape, val symbol: Symbol, val writer: KotlinWrit
 
         writer.withBlock("public object #L : #Q() {", "}", variant.name, symbol) {
             write("override val value: #Q = #L", ktEnum.symbol, variant.valueLiteral)
-            writer.write("override fun toString(): #Q = #S", KotlinTypes.String, variant.name)
+            writer.write("override fun toString(): #Q = #S", KotlinTypes.String, redactedString ?: variant.name)
         }
     }
 
@@ -143,7 +149,11 @@ class EnumGenerator(val shape: Shape, val symbol: Symbol, val writer: KotlinWrit
         }
 
         writer.withBlock("public data class SdkUnknown(override val value: #Q) : #Q() {", "}", ktEnum.symbol, symbol) {
-            writer.write("override fun toString(): #Q = \"SdkUnknown(\$value)\"", KotlinTypes.String)
+            if (redactedString != null) {
+                writer.write("override fun toString(): #Q = #S", KotlinTypes.String, redactedString)
+            } else {
+                writer.write("override fun toString(): #Q = \"SdkUnknown(\$value)\"", KotlinTypes.String)
+            }
         }
     }
 

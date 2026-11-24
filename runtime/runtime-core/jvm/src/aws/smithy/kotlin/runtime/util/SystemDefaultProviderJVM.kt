@@ -6,6 +6,8 @@
 package aws.smithy.kotlin.runtime.util
 
 import aws.smithy.kotlin.runtime.PlannedRemoval
+import aws.smithy.kotlin.runtime.io.internal.SdkDispatchers
+import kotlinx.coroutines.withContext
 import java.io.File
 import java.io.IOException
 import java.io.RandomAccessFile
@@ -31,22 +33,31 @@ internal actual object SystemDefaultProvider : PlatformProvider {
     actual override fun osInfo(): OperatingSystem = getOsInfo()
 
     /**
-     * Read the contents of a file as a [String] or return null on any IO error.
+     * Read the contents of a file or return null on any IO error.
      *
      * @param path fully qualified path encoded specifically to the target platform's filesystem.
      * @return contents of file or null if error (file does not exist, etc.)
      */
     @OptIn(PlannedRemoval::class)
-    @Deprecated("Use readOrNull() instead", replaceWith = ReplaceWith("readOrNull(path, readAll = true)"))
-    actual override suspend fun readFileOrNull(path: String): ByteArray? = readOrNull(path, readAll = true, mustExist = false)
+    @Suppress("DEPRECATION")
+    actual override suspend fun readFileOrNull(path: String): ByteArray? = withContext(SdkDispatchers.IO) {
+        try {
+            readOrNull(path, readAll = true, mustExist = false)
+        } catch (_: IOException) {
+            null
+        }
+    }
 
     @OptIn(PlannedRemoval::class)
-    @Deprecated("Use write() instead", replaceWith = ReplaceWith("write(path, data, WriteType.OVERWRITE)"))
-    actual override suspend fun writeFile(path: String, data: ByteArray): Unit = write(path, data, WriteType.OVERWRITE)
-
-    @OptIn(PlannedRemoval::class)
-    @Deprecated("Use exists() instead", replaceWith = ReplaceWith("exists(path)"))
+    @Deprecated("Use pathExists() instead", replaceWith = ReplaceWith("pathExists(path)"))
+    @Suppress("DEPRECATION")
     actual override fun fileExists(path: String): Boolean = exists(path)
+
+    @OptIn(PlannedRemoval::class)
+    @Deprecated(
+        "Blocks the calling thread. Use writeFile() instead",
+        replaceWith = ReplaceWith("writeFile(path, data, writeType, mustExist, permissions)"),
+    )
     actual override fun write(
         path: String,
         data: ByteArray,
@@ -85,10 +96,8 @@ internal actual object SystemDefaultProvider : PlatformProvider {
         }
     }
 
-    @Suppress("DEPRECATION")
     public suspend fun readFileOrNull(path: Path): ByteArray? = readFileOrNull(path.toAbsolutePath().toString())
 
-    @Suppress("DEPRECATION")
     public suspend fun readFileOrNull(file: File): ByteArray? = readFileOrNull(file.absolutePath)
 
     actual override fun getAllProperties(): Map<String, String> = System

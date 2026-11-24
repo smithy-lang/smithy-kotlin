@@ -441,10 +441,12 @@ object RuntimeTypes {
             // NOTE: smithy-kotlin core has an API dependency on this already
             val Flow = "kotlinx.coroutines.flow.Flow".toSymbol()
             val flowOf = "kotlinx.coroutines.flow.flowOf".toSymbol()
+            val emptyFlow = "kotlinx.coroutines.flow.emptyFlow".toSymbol()
             val merge = "kotlinx.coroutines.flow.merge".toSymbol()
             val map = "kotlinx.coroutines.flow.map".toSymbol()
             val take = "kotlinx.coroutines.flow.take".toSymbol()
             val single = "kotlinx.coroutines.flow.single".toSymbol()
+            val singleOrNull = "kotlinx.coroutines.flow.singleOrNull".toSymbol()
         }
     }
 

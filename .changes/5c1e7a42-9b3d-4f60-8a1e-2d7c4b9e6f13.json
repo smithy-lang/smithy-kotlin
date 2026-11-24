@@ -1,0 +1,5 @@
+{
+    "id": "5c1e7a42-9b3d-4f60-8a1e-2d7c4b9e6f13",
+    "type": "bugfix",
+    "description": "Sign request event stream messages with the signer that signs the HTTP request, and send them unsigned for operations whose effective auth has no SigV4. RPC protocols now set `:content-type` on the `initial-request` message."
+}

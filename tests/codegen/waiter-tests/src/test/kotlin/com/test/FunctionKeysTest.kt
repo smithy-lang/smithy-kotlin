@@ -7,9 +7,11 @@ package com.test
 
 import com.test.model.EntityMaps
 import com.test.model.EntityPrimitives
+import com.test.model.Enum
 import com.test.model.GetFunctionKeysEqualsRequest
 import com.test.model.GetFunctionKeysEqualsResponse
 import com.test.utils.successTest
+import com.test.waiters.waitUntilKeysFunctionEnumKeyedMapStringEquals
 import com.test.waiters.waitUntilKeysFunctionMapStringEquals
 import com.test.waiters.waitUntilKeysFunctionPrimitivesIntegerEquals
 import com.test.waiters.waitUntilKeysFunctionPrimitivesStringEquals
@@ -35,5 +37,12 @@ class FunctionKeysTest {
         GetFunctionKeysEqualsRequest { name = "test" },
         WaitersTestClient::waitUntilKeysFunctionMapStringEquals,
         GetFunctionKeysEqualsResponse { maps = EntityMaps { strings = mapOf("key" to "value") } },
+    )
+
+    @Test
+    fun testKeysFunctionEnumKeyedMapStringEquals() = successTest(
+        GetFunctionKeysEqualsRequest { name = "test" },
+        WaitersTestClient::waitUntilKeysFunctionEnumKeyedMapStringEquals,
+        GetFunctionKeysEqualsResponse { maps = EntityMaps { enumKeys = mapOf(Enum.One to "value") } },
     )
 }

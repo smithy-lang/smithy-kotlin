@@ -66,6 +66,7 @@ structure EntityMaps {
     enums: EnumMap,
     intEnums: IntEnumMap,
     structs: StructMap,
+    enumKeys: EnumKeyedMap,
 }
 
 enum Enum {
@@ -150,6 +151,11 @@ map IntEnumMap {
 map StructMap {
     key: String,
     value: Struct,
+}
+
+map EnumKeyedMap {
+    key: Enum,
+    value: String,
 }
 
 structure Struct {

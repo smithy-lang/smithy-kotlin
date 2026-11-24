@@ -22,7 +22,12 @@ import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
-class EventStreamSigningTest {
+class DefaultEventStreamSigningTest : EventStreamSigningTestBase(DefaultAwsSigner)
+
+/**
+ * Event stream message signing with a given [AwsSigner] implementation
+ */
+abstract class EventStreamSigningTestBase(private val signer: AwsSigner) {
     private val testCredentials = Credentials("fake access key", "fake secret key")
     private val testCredentialsProvider = object : CredentialsProvider {
         override suspend fun resolve(attributes: Attributes) = testCredentials
@@ -49,7 +54,7 @@ class EventStreamSigningTest {
         val buffer = SdkBuffer()
         messageToSign.encode(buffer)
         val messagePayload = buffer.readByteArray()
-        val result = DefaultAwsSigner.signPayload(signingConfig, prevSignature, messagePayload, testClock)
+        val result = signer.signPayload(signingConfig, prevSignature, messagePayload, testClock)
         assertEquals(":date", result.output.headers[0].name)
 
         val dateHeader = result.output.headers[0].value.expectTimestamp()
@@ -74,7 +79,7 @@ class EventStreamSigningTest {
         }
 
         val context = ExecutionContext()
-        context[AwsSigningAttributes.Signer] = DefaultAwsSigner
+        context[AwsSigningAttributes.Signer] = signer
         context[AwsSigningAttributes.RequestSignature] = CompletableDeferred(HashSpecification.EmptyBody.hash.encodeToByteArray())
         context[AwsSigningAttributes.SigningRegion] = "us-east-2"
         context[AwsSigningAttributes.SigningService] = "test"

@@ -531,15 +531,17 @@ class KotlinJmespathExpressionVisitor(
     Smithy spec: https://smithy.io/2.0/additional-specs/rules-engine/parameters.html#smithy-rules-operationcontextparams-trait
     JMESPath spec: https://jmespath.org/specification.html#keys
      */
-    private fun VisitedExpression.getKeys(): String = if (shape?.targetOrSelf(ctx.model)?.type == ShapeType.MAP) {
-        "$identifier?.keys?.map { it.toString() }?.toList()"
-    } else {
-        shape
-            ?.targetOrSelf(ctx.model)
-            ?.allMembers
-            ?.keys
-            ?.joinToString(", ", "listOf(", ")") { it.doubleQuote() }
-            ?: "listOf<String>()"
+    private fun VisitedExpression.getKeys(): String = when (val target = shape?.targetOrSelf(ctx.model)) {
+        is MapShape -> {
+            val keyString = if (ctx.model.expectShape(target.key.target).isEnum) "it.value" else "it.toString()"
+            "$identifier?.keys?.map { $keyString }?.toList()"
+        }
+        else ->
+            target
+                ?.allMembers
+                ?.keys
+                ?.joinToString(", ", "listOf(", ")") { it.doubleQuote() }
+                ?: "listOf<String>()"
     }
 
     private fun VisitedExpression.getValues(): String {
