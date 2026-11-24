@@ -371,6 +371,15 @@ MyUnion.StringMember("v1")
         )
     }
 
+    @Test
+    fun `it renders timestamps`() {
+        testType(
+            "Timestamp",
+            NumberNode.from(1730384114) to "Instant.fromEpochSeconds(1730384114, 0)",
+            StringNode.from("2024-10-31T14:15:14Z") to """Instant.fromIso8601("2024-10-31T14:15:14Z")""",
+        )
+    }
+
     private fun testType(type: String, vararg testCases: Pair<ToNode, String>) {
         val model = """
             structure MyStruct {

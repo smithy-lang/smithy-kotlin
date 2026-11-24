@@ -4,15 +4,19 @@
  */
 package aws.smithy.kotlin.codegen.rendering.protocol
 
+import aws.smithy.kotlin.codegen.core.capitalizedDefaultName
 import aws.smithy.kotlin.codegen.core.defaultName
 import aws.smithy.kotlin.codegen.model.getTrait
 import software.amazon.smithy.model.knowledge.OperationIndex
 import software.amazon.smithy.model.knowledge.TopDownIndex
 import software.amazon.smithy.model.shapes.Shape
+import software.amazon.smithy.model.shapes.ShapeId
 import software.amazon.smithy.protocoltests.traits.AppliesTo
 import software.amazon.smithy.protocoltests.traits.HttpMessageTestCase
 import software.amazon.smithy.protocoltests.traits.HttpRequestTestsTrait
 import software.amazon.smithy.protocoltests.traits.HttpResponseTestsTrait
+import software.amazon.smithy.protocoltests.traits.eventstream.EventStreamTestCase
+import software.amazon.smithy.protocoltests.traits.eventstream.EventStreamTestsTrait
 import java.util.*
 import java.util.logging.Logger
 
@@ -39,6 +43,22 @@ class HttpProtocolTestGenerator(
     // list of test ID's to ignore/skip
     private val testDelta: TestMemberDelta = TestMemberDelta(setOf()),
 ) {
+    private var eventStreamTestBuilder = HttpProtocolUnitTestEventStreamGenerator.Builder()
+
+    /**
+     * Construct a generator that renders event stream protocol tests with a customized [eventStreamTestBuilder].
+     */
+    constructor(
+        ctx: ProtocolGenerator.GenerationContext,
+        requestTestBuilder: HttpProtocolUnitTestRequestGenerator.Builder,
+        responseTestBuilder: HttpProtocolUnitTestResponseGenerator.Builder,
+        errorTestBuilder: HttpProtocolUnitTestErrorGenerator.Builder,
+        testDelta: TestMemberDelta,
+        eventStreamTestBuilder: HttpProtocolUnitTestEventStreamGenerator.Builder,
+    ) : this(ctx, requestTestBuilder, responseTestBuilder, errorTestBuilder, testDelta) {
+        this.eventStreamTestBuilder = eventStreamTestBuilder
+    }
+
     private val benchmarkGeneratorFactory: SerdeBenchmarkGeneratorFactory? =
         ctx.integrations.filterIsInstance<SerdeBenchmarkGeneratorFactory>().firstOrNull()
     private val logger = Logger.getLogger(javaClass.name)
@@ -61,7 +81,7 @@ class HttpProtocolTestGenerator(
 
                 // Generate regular protocol tests
                 if (regularCases.isNotEmpty()) {
-                    val testOperationName = operation.id.name.replaceFirstChar { c -> c.uppercaseChar() }
+                    val testOperationName = operation.capitalizedDefaultName()
                     val testClassName = "${testOperationName}RequestTest"
                     val testFilename = "$testClassName.kt"
                     ctx.delegator.useTestFileWriter(testFilename, ctx.settings.pkg.name) { writer ->
@@ -82,7 +102,7 @@ class HttpProtocolTestGenerator(
 
                 // Generate serde benchmark classes
                 if (benchmarkCases.isNotEmpty() && benchmarkGeneratorFactory != null) {
-                    val testOperationName = operation.id.name.replaceFirstChar { c -> c.uppercaseChar() }
+                    val testOperationName = operation.capitalizedDefaultName()
                     val benchmarkClassName = "${testOperationName}SerializationBenchmark"
                     val benchmarkFilename = "$benchmarkClassName.kt"
                     ctx.delegator.useTestFileWriter(benchmarkFilename, ctx.settings.pkg.name) { writer ->
@@ -103,7 +123,7 @@ class HttpProtocolTestGenerator(
 
                 // Generate regular protocol tests
                 if (regularCases.isNotEmpty()) {
-                    val testOperationName = operation.id.name.replaceFirstChar { c -> c.uppercaseChar() }
+                    val testOperationName = operation.capitalizedDefaultName()
                     val testClassName = "${testOperationName}ResponseTest"
                     val testFilename = "$testClassName.kt"
                     ctx.delegator.useTestFileWriter(testFilename, ctx.settings.pkg.name) { writer ->
@@ -124,7 +144,7 @@ class HttpProtocolTestGenerator(
 
                 // Generate serde benchmark classes
                 if (benchmarkCases.isNotEmpty() && benchmarkGeneratorFactory != null) {
-                    val testOperationName = operation.id.name.replaceFirstChar { c -> c.uppercaseChar() }
+                    val testOperationName = operation.capitalizedDefaultName()
                     val benchmarkClassName = "${testOperationName}DeserializationBenchmark"
                     val benchmarkFilename = "$benchmarkClassName.kt"
                     ctx.delegator.useTestFileWriter(benchmarkFilename, ctx.settings.pkg.name) { writer ->
@@ -143,7 +163,7 @@ class HttpProtocolTestGenerator(
 
                 errorTests?.let { testCases ->
                     // use operation name as filename
-                    val opName = operation.id.name.replaceFirstChar { c -> c.uppercaseChar() }
+                    val opName = operation.capitalizedDefaultName()
                     val testFilename = "${opName}ErrorTest.kt"
                     // multiple error (tests) may be associated with a single operation,
                     // use the operation name + error name as the class name
@@ -166,12 +186,41 @@ class HttpProtocolTestGenerator(
                     }
                 }
             }
+
+            // 4. Generate test cases for event streams.
+            val eventStreamTests = operation.getTrait<EventStreamTestsTrait>()
+                ?.getTestCasesFor(AppliesTo.CLIENT)
+                ?.filter(::isTestCaseAllowedForRunMode)
+
+            if (!eventStreamTests.isNullOrEmpty()) {
+                val testOperationName = operation.capitalizedDefaultName()
+                val testClassName = "${testOperationName}EventStreamTest"
+                val testFilename = "$testClassName.kt"
+                ctx.delegator.useTestFileWriter(testFilename, ctx.settings.pkg.name) { writer ->
+                    logger.fine("Generating event stream protocol test cases for ${operation.id}")
+                    writer.addImport("${ctx.settings.pkg.name}.model", "*")
+                    eventStreamTestBuilder
+                        .ctx(ctx)
+                        .writer(writer)
+                        .model(ctx.model)
+                        .symbolProvider(ctx.symbolProvider)
+                        .operation(operation)
+                        .service(ctx.service)
+                        .testCases(eventStreamTests)
+                        .build()
+                        .renderTestClass(testClassName)
+                }
+            }
         }
     }
 
-    private fun <T : HttpMessageTestCase> isTestCaseAllowedForRunMode(test: T): Boolean = when (testDelta.runMode) {
-        TestContainmentMode.EXCLUDE_TESTS -> test.protocol == ctx.protocol && test.id !in testDelta.members
-        TestContainmentMode.RUN_TESTS -> test.protocol == ctx.protocol && test.id in testDelta.members
+    private fun <T : HttpMessageTestCase> isTestCaseAllowedForRunMode(test: T): Boolean = isTestCaseAllowedForRunMode(test.id, test.protocol)
+
+    private fun isTestCaseAllowedForRunMode(test: EventStreamTestCase): Boolean = isTestCaseAllowedForRunMode(test.id, test.protocol)
+
+    private fun isTestCaseAllowedForRunMode(id: String, protocol: ShapeId): Boolean = when (testDelta.runMode) {
+        TestContainmentMode.EXCLUDE_TESTS -> protocol == ctx.protocol && id !in testDelta.members
+        TestContainmentMode.RUN_TESTS -> protocol == ctx.protocol && id in testDelta.members
     }
 }
 
