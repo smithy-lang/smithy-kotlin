@@ -1,0 +1,5 @@
+{
+    "id": "8e4b2f19-6a7c-4d35-b0c8-1f93a5d27e64",
+    "type": "bugfix",
+    "description": "Always send an `initial-request` message for rpcv2Cbor event streams, even when the operation input has no members besides the event stream or the caller supplies no events"
+}
