@@ -1,7 +1,7 @@
 {
     "id": "230541e4-5030-4d49-b35b-40a1b79c19a9",
-    "type": "bugfix",
-    "description": "Send an HTTP/2 PING every 5 seconds by default in the OkHttp engines and close connections that don't acknowledge it, so a silently dead connection is no longer reused (configurable via `pingInterval`)",
+    "type": "feature",
+    "description": "Add an opt-in `pingInterval` to the OkHttp engine config that sends HTTP/2 PINGs and closes connections that don't acknowledge them, so a silently dead connection is replaced instead of reused",
     "issues": [
         "https://github.com/aws/aws-sdk-kotlin/issues/2194"
     ]
