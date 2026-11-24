@@ -13,6 +13,7 @@ import aws.smithy.kotlin.runtime.auth.awssigning.internal.setAwsChunkedHeaders
 import aws.smithy.kotlin.runtime.auth.awssigning.internal.useAwsChunkedEncoding
 import aws.smithy.kotlin.runtime.client.LogMode
 import aws.smithy.kotlin.runtime.client.SdkClientOption
+import aws.smithy.kotlin.runtime.collections.MutableAttributes
 import aws.smithy.kotlin.runtime.collections.get
 import aws.smithy.kotlin.runtime.http.HttpBody
 import aws.smithy.kotlin.runtime.http.operation.HttpOperationContext
@@ -188,7 +189,15 @@ public class AwsHttpSigner(private val config: Config) : HttpSigner {
             request.setAwsChunkedHeaders()
         }
 
-        val signingResult = checkNotNull(config.signer).sign(request.build(), signingConfig)
+        val signer = checkNotNull(config.signer)
+
+        // Event stream requests carry a RequestSignature deferred. Their messages are signed later, from the
+        // operation's execution context, so publish this signer for that to use.
+        if (attributes.contains(AwsSigningAttributes.RequestSignature)) {
+            (attributes as MutableAttributes)[AwsSigningAttributes.Signer] = signer
+        }
+
+        val signingResult = signer.sign(request.build(), signingConfig)
         val signedRequest = signingResult.output
 
         // Add the signature to the request context
@@ -198,7 +207,7 @@ public class AwsHttpSigner(private val config: Config) : HttpSigner {
 
         if (signingConfig.useAwsChunkedEncoding) {
             request.setAwsChunkedBody(
-                checkNotNull(config.signer),
+                signer,
                 signingConfig,
                 signingResult.signature,
                 request.trailingHeaders.build(),

@@ -16,7 +16,13 @@ description = "Smithy protocol test suite"
 
 skipPublishing()
 
-data class ProtocolTest(val projectionName: String, val serviceShapeId: String, val sdkId: String? = null) {
+data class ProtocolTest(
+    val projectionName: String,
+    val serviceShapeId: String,
+    val sdkId: String? = null,
+    // services declared through `@mixin` services must have their mixins flattened before `includeServices` removes them
+    val flattenMixins: Boolean = false,
+) {
     val packageName: String = projectionName.lowercase().filter { it.isLetterOrDigit() }
 }
 
@@ -31,6 +37,7 @@ val enabledProtocols = listOf(
     ProtocolTest("aws-restxml-xmlns", "aws.protocoltests.restxml.xmlns#RestXmlWithNamespace"),
     ProtocolTest("aws-query", "aws.protocoltests.query#AwsQuery"),
     ProtocolTest("smithy-rpcv2-cbor", "smithy.protocoltests.rpcv2Cbor#RpcV2Protocol"),
+    ProtocolTest("smithy-rpcv2-cbor-corpus", "smithy.protocoltests.corpus#RpcV2CborCorpusTests", flattenMixins = true),
 
     // Custom hand written tests
     ProtocolTest("error-correction-json", "aws.protocoltests.errorcorrection#RequiredValueJson"),
@@ -42,16 +49,16 @@ smithyBuild {
         projections.register(test.projectionName) {
             imports = listOf(file("model").absolutePath)
 
-            transforms = listOf(
-                """
+            val flattenMixins = """{ "name": "flattenAndRemoveMixins" }"""
+            val includeServices = """
                 {
                   "name": "includeServices",
                   "args": {
                     "services": ["${test.serviceShapeId}"]
                   }
                 }
-                """,
-            )
+            """
+            transforms = listOfNotNull(flattenMixins.takeIf { test.flattenMixins }, includeServices)
 
             smithyKotlinPlugin {
                 serviceShapeId = test.serviceShapeId
