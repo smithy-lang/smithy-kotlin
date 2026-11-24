@@ -23,8 +23,12 @@ import aws.smithy.kotlin.codegen.rendering.serde.bodySerializer
 import aws.smithy.kotlin.codegen.rendering.serde.bodySerializerName
 import aws.smithy.kotlin.codegen.rendering.serde.serializerName
 import aws.smithy.kotlin.codegen.utils.getOrNull
+import software.amazon.smithy.aws.traits.auth.SigV4ATrait
+import software.amazon.smithy.aws.traits.auth.SigV4Trait
 import software.amazon.smithy.codegen.core.CodegenException
 import software.amazon.smithy.codegen.core.Symbol
+import software.amazon.smithy.model.Model
+import software.amazon.smithy.model.knowledge.ServiceIndex
 import software.amazon.smithy.model.shapes.*
 import software.amazon.smithy.model.traits.EventHeaderTrait
 import software.amazon.smithy.model.traits.EventPayloadTrait
@@ -36,11 +40,15 @@ import software.amazon.smithy.model.traits.StreamingTrait
  *
  * @param sdg the structured data serializer generator
  * @param payloadContentType the content-type to use when sending structured data (e.g. `application/json`)
+ * @param alwaysSendInitialRequestMessage whether an `initial-request` message is sent for RPC-bound protocols even when
+ * the operation input has no members besides the event stream
  */
 class EventStreamSerializerGenerator(
     private val sdg: StructuredDataSerializerGenerator,
     private val payloadContentType: String,
+    private val alwaysSendInitialRequestMessage: Boolean,
 ) {
+    constructor(sdg: StructuredDataSerializerGenerator, payloadContentType: String) : this(sdg, payloadContentType, false)
 
     /**
      * Return the function responsible for serializing an operation output that targets an event stream
@@ -73,31 +81,43 @@ class EventStreamSerializerGenerator(
         val streamingMember = input.findStreamingMember(ctx.model) ?: error("expected a streaming member for $input")
         val streamShape = ctx.model.expectShape<UnionShape>(streamingMember.target)
 
-        writer.write("val stream = input.#L ?: return #T.Empty", streamingMember.defaultName(), RuntimeTypes.Http.HttpBody)
+        val initialRequestMembers = input.initialRequestMembers(ctx)
+        val sendsInitialRequestMessage = ctx.protocol.isRpcBoundProtocol && (initialRequestMembers.isNotEmpty() || alwaysSendInitialRequestMessage)
 
-        // initial HTTP request should use an empty body hash since the actual body is the event stream
+        if (sendsInitialRequestMessage) {
+            // the initial-request message is sent even if the caller supplied no events
+            writer.write("val stream = input.#L ?: #T()", streamingMember.defaultName(), RuntimeTypes.KotlinxCoroutines.Flow.emptyFlow)
+        } else {
+            writer.write("val stream = input.#L ?: return #T.Empty", streamingMember.defaultName(), RuntimeTypes.Http.HttpBody)
+        }
+
+        // the HTTP request body is the event stream, never a payload to hash
         writer.write("context[#T.HashSpecification] = #T.EmptyBody", RuntimeTypes.Auth.Signing.AwsSigningCommon.AwsSigningAttributes, RuntimeTypes.Auth.Signing.AwsSigningCommon.HashSpecification)
 
-        // FIXME - we need a signer implementation which usually comes from the auth scheme...for now default to default signer for event streams
-        writer.write("context[#T.Signer] = #T", RuntimeTypes.Auth.Signing.AwsSigningCommon.AwsSigningAttributes, RuntimeTypes.Auth.Signing.AwsSigningStandard.DefaultAwsSigner)
-        // ensure a deferred is set, signer will complete it when initial request signature is available
-        writer.write(
-            "context[#T.RequestSignature] = #T(context.coroutineContext.#T)",
-            RuntimeTypes.Auth.Signing.AwsSigningCommon.AwsSigningAttributes,
-            RuntimeTypes.KotlinxCoroutines.CompletableDeferred,
-            RuntimeTypes.KotlinxCoroutines.job,
-        )
+        // messages are only SigV4 signed for operations whose effective auth includes SigV4
+        val shouldSignMessages = ctx.model.signsEventStreamMessages(ctx.service, op)
+        if (shouldSignMessages) {
+            // default signer, replaced by the auth scheme's signer when the request is signed
+            writer.write("context[#T.Signer] = #T", RuntimeTypes.Auth.Signing.AwsSigningCommon.AwsSigningAttributes, RuntimeTypes.Auth.Signing.AwsSigningStandard.DefaultAwsSigner)
+            // ensure a deferred is set, signer will complete it when initial request signature is available
+            writer.write(
+                "context[#T.RequestSignature] = #T(context.coroutineContext.#T)",
+                RuntimeTypes.Auth.Signing.AwsSigningCommon.AwsSigningAttributes,
+                RuntimeTypes.KotlinxCoroutines.CompletableDeferred,
+                RuntimeTypes.KotlinxCoroutines.job,
+            )
+        }
 
         val encodeFn = encodeEventStreamMessage(ctx, op, streamShape)
 
         writer.write("")
-        val initialRequestMembers = input.initialRequestMembers(ctx)
-        if (ctx.protocol.isRpcBoundProtocol && initialRequestMembers.isNotEmpty()) {
+        if (sendsInitialRequestMessage) {
             val serializerFn = sdg.payloadSerializer(ctx, input, initialRequestMembers)
 
             writer.withBlock("val initialRequest = buildMessage {", "}") {
                 writer.write("addHeader(\":message-type\", HeaderValue.String(\"event\"))")
                 writer.write("addHeader(\":event-type\", HeaderValue.String(\"initial-request\"))")
+                writer.addStringHeader(":content-type", payloadContentType)
                 writer.write("payload = #T(input)", serializerFn)
             }
 
@@ -109,13 +129,13 @@ class EventStreamSerializerGenerator(
                 RuntimeTypes.KotlinxCoroutines.Flow.map,
                 encodeFn,
             ) {
-                write(".#T(context)", RuntimeTypes.AwsEventStream.sign)
+                if (shouldSignMessages) write(".#T(context)", RuntimeTypes.AwsEventStream.sign)
                 write(".#T()", RuntimeTypes.AwsEventStream.encode)
             }
         } else {
             writer.withBlock("val messages = stream", "") {
                 write(".#T(::#T)", RuntimeTypes.KotlinxCoroutines.Flow.map, encodeFn)
-                write(".#T(context)", RuntimeTypes.AwsEventStream.sign)
+                if (shouldSignMessages) write(".#T(context)", RuntimeTypes.AwsEventStream.sign)
                 write(".#T()", RuntimeTypes.AwsEventStream.encode)
             }
         }
@@ -247,4 +267,13 @@ class EventStreamSerializerGenerator(
         val targetShape = ctx.model.getShape(it.target).getOrNull()
         targetShape?.hasTrait<StreamingTrait>() == false
     }
+}
+
+/**
+ * Whether request event stream messages for [op] are SigV4 signed. They are when the operation's effective auth
+ * includes SigV4 or SigV4a, and are sent unsigned otherwise.
+ */
+internal fun Model.signsEventStreamMessages(service: ServiceShape, op: OperationShape): Boolean {
+    val authSchemes = ServiceIndex.of(this).getEffectiveAuthSchemes(service, op)
+    return SigV4Trait.ID in authSchemes || SigV4ATrait.ID in authSchemes
 }
