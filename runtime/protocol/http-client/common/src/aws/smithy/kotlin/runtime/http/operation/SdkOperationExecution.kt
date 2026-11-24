@@ -297,6 +297,10 @@ internal class AuthHandler<Input, Output>(
             identityProvider.resolve(request.context)
         }
 
+        // publish for components that need to react to an auth failure on this attempt
+        request.context[HttpOperationContext.ResolvedIdentity] = identity
+        request.context[HttpOperationContext.ResolvedIdentityProvider] = identityProvider
+
         // emit identity business metrics
         emitIdentityBusinessMetrics(identity, request.context)
 
