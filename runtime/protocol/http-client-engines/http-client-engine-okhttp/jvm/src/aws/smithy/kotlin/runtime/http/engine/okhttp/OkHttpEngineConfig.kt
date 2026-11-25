@@ -101,6 +101,32 @@ public class OkHttpEngineConfig private constructor(builder: Builder) : HttpClie
     public val hostnameVerifier: HostnameVerifier? = builder.hostnameVerifier
 
     /**
+     * How often to send an HTTP/2 PING frame on each connection to check its health. If a PING hasn't been acknowledged
+     * by the time the next one is due, the connection is closed, so a connection whose peer has silently gone away is
+     * detected within one to two intervals and replaced instead of being reused. Has no effect on HTTP/1.1 connections.
+     *
+     * The interval is also the deadline for each acknowledgement, so set it well above the worst-case round-trip time
+     * under load: an acknowledgement can be queued behind in-flight response data or a full request send buffer, or
+     * delayed by a GC pause. Calls in flight on a closed connection fail with an `HttpException` caused by
+     * `StreamResetException: PROTOCOL_ERROR`, which reads like a server protocol error, and a failure part-way through
+     * a streaming response such as an event stream isn't retried. Idle pooled connections are pinged too, and some
+     * servers send GOAWAY `too_many_pings` to clients that ping frequently.
+     *
+     * Ignored when the engine is created from an existing `OkHttpClient`, in which case this property still reports the
+     * default. Set `OkHttpClient.Builder.pingInterval` on that client instead.
+     *
+     * Must be [Duration.ZERO] or between 1 and [Int.MAX_VALUE] milliseconds. The default value is [Duration.ZERO],
+     * which disables PINGs.
+     */
+    public val pingInterval: Duration = builder.pingInterval
+
+    init {
+        require(pingInterval == Duration.ZERO || pingInterval.inWholeMilliseconds in 1..Int.MAX_VALUE) {
+            "pingInterval must be Duration.ZERO or between 1 and Int.MAX_VALUE milliseconds, but was $pingInterval"
+        }
+    }
+
+    /**
      * Whether to retry when a connectivity problem is encountered. When enabled, this client silently recovers from the
      * following problems:
      * * Unreachable IP addresses. If the URL's host has multiple IP addresses, failure to reach any individual IP
@@ -128,6 +154,7 @@ public class OkHttpEngineConfig private constructor(builder: Builder) : HttpClie
             cipherSuites = this@OkHttpEngineConfig.cipherSuites
             certificatePinner = this@OkHttpEngineConfig.certificatePinner
             hostnameVerifier = this@OkHttpEngineConfig.hostnameVerifier
+            pingInterval = this@OkHttpEngineConfig.pingInterval
         }
     }
 
@@ -201,6 +228,27 @@ public class OkHttpEngineConfig private constructor(builder: Builder) : HttpClie
          * Use this to implement custom hostname verification logic.
          */
         public var hostnameVerifier: HostnameVerifier? = null
+
+        /**
+         * How often to send an HTTP/2 PING frame on each connection to check its health. If a PING hasn't been
+         * acknowledged by the time the next one is due, the connection is closed, so a connection whose peer has
+         * silently gone away is detected within one to two intervals and replaced instead of being reused. Has no
+         * effect on HTTP/1.1 connections.
+         *
+         * The interval is also the deadline for each acknowledgement, so set it well above the worst-case round-trip
+         * time under load: an acknowledgement can be queued behind in-flight response data or a full request send
+         * buffer, or delayed by a GC pause. Calls in flight on a closed connection fail with an `HttpException` caused
+         * by `StreamResetException: PROTOCOL_ERROR`, which reads like a server protocol error, and a failure part-way
+         * through a streaming response such as an event stream isn't retried. Idle pooled connections are pinged too,
+         * and some servers send GOAWAY `too_many_pings` to clients that ping frequently.
+         *
+         * Ignored when the engine is created from an existing `OkHttpClient`, in which case this property still reports
+         * the default. Set `OkHttpClient.Builder.pingInterval` on that client instead.
+         *
+         * Must be [Duration.ZERO] or between 1 and [Int.MAX_VALUE] milliseconds. The default value is [Duration.ZERO],
+         * which disables PINGs.
+         */
+        public var pingInterval: Duration = Duration.ZERO
 
         override var telemetryProvider: TelemetryProvider = TelemetryProvider.Global
 
