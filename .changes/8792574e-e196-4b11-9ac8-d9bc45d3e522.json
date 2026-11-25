@@ -1,0 +1,5 @@
+{
+  "id": "8792574e-e196-4b11-9ac8-d9bc45d3e522",
+  "type": "bugfix",
+  "description": "Honor the full expiration stated by the wrapped provider in `CachedCredentialsProvider` instead of also capping it at `expireCredentialsAfter`. Credentials valid for longer than that value, which defaults to 15 minutes, were being re-resolved early"
+}
