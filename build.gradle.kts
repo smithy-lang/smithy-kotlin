@@ -123,6 +123,7 @@ apiValidation {
             "protocol-tests",
             "aws-signing-benchmarks",
             "channel-benchmarks",
+            "hashing-benchmarks",
             "http-benchmarks",
             "serde-benchmarks",
             "serde-codegen-support",
