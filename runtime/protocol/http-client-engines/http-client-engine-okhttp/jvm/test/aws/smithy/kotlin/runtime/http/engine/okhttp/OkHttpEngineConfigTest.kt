@@ -75,15 +75,15 @@ class OkHttpEngineConfigTest {
 
     @Test
     fun testAllowedPingIntervalsReachOkHttp() {
-        listOf(Duration.ZERO, 1.milliseconds, 1500.milliseconds, Int.MAX_VALUE.milliseconds).forEach { interval ->
+        listOf(1.milliseconds, 1500.milliseconds, Int.MAX_VALUE.milliseconds).forEach { interval ->
             val client = OkHttpEngineConfig { pingInterval = interval }.buildClient(testMetrics)
             assertEquals(interval.inWholeMilliseconds, client.pingIntervalMillis.toLong(), "$interval")
         }
     }
 
     @Test
-    fun testPingIntervalsOkHttpWouldIgnoreOrRejectFailWhenConfigIsBuilt() {
-        val intervals = listOf(500.microseconds, (-1).seconds, (Int.MAX_VALUE + 1L).milliseconds, Duration.INFINITE)
+    fun testOutOfRangePingIntervalsFailWhenConfigIsBuilt() {
+        val intervals = listOf(Duration.ZERO, 500.microseconds, (-1).seconds, (Int.MAX_VALUE + 1L).milliseconds, Duration.INFINITE)
         intervals.forEach { interval ->
             assertFailsWith<IllegalArgumentException>("$interval") { OkHttpEngineConfig { pingInterval = interval } }
         }

@@ -112,17 +112,17 @@ public class OkHttpEngineConfig private constructor(builder: Builder) : HttpClie
      * a streaming response such as an event stream isn't retried. Idle pooled connections are pinged too, and some
      * servers send GOAWAY `too_many_pings` to clients that ping frequently.
      *
-     * Ignored when the engine is created from an existing `OkHttpClient`, in which case this property still reports the
-     * default. Set `OkHttpClient.Builder.pingInterval` on that client instead.
+     * Ignored when the engine is created from an existing `OkHttpClient`, in which case this property is still
+     * `null`. Set `OkHttpClient.Builder.pingInterval` on that client instead.
      *
-     * Must be [Duration.ZERO] or between 1 and [Int.MAX_VALUE] milliseconds. The default value is [Duration.ZERO],
-     * which disables PINGs.
+     * When this value is `null`, PINGs are disabled. Otherwise it must be between 1 and [Int.MAX_VALUE] milliseconds.
+     * The default value is `null`.
      */
-    public val pingInterval: Duration = builder.pingInterval
+    public val pingInterval: Duration? = builder.pingInterval
 
     init {
-        require(pingInterval == Duration.ZERO || pingInterval.inWholeMilliseconds in 1..Int.MAX_VALUE) {
-            "pingInterval must be Duration.ZERO or between 1 and Int.MAX_VALUE milliseconds, but was $pingInterval"
+        require(pingInterval == null || pingInterval.inWholeMilliseconds in 1..Int.MAX_VALUE) {
+            "pingInterval must be null (disabled) or between 1 and Int.MAX_VALUE milliseconds, but was $pingInterval"
         }
     }
 
@@ -242,13 +242,13 @@ public class OkHttpEngineConfig private constructor(builder: Builder) : HttpClie
          * through a streaming response such as an event stream isn't retried. Idle pooled connections are pinged too,
          * and some servers send GOAWAY `too_many_pings` to clients that ping frequently.
          *
-         * Ignored when the engine is created from an existing `OkHttpClient`, in which case this property still reports
-         * the default. Set `OkHttpClient.Builder.pingInterval` on that client instead.
+         * Ignored when the engine is created from an existing `OkHttpClient`, in which case this property is still
+         * `null`. Set `OkHttpClient.Builder.pingInterval` on that client instead.
          *
-         * Must be [Duration.ZERO] or between 1 and [Int.MAX_VALUE] milliseconds. The default value is [Duration.ZERO],
-         * which disables PINGs.
+         * When this value is `null`, PINGs are disabled. Otherwise it must be between 1 and [Int.MAX_VALUE]
+         * milliseconds. The default value is `null`.
          */
-        public var pingInterval: Duration = Duration.ZERO
+        public var pingInterval: Duration? = null
 
         override var telemetryProvider: TelemetryProvider = TelemetryProvider.Global
 
