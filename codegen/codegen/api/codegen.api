@@ -1042,6 +1042,7 @@ public final class aws/smithy/kotlin/codegen/core/RuntimeTypes$SmithyClient$Endp
 	public final fun getEndpointProvider ()Lsoftware/amazon/smithy/codegen/core/Symbol;
 	public final fun getEndpointProviderException ()Lsoftware/amazon/smithy/codegen/core/Symbol;
 	public final fun getSigningContextAttributeKey ()Lsoftware/amazon/smithy/codegen/core/Symbol;
+	public final fun getWithoutQuery ()Lsoftware/amazon/smithy/codegen/core/Symbol;
 }
 
 public final class aws/smithy/kotlin/codegen/core/RuntimeTypes$SmithyClient$Endpoints$Functions : aws/smithy/kotlin/codegen/core/RuntimeTypePackage {
@@ -1976,13 +1977,17 @@ public final class aws/smithy/kotlin/codegen/rendering/endpoints/EndpointBusines
 public abstract interface class aws/smithy/kotlin/codegen/rendering/endpoints/EndpointCustomization {
 	public fun getExternalFunctions ()Ljava/util/Map;
 	public fun getPropertyRenderers ()Ljava/util/Map;
+	public fun internalEndpointParameters (Laws/smithy/kotlin/codegen/rendering/protocol/ProtocolGenerator$GenerationContext;Lsoftware/amazon/smithy/rulesengine/language/EndpointRuleSet;)Ljava/util/List;
 	public fun renderBindEndpointBuiltins (Laws/smithy/kotlin/codegen/rendering/protocol/ProtocolGenerator$GenerationContext;Lsoftware/amazon/smithy/rulesengine/language/EndpointRuleSet;Laws/smithy/kotlin/codegen/core/KotlinWriter;)V
+	public fun renderPreResolve (Laws/smithy/kotlin/codegen/rendering/protocol/ProtocolGenerator$GenerationContext;Lsoftware/amazon/smithy/rulesengine/language/EndpointRuleSet;Laws/smithy/kotlin/codegen/core/KotlinWriter;)V
 }
 
 public final class aws/smithy/kotlin/codegen/rendering/endpoints/EndpointCustomization$DefaultImpls {
 	public static fun getExternalFunctions (Laws/smithy/kotlin/codegen/rendering/endpoints/EndpointCustomization;)Ljava/util/Map;
 	public static fun getPropertyRenderers (Laws/smithy/kotlin/codegen/rendering/endpoints/EndpointCustomization;)Ljava/util/Map;
+	public static fun internalEndpointParameters (Laws/smithy/kotlin/codegen/rendering/endpoints/EndpointCustomization;Laws/smithy/kotlin/codegen/rendering/protocol/ProtocolGenerator$GenerationContext;Lsoftware/amazon/smithy/rulesengine/language/EndpointRuleSet;)Ljava/util/List;
 	public static fun renderBindEndpointBuiltins (Laws/smithy/kotlin/codegen/rendering/endpoints/EndpointCustomization;Laws/smithy/kotlin/codegen/rendering/protocol/ProtocolGenerator$GenerationContext;Lsoftware/amazon/smithy/rulesengine/language/EndpointRuleSet;Laws/smithy/kotlin/codegen/core/KotlinWriter;)V
+	public static fun renderPreResolve (Laws/smithy/kotlin/codegen/rendering/endpoints/EndpointCustomization;Laws/smithy/kotlin/codegen/rendering/protocol/ProtocolGenerator$GenerationContext;Lsoftware/amazon/smithy/rulesengine/language/EndpointRuleSet;Laws/smithy/kotlin/codegen/core/KotlinWriter;)V
 }
 
 public abstract interface class aws/smithy/kotlin/codegen/rendering/endpoints/EndpointDelegator {
@@ -2103,6 +2108,14 @@ public final class aws/smithy/kotlin/codegen/rendering/endpoints/ExpressionGener
 
 public abstract interface class aws/smithy/kotlin/codegen/rendering/endpoints/ExpressionRenderer {
 	public abstract fun renderExpression (Lsoftware/amazon/smithy/rulesengine/language/syntax/expressions/Expression;)Laws/smithy/kotlin/codegen/rendering/endpoints/EndpointInfo;
+}
+
+public final class aws/smithy/kotlin/codegen/rendering/endpoints/InternalEndpointParameter {
+	public fun <init> (Ljava/lang/String;Lsoftware/amazon/smithy/codegen/core/Symbol;Ljava/lang/String;Ljava/lang/String;)V
+	public final fun getDefaultValue ()Ljava/lang/String;
+	public final fun getDocumentation ()Ljava/lang/String;
+	public final fun getName ()Ljava/lang/String;
+	public final fun getSymbol ()Lsoftware/amazon/smithy/codegen/core/Symbol;
 }
 
 public final class aws/smithy/kotlin/codegen/rendering/endpoints/SdkEndpointBuiltinIntegration : aws/smithy/kotlin/codegen/integration/KotlinIntegration {

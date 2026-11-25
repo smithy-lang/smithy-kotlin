@@ -51,6 +51,12 @@ class EndpointParametersGenerator(
             )
         }
 
+    private val internalParams: List<InternalEndpointParameter> = rules?.let { ruleSet ->
+        ctx.integrations
+            .mapNotNull { it.customizeEndpointResolution(ctx) }
+            .flatMap { it.internalEndpointParameters(ctx, ruleSet) }
+    } ?: emptyList()
+
     private val paramsSymbol = getSymbol(ctx.settings)
 
     fun render() {
@@ -86,6 +92,12 @@ class EndpointParametersGenerator(
 
             writer.ensureSuppressDeprecation(it)
             it.renderDeclaration(writer, initialValueExpr)
+            writer.write("")
+        }
+
+        internalParams.forEach {
+            writer.dokka { write("#L", it.documentation) }
+            writer.write("internal val #1L: #2T = builder.#1L", it.name, it.symbol)
             writer.write("")
         }
     }
@@ -148,6 +160,9 @@ class EndpointParametersGenerator(
                     ensureSuppressDeprecation(it)
                     write("#1L = this@#2L.#1L", it.name, paramsSymbol.name)
                 }
+                internalParams.forEach {
+                    write("#1L = this@#2L.#1L", it.name, paramsSymbol.name)
+                }
                 write("block()")
             }
             write(".build()")
@@ -158,6 +173,10 @@ class EndpointParametersGenerator(
         writer.withBlock("public class Builder {", "}") {
             params.forEach {
                 it.renderDeclaration(writer, it.defaultLiteral, isMutable = true)
+            }
+            internalParams.forEach {
+                write("internal var #L: #T = #L", it.name, it.symbol, it.defaultValue)
+                write("")
             }
             write("")
             write("public fun build(): #1T = #1T(this)", paramsSymbol)

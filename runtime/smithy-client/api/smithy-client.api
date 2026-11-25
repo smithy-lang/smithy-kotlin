@@ -311,6 +311,10 @@ public final class aws/smithy/kotlin/runtime/client/endpoints/EndpointProviderEx
 	public fun <init> (Ljava/lang/String;)V
 }
 
+public final class aws/smithy/kotlin/runtime/client/endpoints/EndpointUrlKt {
+	public static final fun withoutQuery (Ljava/lang/String;)Ljava/lang/String;
+}
+
 public final class aws/smithy/kotlin/runtime/client/endpoints/SigningContextKt {
 	public static final fun getAuthOptions (Laws/smithy/kotlin/runtime/client/endpoints/Endpoint;)Ljava/util/List;
 	public static final fun getSigningContextAttributeKey ()Laws/smithy/kotlin/runtime/collections/AttributeKey;

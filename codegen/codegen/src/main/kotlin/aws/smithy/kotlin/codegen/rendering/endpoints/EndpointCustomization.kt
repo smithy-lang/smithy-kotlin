@@ -43,4 +43,47 @@ interface EndpointCustomization {
      * @param writer The writer to render to
      */
     fun renderBindEndpointBuiltins(ctx: ProtocolGenerator.GenerationContext, rules: EndpointRuleSet, writer: KotlinWriter) {}
+
+    /**
+     * Invoked by the [EndpointParametersGenerator] for internal properties to add to the endpoint parameters, for state
+     * that isn't an endpoint rule parameter. They're kept by `copy` and aren't part of `equals`, `hashCode`, or
+     * `toString`.
+     *
+     * @param ctx The codegen generation context
+     * @param rules The endpoint rules
+     */
+    fun internalEndpointParameters(ctx: ProtocolGenerator.GenerationContext, rules: EndpointRuleSet): List<InternalEndpointParameter> = emptyList()
+
+    /**
+     * Invoked by the [DefaultEndpointProviderGenerator] to render code that runs before the rules are evaluated.
+     *
+     * This function is invoked with the current writer context as:
+     *
+     * ```
+     * public override suspend fun resolveEndpoint(params: EndpointParameters): Endpoint {
+     *     <-- CURRENT WRITER CONTEXT -->
+     *     ...
+     * }
+     * ```
+     *
+     * @param ctx The codegen generation context
+     * @param rules The endpoint rules
+     * @param writer The writer to render to
+     */
+    fun renderPreResolve(ctx: ProtocolGenerator.GenerationContext, rules: EndpointRuleSet, writer: KotlinWriter) {}
 }
+
+/**
+ * An internal property of the generated endpoint parameters. See [EndpointCustomization.internalEndpointParameters].
+ *
+ * @param name The property name
+ * @param symbol The property type
+ * @param defaultValue The default value, as a Kotlin literal
+ * @param documentation The property documentation
+ */
+class InternalEndpointParameter(
+    val name: String,
+    val symbol: Symbol,
+    val defaultValue: String,
+    val documentation: String,
+)

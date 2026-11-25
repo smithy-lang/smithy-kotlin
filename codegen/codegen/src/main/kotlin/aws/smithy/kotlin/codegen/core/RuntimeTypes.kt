@@ -255,6 +255,7 @@ object RuntimeTypes {
             val EndpointProviderException = symbol("EndpointProviderException")
             val SigningContextAttributeKey = symbol("SigningContextAttributeKey")
             val authOptions = symbol("authOptions")
+            val withoutQuery = symbol("withoutQuery")
             object Functions : RuntimeTypePackage(KotlinDependency.SMITHY_CLIENT, "endpoints.functions") {
                 val substring = symbol("substring")
                 val isValidHostLabel = symbol("isValidHostLabel")

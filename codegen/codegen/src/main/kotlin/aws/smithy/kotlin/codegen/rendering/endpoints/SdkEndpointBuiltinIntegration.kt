@@ -8,7 +8,9 @@ import aws.smithy.kotlin.codegen.KotlinSettings
 import aws.smithy.kotlin.codegen.core.CodegenContext
 import aws.smithy.kotlin.codegen.core.KotlinWriter
 import aws.smithy.kotlin.codegen.core.RuntimeTypes
+import aws.smithy.kotlin.codegen.core.withBlock
 import aws.smithy.kotlin.codegen.integration.KotlinIntegration
+import aws.smithy.kotlin.codegen.lang.KotlinTypes
 import aws.smithy.kotlin.codegen.model.asNullable
 import aws.smithy.kotlin.codegen.model.defaultName
 import aws.smithy.kotlin.codegen.model.expectShape
@@ -21,7 +23,13 @@ import software.amazon.smithy.aws.traits.ServiceTrait
 import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.shapes.ServiceShape
 import software.amazon.smithy.rulesengine.language.EndpointRuleSet
+import software.amazon.smithy.rulesengine.language.syntax.expressions.Expression
+import software.amazon.smithy.rulesengine.language.syntax.expressions.functions.LibraryFunction
+import software.amazon.smithy.rulesengine.language.syntax.expressions.functions.ParseUrl
 import software.amazon.smithy.rulesengine.language.syntax.parameters.Parameter
+import software.amazon.smithy.rulesengine.language.syntax.rule.EndpointRule
+import software.amazon.smithy.rulesengine.language.syntax.rule.Rule
+import software.amazon.smithy.rulesengine.language.syntax.rule.TreeRule
 
 /**
  * Registers support for the `SDK::Endpoint` builtin parameter
@@ -44,6 +52,14 @@ class SdkEndpointBuiltinIntegration : KotlinIntegration {
             """.trimIndent()
             propertyType = ConfigPropertyType.SymbolDefault
         }
+
+        private val BoundByClient = InternalEndpointParameter(
+            name = "boundByClient",
+            symbol = KotlinTypes.Boolean,
+            defaultValue = "false",
+            documentation = "True if a service client bound these parameters from its config. The default endpoint " +
+                "provider then evaluates the rules without the query of the endpoint, which `parseURL` rejects.",
+        )
     }
 
     override fun enabledForService(model: Model, settings: KotlinSettings): Boolean {
@@ -63,10 +79,54 @@ class SdkEndpointBuiltinIntegration : KotlinIntegration {
             val builtins = rules.parameters?.toList()?.filter(Parameter::isBuiltIn) ?: return
             builtins.forEach {
                 when (it.builtIn.get()) {
-                    BUILTIN_NAME ->
+                    BUILTIN_NAME -> {
                         writer.write("#L = config.#L?.toString()", it.defaultName(), EndpointUrlProp.propertyName)
+                        if (rules.onlyParsesAsUrl(it)) writer.write("#L = true", BoundByClient.name)
+                    }
                 }
+            }
+        }
+
+        override fun internalEndpointParameters(
+            ctx: ProtocolGenerator.GenerationContext,
+            rules: EndpointRuleSet,
+        ): List<InternalEndpointParameter> = if (rules.queryRemovableEndpoint() != null) listOf(BoundByClient) else emptyList()
+
+        override fun renderPreResolve(ctx: ProtocolGenerator.GenerationContext, rules: EndpointRuleSet, writer: KotlinWriter) {
+            val endpoint = rules.queryRemovableEndpoint()?.defaultName() ?: return
+            writer.withBlock("if (params.#L) {", "}", BoundByClient.name) {
+                write("val endpointWithoutQuery = #T(params.#L)", RuntimeTypes.SmithyClient.Endpoints.withoutQuery, endpoint)
+                write("if (endpointWithoutQuery != params.#1L) return resolveEndpoint(params.copy { #1L = endpointWithoutQuery })", endpoint)
             }
         }
     }
 }
+
+/**
+ * The `SDK::Endpoint` parameter, if the rules only use it through `parseURL`
+ */
+private fun EndpointRuleSet.queryRemovableEndpoint(): Parameter? = parameters
+    ?.find { it.isBuiltIn && it.builtIn.get() == SdkEndpointBuiltinIntegration.BUILTIN_NAME }
+    ?.takeIf { onlyParsesAsUrl(it) }
+
+/**
+ * True if the rules pass [param] to `parseURL` (which rejects a query) and never use it directly as an endpoint URL, so
+ * its query can't reach a resolved endpoint and is safe to remove.
+ */
+private fun EndpointRuleSet.onlyParsesAsUrl(param: Parameter): Boolean {
+    val paramName = param.name.toString()
+    val allRules = rules.flatMap(Rule::withNestedRules)
+
+    val parsesUrl = allRules.any { rule -> rule.conditions.any { it.function.callsParseUrl(paramName) } }
+    val usesAsUrl = allRules.any { it is EndpointRule && paramName in it.endpoint.url.references }
+
+    return parsesUrl && !usesAsUrl
+}
+
+private fun Rule.withNestedRules(): List<Rule> = when (this) {
+    is TreeRule -> listOf(this) + rules.flatMap(Rule::withNestedRules)
+    else -> listOf(this)
+}
+
+private fun Expression.callsParseUrl(paramName: String): Boolean = this is LibraryFunction &&
+    ((name == ParseUrl.ID && paramName in references) || arguments.any { it.callsParseUrl(paramName) })
