@@ -133,6 +133,7 @@ public fun OkHttpEngineConfig.buildClient(
         connectTimeout(config.connectTimeout.toJavaDuration())
         readTimeout(config.socketReadTimeout.toJavaDuration())
         writeTimeout(config.socketWriteTimeout.toJavaDuration())
+        config.pingInterval?.let { pingInterval(it.toJavaDuration()) }
 
         // use our own pool configured with the timeout settings taken from config
         val pool = ConnectionPool(
